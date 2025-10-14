@@ -119,7 +119,8 @@
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
                                     width="8em"
                                     class="text-end">
-                                    <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
+                                    <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end"
+                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax event="keyup" process="@this"
                                                 update="netValue :#{p:resolveFirstComponentWithId('billDetails', view).clientId}"
@@ -174,8 +175,8 @@
                                 <h:outputLabel value="Items will be issued to"/>
                                 <h:outputLabel value="#{transferIssueController.issuedBill.toDepartment.name}" />
 
-                                <h:outputLabel value="Value &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}" />
-                                <h:outputLabel id="billNetTotal" value="#{transferIssueController.issuedBill.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}" />
+                                <h:outputLabel value="Value &amp;nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
+                                <h:outputLabel id="billNetTotal" value="#{transferIssueController.issuedBill.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
 
 
 
@@ -203,7 +204,7 @@
                                 </p:autoComplete>
 
 
-                                <h:outputLabel value="Comment *" />
+                                <h:outputLabel value="Comment" />
                                 <p:inputTextarea
                                     class="w-100"
                                     rows="3"
@@ -447,7 +448,7 @@
                       maximizable="true"
                       closeOnEscape="true">
 
-                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('transferIssueCheckboxes',view).clientId}" process="@this" />
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('transferIssueCheckboxes',view).clientId}" process="@this" />
 
                 <h:form id="transferIssueConfigForm">
 
@@ -462,7 +463,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="transferIssueA4Paper"
-                                                value="#{pharmacyRetailConfigController.transferIssueA4Paper}" />
+                                                value="#{pharmacyConfigController.transferIssueA4Paper}" />
                                             <p:outputLabel for="transferIssueA4Paper" value="A4 Paper Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard A4 size paper format (transferIssue component)</small>
                                         </div>
@@ -470,7 +471,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="transferIssueA4PaperDetailed"
-                                                value="#{pharmacyRetailConfigController.transferIssueA4PaperDetailed}" />
+                                                value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
                                             <p:outputLabel for="transferIssueA4PaperDetailed" value="A4 Paper Format (Detailed)" class="ms-2" />
                                             <small class="form-text text-muted d-block">A4 format with detailed item information (transferIssue_detailed component)</small>
                                         </div>
@@ -478,7 +479,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="transferIssueCustom1"
-                                                value="#{pharmacyRetailConfigController.transferIssueCustom1}" />
+                                                value="#{pharmacyConfigController.transferIssueCustom1}" />
                                             <p:outputLabel for="transferIssueCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
                                         </div>    
@@ -486,7 +487,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="transferIssuePosPaper"
-                                                value="#{pharmacyRetailConfigController.transferIssuePosPaper}" />
+                                                value="#{pharmacyConfigController.transferIssuePosPaper}" />
                                             <p:outputLabel for="transferIssuePosPaper" value="POS Paper Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
                                         </div>
@@ -494,7 +495,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="transferIssuePosHeaderPaper"
-                                                value="#{pharmacyRetailConfigController.transferIssuePosHeaderPaper}" />
+                                                value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
                                             <p:outputLabel for="transferIssuePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
                                             <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
                                         </div>
@@ -502,7 +503,7 @@
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
                                                 id="transferIssueTemplate"
-                                                value="#{pharmacyRetailConfigController.transferIssueTemplate}" />
+                                                value="#{pharmacyConfigController.transferIssueTemplate}" />
                                             <p:outputLabel for="transferIssueTemplate" value="Template Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
                                         </div>
@@ -524,7 +525,7 @@
                                                 icon="fas fa-save"
                                                 class="ui-button-success"
                                                 ajax="false"
-                                                action="#{pharmacyRetailConfigController.saveTransferIssueConfig}" />
+                                                action="#{pharmacyConfigController.saveTransferIssueConfig}" />
                                             <p:commandButton
                                                 value="Cancel"
                                                 icon="fas fa-times"

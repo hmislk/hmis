@@ -6,7 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
             <ui:define name="admin">
                 <h:form >
                     <p:panel>
@@ -74,9 +74,9 @@
                                 value="#{searchController.institution}"
                                 class="w-100"
                                 filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="cmbIns" update="cmbDept" />
+                                <p:ajax process="cmbIns" update="deptPanel" listener="#{searchController.clearDepartmentSelection}" />
                             </p:selectOneMenu>
 
                             <p:spacer ></p:spacer>
@@ -92,9 +92,9 @@
                                 styleClass="w-100 form-control"
                                 value="#{searchController.site}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" noSelectionOption="true" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="siteMenu" update="cmbDept" />
+                                <p:ajax process="siteMenu" update="deptPanel" listener="#{searchController.clearDepartmentSelection}" />
                             </p:selectOneMenu>
 
 
@@ -102,16 +102,49 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                <h:outputLabel value="Department" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="cmbDept"
-                                styleClass="w-100 form-control"
-                                value="#{searchController.department}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                            </p:selectOneMenu>
+                            <h:panelGroup id="deptPanel" layout="block" styleClass="w-100">
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filter="true"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filter="true"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filter="true"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filter="true"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
 
 

@@ -13,6 +13,7 @@ import com.divudi.bean.cashTransaction.DenominationController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
+import com.divudi.bean.lab.LaboratoryDoctorDashboardController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.InstitutionType;
@@ -160,6 +161,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private PharmacySaleController pharmacySaleController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    private LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -1758,6 +1761,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return tokenController.navigateToManagePharmacyTokensCalled();
             case COURIER_LANDING_PAGE:
                 return courierController.navigateToCourierIndex();
+            case LABORATORY_DOCTER_DASHBOARD:
+                return laboratoryDoctorDashboardController.navigateToDoctorDashboard();
             case HOME:
             default:
                 return "/home?faces-redirect=true";

@@ -259,6 +259,7 @@ public class PaymentService {
             case PatientDeposit:
                 if (paymentMethodData.getPatient_deposit() != null) {
                     payment.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
+                    payment.setComments(paymentMethodData.getPatient_deposit().getComment());
                 }
                 break;
             case Slip:

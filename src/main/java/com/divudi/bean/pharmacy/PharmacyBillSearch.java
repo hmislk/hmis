@@ -52,6 +52,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
 import com.divudi.core.util.CommonFunctions;
@@ -1918,6 +1919,15 @@ public class PharmacyBillSearch implements Serializable {
             b.setBill(can);
             b.copy(nB);
             b.invertValue(nB);
+
+            // Handle BillItemFinanceDetails inversion
+            if (nB.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails invertedFinanceDetails = new BillItemFinanceDetails();
+                invertedFinanceDetails.invertValue(nB.getBillItemFinanceDetails());
+                invertedFinanceDetails.setBillItem(b);
+                invertedFinanceDetails.setCreatedAt(new Date());
+                b.setBillItemFinanceDetails(invertedFinanceDetails);
+            }
 
             b.setReferanceBillItem(nB);
 
