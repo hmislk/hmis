@@ -10,74 +10,36 @@
     <cc:interface>
         <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
-        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-wrap align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="txtVal" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
+        <div class="d-flex gap-2 mt-2 w-100">
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" layout="block">
                 <p:inputText
                     autocomplete="off"
                     onfocus="this.select();"
                     value="#{cc.attrs.paymentMethodData.onlineSettlement.totalValue}"
-                    id="txtVal"
-                    styleClass="form-control"
-                    style="width: 150px;">
-                    <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                    style="width: 6em;"
+                    id="txtVal">
+                    <p:ajax process="@this" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="bank" value="Bank:" styleClass="form-label mb-0"/>
-                <p:selectOneMenu
-                    id="bank"
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.institution}"
-                    styleClass="form-control"
-                    style="width: 180px;">
-                    <f:selectItem itemLabel="Select Bank"/>
-                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                    <p:ajax process="@this" />
-                </p:selectOneMenu>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="date" value="Date:" styleClass="form-label mb-0"/>
-                <p:calendar
-                    id="date"
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.date}"
-                    placeholder="Select date"
-                    pattern="#{sessionController.applicationPreference.longDateFormat}"
-                    styleClass="form-control"
-                    style="width: 150px;">
-                    <p:ajax process="@this" />
-                </p:calendar>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="refNo" value="Ref No:" styleClass="form-label mb-0"/>
-                <p:inputText
-                    id="refNo"
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.referenceNo}"
-                    placeholder="Reference No"
-                    styleClass="form-control"
-                    style="width: 150px;">
-                    <p:ajax process="@this" />
-                </p:inputText>
-            </div>
-
-            <div class="d-flex align-items-center gap-2 flex-grow-1">
-                <p:outputLabel for="comment" value="Comment:" styleClass="form-label mb-0"/>
-                <p:inputText
-                    id="comment"
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.comment}"
-                    placeholder="Comments"
-                    styleClass="form-control">
-                    <p:ajax process="@this" />
-                </p:inputText>
-            </div>
+            </h:panelGroup>
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.onlineSettlement.institution}" style="width: 10em;">
+                <f:selectItem itemLabel="Select Bank"/>
+                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                <p:ajax process="@this" />
+            </p:selectOneMenu>
+            <p:calendar value="#{cc.attrs.paymentMethodData.onlineSettlement.date}" placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">
+                <p:ajax process="@this" />
+            </p:calendar>
+            <p:inputText value="#{cc.attrs.paymentMethodData.onlineSettlement.referenceNo}" placeholder="Reference No" class="w-100" style="width:7rem!important">
+                <p:ajax process="@this" />
+            </p:inputText>
+            <p:inputText value="#{cc.attrs.paymentMethodData.onlineSettlement.comment}" placeholder="Comments" class="w-100" style="width:7rem!important">
+                <p:ajax process="@this" />
+            </p:inputText>
         </div>
     </cc:implementation>
 </html>
