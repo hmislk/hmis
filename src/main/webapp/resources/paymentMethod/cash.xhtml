@@ -20,7 +20,7 @@
                 autocomplete="off"
                 value="#{cc.attrs.paymentMethodData.cash.totalValue}"
                 id="txtVal">
-                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                 <f:convertNumber pattern="#,##0.00" />
             </p:inputText>
                     </div>

@@ -23,7 +23,7 @@
                     value="#{cc.attrs.paymentMethodData.slip.totalValue}"
                     style="width: 6em;"
                     id="txtVal" >
-                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                    <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
             </h:panelGroup>

@@ -18,7 +18,7 @@
         <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col" layout="block">
         </h:panelGroup>
         <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal" class="w-25 mb-1" style="margin-left: 12px;">
-            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+            <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
             <f:convertNumber pattern="#,##0.00" />
         </p:inputText>
         <div class="d-flex gap-2">

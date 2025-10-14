@@ -21,7 +21,7 @@
             <h:panelGroup id="balanceDisplay" layout="block" styleClass="d-flex gap-2 mb-2 justify-content-end">
                 <p:outputLabel
                     id="lblMultiplePaymentBalance"
-                    value="Balance Amount - "
+                    value="Balance Amount : "
                     style="color: #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal() > 0 ? 'red' : 'green'}; margin-right: 5px;" >
                 </p:outputLabel>
                 <p:outputLabel
@@ -87,31 +87,31 @@
                         <div class="col-12" >
                             <h:panelGroup layout="block" class="col-12"  id="paymentDetails"  >
                                 <h:panelGroup id="cash" rendered="#{pm.paymentMethod eq 'Cash'}"  layout="block" class="row" >
-                                    <pa:cash valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:cash valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                                 <h:panelGroup id="creditCard" rendered="#{pm.paymentMethod eq 'Card'}" layout="block" class="row" >
-                                    <pa:creditCard valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:creditCard valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                                 <h:panelGroup id="eWallet"  rendered="#{pm.paymentMethod eq 'ewallet'}"  layout="block" class="row" >
-                                    <pa:ewallet valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:ewallet valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                                 <h:panelGroup id="cheque"  rendered="#{pm.paymentMethod eq 'Cheque'}"  layout="block" class="row" >
-                                    <pa:cheque valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:cheque valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                                 <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}"  layout="block" class="row" >
-                                    <pa:slip valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:slip valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                                 <h:panelGroup id="staffCredit"  rendered="#{pm.paymentMethod eq 'Staff'}"  layout="block" class="row" >
-                                    <pa:staff_credit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:staff_credit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                                 <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block" class="row" >
-                                    <pa:patient_deposit_with_paid_value valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
-                                </h:panelGroup>                               
+                                    <pa:patient_deposit_with_paid_value valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                                </h:panelGroup>
                                 <h:panelGroup id="Staff_Welfare" rendered="#{pm.paymentMethod eq 'Staff_Welfare'}" layout="block" class="row">
-                                    <pa:staff_welfare valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:staff_welfare valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                                 <h:panelGroup id="online_settlement" rendered="#{pm.paymentMethod eq 'OnlineSettlement'}" layout="block" class="row">
-                                    <pa:online_settlement valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                    <pa:online_settlement valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </div></div>

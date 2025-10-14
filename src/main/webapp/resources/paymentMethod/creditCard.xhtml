@@ -17,10 +17,12 @@
     <cc:implementation>
         <div class="d-flex gap-2 mt-2" >
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em!important;" class="w-100" id="txtVal" >
-                    <p:ajax 
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em!important;" class="w-100"
+                             id="txtVal" >
+                    <p:ajax
+                        event="keyup"
                         process="@this"
-                        update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" 
+                        update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}"
                         listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
