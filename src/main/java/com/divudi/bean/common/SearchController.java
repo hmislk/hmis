@@ -3735,16 +3735,22 @@ public class SearchController implements Serializable {
 
     public void listTransferIssuesToReceiveForLoggedDepartment() {
         String jpql;
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_ISSUE);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         HashMap params = new HashMap();
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("dep", getSessionController().getDepartment());
-        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE);
+        params.put("bTp", btas);
+        
+        
+        
         jpql = "Select b "
                 + " From Bill b "
                 + " where b.retired=false "
                 + " and b.toDepartment=:dep "
-                + " and b.billTypeAtomic=:bTp "
+                + " and b.billTypeAtomic in :bTp "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
