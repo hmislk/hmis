@@ -2623,54 +2623,56 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
-                    double creditLimitAbsolute = 0.0;
-                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+                if (cd.getPaymentMethod() != null) {
+                    if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                        double creditLimitAbsolute = 0.0;
+                        PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
 
-                    if (pd == null) {
-                        JsfUtil.addErrorMessage("No Patient Deposit.");
-                        return true;
+                        if (pd == null) {
+                            JsfUtil.addErrorMessage("No Patient Deposit.");
+                            return true;
+                        }
+
+                        double runningBalance = pd.getBalance();
+                        double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+                        if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                            JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                            return true;
+                        }
                     }
-
-                    double runningBalance = pd.getBalance();
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
-
-                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
-                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
-                        return true;
+                    if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
+                        if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
+                            JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                            return true;
+                        }
+                        Staff selectedStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
+                        if (selectedStaff.getCurrentCreditValue() + cd.getPaymentMethodData().getStaffCredit().getTotalValue() > selectedStaff.getCreditLimitQualified()) {
+                            JsfUtil.addErrorMessage("No enough Credit.");
+                            return true;
+                        }
+                    } else if (cd.getPaymentMethod().equals(PaymentMethod.Staff_Welfare)) {
+                        if (cd.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                            JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                            return true;
+                        }
+                        Staff welfareStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
+                        double utilized = Math.abs(welfareStaff.getAnnualWelfareUtilized());
+                        if (utilized + cd.getPaymentMethodData().getStaffWelfare().getTotalValue() > welfareStaff.getAnnualWelfareQualified()) {
+                            JsfUtil.addErrorMessage("No enough credit.");
+                            return true;
+                        }
                     }
+                    //TODO - filter only relavant value
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
                 }
-                if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
-                    if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
-                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
-                        return true;
-                    }
-                    Staff selectedStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
-                    if (selectedStaff.getCurrentCreditValue() + cd.getPaymentMethodData().getStaffCredit().getTotalValue() > selectedStaff.getCreditLimitQualified()) {
-                        JsfUtil.addErrorMessage("No enough Credit.");
-                        return true;
-                    }
-                } else if (cd.getPaymentMethod().equals(PaymentMethod.Staff_Welfare)) {
-                    if (cd.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
-                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
-                        return true;
-                    }
-                    Staff welfareStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
-                    double utilized = Math.abs(welfareStaff.getAnnualWelfareUtilized());
-                    if (utilized + cd.getPaymentMethodData().getStaffWelfare().getTotalValue() > welfareStaff.getAnnualWelfareQualified()) {
-                        JsfUtil.addErrorMessage("No enough credit.");
-                        return true;
-                    }
-                }
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
