@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" required="true"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="d-flex flex-column gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="txtVal" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
+                <p:inputText
+                    autocomplete="off"
+                    value="#{cc.attrs.paymentMethodData.staffCredit.totalValue}"
+                    id="txtVal"
+                    styleClass="form-control"
+                    style="width: 150px;">
+                    <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+                <p:outputLabel for="creditStaff" value="Select Staff:" styleClass="form-label mb-0"/>
+                <p:autoComplete
+                    minQueryLength="2"
+                    forceSelection="true"
+                    value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}"
+                    id="creditStaff"
+                    completeMethod="#{staffController.completeStaff}"
+                    var="mys"
+                    styleClass="w-100"
+                    placeholder="Type at least 2 letters to search staff"
+                    inputStyleClass="form-control"
+                    itemLabel="#{mys.person.name}"
+                    itemValue="#{mys}"
+                    size="10">
+                    <p:column headerText="Name" style="padding: 8px;">
+                        <h:outputText value="#{mys.person.nameWithTitle}" />
+                    </p:column>
+                    <p:column headerText="EPF" style="padding: 8px;">
+                        <h:outputText value="#{mys.epfNo}" />
+                    </p:column>
+                    <p:column headerText="Credit Entitlement" style="padding: 8px;">
+                        <h:outputText value="#{mys.creditLimitQualified}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Credit Utilized" style="padding: 8px;">
+                        <h:outputText value="#{mys.currentCreditValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+                    <p:ajax event="itemSelect" process="@this" />
+                </p:autoComplete>
+            </div>
+        </div>
+    </cc:implementation>
+</html>
