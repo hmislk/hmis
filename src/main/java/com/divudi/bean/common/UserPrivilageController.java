@@ -244,6 +244,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardInvestigationSearch, "Search Investigation"), labDashBoardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardReportSearch, "Report Search"), labDashBoardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardPatientReportSearch, "Patient Report Search"), labDashBoardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.DoctorDashBoardMenu, "Doctor DashBoard Menu"), labDashBoardNode);
         
         TreeNode labSampleNode = new DefaultTreeNode(new PrivilegeHolder(null, "Samples"), labNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabSampleCollecting, "Sample Collection"), labSampleNode);
