@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -23,7 +24,7 @@
                     id="txtVal"
                     class="form-control"
                     style="width: 10em;">
-                    <p:ajax process="@this" />
+                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
             </h:panelGroup>

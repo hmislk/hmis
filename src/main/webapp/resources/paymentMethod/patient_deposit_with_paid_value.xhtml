@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -32,7 +33,7 @@
                         style="width: 7em!important;"
                         class="w-100"  >
                         <f:convertNumber pattern="#,##0.00" />
-                        <p:ajax event="keyup" process="txtMpPd" ></p:ajax>
+                        <p:ajax event="keyup" process="txtMpPd" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     </p:inputText>
                 </div>
             </div>

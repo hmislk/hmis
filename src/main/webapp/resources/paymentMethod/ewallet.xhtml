@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -17,7 +18,7 @@
         <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col" layout="block">
         </h:panelGroup>
         <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal" class="w-25 mb-1" style="margin-left: 12px;">
-            <p:ajax process="@this" ></p:ajax>
+            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
             <f:convertNumber pattern="#,##0.00" />
         </p:inputText>
         <div class="d-flex gap-2">

@@ -1821,8 +1821,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
         getSaleBill().setBillDate(new Date());
         getSaleBill().setBillTime(new Date());
-        getSaleBill().setCreatedAt(Calendar.getInstance().getTime());
-        getSaleBill().setCreater(getSessionController().getLoggedUser());
         getSaleBill().setReferenceBill(getPreBill());
 
         getSaleBill().setInsId(getPreBill().getInsId());
@@ -1834,9 +1832,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getSaleBill().setBalance(balance);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
-
         if (getSaleBill().getId() == null) {
+            getSaleBill().setCreatedAt(Calendar.getInstance().getTime());
+            getSaleBill().setCreater(getSessionController().getLoggedUser());
             getBillFacade().create(getSaleBill());
+        } else {
+            getBillFacade().edit(getSaleBill());
         }
 
         updatePreBill();
