@@ -2251,6 +2251,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     break;
                 case ewallet:
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
                     break;
@@ -2323,6 +2325,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
                         break;
