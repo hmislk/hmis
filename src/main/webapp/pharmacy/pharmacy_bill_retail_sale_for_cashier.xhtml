@@ -317,13 +317,16 @@
                                 </div>
 
                                 <div class="col-md-5">
-                                    <common:patient_details
-                                        editable="true"
-                                        controller="#{pharmacySaleController}"
-                                        ageListener="#{pharmacySaleController.calculateDobFromAge}">
-                                    </common:patient_details>
+                                    <h:panelGroup id="panelPatient">
+                                        <common:patient_details
+                                            editable="true"
+                                            controller="#{pharmacySaleController}"
+                                            ageListener="#{pharmacySaleController.calculateDobFromAge}"
+                                            additionalUpdateTargets=":#{p:resolveFirstComponentWithId('panelPayment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
+                                        </common:patient_details>
+                                    </h:panelGroup>
 
-                                    <p:panel class="m-1 w-100">
+                                    <p:panel id="panelPayment" class="m-1 w-100">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" />
                                             <h:outputText value="Payment Details" class="mx-4"></h:outputText>
