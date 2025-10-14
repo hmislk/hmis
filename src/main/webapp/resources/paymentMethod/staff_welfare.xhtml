@@ -15,56 +15,54 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="m-1" >
-            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="mb-2" layout="block">
-                <p:outputLabel value="Total Value:" class="form-label"/>
+        <div class="d-flex flex-column gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="txtVal" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
                 <p:inputText
                     autocomplete="off"
                     value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}"
                     id="txtVal"
-                    class="form-control"
-                    style="width: 10em;">
+                    styleClass="form-control"
+                    style="width: 150px;">
                     <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
-            </h:panelGroup>
+            </div>
 
-            <p:outputLabel
-                value="Select Staff"
-                class="form-label"></p:outputLabel>
-            <p:autoComplete
-                minQueryLength="4"
-                forceSelection="true"
-                value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
-                id="welfareStaff"
-                completeMethod="#{staffController.completeStaff}"
-                var="mys"
-                class="w-100"
-                placeholder="Staff (Type at least 4 letters to search)"
-                inputStyleClass="form-control"
-                itemLabel="#{mys.person.name}"
-                itemValue="#{mys}"
-                size="10">
-                <p:column headerText="Name" style="padding: 2px;">
-                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                </p:column>
-                <p:column headerText="EPF" style="padding: 2px;">
-                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                </p:column>
-                <p:column headerText="Welfare Entitlement" style="padding: 2px;">
-                    <h:outputText value="#{mys.annualWelfareQualified}" >
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
-                </p:column>
-                <p:column  headerText="Welfare Utilized" style="padding: 2px;">
-                    <h:outputText value="#{mys.annualWelfareUtilized}" >
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
-                </p:column>
-                <p:ajax event="itemSelect" process="@this" />
-            </p:autoComplete>
-
+            <div class="d-flex flex-column gap-2">
+                <p:outputLabel for="welfareStaff" value="Select Staff:" styleClass="form-label mb-0"/>
+                <p:autoComplete
+                    minQueryLength="4"
+                    forceSelection="true"
+                    value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
+                    id="welfareStaff"
+                    completeMethod="#{staffController.completeStaff}"
+                    var="mys"
+                    styleClass="w-100"
+                    placeholder="Type at least 4 letters to search staff"
+                    inputStyleClass="form-control"
+                    itemLabel="#{mys.person.name}"
+                    itemValue="#{mys}"
+                    size="10">
+                    <p:column headerText="Name" style="padding: 8px;">
+                        <h:outputText value="#{mys.person.nameWithTitle}" />
+                    </p:column>
+                    <p:column headerText="EPF" style="padding: 8px;">
+                        <h:outputText value="#{mys.epfNo}" />
+                    </p:column>
+                    <p:column headerText="Welfare Entitlement" style="padding: 8px;">
+                        <h:outputText value="#{mys.annualWelfareQualified}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Welfare Utilized" style="padding: 8px;">
+                        <h:outputText value="#{mys.annualWelfareUtilized}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+                    <p:ajax event="itemSelect" process="@this" />
+                </p:autoComplete>
+            </div>
         </div>
-
     </cc:implementation>
 </html>
