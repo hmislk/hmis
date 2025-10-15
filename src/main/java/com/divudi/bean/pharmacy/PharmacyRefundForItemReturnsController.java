@@ -1728,8 +1728,60 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    /**
+     * Validates that the absolute value of total payments equals the absolute value of the refund bill's netTotal.
+     * This is called during settlement to ensure that the payment amounts match the refund amount.
+     *
+     * @return true if validation fails (there's an error), false if validation passes
+     */
+    private boolean validatePaymentRefundMatch() {
+        if (getRefundBill() == null) {
+            JsfUtil.addErrorMessage("Refund bill is not initialized");
+            return true;
+        }
+
+        // Calculate total of payments that will be created
+        double totalPayments = 0.0;
+
+        if (getRefundBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            // For multiple payment methods, calculate the sum from payment method data
+            if (getPaymentMethodData() != null
+                    && getPaymentMethodData().getPaymentMethodMultiple() != null
+                    && getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                totalPayments = calculateMultiplePaymentMethodTotal();
+            }
+        } else {
+            // For single payment methods, use the bill's netTotal as the payment amount
+            // (This is how paymentService.createPayment works for single payment methods)
+            totalPayments = getRefundBill().getNetTotal();
+        }
+
+        // Get absolute values for comparison (both should be positive for comparison)
+        double absRefundTotal = Math.abs(getRefundBill().getNetTotal());
+        double absPaymentTotal = Math.abs(totalPayments);
+
+        // Allow a tolerance of 1.0 for rounding differences
+        double difference = Math.abs(absRefundTotal - absPaymentTotal);
+
+        if (difference > 1.0) {
+            JsfUtil.addErrorMessage("Payment total does not match refund total. "
+                    + "Refund Amount: " + String.format("%.2f", absRefundTotal)
+                    + ", Payment Total: " + String.format("%.2f", absPaymentTotal)
+                    + ". Please edit payment methods to match the refund amount.");
+            return true;
+        }
+
+        return false;
+    }
+
     public void settleRefundForReturnItems() {
         editingQty = null;
+
+        // Validate that payment total matches refund total
+        if (validatePaymentRefundMatch()) {
+            return; // Validation failed, error message already displayed
+        }
+
         saveBill();
 
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
