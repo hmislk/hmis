@@ -30,7 +30,8 @@
                 <p:ajax process="@this" ></p:ajax>
             </p:calendar>
             <p:outputLabel value="Ref No:"/>
-            <p:inputText value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
+            <p:inputText 
+                value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
                          placeholder="Referance No" class="w-100" ></p:inputText>
             <p:outputLabel value="Comments:"/>
             <p:inputTextarea value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Comments" class="w-100" ></p:inputTextarea>
