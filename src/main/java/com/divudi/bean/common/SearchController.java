@@ -8311,39 +8311,48 @@ public class SearchController implements Serializable {
 
     public void createPreBillsForReturn(BillType billType, BillType refBillType) {
         bills = null;
-        String sql;
-        Map<String, Object> temMap = new HashMap<>();
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
         if (getSearchKeyword().getItem() == null) {
-            sql = "select b from PreBill b where b.billType = :billType and "
+            System.out.println("item is null");
+            jpql = "select b from PreBill b where b.billType = :billType and "
                     + "b.institution = :ins and b.billedBill is null and "
                     + "b.department = :dept and b.referenceBill.billType = :refBillType and "
                     + "b.createdAt between :fromDate and :toDate and b.retired = false and "
                     + "b.referenceBill.cancelled = false ";
 
             if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-                sql += "and b.deptId like :billNo ";
-                temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+                jpql += "and b.deptId like :billNo ";
+                params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                sql += "and b.netTotal = :netTotal ";
-                temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+                String netTotalString = getSearchKeyword().getNetTotal().trim();
+                try {
+                    Double netTotalValue = Double.parseDouble(netTotalString);
+                    jpql += "and b.netTotal = :netTotal ";
+                    params.put("netTotal", netTotalValue);
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                    System.out.println("Invalid net total search value: " + netTotalString);
+                }
             }
 
-            sql += "order by b.createdAt desc ";
+            jpql += "order by b.createdAt desc ";
 
-            temMap.put("billType", billType);
-            temMap.put("refBillType", refBillType);
-            temMap.put("toDate", toDate);
-            temMap.put("fromDate", fromDate);
-            temMap.put("ins", getSessionController().getInstitution());
-            temMap.put("dept", getSessionController().getLoggedUser().getDepartment());
-
-            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+            params.put("billType", billType);
+            params.put("refBillType", refBillType);
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+            params.put("ins", getSessionController().getInstitution());
+            params.put("dept", getSessionController().getLoggedUser().getDepartment());
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
 
         } else {
-
-            sql = "select DISTINCT(bi.bill) from BillItem bi where bi.bill.billType = :billType and "
+            System.out.println("Items not null" );
+            jpql = "select DISTINCT(bi.bill) from BillItem bi where bi.bill.billType = :billType and "
                     + " bi.bill.institution=:ins and (bi.bill.billedBill is null) and "
                     + " bi.item=:item and "
                     + " bi.bill.department=:dept and "
@@ -8353,26 +8362,34 @@ public class SearchController implements Serializable {
                     + " and bi.bill.referenceBill.cancelled=false ";
 
             if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-                sql += " and  ((bi.bill.deptId) like :billNo )";
-                temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+                jpql += " and  ((bi.bill.deptId) like :billNo )";
+                params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                sql += " and  ((bi.bill.netTotal) = :netTotal )";
-                temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+                String netTotalString = getSearchKeyword().getNetTotal().trim();
+                try {
+                    Double netTotalValue = Double.parseDouble(netTotalString);
+                    jpql += " and  ((bi.bill.netTotal) = :netTotal )";
+                    params.put("netTotal", netTotalValue);
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                    System.out.println("Invalid net total search value: " + netTotalString);
+                }
             }
 
-            sql += " order by bi.createdAt desc  ";
+            jpql += " order by bi.createdAt desc  ";
 
-            temMap.put("billType", billType);
-            temMap.put("refBillType", refBillType);
-            temMap.put("toDate", toDate);
-            temMap.put("fromDate", fromDate);
-            temMap.put("item", getSearchKeyword().getItem());
-            temMap.put("ins", getSessionController().getInstitution());
-            temMap.put("dept", getSessionController().getLoggedUser().getDepartment());
-
-            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+            params.put("billType", billType);
+            params.put("refBillType", refBillType);
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+            params.put("item", getSearchKeyword().getItem());
+            params.put("ins", getSessionController().getInstitution());
+            params.put("dept", getSessionController().getLoggedUser().getDepartment());
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
 
         }
     }
@@ -16139,7 +16156,7 @@ public class SearchController implements Serializable {
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
-            ReportTemplateRowBundle pharmacyCollection = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
+            ReportTemplateRowBundle pharmacyCollection = generatePaymentMethodColumnsByBillsWithCashierTotals(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
             pharmacyCollection.setBundleType("pharmacyNonCreditBills");
             pharmacyCollection.setName("Pharmacy Bills (Non Credit)");
             bundle.getBundles().add(pharmacyCollection);
@@ -16161,7 +16178,7 @@ public class SearchController implements Serializable {
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-            ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds);
+            ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds, nonCreditPaymentMethods);
             pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
             pharmacyServiceRefunds.setName("Pharmacy Service Refunds");
             bundle.getBundles().add(pharmacyServiceRefunds);
@@ -16546,6 +16563,102 @@ public class SearchController implements Serializable {
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
+        return b;
+    }
+
+    public ReportTemplateRowBundle generatePaymentMethodColumnsByBillsWithCashierTotals(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
+                + "bill, "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (billPaymentMethods != null) {
+            jpql += "AND bill.paymentMethod in :bpms ";
+            parameters.put("bpms", billPaymentMethods);
+        }
+
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
+        b.setReportTemplateRows(rs);
+        b.createRowValuesFromBill();
+        b.calculateTotalsWithCredit();
+
+        // Calculate cashier totals
+        ensureCollectionMethodLists();
+        double bundleGrand = 0.0;
+        double bundleCollection = 0.0;
+        if (rs != null) {
+            for (ReportTemplateRow row : rs) {
+                double grand = computeGrandTotal(row);
+                double collection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+                double excluded = grand - collection;
+                row.setCashierGrandTotal(grand);
+                row.setCashierCollectionTotal(collection);
+                row.setCashierExcludedTotal(excluded);
+                bundleGrand += grand;
+                bundleCollection += collection;
+            }
+        }
+        double bundleExcluded = bundleGrand - bundleCollection;
+
+        b.setCashierGrandTotal(bundleGrand);
+        b.setCashierCollectionTotal(bundleCollection);
+        b.setCashierExcludedTotal(bundleExcluded);
+        b.setCashierCollectionPaymentMethods(new ArrayList<>(allCashierCollectionIncludedMethods));
+        b.setCashierExcludedPaymentMethods(new ArrayList<>(allCashierCollectionExcludedMethods));
+
         return b;
     }
 

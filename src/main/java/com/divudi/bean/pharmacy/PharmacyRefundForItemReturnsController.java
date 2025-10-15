@@ -774,6 +774,38 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         getRefundBill().setBillDate(new Date());
         getRefundBill().setBillTime(new Date());
 
+        // Generate Department ID based on configured strategy
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        } else {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        }
+
+        // Generate Institution ID independently according to configuration
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)
+                || configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            insId = deptId;
+        } else {
+            insId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        }
+
+        getRefundBill().setDeptId(deptId);
+        getRefundBill().setInsId(insId);
+
         if (getRefundBill().getId() == null) {
             getBillFacade().create(getRefundBill());
             getRefundBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -1368,170 +1400,170 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return balance;
     }
 
-    public String settlePaymentAndNavigateToPrint() {
-        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
-
-        if (pharmacyBillingAfterShiftStart) {
-            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
-                financialTransactionController.navigateToFinancialTransactionIndex();
-            }
-        }
-
-        editingQty = null;
-        if (getRefundBill().getBillType() == BillType.PharmacyPre
-                && getRefundBill().getBillClassType() != BillClassType.PreBill) {
-            JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
-            prepareForNewRefundForPharmacyReturnItems();
-            return null;
-        }
-        if (errorCheckForSaleBill()) {
-            return null;
-        }
-        if (!billItemCountMatches()) {
-            JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again");
-            return null;
-        }
-        if (errorCheckForSaleBillAraedyAddToStock()) {
-            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
-            return null;
-        }
-        if (!getRefundBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
-            JsfUtil.addErrorMessage("Can't settle bills of " + getRefundBill().getDepartment().getName());
-            return null;
-        }
-
-        if (errorCheckOnPaymentMethod()) {
-            return null;
-        }
-
-        if (getRefundBill().getPaymentMethod() == PaymentMethod.Cash) {
-            if (checkAndUpdateBalance() > 0) {
-                JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
-                return null;
-            }
-        }
-
-        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getRefundBill().getPaymentMethod(), getRefundBill().getPaymentScheme(), getPaymentMethodData());
-        if (!discountSchemeValidation.isFlag()) {
-            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
-            return null;
-        }
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("pre", getRefundBill().getId());
-        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
-        if (existing != null) {
-            JsfUtil.addErrorMessage("Already Paid");
-            return null;
-        }
-
-        saveSaleBill();
+//    public String settlePaymentAndNavigateToPrint() {
+//        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+//
+//        if (pharmacyBillingAfterShiftStart) {
+//            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+//            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+//                JsfUtil.addErrorMessage("Start Your Shift First !");
+//                financialTransactionController.navigateToFinancialTransactionIndex();
+//            }
+//        }
+//
+//        editingQty = null;
+//        if (getRefundBill().getBillType() == BillType.PharmacyPre
+//                && getRefundBill().getBillClassType() != BillClassType.PreBill) {
+//            JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
+//            prepareForNewRefundForPharmacyReturnItems();
+//            return null;
+//        }
+//        if (errorCheckForSaleBill()) {
+//            return null;
+//        }
+//        if (!billItemCountMatches()) {
+//            JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again");
+//            return null;
+//        }
+//        if (errorCheckForSaleBillAraedyAddToStock()) {
+//            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
+//            return null;
+//        }
+//        if (!getRefundBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
+//            JsfUtil.addErrorMessage("Can't settle bills of " + getRefundBill().getDepartment().getName());
+//            return null;
+//        }
+//
+//        if (errorCheckOnPaymentMethod()) {
+//            return null;
+//        }
+//
+//        if (getRefundBill().getPaymentMethod() == PaymentMethod.Cash) {
+//            if (checkAndUpdateBalance() > 0) {
+//                JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
+//                return null;
+//            }
+//        }
+//
+//        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getRefundBill().getPaymentMethod(), getRefundBill().getPaymentScheme(), getPaymentMethodData());
+//        if (!discountSchemeValidation.isFlag()) {
+//            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+//            return null;
+//        }
+//
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("pre", getRefundBill().getId());
+//        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
+//        if (existing != null) {
+//            JsfUtil.addErrorMessage("Already Paid");
+//            return null;
+//        }
+//
+//        saveSaleBill();
+////        saveSaleBillItems();
+//
+//        List<Payment> payments = createPaymentsForBill(getSaleBill());
+//        drawerController.updateDrawerForIns(payments);
 //        saveSaleBillItems();
-
-        List<Payment> payments = createPaymentsForBill(getSaleBill());
-        drawerController.updateDrawerForIns(payments);
-        saveSaleBillItems();
-
-        getBillFacade().editAndCommit(getRefundBill());
-
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
-        setBill(getBillFacade().find(getSaleBill().getId()));
-
-        paymentService.updateBalances(payments);
-
-        markComplete(getRefundBill());
-        printPreview = true;
-
-        return navigateToPrintPharmacyRetailBillSettlePrint();
-    }
+//
+//        getBillFacade().editAndCommit(getRefundBill());
+//
+//        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
+//        getSessionController().setLoggedUser(wb);
+//        setBill(getBillFacade().find(getSaleBill().getId()));
+//
+//        paymentService.updateBalances(payments);
+//
+//        markComplete(getRefundBill());
+//        printPreview = true;
+//
+//        return navigateToPrintPharmacyRetailBillSettlePrint();
+//    }
 
     public String navigateToPrintPharmacyRetailBillSettlePrint() {
         return "/pharmacy/printing/settle_retail_sale_for_cashier?faces-redirect=true";
     }
 
-    @Deprecated // Please use settlePaymentAndNavigateToPrint
-    public void settleBillWithPay2() {
-
-        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
-
-        if (pharmacyBillingAfterShiftStart) {
-            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
-                financialTransactionController.navigateToFinancialTransactionIndex();
-            }
-        }
-
-        editingQty = null;
-        if (getRefundBill().getBillType() == BillType.PharmacyPre
-                && getRefundBill().getBillClassType() != BillClassType.PreBill) {
-            JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
-            prepareForNewRefundForPharmacyReturnItems();
-            return;
-        }
-        if (errorCheckForSaleBill()) {
-            return;
-        }
-        if (!billItemCountMatches()) {
-            JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again");
-            return;
-        }
-        if (errorCheckForSaleBillAraedyAddToStock()) {
-            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
-            return;
-        }
-        if (!getRefundBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
-            JsfUtil.addErrorMessage("Can't settle bills of " + getRefundBill().getDepartment().getName());
-            return;
-        }
-
-        if (errorCheckOnPaymentMethod()) {
-            return;
-        }
-
-        if (getRefundBill().getPaymentMethod() == PaymentMethod.Cash) {
-            if (checkAndUpdateBalance() > 0) {
-                JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
-                return;
-            }
-        }
-
-        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getRefundBill().getPaymentMethod(), getRefundBill().getPaymentScheme(), getPaymentMethodData());
-        if (!discountSchemeValidation.isFlag()) {
-            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
-            return;
-        }
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("pre", getRefundBill().getId());
-        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
-        if (existing != null) {
-            JsfUtil.addErrorMessage("Already Paid");
-            return;
-        }
-
-        saveSaleBill();
+//    @Deprecated // Please use settlePaymentAndNavigateToPrint
+//    public void settleBillWithPay2() {
+//
+//        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+//
+//        if (pharmacyBillingAfterShiftStart) {
+//            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+//            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+//                JsfUtil.addErrorMessage("Start Your Shift First !");
+//                financialTransactionController.navigateToFinancialTransactionIndex();
+//            }
+//        }
+//
+//        editingQty = null;
+//        if (getRefundBill().getBillType() == BillType.PharmacyPre
+//                && getRefundBill().getBillClassType() != BillClassType.PreBill) {
+//            JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
+//            prepareForNewRefundForPharmacyReturnItems();
+//            return;
+//        }
+//        if (errorCheckForSaleBill()) {
+//            return;
+//        }
+//        if (!billItemCountMatches()) {
+//            JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again");
+//            return;
+//        }
+//        if (errorCheckForSaleBillAraedyAddToStock()) {
+//            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
+//            return;
+//        }
+//        if (!getRefundBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
+//            JsfUtil.addErrorMessage("Can't settle bills of " + getRefundBill().getDepartment().getName());
+//            return;
+//        }
+//
+//        if (errorCheckOnPaymentMethod()) {
+//            return;
+//        }
+//
+//        if (getRefundBill().getPaymentMethod() == PaymentMethod.Cash) {
+//            if (checkAndUpdateBalance() > 0) {
+//                JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
+//                return;
+//            }
+//        }
+//
+//        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getRefundBill().getPaymentMethod(), getRefundBill().getPaymentScheme(), getPaymentMethodData());
+//        if (!discountSchemeValidation.isFlag()) {
+//            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+//            return;
+//        }
+//
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("pre", getRefundBill().getId());
+//        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
+//        if (existing != null) {
+//            JsfUtil.addErrorMessage("Already Paid");
+//            return;
+//        }
+//
+//        saveSaleBill();
+////        saveSaleBillItems();
+//
+//        List<Payment> payments = createPaymentsForBill(getSaleBill());
+//        drawerController.updateDrawerForIns(payments);
 //        saveSaleBillItems();
-
-        List<Payment> payments = createPaymentsForBill(getSaleBill());
-        drawerController.updateDrawerForIns(payments);
-        saveSaleBillItems();
-
-        getBillFacade().editAndCommit(getRefundBill());
-
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
-        setBill(getBillFacade().find(getSaleBill().getId()));
-
-        paymentService.updateBalances(payments);
-
-        markComplete(getRefundBill());
-        printPreview = true;
-
-    }
+//
+//        getBillFacade().editAndCommit(getRefundBill());
+//
+//        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
+//        getSessionController().setLoggedUser(wb);
+//        setBill(getBillFacade().find(getSaleBill().getId()));
+//
+//        paymentService.updateBalances(payments);
+//
+//        markComplete(getRefundBill());
+//        printPreview = true;
+//
+//    }
 
     public Token findTokenFromBill(Bill bill) {
         return tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
@@ -1700,6 +1732,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         editingQty = null;
         saveBill();
 
+        applyRefundSignToPaymentData();
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
         saveSaleReturnBillItems(refundPayments);
 
@@ -1711,6 +1744,54 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         clearBillItem();
         printPreview = true;
 
+    }
+
+    private void applyRefundSignToPaymentData() {
+        PaymentMethodData data = getPaymentMethodData();
+        if (data == null) {
+            return;
+        }
+
+        if (getRefundBill() != null && getRefundBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            ComponentDetail multiple = data.getPaymentMethodMultiple();
+            if (multiple != null && multiple.getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail component : multiple.getMultiplePaymentMethodComponentDetails()) {
+                    if (component == null) {
+                        continue;
+                    }
+                    negateComponentTotal(component);
+                    negatePaymentMethodData(component.getPaymentMethodData());
+                }
+            }
+        } else {
+            negatePaymentMethodData(data);
+        }
+    }
+
+    private void negatePaymentMethodData(PaymentMethodData paymentMethodData) {
+        if (paymentMethodData == null) {
+            return;
+        }
+
+        negateComponentTotal(paymentMethodData.getCash());
+        negateComponentTotal(paymentMethodData.getCreditCard());
+        negateComponentTotal(paymentMethodData.getCheque());
+        negateComponentTotal(paymentMethodData.getSlip());
+        negateComponentTotal(paymentMethodData.getEwallet());
+        negateComponentTotal(paymentMethodData.getPatient_deposit());
+        negateComponentTotal(paymentMethodData.getCredit());
+        negateComponentTotal(paymentMethodData.getStaffCredit());
+        negateComponentTotal(paymentMethodData.getStaffWelfare());
+        negateComponentTotal(paymentMethodData.getOnlineSettlement());
+        negateComponentTotal(paymentMethodData.getIou());
+    }
+
+    private void negateComponentTotal(ComponentDetail componentDetail) {
+        if (componentDetail == null) {
+            return;
+        }
+
+        componentDetail.setTotalValue(0 - Math.abs(componentDetail.getTotalValue()));
     }
 
     private void clearBill() {
@@ -2248,9 +2329,15 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     getPaymentMethodData().getCheque().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     break;
                 case Slip:
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getChequeDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     break;
                 case ewallet:
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
                     break;
@@ -2302,7 +2389,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 ComponentDetail cd = new ComponentDetail();
                 cd.setPaymentMethod(originalPayment.getPaymentMethod());
 
-                // Set payment details based on method - use absolute value for refunds
+                // Set payment details based on method - use absolute value for UI display
                 double refundAmount = Math.abs(originalPayment.getPaidValue());
 
                 switch (originalPayment.getPaymentMethod()) {
@@ -2320,9 +2407,15 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
                         break;
                     case Slip:
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
                         break;
