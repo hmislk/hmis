@@ -8327,8 +8327,15 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                jpql += "and b.netTotal = :netTotal ";
-                params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+                String netTotalString = getSearchKeyword().getNetTotal().trim();
+                try {
+                    Double netTotalValue = Double.parseDouble(netTotalString);
+                    jpql += "and b.netTotal = :netTotal ";
+                    params.put("netTotal", netTotalValue);
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                    System.out.println("Invalid net total search value: " + netTotalString);
+                }
             }
 
             jpql += "order by b.createdAt desc ";
@@ -8360,8 +8367,15 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                jpql += " and  ((bi.bill.netTotal) = :netTotal )";
-                params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+                String netTotalString = getSearchKeyword().getNetTotal().trim();
+                try {
+                    Double netTotalValue = Double.parseDouble(netTotalString);
+                    jpql += " and  ((bi.bill.netTotal) = :netTotal )";
+                    params.put("netTotal", netTotalValue);
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                    System.out.println("Invalid net total search value: " + netTotalString);
+                }
             }
 
             jpql += " order by bi.createdAt desc  ";
@@ -16164,7 +16178,7 @@ public class SearchController implements Serializable {
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
             pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-            ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds);
+            ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds, nonCreditPaymentMethods);
             pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
             pharmacyServiceRefunds.setName("Pharmacy Service Refunds");
             bundle.getBundles().add(pharmacyServiceRefunds);
