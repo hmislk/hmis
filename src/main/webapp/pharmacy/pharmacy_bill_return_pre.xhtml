@@ -17,12 +17,12 @@
                             <div>
                                 <h:outputText styleClass="fas fa-pills"></h:outputText>
                                 <h:outputLabel value="Pharmacy Item Return" class="mx-3"></h:outputLabel>
-                                <p:commandButton 
-                                    ajax="false"
-                                    value="Back to Reprint" 
-                                    class="ui-button-secondary mx-2"
-                                    icon="fa fa-arrow-left"
-                                    action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />
+                                <!--                                <p:commandButton 
+                                                                    ajax="false"
+                                                                    value="Back to Reprint" 
+                                                                    class="ui-button-secondary mx-2"
+                                                                    icon="fa fa-arrow-left"
+                                                                    action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />-->
                             </div>
                             <div>
                                 <h:outputLabel value="Return Total " class="mx-3"></h:outputLabel>
@@ -94,9 +94,9 @@
                                     <div class="col-md-12">
                                         <h:outputLabel value="Return Comments:" class="font-weight-bold"></h:outputLabel>
                                         <p:inputText value="#{preReturnController.returnBill.comments}" 
-                                                   class="w-100 mt-2" 
-                                                   id="comment"
-                                                   placeholder="Enter reason for return..."/>
+                                                     class="w-100 mt-2" 
+                                                     id="comment"
+                                                     placeholder="Enter reason for return..."/>
                                     </div>
                                 </div>
                             </p:panel>
@@ -164,13 +164,13 @@
 
                             <p:column headerText="Return Qty" styleClass="text-center" width="120">                     
                                 <p:inputText autocomplete="off" 
-                                           value="#{ph.qty}" 
-                                           class="text-center return-qty-input"
-                                           style="width: 100px;">
+                                             value="#{ph.qty}" 
+                                             class="text-center return-qty-input"
+                                             style="width: 100px;">
                                     <f:ajax event="blur" 
-                                          render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
-                                          execute="@this" 
-                                          listener="#{preReturnController.onEdit(ph)}" />
+                                            render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
+                                            execute="@this" 
+                                            listener="#{preReturnController.onEdit(ph)}" />
                                 </p:inputText>
                             </p:column>
 
@@ -200,64 +200,98 @@
             <!-- Print Preview Panel -->
             <p:panel rendered="#{preReturnController.printPreview}">
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h:outputText styleClass="fas fa-check-circle text-success"></h:outputText>
-                            <h:outputLabel value="Return Completed Successfully" class="mx-3"></h:outputLabel>
+                            <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                            <h:outputLabel value="Return Bill Preview - #{preReturnController.returnBill.deptId}" class="mx-3"></h:outputLabel>
                         </div>
                         <div>
-                            <p:commandButton ajax="false" 
-                                           action="pharmacy_search_sale_bill" 
-                                           value="Search More Bills" 
-                                           actionListener="#{preReturnController.makeNull}"
-                                           class="ui-button-secondary mx-2"/>                    
-                            <p:commandButton value="Print Return Bill" 
-                                           ajax="false" 
-                                           action="#"
-                                           class="ui-button-info mx-1">
-                                <p:printer target="gpBillPreview1" />
+                            <p:commandButton value="Print"
+                                             ajax="false"
+                                             icon="fas fa-print"
+                                             class="ui-button-info mx-1">
+                                <p:printer target="printArea" />
                             </p:commandButton>
-                            <p:commandButton value="Print Sale Bill" 
-                                           ajax="false" 
-                                           action="#"
-                                           class="ui-button-info">
-                                <p:printer target="gpBillPreview2" />
+
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary mx-1"
+                                type="button"
+                                onclick="PF('billReturnConfigDialog').show();" />
+
+                            <p:commandButton
+                                value="View Sale Bill"
+                                ajax="false"
+                                icon="fas fa-file-invoice"
+                                action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillItemId(preReturnController.bill.id)}"
+                                class="ui-button-info mx-1">
                             </p:commandButton>
+
+                            <p:commandButton ajax="false"
+                                             action="pharmacy_search_sale_bill"
+                                             value="Back"
+                                             icon="fas fa-arrow-left"
+                                             actionListener="#{preReturnController.makeNull}"
+                                             class="ui-button-secondary mx-1"/>
                         </div>
                     </div>
                 </f:facet>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <p:panel header="Return Bill">
-                            <p:panel id="gpBillPreview1">
-                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3Return" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
-                                    <ph:sale_bill_five_five_custom_3_Return bill="#{preReturnController.returnBill}"/>
-                                </h:panelGroup>
-                                <h:panelGroup id="gpBillPreviewPosHeader" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
-                                    <ph:saleBill_Header_Return bill="#{preReturnController.returnBill}"/>
-                                </h:panelGroup>
-                            </p:panel>
-                        </p:panel>
-                    </div>
-                    <div class="col-md-6">
-                        <p:panel header="Original Sale Bill">
-                            <p:panel id="gpBillPreview2">
-                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
-                                    <ph:sale_bill_five_five_custom_3 bill="#{preReturnController.bill}"/>
-                                </h:panelGroup>
-                                <h:panelGroup id="gpBillPreviewPosHeaderReturn" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
-                                    <ph:saleBill_Header bill="#{preReturnController.bill}"/>
-                                </h:panelGroup>
-                            </p:panel>
-                        </p:panel>
-                    </div>
-                </div>
+                <!-- Print Area with conditional rendering based on paper type settings -->
+                <h:panelGroup id="printArea">
+                    <!-- 5.5 Inch Custom Format -->
+                    <h:panelGroup id="gpBillPreviewFiveFiveCustom3Return"
+                                  rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Items Bill is FiveFiveCustom3', true)}">
+                        <ph:sale_bill_five_five_custom_3_Return bill="#{preReturnController.returnBill}"/>
+                    </h:panelGroup>
+
+                    <!-- POS Header Format -->
+                    <h:panelGroup id="gpBillPreviewPosHeader"
+                                  rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Items Bill is PosHeaderPaper', false)}">
+                        <ph:saleBill_Header_Return bill="#{preReturnController.returnBill}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
             </p:panel>
+
+            <!-- Printer Configuration Dialog -->
+            <p:dialog id="billReturnConfigDialog"
+                      header="Return Bill Printer Configuration"
+                      widgetVar="billReturnConfigDialog"
+                      modal="true"
+                      width="600"
+                      rendered="#{preReturnController.printPreview}">
+                <h:panelGroup id="billReturnConfigForm" layout="block">
+                    <p:panel header="Select Paper Format">
+                        <p:panelGrid columns="2" styleClass="w-100">
+                            <h:outputLabel value="5.5 Inch Custom Format:" />
+                            <p:selectBooleanCheckbox
+                                id="chkFiveFiveCustom3"
+                                value="#{pharmacyConfigController.retailSaleReturnItemsBillFiveFiveCustom3}" />
+
+                            <h:outputLabel value="POS Header Format:" />
+                            <p:selectBooleanCheckbox
+                                id="chkPosHeaderPaper"
+                                value="#{pharmacyConfigController.retailSaleReturnItemsBillPosHeaderPaper}" />
+                        </p:panelGrid>
+
+                        <div class="mt-3">
+                            <p:commandButton value="Apply &amp; Close"
+                                             icon="fas fa-save"
+                                             class="ui-button-success"
+                                             ajax="false"
+                                             action="#{pharmacyConfigController.saveRetailSaleReturnItemsBillConfig}"
+                                             onclick="PF('billReturnConfigDialog').hide();" />
+                            <p:commandButton value="Cancel"
+                                             type="button"
+                                             icon="fas fa-times"
+                                             onclick="PF('billReturnConfigDialog').hide();"
+                                             class="ui-button-secondary ms-2" />
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+            </p:dialog>
 
         </h:form>
 
@@ -265,23 +299,23 @@
             .modern-table .ui-datatable-data tr:hover {
                 background-color: #f8f9fa !important;
             }
-            
+
             .return-qty-input {
                 border: 2px solid #007bff;
                 border-radius: 4px;
                 font-weight: bold;
             }
-            
+
             .return-qty-input:focus {
                 border-color: #0056b3;
                 box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
             }
-            
+
             .item-name-col {
                 max-width: 200px;
                 word-wrap: break-word;
             }
-            
+
             .font-weight-bold {
                 font-weight: bold;
             }

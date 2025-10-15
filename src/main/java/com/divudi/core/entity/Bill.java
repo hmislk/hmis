@@ -185,6 +185,7 @@ public class Bill implements Serializable, RetirableEntity {
     private double performInstitutionFee;
     private double staffFee;
     private double billerFee;
+    // This is a known typo, can not correct it because of backword compatibility. Its grandTotal
     private double grantTotal;
     private double expenseTotal;
     private double expensesTotalConsideredForCosting;

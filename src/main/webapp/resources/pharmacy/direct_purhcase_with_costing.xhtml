@@ -133,7 +133,15 @@
                         class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }"
                         rendered="#{cc.attrs.ShowRetailValue}">
                         <f:facet name="header">Re. Rate</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.retailSaleRate}">
+                        <h:outputLabel value="#{bip.item.class.simpleName eq 'Ampp' 
+                                                ? ((empty bip.billItemFinanceDetails.retailSaleRatePerUnit or bip.billItemFinanceDetails.retailSaleRatePerUnit == 0)
+                                                    ? bip.billItemFinanceDetails.retailSaleRate
+                                                    : (bip.billItemFinanceDetails.retailSaleRatePerUnit * ((empty bip.billItemFinanceDetails.unitsPerPack or bip.billItemFinanceDetails.unitsPerPack == 0)
+                                                        ? (empty bip.item.dblValue ? 1 : bip.item.dblValue)
+                                                        : bip.billItemFinanceDetails.unitsPerPack)))
+                                                : ((empty bip.billItemFinanceDetails.retailSaleRatePerUnit or bip.billItemFinanceDetails.retailSaleRatePerUnit == 0)
+                                                    ? bip.billItemFinanceDetails.retailSaleRate
+                                                    : bip.billItemFinanceDetails.retailSaleRatePerUnit)}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>

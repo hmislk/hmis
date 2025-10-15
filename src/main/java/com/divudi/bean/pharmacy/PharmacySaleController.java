@@ -438,6 +438,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
 
             }
             return getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
@@ -452,15 +454,26 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
-                pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                // Only set value automatically if not already set by user
+                if (pm.getPaymentMethodData().getCash().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                }
             } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
-                pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                if (pm.getPaymentMethodData().getCreditCard().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                }
             } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
-                pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                if (pm.getPaymentMethodData().getCheque().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                }
             } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
-                pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                if (pm.getPaymentMethodData().getSlip().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                }
             } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
-                pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                if (pm.getPaymentMethodData().getEwallet().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                }
             } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
                 if (patient == null || patient.getId() == null) {
                     pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
@@ -484,7 +497,21 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
-                pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                if (pm.getPaymentMethodData().getCredit().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                if (pm.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                if (pm.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+                if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                }
             }
 
         }
@@ -1794,8 +1821,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
         getSaleBill().setBillDate(new Date());
         getSaleBill().setBillTime(new Date());
-        getSaleBill().setCreatedAt(Calendar.getInstance().getTime());
-        getSaleBill().setCreater(getSessionController().getLoggedUser());
         getSaleBill().setReferenceBill(getPreBill());
 
         getSaleBill().setInsId(getPreBill().getInsId());
@@ -1807,9 +1832,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getSaleBill().setBalance(balance);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
-
         if (getSaleBill().getId() == null) {
+            getSaleBill().setCreatedAt(Calendar.getInstance().getTime());
+            getSaleBill().setCreater(getSessionController().getLoggedUser());
             getBillFacade().create(getSaleBill());
+        } else {
+            getBillFacade().edit(getSaleBill());
         }
 
         updatePreBill();
@@ -1884,6 +1912,28 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+        if (paymentMethodData != null || toStaff != null) {
+            getPaymentMethodData().getStaffCredit().setToStaff(toStaff);
+            getPaymentMethodData().getStaffWelfare().setToStaff(toStaff);
+        }
+    }
+
+    private void syncStaffSelectionFromPaymentDetails(PaymentMethod method) {
+        if (method != PaymentMethod.Staff && method != PaymentMethod.Staff_Welfare) {
+            return;
+        }
+        if (paymentMethodData == null) {
+            return;
+        }
+        if (toStaff != null) {
+            return;
+        }
+        ComponentDetail staffComponent = method == PaymentMethod.Staff
+                ? paymentMethodData.getStaffCredit()
+                : paymentMethodData.getStaffWelfare();
+        if (staffComponent != null && staffComponent.getToStaff() != null) {
+            setToStaff(staffComponent.getToStaff());
+        }
     }
 
     public Institution getToInstitution() {
@@ -2086,84 +2136,90 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return null;
         }
 
-        boolean patientRequiredForPharmacySale = configOptionApplicationController.getBooleanValueByKey(
-                "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(),
-                false
-        );
+        // Pharmacy Sale Validation - Patient and Patient Details
+        boolean patientRequired = configOptionApplicationController.getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false);
+        boolean patientRequiredForPharmacySale = patientRequired; // Keep for backward compatibility with code below
 
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Title And Gender To Save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getTitle() == null) {
+        if (patientRequired) {
+            if (getPatient() == null || getPatient().getPerson() == null) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select title.");
-                return null;
-            }
-            if (getPatient().getPerson().getSex() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select gender.");
+                JsfUtil.addErrorMessage("Patient is required.");
                 return null;
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Name to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter name.");
-                return null;
+        // Only validate patient details if patient is required OR if patient exists
+        boolean hasPatient = getPatient() != null && getPatient().getPerson() != null;
+
+        if (hasPatient || patientRequired) {
+            // Patient Name validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getName() == null
+                        || getPatient().getPerson().getName().trim().isEmpty()) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient name is required.");
+                    return null;
+                }
+            }
+
+            // Patient Phone validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient is required.");
+                    return null;
+                }
+                // Check both phone and mobile - at least one should be present
+                boolean hasPhone = getPatient().getPerson().getPhone() != null
+                        && !getPatient().getPerson().getPhone().trim().isEmpty();
+                boolean hasMobile = getPatient().getPerson().getMobile() != null
+                        && !getPatient().getPerson().getMobile().trim().isEmpty();
+
+                if (!hasPhone && !hasMobile) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient phone number is required.");
+                    return null;
+                }
+            }
+
+            // Patient Gender validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getSex() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient gender is required.");
+                    return null;
+                }
+            }
+
+            // Patient Address validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getAddress() == null
+                        || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient address is required.");
+                    return null;
+                }
+            }
+
+            // Patient Area validation
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getArea() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient area is required.");
+                    return null;
+                }
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Age to Save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getDob() == null) {
+        // Referring Doctor validation
+        if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false)) {
+            if (getPreBill() == null || getPreBill().getReferredBy() == null) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient date of birth.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Phone Number to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getPhone() == null || getPatient().getPerson().getPhone().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter phone number.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Address to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getAddress() == null || getPatient().getPerson().getAddress().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient address.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Mail to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getEmail() == null || getPatient().getPerson().getEmail().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient email.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient NIC to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getNic() == null || getPatient().getPerson().getNic().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient NIC.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Need Patient Area to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select patient area.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Need Referring Doctor to settlle bill in Pharmacy Sale", false)) {
-            if (getPreBill().getReferredBy() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select referring doctor.");
+                JsfUtil.addErrorMessage("Referring doctor is required.");
                 return null;
             }
         }
@@ -2491,6 +2547,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return true;
         }
 
+        syncStaffSelectionFromPaymentDetails(paymentMethod);
+
         if (paymentMethod == PaymentMethod.PatientDeposit) {
 //            if (!getPatient().getHasAnAccount()) {
 //                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
@@ -2565,30 +2623,76 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
-                    double creditLimitAbsolute = 0.0;
-                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+                if (cd.getPaymentMethod() != null) {
+                    if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                        double creditLimitAbsolute = 0.0;
+                        PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
 
-                    if (pd == null) {
-                        JsfUtil.addErrorMessage("No Patient Deposit.");
-                        return true;
+                        if (pd == null) {
+                            JsfUtil.addErrorMessage("No Patient Deposit.");
+                            return true;
+                        }
+
+                        double runningBalance = pd.getBalance();
+                        double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+                        if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                            JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                            return true;
+                        }
                     }
-
-                    double runningBalance = pd.getBalance();
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
-
-                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
-                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
-                        return true;
+                    if (cd.getPaymentMethod().equals(PaymentMethod.Staff)) {
+                        if (cd.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffCredit().getToStaff() == null) {
+                            JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                            return true;
+                        }
+                        Staff selectedStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
+                        if (selectedStaff.getCurrentCreditValue() + cd.getPaymentMethodData().getStaffCredit().getTotalValue() > selectedStaff.getCreditLimitQualified()) {
+                            JsfUtil.addErrorMessage("No enough Credit.");
+                            return true;
+                        }
+                    } else if (cd.getPaymentMethod().equals(PaymentMethod.Staff_Welfare)) {
+                        if (cd.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                            JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                            return true;
+                        }
+                        Staff welfareStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
+                        double utilized = Math.abs(welfareStaff.getAnnualWelfareUtilized());
+                        if (utilized + cd.getPaymentMethodData().getStaffWelfare().getTotalValue() > welfareStaff.getAnnualWelfareQualified()) {
+                            JsfUtil.addErrorMessage("No enough credit.");
+                            return true;
+                        }
+                    }
+                    // Aggregate only the relevant payment method total
+                    switch (cd.getPaymentMethod()) {
+                        case Cash:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            break;
+                        case Card:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            break;
+                        case Cheque:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            break;
+                        case ewallet:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            break;
+                        case PatientDeposit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            break;
+                        case Slip:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            break;
+                        case Staff:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            break;
+                        case Staff_Welfare:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        default:
+                            break;
                     }
                 }
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -2635,18 +2739,44 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
                         break;
                     case ewallet:
-
+                        p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                        p.setPolicyNo(cd.getPaymentMethodData().getEwallet().getReferralNo());
+                        p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getEwallet().getReferenceNo());
+                        p.setBank(cd.getPaymentMethodData().getEwallet().getInstitution());
+                        break;
                     case Agent:
                     case Credit:
                     case PatientDeposit:
                         p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         break;
                     case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
                     case OnCall:
+                        break;
                     case OnlineSettlement:
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        break;
                     case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Credit Updated");
+                        }
+                        break;
+                    case Staff_Welfare:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                            staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
+                        break;
                     case YouOweMe:
                     case MultiplePaymentMethods:
+                        break;
                 }
 
                 paymentFacade.create(p);
@@ -2680,7 +2810,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
                     p.setComments(paymentMethodData.getEwallet().getComment());
                     p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
-                    p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
                     break;
                 case Credit:
                     p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
@@ -2694,9 +2824,25 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 case Agent:
                 case PatientDeposit:
                 case Slip:
+                    break;
                 case OnCall:
+                    break;
                 case OnlineSettlement:
+                    break;
                 case Staff:
+                    p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
+                    if (paymentMethodData.getStaffCredit().getToStaff() != null) {
+                        staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
+                        JsfUtil.addSuccessMessage("Staff Credit Updated");
+                    }
+                    break;
+                case Staff_Welfare:
+                    p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
+                    if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
+                        staffBean.updateStaffWelfare(paymentMethodData.getStaffWelfare().getToStaff(), paymentMethodData.getStaffWelfare().getTotalValue());
+                        JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                    }
+                    break;
                 case YouOweMe:
                 case MultiplePaymentMethods:
             }

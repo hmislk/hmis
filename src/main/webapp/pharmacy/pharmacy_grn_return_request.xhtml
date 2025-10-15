@@ -113,7 +113,7 @@
                             </p:column>
 
 
-                            <p:column 
+                            <p:column
                                 id="colPoDetails"
                                 headerText="PO Details">
                                 <div class="d-flex flex-column">
@@ -140,11 +140,20 @@
                                             <h:outputText styleClass="text-danger small" value="#{p.referenceBill.cancelledBill.creater.webUserPerson.name}" />
                                         </div>
                                     </h:panelGroup>
+                                    <div class="mt-2">
+                                        <p:commandButton
+                                            id="btnViewPo"
+                                            title="View PO"
+                                            ajax="false"
+                                            icon="pi pi-eye"
+                                            styleClass="ui-button-sm ui-button-info"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(p.referenceBill.id)}" />
+                                    </div>
                                 </div>
                             </p:column>
                             
-                            <p:column 
-                                headerText="GRN Details" 
+                            <p:column
+                                headerText="GRN Details"
                                 id="colGrnDetails">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
@@ -192,6 +201,15 @@
                                             <h:outputText styleClass="text-success small" value="#{p.fullReturnedBy.webUserPerson.name}" />
                                         </div>
                                     </h:panelGroup>
+                                    <div class="mt-2">
+                                        <p:commandButton
+                                            id="btnViewGrn"
+                                            title="View GRN"
+                                            ajax="false"
+                                            icon="pi pi-eye"
+                                            styleClass="ui-button-sm ui-button-success"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(p.id)}" />
+                                    </div>
                                 </div>
                             </p:column>
 

@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" default="true"/>
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" required="true"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="txtVal" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
+                <p:inputText
+                    id="txtVal"
+                    value="#{cc.attrs.paymentMethodData.cheque.totalValue}"
+                    styleClass="form-control"
+                    style="width: 150px;"
+                    autocomplete="off">
+                    <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="chequeNo" value="Cheque No:" styleClass="form-label mb-0"/>
+                <p:inputText
+                    id="chequeNo"
+                    placeholder="Cheque Number"
+                    value="#{cc.attrs.paymentMethodData.cheque.no}"
+                    styleClass="form-control"
+                    style="width: 150px;"
+                    autocomplete="off">
+                    <p:ajax process="@this"/>
+                </p:inputText>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="bankSelect" value="Bank:" styleClass="form-label mb-0"/>
+                <p:selectOneMenu
+                    id="bankSelect"
+                    value="#{cc.attrs.paymentMethodData.cheque.institution}"
+                    styleClass="form-control"
+                    style="width: 180px;">
+                    <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                    <p:ajax process="@this"/>
+                </p:selectOneMenu>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="ChequeDate" value="Date:" styleClass="form-label mb-0"/>
+                <p:calendar
+                    id="ChequeDate"
+                    placeholder="Cheque Date"
+                    value="#{cc.attrs.paymentMethodData.cheque.date}"
+                    pattern="#{sessionController.applicationPreference.longDateFormat}"
+                    styleClass="form-control"
+                    style="width: 150px;">
+                    <p:ajax process="@this"/>
+                </p:calendar>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+                <p:outputLabel for="chequeComment" value="Comment:" styleClass="form-label mb-0"/>
+                <p:inputText
+                    id="chequeComment"
+                    value="#{cc.attrs.paymentMethodData.cheque.comment}"
+                    placeholder="Enter comments"
+                    styleClass="form-control">
+                    <p:ajax process="@this"/>
+                </p:inputText>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

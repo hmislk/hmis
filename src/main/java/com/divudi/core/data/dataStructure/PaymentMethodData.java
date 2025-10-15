@@ -18,6 +18,7 @@ public class PaymentMethodData {
     private ComponentDetail paymentMethodMultiple;
     private ComponentDetail credit;
     private ComponentDetail staffCredit;
+    private ComponentDetail staffWelfare;
     private ComponentDetail onlineSettlement;
 
     private PaymentMethod paymentMethod;
@@ -142,6 +143,18 @@ public class PaymentMethodData {
 
     public void setStaffCredit(ComponentDetail staffCredit) {
         this.staffCredit = staffCredit;
+    }
+
+    public ComponentDetail getStaffWelfare() {
+        if (staffWelfare == null) {
+            staffWelfare = new ComponentDetail();
+            staffWelfare.setPaymentMethod(PaymentMethod.Staff_Welfare);
+        }
+        return staffWelfare;
+    }
+
+    public void setStaffWelfare(ComponentDetail staffWelfare) {
+        this.staffWelfare = staffWelfare;
     }
 
     public ComponentDetail getOnlineSettlement() {

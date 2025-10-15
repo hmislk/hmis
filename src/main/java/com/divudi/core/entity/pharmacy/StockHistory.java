@@ -25,6 +25,29 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 
 /**
+ * StockHistory Entity
+ *
+ * Records historical stock positions at both BATCH and ITEM levels.
+ * Each record captures stock quantities and values at three scopes:
+ * 1. Department level (single department's stock)
+ * 2. Institution level (aggregated across all departments in institution)
+ * 3. Total level (aggregated across all institutions)
+ *
+ * BATCH-LEVEL TRACKING:
+ * - stockQty, instituionBatchQty, totalBatchQty: Batch quantities
+ * - stockPurchaseValue, stockSaleValue, stockCostValue: Department batch values
+ * - institutionBatchStockValueAt*: Institution batch values
+ * - totalBatchStockValueAt*: Total batch values
+ *
+ * ITEM-LEVEL TRACKING:
+ * - itemStock, institutionItemStock, totalItemStock: Item quantities (all batches combined)
+ * - itemStockValueAt*: Department item values
+ * - institutionItemStockValueAt*: Institution item values
+ * - totalItemStockValueAt*: Total item values
+ *
+ * This dual-level tracking enables both:
+ * - Batch-wise reports (with batch number and expiry date)
+ * - Item-wise reports (aggregated across all batches)
  *
  * @author Buddhika
  */
@@ -40,12 +63,18 @@ public class StockHistory implements Serializable, RetirableEntity {
     Date stockAt;
     @OneToOne(fetch = FetchType.LAZY)
     PharmaceuticalBillItem pbItem;
-    // This is the Item Batch Stockf of the department
-    double stockQty;
+
+    // BATCH-LEVEL QUANTITIES
+    // This is the Item Batch Stock Quantity of the department
+    double stockQty; // == departmentBatchQty
+    private double instituionBatchQty;
+    private double totalBatchQty;
+
     double retailRate;
     double wholesaleRate;
     double purchaseRate;
     double costRate;
+    
     @ManyToOne
     ItemBatch itemBatch;
     @ManyToOne
@@ -55,8 +84,6 @@ public class StockHistory implements Serializable, RetirableEntity {
     @ManyToOne
     Staff staff;
 
-    double stockSaleValue;
-    double stockPurchaseValue;
     @ManyToOne
     Item item;
     @Enumerated(EnumType.STRING)
@@ -66,27 +93,52 @@ public class StockHistory implements Serializable, RetirableEntity {
     Date fromDate;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toDate;
+
+    // BATCH-LEVEL VALUES AT RETAIL/SALE RATE
+    // This is the Item Batch Stock value at retail rate of the department
+    private double stockSaleValue;
+    private Double institutionBatchStockValueAtSaleRate;
+    private Double totalBatchStockValueAtSaleRate;
+
+    // BATCH-LEVEL VALUES AT PURCHASE RATE
+    // This is the Item Batch Stock value at purchase rate of the department
+    private double stockPurchaseValue;
+    private Double institutionBatchStockValueAtPurchaseRate;
+    private Double totalBatchStockValueAtPurchaseRate;
+
+    // BATCH-LEVEL VALUES AT COST RATE
+    // This is the Item Batch Stock value at cost rate of the department
+    private double stockCostValue;
+    private Double institutionBatchStockValueAtCostRate;
+    private Double totalBatchStockValueAtCostRate;
+
     long hxYear;
     int hxMonth;
     int hxDate;
     int hxWeek;
-    // This give the sotck of this Item for this department
+
+    // ITEM-LEVEL QUANTITIES (All batches of an item aggregated)
+    // This gives the stock of this Item for this department (all batches combined)
     private Double itemStock;
+    // This gives the stock of this Item for this institution (all batches combined)
     private Double institutionItemStock;
+    // This gives the stock of this Item for the whole application (all batches combined)
     private Double totalItemStock;
 
+    // ITEM-LEVEL VALUES AT RETAIL/SALE RATE
     private Double itemStockValueAtSaleRate;
     private Double institutionItemStockValueAtSaleRate;
     private Double totalItemStockValueAtSaleRate;
 
+    // ITEM-LEVEL VALUES AT PURCHASE RATE
     private Double itemStockValueAtPurchaseRate;
     private Double institutionItemStockValueAtPurchaseRate;
     private Double totalItemStockValueAtPurchaseRate;
 
+    // ITEM-LEVEL VALUES AT COST RATE
     private Double itemStockValueAtCostRate;
     private Double institutionItemStockValueAtCostRate;
     private Double totalItemStockValueAtCostRate;
-
 
     //Created Properties
     @ManyToOne
@@ -100,8 +152,6 @@ public class StockHistory implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-
-
 
     public Date getStockAt() {
         return stockAt;
@@ -448,4 +498,78 @@ public class StockHistory implements Serializable, RetirableEntity {
         this.totalItemStockValueAtCostRate = totalItemStockValueAtCostRate;
     }
 
+    public double getStockCostValue() {
+        return stockCostValue;
+    }
+
+    public void setStockCostValue(double stockCostValue) {
+        this.stockCostValue = stockCostValue;
+    }
+
+    public Double getInstitutionBatchStockValueAtSaleRate() {
+        return institutionBatchStockValueAtSaleRate;
+    }
+
+    public void setInstitutionBatchStockValueAtSaleRate(Double institutionBatchStockValueAtSaleRate) {
+        this.institutionBatchStockValueAtSaleRate = institutionBatchStockValueAtSaleRate;
+    }
+
+    public Double getTotalBatchStockValueAtSaleRate() {
+        return totalBatchStockValueAtSaleRate;
+    }
+
+    public void setTotalBatchStockValueAtSaleRate(Double totalBatchStockValueAtSaleRate) {
+        this.totalBatchStockValueAtSaleRate = totalBatchStockValueAtSaleRate;
+    }
+
+    public Double getInstitutionBatchStockValueAtPurchaseRate() {
+        return institutionBatchStockValueAtPurchaseRate;
+    }
+
+    public void setInstitutionBatchStockValueAtPurchaseRate(Double institutionBatchStockValueAtPurchaseRate) {
+        this.institutionBatchStockValueAtPurchaseRate = institutionBatchStockValueAtPurchaseRate;
+    }
+
+    public Double getTotalBatchStockValueAtPurchaseRate() {
+        return totalBatchStockValueAtPurchaseRate;
+    }
+
+    public void setTotalBatchStockValueAtPurchaseRate(Double totalBatchStockValueAtPurchaseRate) {
+        this.totalBatchStockValueAtPurchaseRate = totalBatchStockValueAtPurchaseRate;
+    }
+
+    public Double getInstitutionBatchStockValueAtCostRate() {
+        return institutionBatchStockValueAtCostRate;
+    }
+
+    public void setInstitutionBatchStockValueAtCostRate(Double institutionBatchStockValueAtCostRate) {
+        this.institutionBatchStockValueAtCostRate = institutionBatchStockValueAtCostRate;
+    }
+
+    public Double getTotalBatchStockValueAtCostRate() {
+        return totalBatchStockValueAtCostRate;
+    }
+
+    public void setTotalBatchStockValueAtCostRate(Double totalBatchStockValueAtCostRate) {
+        this.totalBatchStockValueAtCostRate = totalBatchStockValueAtCostRate;
+    }
+
+    public double getInstituionBatchQty() {
+        return instituionBatchQty;
+    }
+
+    public void setInstituionBatchQty(double instituionBatchQty) {
+        this.instituionBatchQty = instituionBatchQty;
+    }
+
+    public double getTotalBatchQty() {
+        return totalBatchQty;
+    }
+
+    public void setTotalBatchQty(double totalBatchQty) {
+        this.totalBatchQty = totalBatchQty;
+    }
+
+    
+    
 }

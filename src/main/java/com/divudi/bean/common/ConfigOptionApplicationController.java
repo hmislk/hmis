@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
@@ -10,6 +11,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -106,6 +108,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadSecurityConfigurationDefaults();
             loadPharmacyAnalyticsConfigurationDefaults();
             loadReportMethodConfigurationDefaults();
+            loadAllCashierSummaryConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
         }
@@ -221,7 +224,12 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
-      
+
+        // Bill-type-specific numbering strategies for Retail Sale Return Item Payments
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Year + Yearly Number", false);
+
         // Bill-type-specific numbering strategies for Disposal Issue (DI)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
@@ -276,17 +284,29 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE", "SB");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS", "SR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL", "SRP");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS", "SRIP");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_CANCELLED", "SC");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_REFUND", "DPR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE_CANCELLED", "C-DIS");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RECEIVE", "TR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE", "DIS");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE_RETURN", "DISR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_CANCELLED", "SC");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_DIRECT_PURCHASE_REFUND", "DPR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_ISSUE_CANCELLED", "C-DIS");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RECEIVE", "TR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_TRANSFER_REQUEST", "PHTRQ");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_TRANSFER_REQUEST_PRE", "PHTRQ-PRE");
+
+        // Pharmacy Sale Validation Configuration Options
+        // These options control mandatory fields for pharmacy retail sales
+        getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Name is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Phone is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Gender is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false);
+        getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -1028,6 +1048,40 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
 
+    }
+
+    private void loadAllCashierSummaryConfigurationDefaults() {
+        for (PaymentMethod paymentMethod : PaymentMethod.values()) {
+            boolean defaultValue = shouldIncludePaymentMethodInCollection(paymentMethod);
+            getBooleanValueByKey(buildAllCashierCollectionOptionKey(paymentMethod), defaultValue);
+        }
+    }
+
+    private boolean shouldIncludePaymentMethodInCollection(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            return true;
+        }
+        if (paymentMethod == PaymentMethod.PatientDeposit || paymentMethod == PaymentMethod.None) {
+            return false;
+        }
+        return !isDeprecatedPaymentMethod(paymentMethod);
+    }
+
+    private boolean isDeprecatedPaymentMethod(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) {
+            return false;
+        }
+        try {
+            Field field = PaymentMethod.class.getField(paymentMethod.name());
+            return field.isAnnotationPresent(Deprecated.class);
+        } catch (NoSuchFieldException | SecurityException ex) {
+            return false;
+        }
+    }
+
+    private String buildAllCashierCollectionOptionKey(PaymentMethod paymentMethod) {
+        String label = paymentMethod != null ? paymentMethod.getLabel() : "Unknown";
+        return "Include " + label + " in Collection Total";
     }
 
     public ConfigOption getApplicationOption(String key) {

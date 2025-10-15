@@ -111,17 +111,25 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalDiscount;
 
-    // Retail and wholesale rates
+    // Retail, Cost rate, purchase rate and wholesale rates. These are used to calculate values of transactions,
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal retailSaleRate;
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal wholesaleRate;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal costRate;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal purchaseRate;
 
     // Retail and wholesale rates per unit (based on unitsPerPack)
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal retailSaleRatePerUnit;
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal wholesaleRatePerUnit;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal costRatePerUnit;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal purchaseRatePerUnit;    
 
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal valueAtRetailRate;
@@ -159,7 +167,6 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalCost;
 
-
     // ------------------ QUANTITIES ------------------
     // Quantities as entered (in packs when item is an AMPP or in units if item is AMP)
     @Column(precision = 18, scale = 4, nullable = true)
@@ -191,6 +198,111 @@ public class BillItemFinanceDetails implements Serializable {
 
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal profitMargin;
+
+    /**
+     * Creates a new BillItemFinanceDetails with inverted values for cancellation.
+     * Rules:
+     * - Quantities are inverted (stock goes out, so negative)
+     * - Totals are inverted (money comes back, so opposite sign)
+     * - Rates remain the same (they are unit prices, not values)
+     * - Stock valuation values (cost, purchase, retail) are inverted (stock reduces)
+     */
+    public BillItemFinanceDetails invertValue(BillItemFinanceDetails original) {
+        if (original == null) {
+            return this;
+        }
+
+        // Metadata - no inversion
+        this.unitsPerPack = original.unitsPerPack;
+
+        // ------------------ RATES - DO NOT INVERT (they are unit prices) ------------------
+        this.lineGrossRate = original.lineGrossRate;
+        this.billGrossRate = original.billGrossRate;
+        this.grossRate = original.grossRate;
+        this.lineNetRate = original.lineNetRate;
+        this.billNetRate = original.billNetRate;
+        this.netRate = original.netRate;
+        this.lineDiscountRate = original.lineDiscountRate;
+        this.billDiscountRate = original.billDiscountRate;
+        this.totalDiscountRate = original.totalDiscountRate;
+        this.lineExpenseRate = original.lineExpenseRate;
+        this.billExpenseRate = original.billExpenseRate;
+        this.totalExpenseRate = original.totalExpenseRate;
+        this.billTaxRate = original.billTaxRate;
+        this.lineTaxRate = original.lineTaxRate;
+        this.totalTaxRate = original.totalTaxRate;
+        this.billCostRate = original.billCostRate;
+        this.lineCostRate = original.lineCostRate;
+        this.totalCostRate = original.totalCostRate;
+        this.retailSaleRate = original.retailSaleRate;
+        this.wholesaleRate = original.wholesaleRate;
+        this.retailSaleRatePerUnit = original.retailSaleRatePerUnit;
+        this.wholesaleRatePerUnit = original.wholesaleRatePerUnit;
+        this.costRate = original.costRate;
+        this.purchaseRate = original.purchaseRate;
+        this.costRatePerUnit = original.costRatePerUnit;
+        this.purchaseRatePerUnit = original.purchaseRatePerUnit;
+
+        // ------------------ TOTALS - INVERT (money flow changes direction) ------------------
+        this.lineGrossTotal = negate(original.lineGrossTotal);
+        this.billGrossTotal = negate(original.billGrossTotal);
+        this.grossTotal = negate(original.grossTotal);
+        this.lineNetTotal = negate(original.lineNetTotal);
+        this.billNetTotal = negate(original.billNetTotal);
+        this.netTotal = negate(original.netTotal);
+
+        // ------------------ DISCOUNTS - INVERT ------------------
+        this.lineDiscount = negate(original.lineDiscount);
+        this.billDiscount = negate(original.billDiscount);
+        this.totalDiscount = negate(original.totalDiscount);
+
+        // ------------------ TAXES - INVERT ------------------
+        this.billTax = negate(original.billTax);
+        this.lineTax = negate(original.lineTax);
+        this.totalTax = negate(original.totalTax);
+
+        // ------------------ EXPENSES - INVERT ------------------
+        this.billExpense = negate(original.billExpense);
+        this.lineExpense = negate(original.lineExpense);
+        this.totalExpense = negate(original.totalExpense);
+
+        // ------------------ COSTS - INVERT ------------------
+        this.billCost = negate(original.billCost);
+        this.lineCost = negate(original.lineCost);
+        this.totalCost = negate(original.totalCost);
+
+        // ------------------ QUANTITIES - INVERT (stock goes out) ------------------
+        this.freeQuantity = negate(original.freeQuantity);
+        this.quantity = negate(original.quantity);
+        this.totalQuantity = negate(original.totalQuantity);
+        this.freeQuantityByUnits = negate(original.freeQuantityByUnits);
+        this.quantityByUnits = negate(original.quantityByUnits);
+        this.totalQuantityByUnits = negate(original.totalQuantityByUnits);
+
+        // ------------------ VALUE ESTIMATES - INVERT (stock valuation reduces) ------------------
+        this.valueAtRetailRate = negate(original.valueAtRetailRate);
+        this.valueAtPurchaseRate = negate(original.valueAtPurchaseRate);
+        this.valueAtCostRate = negate(original.valueAtCostRate);
+        this.valueAtWholesaleRate = negate(original.valueAtWholesaleRate);
+
+        // ------------------ RETURN QUANTITIES - INVERT ------------------
+        this.returnQuantity = negate(original.returnQuantity);
+        this.returnFreeQuantity = negate(original.returnFreeQuantity);
+        this.totalReturnQuantity = negate(original.totalReturnQuantity);
+
+        // ------------------ RETURN TOTALS - INVERT ------------------
+        this.returnGrossTotal = negate(original.returnGrossTotal);
+        this.returnNetTotal = negate(original.returnNetTotal);
+
+        // Profit - INVERT
+        this.profitMargin = negate(original.profitMargin);
+
+        return this;
+    }
+
+    private BigDecimal negate(BigDecimal value) {
+        return value == null ? null : value.negate();
+    }
 
     @Override
     public BillItemFinanceDetails clone() {
@@ -857,6 +969,38 @@ public class BillItemFinanceDetails implements Serializable {
         this.valueAtWholesaleRate = valueAtWholesaleRate;
     }
 
+    public BigDecimal getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(BigDecimal costRate) {
+        this.costRate = costRate;
+    }
+
+    public BigDecimal getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(BigDecimal purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public BigDecimal getCostRatePerUnit() {
+        return costRatePerUnit;
+    }
+
+    public void setCostRatePerUnit(BigDecimal costRatePerUnit) {
+        this.costRatePerUnit = costRatePerUnit;
+    }
+
+    public BigDecimal getPurchaseRatePerUnit() {
+        return purchaseRatePerUnit;
+    }
+
+    public void setPurchaseRatePerUnit(BigDecimal purchaseRatePerUnit) {
+        this.purchaseRatePerUnit = purchaseRatePerUnit;
+    }
     
     
+
 }

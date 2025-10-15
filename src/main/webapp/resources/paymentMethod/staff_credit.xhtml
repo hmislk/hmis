@@ -29,7 +29,7 @@
                 completeMethod="#{staffController.completeStaff}"
                 var="mys"
                 class="w-100"
-                placeholder="Staff (Type at least 4 letters to search)"
+                placeholder="Staff (Type at least 2 letters to search)"
                 inputStyleClass="form-control"
                 itemLabel="#{mys.person.name}"
                 itemValue="#{mys}"
@@ -50,6 +50,7 @@
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </p:column>
+                <p:ajax event="itemSelect" process="@this" />
             </p:autoComplete>
                     </div>
     </cc:implementation>

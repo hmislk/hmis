@@ -16,8 +16,8 @@
             <!-- Generate DDL scripts without applying them -->
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
             <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
-            <!-- Use a relative path for the application location -->
-            <property name="eclipselink.application-location" value="c:/tmp/"/>
+            <!-- Use an environment-agnostic path for the application location -->
+            <property name="eclipselink.application-location" value="/tmp/hmis-ddl"/>
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
 
@@ -32,8 +32,8 @@
             <!-- Generate DDL scripts without applying them -->
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
             <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
-            <!-- Use a relative path for the application location -->
-            <property name="eclipselink.application-location" value="c:/tmp/"/>
+            <!-- Use an environment-agnostic path for the application location -->
+            <property name="eclipselink.application-location" value="/tmp/hmis-ddl"/>
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
         </properties>

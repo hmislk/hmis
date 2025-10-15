@@ -235,7 +235,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="180">
                                 <div class="d-flex justify-content-center align-items-center gap-2">
                                     <p:commandButton
                                         id="finalize"
@@ -249,6 +249,21 @@
                                         disabled="#{b.checkedBy ne null or b.cancelled eq true}"
                                         style="min-width: 90px;">
                                         <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.currentBill}" value="#{b}"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="close"
+                                        ajax="false"
+                                        title="Close this direct purchase return"
+                                        icon="fas fa-times"
+                                        class="ui-button-danger ui-button-outlined"
+                                        value="Close"
+                                        action="#{directPurchaseReturnWorkflowController.closeDirectPurchaseReturn(b)}"
+                                        disabled="#{b.cancelled eq true or b.checkedBy ne null}"
+                                        rendered="#{b.cancelled ne true and b.checkedBy eq null}"
+                                        style="min-width: 70px;">
+                                        <p:confirm header="Confirm Close"
+                                                   message="Are you sure you want to close this direct purchase return? This will allow creating a new return for the same bill."
+                                                   icon="pi pi-exclamation-triangle"/>
                                     </p:commandButton>
                                 </div>
                                 <h:panelGroup rendered="#{b.cancelled}" styleClass="d-block mt-1">
@@ -266,9 +281,18 @@
                         </p:panel>
                     </div>
                 </div>
-            </p:panel>            
+            </p:panel>
+
+            <!-- Global Messages -->
+            <p:growl id="messages" showDetail="true" />
+
+            <!-- Global Confirmation Dialog -->
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" />
+            </p:confirmDialog>
         </h:form>
         </h:panelGroup>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

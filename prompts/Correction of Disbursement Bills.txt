@@ -1,0 +1,442 @@
+in Admin Function
+Page - https://qa.carecode.org/qa1/faces/dataAdmin/admin_functions.xhtml
+
+Under Pharmacy Section
+I want a new button to correct the negatove / positive sign of Bill Values, BillFinanceDetail values, BillItem Values, BillItemFinanceDetails Value and Pharmaceutical Bill Item Values depending on the Bill Type
+
+First get all Bills related entities and list of bill items and its related ones through billService.reload
+Itemrate all bills fixing the sign
+
+
+
+| **BillItem \ BillTypeAtomic** | **Pharmacy Transfer Request** | **Pharmacy Transfer Request Pre** | **Pharmacy Transfer Request Cancelled** | **Pharmacy Transfer Issue** | **Pharmacy Transfer Issue Cancelled** | **Pharmacy Transfer Issue Return** | **Pharmacy Direct Issue** | **Pharmacy Direct Issue Cancelled** | **Pharmacy Disposal Issue** | **Pharmacy Disposal Issue Cancelled** | **Pharmacy Disposal Issue Return** | **Pharmacy Receive** | **Pharmacy Receive Pre** | **Pharmacy Receive Cancelled** |
+| ----------------------------- | ----------------------------- | --------------------------------- | --------------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | ------------------------- | ----------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | -------------------- | ------------------------ | ------------------------------ |
+| **qty**                       | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **rate**                      | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **discountRate**              | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **marginRate**                | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **netRate**                   | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **grossValue**                | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **discount**                  | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **vat**                       | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **netValue**                  | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+
+| **BillItemFinanceDetails \ BillTypeAtomic** | **Pharmacy Transfer Request** | **Pharmacy Transfer Request Pre** | **Pharmacy Transfer Request Cancelled** | **Pharmacy Transfer Issue** | **Pharmacy Transfer Issue Cancelled** | **Pharmacy Transfer Issue Return** | **Pharmacy Direct Issue** | **Pharmacy Direct Issue Cancelled** | **Pharmacy Disposal Issue** | **Pharmacy Disposal Issue Cancelled** | **Pharmacy Disposal Issue Return** | **Pharmacy Receive** | **Pharmacy Receive Pre** | **Pharmacy Receive Cancelled** |
+| ------------------------------------------- | ----------------------------- | --------------------------------- | --------------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | ------------------------- | ----------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | -------------------- | ------------------------ | ------------------------------ |
+| **lineGrossRate**                           | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **billGrossRate**                           | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **grossRate**                               | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **lineNetRate**                             | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **billNetRate**                             | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **netRate**                                 | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **lineDiscountRate**                        | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billDiscountRate**                        | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalDiscountRate**                       | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **lineExpenseRate**                         | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billExpenseRate**                         | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalExpenseRate**                        | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billTaxRate**                             | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **lineTaxRate**                             | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalTaxRate**                            | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billCostRate**                            | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **lineCostRate**                            | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **totalCostRate**                           | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **lineGrossTotal**                          | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **billGrossTotal**                          | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **grossTotal**                              | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **lineNetTotal**                            | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **billNetTotal**                            | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **netTotal**                                | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **lineDiscount**                            | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billDiscount**                            | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalDiscount**                           | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **retailSaleRate**                          | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **wholesaleRate**                           | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **costRate**                                | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **purchaseRate**                            | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **retailSaleRatePerUnit**                   | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **wholesaleRatePerUnit**                    | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **costRatePerUnit**                         | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **purchaseRatePerUnit**                     | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    |                                       |                                    |                      |                          |                                |
+
+| **PharmaceuticalBillItem \ BillTypeAtomic** | **Pharmacy Transfer Request** | **Pharmacy Transfer Request Pre** | **Pharmacy Transfer Request Cancelled** | **Pharmacy Transfer Issue** | **Pharmacy Transfer Issue Cancelled** | **Pharmacy Transfer Issue Return** | **Pharmacy Direct Issue** | **Pharmacy Direct Issue Cancelled** | **Pharmacy Disposal Issue** | **Pharmacy Disposal Issue Cancelled** | **Pharmacy Disposal Issue Return** | **Pharmacy Receive** | **Pharmacy Receive Pre** | **Pharmacy Receive Cancelled** |
+| ------------------------------------------- | ----------------------------- | --------------------------------- | --------------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | ------------------------- | ----------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | -------------------- | ------------------------ | ------------------------------ |
+| **qty**                                     | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **qtyPacks**                                | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **freeQty**                                 | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **freeQtyPacks**                            | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **remainingFreeQty**                        | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **remainingFreeQtyPack**                    | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **remainingQty**                            | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **remainingQtyPack**                        | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **purchaseRate**                            | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **purchaseRatePack**                        | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **retailRate**                              | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **retailRatePack**                          | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **completedQty**                            | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **completedFreeQty**                        | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **wholesaleRate**                           | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **wholesaleRatePack**                       | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **costRate**                                | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **costRatePack**                            | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **purchaseValue**                           | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **retailValue**                             | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **costValue**                               | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **lastPurchaseRate**                        | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **lastPurchaseRatePack**                    | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+
+| **Bill \ BillTypeAtomic**                | **Pharmacy Transfer Request** | **Pharmacy Transfer Request Pre** | **Pharmacy Transfer Request Cancelled** | **Pharmacy Transfer Issue** | **Pharmacy Transfer Issue Cancelled** | **Pharmacy Transfer Issue Return** | **Pharmacy Direct Issue** | **Pharmacy Direct Issue Cancelled** | **Pharmacy Disposal Issue** | **Pharmacy Disposal Issue Cancelled** | **Pharmacy Disposal Issue Return** | **Pharmacy Receive** | **Pharmacy Receive Pre** | **Pharmacy Receive Cancelled** |
+| ---------------------------------------- | ----------------------------- | --------------------------------- | --------------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | ------------------------- | ----------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | -------------------- | ------------------------ | ------------------------------ |
+| **margin**                               | Neutral                       | Neutral                           | Neutral                                 | Positive                    | Positive                              | Positive                           | Positive                  | Positive                            | Positive                    | Positive                              | Positive                           | Positive             | Neutral                  | Positive                       |
+| **total**                                | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **netTotal**                             | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **discount**                             | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **vat**                                  | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **vatPlusNetTotal**                      | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **discountPercent**                      | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billTotal**                            | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **paidAmount**                           | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **settledAmountByPatient**               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **settledAmountBySponsor**               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **refundAmount**                         | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Positive                           | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Positive                           | Neutral              | Neutral                  | Neutral                        |
+| **balance**                              | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **serviceCharge**                        | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **tax**                                  | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **cashPaid**                             | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **cashBalance**                          | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **saleValuef**                           | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **freeValuef**                           | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **performInstitutionFee**                | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **staffFee**                             | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billerFee**                            | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **grantTotal**                           | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **expenseTotal**                         | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **expensesTotalConsideredForCosting**    | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **expensesTotalNotConsideredForCosting** | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **grnNetTotal**                          | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Positive             | Neutral                  | Neutral                        |
+| **hospitalFee**                          | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **collctingCentreFee**                   | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **professionalFee**                      | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+
+| **BillFinanceDetails \ BillTypeAtomic**        | **Pharmacy Transfer Request** | **Pharmacy Transfer Request Pre** | **Pharmacy Transfer Request Cancelled** | **Pharmacy Transfer Issue** | **Pharmacy Transfer Issue Cancelled** | **Pharmacy Transfer Issue Return** | **Pharmacy Direct Issue** | **Pharmacy Direct Issue Cancelled** | **Pharmacy Disposal Issue** | **Pharmacy Disposal Issue Cancelled** | **Pharmacy Disposal Issue Return** | **Pharmacy Receive** | **Pharmacy Receive Pre** | **Pharmacy Receive Cancelled** |
+| ---------------------------------------------- | ----------------------------- | --------------------------------- | --------------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | ------------------------- | ----------------------------------- | --------------------------- | ------------------------------------- | ---------------------------------- | -------------------- | ------------------------ | ------------------------------ |
+| **billDiscount**                               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **lineDiscount**                               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalDiscount**                              | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billExpense**                                | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **lineExpense**                                | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalExpense**                               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billExpensesConsideredForCosting**           | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billExpensesNotConsideredForCosting**        | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **billCostValue**                              | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **lineCostValue**                              | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalCostValue**                             | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalCostValueFree**                         | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalCostValueNonFree**                      | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **billTaxValue**                               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **itemTaxValue**                               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalTaxValue**                              | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalPurchaseValue**                         | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalPurchaseValueFree**                     | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalPurchaseValueNonFree**                  | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalOfFreeItemValues**                      | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalOfFreeItemValuesFree**                  | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalOfFreeItemValuesNonFree**               | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalRetailSaleValue**                       | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalRetailSaleValueFree**                   | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalRetailSaleValueNonFree**                | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalWholesaleValue**                        | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalWholesaleValueFree**                    | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalWholesaleValueNonFree**                 | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalBeforeAdjustmentValue**                 | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalAfterAdjustmentValue**                  | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalQuantity**                              | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalFreeQuantity**                          | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **totalQuantityInAtomicUnitOfMeasurement**     | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **totalFreeQuantityInAtomicUnitOfMeasurement** | Neutral                       | Neutral                           | Neutral                                 | Neutral                     | Neutral                               | Neutral                            | Neutral                   | Neutral                             | Neutral                     | Neutral                               | Neutral                            | Neutral              | Neutral                  | Neutral                        |
+| **lineGrossTotal**                             | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **billGrossTotal**                             | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **grossTotal**                                 | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **lineNetTotal**                               | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **billNetTotal**                               | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+| **netTotal**                                   | Neutral                       | Neutral                           | Neutral                                 | Negative                    | Positive                              | Positive                           | Negative                  | Positive                            | Negative                    | Positive                              | Positive                           | Positive             | Neutral                  | Negative                       |
+
+
+
+I have to have few tables, each table for One Entity Class
+Rows will correspond to attributes
+Columns will represent BillTypeAtomic
+Follwing the data given, please draft a table, one at a time. I will correct them if any error.
+
+BillTypeAtomic - use as Columns
+    PHARMACY_TRANSFER_REQUEST("Pharmacy Transfer Request", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferRequest),
+    PHARMACY_TRANSFER_REQUEST_PRE("Pharmacy Transfer Request Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferRequest),
+    PHARMACY_TRANSFER_REQUEST_CANCELLED("Pharmacy Transfer Request Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferRequest),
+    PHARMACY_ISSUE("Pharmacy Transfer Issue", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
+    PHARMACY_ISSUE_CANCELLED("Pharmacy Transfer Issue Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
+    PHARMACY_ISSUE_RETURN("Pharmacy Transfer Issue returned", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
+    PHARMACY_DIRECT_ISSUE("Pharmacy Direct Issue", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyIssue),
+    PHARMACY_DIRECT_ISSUE_CANCELLED("Pharmacy Direct Issue Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyIssue),
+    PHARMACY_DISPOSAL_ISSUE("Pharmacy Disposal Issue", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyDisposalIssue),
+    PHARMACY_DISPOSAL_ISSUE_CANCELLED("Pharmacy Disposal Issue Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyDisposalIssue),
+    PHARMACY_DISPOSAL_ISSUE_RETURN("Pharmacy Disposal Issue returned", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyDisposalIssue),
+    PHARMACY_RECEIVE("Pharmacy Receive", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferReceive),
+    PHARMACY_RECEIVE_PRE("Pharmacy Receive Request", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferReceive),
+    PHARMACY_RECEIVE_CANCELLED("Pharmacy Receive Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferReceive),
+
+Reules:
+Usually when money in, stocks out. When stocks in, money out. There are some without stock or finance movements like requests
+
+Rates are positives in both stock in stock out, money in, money out bills
+
+If stocks in, quantities are positives
+If stocks goes out, quantities are negatives
+Quentities are valued at cost rate, purchase rate, retail rate , etc
+When quantities are positive, all the values of stocks are positive
+When quantities are negative, all the values of stocks are negative
+
+netValue, value, gorssValue, etc are positive when money comes, these are negative when money goes out
+
+can I have a table with following sttributes under each Entity? The columns should have bill type
+
+THere are several spelling mistakes, but we can not correct them because of backword compatibility
+
+
+
+Entity: BillItem
+qty
+Rate
+discountRate
+marginRate
+netRate
+
+grossValue
+discount
+vat
+netValue
+
+
+Entity: BillItemFinanceDetails
+
+lineGrossRate
+billGrossRate
+grossRate
+
+lineNetRate
+billNetRate
+netRate
+
+lineDiscountRate
+billDiscountRate
+totalDiscountRate
+
+lineExpenseRate
+billExpenseRate
+totalExpenseRate
+
+billTaxRate
+lineTaxRate
+totalTaxRate
+
+billCostRate
+lineCostRate
+totalCostRate
+
+lineGrossTotal
+billGrossTotal
+grossTotal
+
+lineNetTotal
+billNetTotal
+netTotal
+
+
+lineDiscount
+billDiscount
+totalDiscount
+
+retailSaleRate
+wholesaleRate
+costRate
+purchaseRate
+
+retailSaleRatePerUnit
+wholesaleRatePerUnit
+costRatePerUnit
+purchaseRatePerUnit    
+
+valueAtRetailRate
+valueAtPurchaseRate
+valueAtCostRate
+valueAtWholesaleRate
+
+billTax
+lineTax
+totalTax
+
+billExpense
+lineExpense
+totalExpense
+
+billCost
+lineCost
+totalCost
+
+freeQuantity
+quantity
+totalQuantity
+
+freeQuantityByUnits
+quantityByUnits
+totalQuantityByUnits
+
+returnQuantity
+returnFreeQuantity
+totalReturnQuantity
+
+returnGrossTotal
+returnNetTotal
+
+profitMargin
+
+
+
+Entity: PharmaceuticalBillItem
+qty
+qtyPacks
+
+freeQty
+freeQtyPacks
+
+remainingFreeQty
+remainingFreeQtyPack
+
+remainingQty
+remainingQtyPack
+
+purchaseRate
+purchaseRatePack
+
+retailRate
+retailRatePack
+    
+completedQty
+completedFreeQty
+
+wholesaleRate
+wholesaleRatePack
+
+costRate
+costRatePack
+
+purchaseValue
+retailValue
+costValue
+
+lastPurchaseRate
+lastPurchaseRatePack
+
+Entity : Bill
+margin
+
+total
+netTotal
+discount
+vat
+vatPlusNetTotal
+
+discountPercent
+
+billTotal
+paidAmount
+settledAmountByPatient
+settledAmountBySponsor
+refundAmount
+balance
+serviceCharge
+tax
+cashPaid
+cashBalance
+saleValuef
+freeValuef
+performInstitutionFee
+staffFee
+billerFee
+grantTotal
+expenseTotal
+expensesTotalConsideredForCosting
+expensesTotalNotConsideredForCosting
+grnNetTotal
+
+hospitalFee
+collctingCentreFee
+professionalFee
+
+
+Entity :BillFinanceDetails
+
+billDiscount
+
+lineDiscount
+totalDiscount
+billExpense
+
+lineExpense
+
+totalExpense
+
+billExpensesConsideredForCosting
+
+billExpensesNotConsideredForCosting
+
+billCostValue
+lineCostValue
+
+totalCostValue
+
+
+totalCostValueFree
+
+
+totalCostValueNonFree
+billTaxValue
+itemTaxValue
+totalTaxValue
+
+totalPurchaseValue
+
+
+totalPurchaseValueFree
+
+
+totalPurchaseValueNonFree
+totalOfFreeItemValues
+totalOfFreeItemValuesFree
+
+totalOfFreeItemValuesNonFree
+totalRetailSaleValue
+totalRetailSaleValueFree
+
+totalRetailSaleValueNonFree
+totalWholesaleValue
+totalWholesaleValueFree
+totalWholesaleValueNonFree
+
+totalBeforeAdjustmentValue
+totalAfterAdjustmentValue
+totalQuantity
+
+totalFreeQuantity
+totalQuantityInAtomicUnitOfMeasurement
+totalFreeQuantityInAtomicUnitOfMeasurement
+
+
+lineGrossTotal
+billGrossTotal
+grossTotal
+
+
+
+lineNetTotal
+billNetTotal
+netTotal

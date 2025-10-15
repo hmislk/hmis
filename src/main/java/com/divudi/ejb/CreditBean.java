@@ -137,24 +137,37 @@ public class CreditBean {
     }
 
     public List<Bill> getCreditBillsPharmacy(Institution ins, List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
-        String sql = "Select b From BilledBill b"
+        return getCreditBillsPharmacy(ins, billTypes, fromDate, toDate, lessThan, null, null, null, null);
+    }
+
+    public List<Bill> getCreditBillsPharmacy(Institution ins,
+            List<BillType> billTypes,
+            Date fromDate,
+            Date toDate,
+            boolean lessThan,
+            Institution institutionOfDepartment,
+            Institution site,
+            Department department,
+            String visitType) {
+
+        StringBuilder sql = new StringBuilder("Select b From BilledBill b"
                 + " where b.retired=false "
-                + " and b.createdAt  between :frm and :to ";
+                + " and b.createdAt  between :frm and :to ");
 
         if (lessThan) {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
         } else {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
         }
 
-        sql += " and b.cancelledBill is null  "
+        sql.append(" and b.cancelledBill is null  "
                 + " and b.refundedBill is null "
                 + " and b.toInstitution=:cc "
                 + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
-                + " and b.toStaff is null ";
+                + " and b.toStaff is null ");
 
-        HashMap hm = new HashMap();
+        Map<String, Object> hm = new HashMap<>();
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("cc", ins);
@@ -162,7 +175,28 @@ public class CreditBean {
         hm.put("tps", billTypes);
         hm.put("val", 0.1);
 
-        return (List<Bill>) getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (institutionOfDepartment != null) {
+            sql.append(" and b.institution = :insd ");
+            hm.put("insd", institutionOfDepartment);
+        }
+
+        if (site != null) {
+            sql.append(" and b.department.site = :site ");
+            hm.put("site", site);
+        }
+
+        if (department != null) {
+            sql.append(" and b.department = :dep ");
+            hm.put("dep", department);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            sql.append(" and b.ipOpOrCc = :visitType ");
+            hm.put("visitType", visitType.trim());
+        }
+
+        List<Bill> results = (List<Bill>) getBillFacade().findByJpql(sql.toString(), hm, TemporalType.TIMESTAMP);
+        return results == null ? Collections.emptyList() : results;
     }
 
     public List<BillItem> getCreditBillItems(Institution ins, BillType billType, Date fromDate, Date toDate, boolean lessThan) {
@@ -272,33 +306,71 @@ public class CreditBean {
     }
 
     public List<Institution> getCreditInstitutionPharmacy(List<BillType> billTypes, Date fromDate, Date toDate, boolean lessThan) {
-        String sql;
-        HashMap hm;
-        sql = "Select distinct(b.toInstitution) From BilledBill b "
-                + " where b.retired=false ";
+        return getCreditInstitutionPharmacy(billTypes, fromDate, toDate, lessThan, null, null, null, null, null);
+    }
+
+    public List<Institution> getCreditInstitutionPharmacy(List<BillType> billTypes,
+            Date fromDate,
+            Date toDate,
+            boolean lessThan,
+            Institution institutionOfDepartment,
+            Institution site,
+            Department department,
+            String visitType,
+            Institution creditCompany) {
+
+        StringBuilder sql = new StringBuilder("Select distinct(b.toInstitution) From BilledBill b "
+                + " where b.retired=false ");
 
         if (lessThan) {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
         } else {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
         }
 
-        sql += " and b.cancelled=false "
+        sql.append(" and b.cancelled=false "
                 + " and b.refunded=false "
                 + " and b.createdAt between :frm and :to "
                 + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
-                + " and b.toStaff is null "
-                + " order by b.toInstitution.name ";
+                + " and b.toStaff is null ");
 
-        hm = new HashMap();
+        Map<String, Object> hm = new HashMap<>();
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tps", billTypes);
         hm.put("val", 0.1);
 
-        return (List<Institution>) getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (creditCompany != null) {
+            sql.append(" and b.toInstitution = :creditCompany ");
+            hm.put("creditCompany", creditCompany);
+        }
+
+        if (institutionOfDepartment != null) {
+            sql.append(" and b.institution = :insd ");
+            hm.put("insd", institutionOfDepartment);
+        }
+
+        if (site != null) {
+            sql.append(" and b.department.site = :site ");
+            hm.put("site", site);
+        }
+
+        if (department != null) {
+            sql.append(" and b.department = :dep ");
+            hm.put("dep", department);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            sql.append(" and b.ipOpOrCc = :visitType ");
+            hm.put("visitType", visitType.trim());
+        }
+
+        sql.append(" order by b.toInstitution.name ");
+
+        List<Institution> results = (List<Institution>) getInstitutionFacade().findByJpql(sql.toString(), hm, TemporalType.TIMESTAMP);
+        return results == null ? Collections.emptyList() : results;
     }
 
     public List<PatientEncounter> getCreditPatientEncounter(Institution institution, Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan) {

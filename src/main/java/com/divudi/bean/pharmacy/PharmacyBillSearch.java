@@ -52,6 +52,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
 import com.divudi.core.util.CommonFunctions;
@@ -1919,6 +1920,15 @@ public class PharmacyBillSearch implements Serializable {
             b.copy(nB);
             b.invertValue(nB);
 
+            // Handle BillItemFinanceDetails inversion
+            if (nB.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails invertedFinanceDetails = new BillItemFinanceDetails();
+                invertedFinanceDetails.invertValue(nB.getBillItemFinanceDetails());
+                invertedFinanceDetails.setBillItem(b);
+                invertedFinanceDetails.setCreatedAt(new Date());
+                b.setBillItemFinanceDetails(invertedFinanceDetails);
+            }
+
             b.setReferanceBillItem(nB);
 
             b.setCreatedAt(new Date());
@@ -3057,7 +3067,7 @@ public class PharmacyBillSearch implements Serializable {
 
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
         //System.err.println("Batch " + pharmaceuticalBillItem.getItemBatch());
-        double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
+        double stockQty = getPharmacyBean().getBatchStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
         if (Math.abs(pharmaceuticalBillItem.getQtyInUnit() + pharmaceuticalBillItem.getFreeQtyInUnit()) > stockQty) {
             return true;
         } else {

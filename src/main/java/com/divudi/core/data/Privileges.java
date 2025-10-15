@@ -193,6 +193,10 @@ public enum Privileges {
     DashBoardReportSearch("DashBoard Report Search"),
     DashBoardPatientReportSearch("DashBoard Patient Report Search"),
     AccessLabTestHistory("Access Lab Test History"),
+    
+    DoctorDashBoardMenu("Doctor DashBoard Menu"),
+    
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -576,6 +580,7 @@ public enum Privileges {
     CreateDisposalReturn("Create Disposal Return"),
     FinalizeDisposalReturn("Finalize Disposal Return"),
     ApproveDisposalReturn("Approve Disposal Return"),
+    ViewDisposalReturn("View Disposal Return"),
     CreateDirectPurchaseReturn("Create Direct Purchase Return"),
     FinalizeDirectPurchaseReturn("Finalize Direct Purchase Return"),
     ApproveDirectPurchaseReturn("Approve Direct Purchase Return"),
@@ -781,6 +786,7 @@ public enum Privileges {
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
             case AccessLabTestHistory:
+            case DoctorDashBoardMenu:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:
@@ -851,6 +857,7 @@ public enum Privileges {
             case CreateDisposalReturn:
             case FinalizeDisposalReturn:
             case ApproveDisposalReturn:
+            case ViewDisposalReturn:
             case CreateDirectPurchaseReturn:
             case FinalizeDirectPurchaseReturn:
             case ApproveDirectPurchaseReturn:

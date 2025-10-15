@@ -221,6 +221,7 @@ public class PharmacyController implements Serializable {
     private double totalCreditSaleValue;
     private double totalCashSaleValue;
     private double totalCostValue;
+    private double totalRetailValue;
     private double billTablePurchaseTotal;
     private double billTableRetailTotal;
     private double billTableCostTotal;
@@ -1946,19 +1947,31 @@ public class PharmacyController implements Serializable {
     public void createConsumptionReportTable() {
         reportTimerController.trackReportExecution(() -> {
             resetFields();
+            List<BillTypeAtomic> disposalBillTypes = new ArrayList<>();
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
 
             switch (reportType) {
                 case "byBillItem":
-                    generateConsumptionReportTableByBillItems(BillType.PharmacyDisposalIssue);
+                    generateConsumptionReportTableByBillItems(disposalBillTypes);
                     break;
 
                 case "byBill":
-                    generateConsumptionReportTableByBill(BillType.PharmacyDisposalIssue);
+                    if (item != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when an item is selected");
+                        return;
+                    }
+                    if (category != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when a category is selected");
+                        return;
+                    }
+                    generateConsumptionReportTableByBill(disposalBillTypes);
                     break;
 
                 case "summeryReport":
                 case "categoryWise":
-                    generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyDisposalIssue);
+                    generateConsumptionReportTableByDepartmentAndCategoryWise(disposalBillTypes);
                     break;
 
                 default:
@@ -1990,7 +2003,7 @@ public class PharmacyController implements Serializable {
         try {
             bills = new ArrayList<>();
 
-            String sql = "SELECT b FROM Bill b WHERE b.retired = false"
+            String jpql = "SELECT b FROM Bill b WHERE b.retired = false"
                     + " and b.billType = :btp"
                     + " and b.createdAt between :fromDate and :toDate";
 
@@ -2001,38 +2014,38 @@ public class PharmacyController implements Serializable {
             tmp.put("toDate", getToDate());
 
             if (institution != null) {
-                sql += " and b.institution = :fIns";
+                jpql += " and b.institution = :fIns";
                 tmp.put("fIns", institution);
             }
 
             if (site != null) {
-                sql += " and b.department.site = :site";
+                jpql += " and b.department.site = :site";
                 tmp.put("site", site);
             }
 
             if (dept != null) {
-                sql += " and b.department = :dept";
+                jpql += " and b.department = :dept";
                 tmp.put("dept", dept);
             }
 
             if (category != null) {
-                sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
                 tmp.put("category", category);
             }
 
             if (item != null) {
-                sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
                 tmp.put("item", item);
             }
 
             if (toDepartment != null) {
-                sql += " AND b.toDepartment = :toDept";
+                jpql += " AND b.toDepartment = :toDept";
                 tmp.put("toDept", toDepartment);
             }
 
-            sql += " order by b.createdAt asc";
+            jpql += " order by b.createdAt asc";
 
-            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
+            bills = getBillFacade().findByJpql(jpql, tmp, TemporalType.TIMESTAMP);
 
             totalPurchase = 0.0;
             totalCostValue = 0.0;
@@ -2090,54 +2103,125 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    public void generateConsumptionReportTableByBill(List<BillTypeAtomic> billTypeAtomics) {
+        try {
+            bills = new ArrayList<>();
+
+            String jpql = "SELECT b FROM Bill b WHERE b.retired = false"
+                    + " and b.billTypeAtomic in :btpAtomics"
+                    + " and b.createdAt between :fromDate and :toDate";
+
+            Map<String, Object> tmp = new HashMap<>();
+
+            tmp.put("btpAtomics", billTypeAtomics);
+            tmp.put("fromDate", getFromDate());
+            tmp.put("toDate", getToDate());
+
+            if (institution != null) {
+                jpql += " and b.institution = :fIns";
+                tmp.put("fIns", institution);
+            }
+
+            if (site != null) {
+                jpql += " and b.department.site = :site";
+                tmp.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql += " and b.department = :dept";
+                tmp.put("dept", dept);
+            }
+
+            // For Bill, we should not consider the item or category
+//            if (category != null) {
+//                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+//                tmp.put("category", category);
+//            }
+//
+//            if (item != null) {
+//                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
+//                tmp.put("item", item);
+//            }
+            if (toDepartment != null) {
+                jpql += " AND b.toDepartment = :toDept";
+                tmp.put("toDept", toDepartment);
+            }
+
+            jpql += " order by b.createdAt asc";
+
+            bills = getBillFacade().findByJpql(jpql, tmp, TemporalType.TIMESTAMP);
+
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+            totalRetailValue = 0.0;
+
+            pharmacyRows = new ArrayList<>();
+
+            for (Bill b : bills) {
+                PharmacyRow row = new PharmacyRow();
+                row.setBill(b);
+
+                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                totalCostValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
+                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+
+                pharmacyRows.add(row);
+
+            }
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, " Something Went Wrong!");
+        }
+    }
+
     public void generateConsumptionReportTableByBillItems(BillType billType) {
         try {
             billItems = new ArrayList<>();
             Map<String, Object> parameters = new HashMap<>();
-            StringBuilder sql = new StringBuilder();
+            StringBuilder jpql = new StringBuilder();
 
-            sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ");
-            sql.append("AND bi.bill.retired = false ");
-            sql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
-            sql.append("AND bi.bill.billType = :billType ");
+            jpql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ");
+            jpql.append("AND bi.bill.retired = false ");
+            jpql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
+            jpql.append("AND bi.bill.billType = :billType ");
 
             parameters.put("fromDate", fromDate);
             parameters.put("toDate", toDate);
             parameters.put("billType", billType);
 
             if (institution != null) {
-                sql.append("AND bi.bill.institution = :institution ");
+                jpql.append("AND bi.bill.institution = :institution ");
                 parameters.put("institution", institution);
             }
 
             if (site != null) {
-                sql.append("AND bi.bill.department.site = :site ");
+                jpql.append("AND bi.bill.department.site = :site ");
                 parameters.put("site", site);
             }
 
             if (dept != null) {
-                sql.append("AND bi.bill.department = :department ");
+                jpql.append("AND bi.bill.department = :department ");
                 parameters.put("department", dept);
             }
 
             if (category != null) {
-                sql.append("AND bi.item.category = :category ");
+                jpql.append("AND bi.item.category = :category ");
                 parameters.put("category", category);
             }
 
             if (item != null) {
-                sql.append("AND bi.item = :item ");
+                jpql.append("AND bi.item = :item ");
                 parameters.put("item", item);
             }
 
             if (toDepartment != null) {
-                sql.append("AND bi.bill.toDepartment = :toDepartment ");
+                jpql.append("AND bi.bill.toDepartment = :toDepartment ");
                 parameters.put("toDepartment", toDepartment);
             }
 
-            sql.append("ORDER BY bi.bill.createdAt ASC");
+            jpql.append("ORDER BY bi.bill.createdAt ASC");
 
-            billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+            billItems = getBillItemFacade().findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
             Set<Item> uniqueItems = new HashSet<>();
 
             for (BillItem i : billItems) {
@@ -2164,6 +2248,117 @@ public class PharmacyController implements Serializable {
             for (PharmacyRow row : pharmacyRows) {
                 totalPurchase += row.getBillItem().getPharmaceuticalBillItem().getPurchaseRate() * row.getBillItem().getQty();
                 totalCostValue += row.getItemBatch().getCostRate() * row.getBillItem().getQty();
+            }
+
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption report by bill items", e);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+        }
+    }
+
+    public void generateConsumptionReportTableByBillItems(List<BillTypeAtomic> billTypeAtomics) {
+        try {
+            billItems = new ArrayList<>();
+            Map<String, Object> parameters = new HashMap<>();
+            StringBuilder jpql = new StringBuilder();
+
+            jpql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ");
+            jpql.append("AND bi.bill.retired = false ");
+            jpql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
+            jpql.append("AND bi.bill.billTypeAtomic IN :billTypeAtomics ");
+
+            parameters.put("fromDate", fromDate);
+            parameters.put("toDate", toDate);
+            parameters.put("billTypeAtomics", billTypeAtomics);
+
+            if (institution != null) {
+                jpql.append("AND bi.bill.institution = :institution ");
+                parameters.put("institution", institution);
+            }
+
+            if (site != null) {
+                jpql.append("AND bi.bill.department.site = :site ");
+                parameters.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql.append("AND bi.bill.department = :department ");
+                parameters.put("department", dept);
+            }
+
+            if (category != null) {
+                jpql.append("AND bi.item.category = :category ");
+                parameters.put("category", category);
+            }
+
+            if (item != null) {
+                jpql.append("AND bi.item = :item ");
+                parameters.put("item", item);
+            }
+
+            if (toDepartment != null) {
+                jpql.append("AND bi.bill.toDepartment = :toDepartment ");
+                parameters.put("toDepartment", toDepartment);
+            }
+
+            jpql.append("ORDER BY bi.bill.createdAt ASC");
+
+            billItems = getBillItemFacade().findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
+            Set<Item> uniqueItems = new HashSet<>();
+
+            for (BillItem i : billItems) {
+                if (i.getItem() != null) {
+                    uniqueItems.add(i.getItem());
+                }
+            }
+
+            if (billItems.isEmpty()) {
+                pharmacyRows = new ArrayList<>();
+                return;
+            }
+
+            List<Item> items = new ArrayList<>(uniqueItems);
+
+            if (!items.isEmpty()) {
+                List<ItemBatch> allBatches = getItemBatchesByItems(items);
+                pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
+            }
+
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+            totalRetailValue = 0.0;
+
+            for (PharmacyRow row : pharmacyRows) {
+                // Use BillItemFinanceDetails values if they are not null or zero, otherwise fallback to calculated values
+                double purchaseValue = 0.0;
+                double costValue = 0.0;
+                double retailValue = 0.0;
+
+                if (row.getBillItem() != null && row.getBillItem().getBillItemFinanceDetails() != null) {
+                    BigDecimal valueAtPurchase = row.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate();
+                    BigDecimal valueAtCost = row.getBillItem().getBillItemFinanceDetails().getValueAtCostRate();
+                    BigDecimal valueAtRetail = row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate();
+
+                    purchaseValue = (valueAtPurchase != null && valueAtPurchase.compareTo(BigDecimal.ZERO) != 0)
+                            ? valueAtPurchase.doubleValue()
+                            : row.getBillItem().getPharmaceuticalBillItem().getPurchaseRate() * row.getBillItem().getQty();
+
+                    costValue = (valueAtCost != null && valueAtCost.compareTo(BigDecimal.ZERO) != 0)
+                            ? valueAtCost.doubleValue()
+                            : row.getItemBatch().getCostRate() * row.getBillItem().getQty();
+
+                    retailValue = (valueAtRetail != null && valueAtRetail.compareTo(BigDecimal.ZERO) != 0)
+                            ? valueAtRetail.doubleValue()
+                            : 0.0;
+                } else {
+                    purchaseValue = row.getBillItem().getPharmaceuticalBillItem().getPurchaseRate() * row.getBillItem().getQty();
+                    costValue = row.getItemBatch().getCostRate() * row.getBillItem().getQty();
+                }
+
+                totalPurchase += purchaseValue;
+                totalCostValue += costValue;
+                totalRetailValue += retailValue;
             }
 
         } catch (Exception e) {
@@ -2369,6 +2564,97 @@ public class PharmacyController implements Serializable {
         parameters.put("fromDate", fromDate);
         parameters.put("toDate", toDate);
         parameters.put("billType", billType);
+
+        // Dynamic filters
+        if (institution != null) {
+            jpql += "AND bi.bill.institution = :institution ";
+            parameters.put("institution", institution);
+        }
+
+        if (site != null) {
+            jpql += "AND bi.bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+
+        if (dept != null) {
+            jpql += "AND bi.bill.department = :department ";
+            parameters.put("department", dept);
+        }
+
+        if (category != null) {
+            jpql += "AND bi.item.category = :category ";
+            parameters.put("category", category);
+        }
+
+        if (item != null) {
+            jpql += "AND bi.item = :item ";
+            parameters.put("item", item);
+        }
+
+        if (toDepartment != null) {
+            jpql += "AND bi.bill.toDepartment = :toDepartment ";
+            parameters.put("toDepartment", toDepartment);
+        }
+
+        // Group by clause
+        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, COALESCE(ib.costRate, 0.0), bi.pharmaceuticalBillItem.purchaseRate "
+                + "ORDER BY bi.bill.toDepartment, bi.item.category";
+
+        try {
+            resultsList = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+            if (resultsList.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "No Data", "No records found for the selected criteria."));
+                return Collections.emptyList();
+            }
+
+            totalPurchase = 0.0;
+            grantIssueQty = 0.0;
+            for (DepartmentCategoryWiseItems i : resultsList) {
+                totalPurchase += i.getNetTotal();
+                grantIssueQty += i.getQty();
+            }
+            if ("summeryReport".equals(reportType)) {
+                generateConsumptionReportTableAsDepartmentSummary(resultsList);
+            } else if ("categoryWise".equals(reportType)) {
+                generateConsumptionReportTableAsCategoryWise(resultsList);
+            }
+            return resultsList;
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption report by department and category", e);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
+            return Collections.emptyList();
+        }
+    }
+
+    public List<DepartmentCategoryWiseItems> generateConsumptionReportTableByDepartmentAndCategoryWise(List<BillTypeAtomic> billTypeAtomics) {
+        totalSaleValue = 0.0;
+        totalCostValue = 0.0;
+        qty = 0.0;
+
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
+                + "bi.bill.department, "
+                + "bi.bill.toDepartment, "
+                + "bi.item, "
+                + "bi.item.category, "
+                + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                + "COALESCE(ib.costRate, 0.0), "
+                + "bi.pharmaceuticalBillItem.purchaseRate, "
+                + "SUM(bi.qty)) "
+                + "FROM BillItem bi "
+                + "JOIN ItemBatch ib ON ib.item = bi.item "
+                + "WHERE bi.retired = false AND bi.bill.retired = false "
+                + "AND ib.id = (SELECT MAX(ib2.id) FROM ItemBatch ib2 WHERE ib2.item = bi.item) "
+                + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND bi.bill.billTypeAtomic in :billTypeAtomics ";
+
+        // Mandatory parameters
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("billTypeAtomics", billTypeAtomics);
 
         // Dynamic filters
         if (institution != null) {
@@ -5596,6 +5882,11 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    /**
+     * Creates a table of GRN return items for the selected pharmacy item.
+     * Uses BillItem and PharmaceuticalBillItem fields directly instead of BillItemFinanceDetails
+     * because GRN return bills do not have finance details populated.
+     */
     public void createGrnReturnTable() {
 
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
@@ -5616,22 +5907,19 @@ public class PharmacyController implements Serializable {
                 + "bi.bill.createdAt, "
                 + "bi.bill.toInstitution.name, "
                 + "bi.item.name, "
-                + "COALESCE(fd.quantity, 0), "
-                + "COALESCE(fd.freeQuantity, 0), "
-                + "pbi.purchaseRate, "
-                + "fd.retailSaleRate, "
-                + "COALESCE(fd.lineGrossRate, 0), "
-                + "COALESCE(fd.lineNetTotal, 0) "
+                + "bi.pharmaceuticalBillItem.qty, "
+                + "bi.pharmaceuticalBillItem.freeQty, "
+                + "bi.pharmaceuticalBillItem.purchaseRate, "
+                + "bi.pharmaceuticalBillItem.retailRate, "
+                + "bi.netRate, "
+                + "bi.netValue "
                 + ") "
                 + "FROM BillItem bi "
-                + "LEFT JOIN bi.billItemFinanceDetails fd "
-                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
                 + "WHERE (bi.bill.retired IS NULL OR bi.bill.retired = FALSE) "
                 + "AND (bi.retired IS NULL OR bi.retired = FALSE) "
                 + "AND bi.item IN :relatedItems "
                 + "AND bi.bill.billTypeAtomic IN :btas "
-                + "AND bi.createdAt BETWEEN :frm AND :to "
-                + "ORDER BY bi.id DESC";
+                + "AND bi.createdAt BETWEEN :frm AND :to ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -5639,10 +5927,17 @@ public class PharmacyController implements Serializable {
         params.put("to", getToDate());
         params.put("btas", btas);
 
+        boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
+        if (pharmacyHistoryListOnlyDepartmentTransactions) {
+            params.put("department", getSessionController().getDepartment());
+            jpql += "AND bi.bill.department=:department ";
+        }
+
+        jpql += "ORDER BY bi.id DESC";
         try {
             grnReturnDtos = (List<PharmacyGrnReturnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
             if (grnReturnDtos != null && !grnReturnDtos.isEmpty()) {
+            } else {
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -5715,7 +6010,7 @@ public class PharmacyController implements Serializable {
         params.put("frm", getFromDate());
         params.put("to", getToDate());
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
-            params.put("department", getDepartment());
+            params.put("department", getSessionController().getDepartment());
             jpql += "AND b.bill.department=:department ";
         }
         params.put("btas", btas);
@@ -5791,7 +6086,7 @@ public class PharmacyController implements Serializable {
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic in :bta "
                 + "AND b.createdAt BETWEEN :frm AND :to ";
-        
+
         HashMap<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
         params.put("bta", btas);
@@ -5799,7 +6094,7 @@ public class PharmacyController implements Serializable {
         params.put("to", getToDate());
         boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
-            params.put("department", getDepartment());
+            params.put("department", getSessionController().getDepartment());
             jpql += "AND b.bill.department=:department ";
         }
         jpql += "ORDER BY b.id DESC";
@@ -5866,11 +6161,10 @@ public class PharmacyController implements Serializable {
         boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
 
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
-            params.put("department", getDepartment());
+            params.put("department", getSessionController().getDepartment());
             jpql += "AND b.bill.department=:department ";
         }
         jpql += "ORDER BY b.id DESC";
-
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets
@@ -6389,9 +6683,6 @@ public class PharmacyController implements Serializable {
     }
 
     // </editor-fold>
-    
-    
-    
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
@@ -7413,6 +7704,14 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCostValue(double totalCostValue) {
         this.totalCostValue = totalCostValue;
+    }
+
+    public double getTotalRetailValue() {
+        return totalRetailValue;
+    }
+
+    public void setTotalRetailValue(double totalRetailValue) {
+        this.totalRetailValue = totalRetailValue;
     }
 
     /**

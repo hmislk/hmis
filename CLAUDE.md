@@ -45,8 +45,8 @@
 - **NO BACKEND MODIFICATIONS**: Do NOT add new controller properties, methods, or backend dependencies unless explicitly requested
 - **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
 - **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
-- **UI Styling Guidelines**: [Complete Reference](developer_docs/ui/ui-styling-guidelines.md)
-- **UI Best Practices**: [Troubleshooting & Patterns](developer_docs/ui-best-practices.md)
+- **UI Development Handbook**: [Complete Reference](developer_docs/ui/comprehensive-ui-guidelines.md)
+- **Icon Management**: [Standard Actions & Sizing](developer_docs/ui/icon-management.md)
 
 ### JSF Development Guidelines
 - **JSF AJAX Updates**: [Critical Guidelines](developer_docs/jsf/ajax-update-guidelines.md)
