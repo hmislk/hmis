@@ -710,13 +710,14 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                     getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                     break;
                 case Staff:
+                    getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
+                    getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    break;
                 case Staff_Welfare:
-                    // Staff information is stored in bill.toStaff, not in payment
-                    if (bill != null && bill.getToStaff() != null) {
-                        toStaff = bill.getToStaff();
-                        getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
-                        getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
-                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                     break;
                 default:
                     // For other payment methods, just set the total value
@@ -784,12 +785,14 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                         cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                         break;
                     case Staff:
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                        break;
                     case Staff_Welfare:
-                        // Staff information is stored in bill.toStaff
-                        if (bill != null && bill.getToStaff() != null) {
-                            cd.getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
-                            cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
-                        }
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     default:
                         // For other payment methods
