@@ -2429,6 +2429,16 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     System.out.println("After setting - Reference No: " + getPaymentMethodData().getCredit().getReferenceNo());
                     System.out.println("After setting - Comment: " + getPaymentMethodData().getCredit().getComment());
                     break;
+                case Staff:
+                    getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
+                    getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    break;
+                case Staff_Welfare:
+                    getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
+                    break;
                 default:
                     // For other payment methods, just set the total value
                     break;
@@ -2496,6 +2506,16 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
                         cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff:
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff_Welfare:
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     default:
                         // For other payment methods
