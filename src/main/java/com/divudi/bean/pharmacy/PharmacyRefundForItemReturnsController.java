@@ -1732,12 +1732,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         editingQty = null;
         saveBill();
 
-        List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
-        // Negate payment values for refunds (money going out)
-        for (Payment p : refundPayments) {
-            p.setPaidValue(0 - Math.abs(p.getPaidValue()));
-            paymentFacade.edit(p);
-        }
+        List<Payment> refundPayments = paymentService.createRefundPayments(getRefundBill(), getPaymentMethodData());
         saveSaleReturnBillItems(refundPayments);
 
         getBillFacade().edit(getRefundBill());

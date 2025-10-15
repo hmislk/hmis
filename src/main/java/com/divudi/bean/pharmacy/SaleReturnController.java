@@ -504,13 +504,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         finalReturnBill = saveSaleFinalReturnBill();
         saveSaleComponent(finalReturnBill);
-        List<Payment> payments = paymentService.createPayment(finalReturnBill, getPaymentMethodData());
-        // Negate payment values for refunds (money going out)
-        for (Payment p : payments) {
-            p.setPaidValue(0 - Math.abs(p.getPaidValue()));
-            paymentFacade.edit(p);
-            drawerController.updateDrawerForOuts(p);
-        }
+        List<Payment> payments = paymentService.createRefundPayments(finalReturnBill, getPaymentMethodData());
         // Update patient deposit balances and create history records
         paymentService.updateBalances(payments);
 

@@ -97,7 +97,11 @@ public class PaymentService {
      * @return A list of created payments associated with the bill.
      */
     public List<Payment> createPayment(Bill bill, PaymentMethodData paymentMethodData) {
-        return createPayment(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater());
+        return createPaymentInternal(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater(), false);
+    }
+
+    public List<Payment> createRefundPayments(Bill bill, PaymentMethodData paymentMethodData) {
+        return createPaymentInternal(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater(), true);
     }
 
     /**
@@ -142,6 +146,10 @@ public class PaymentService {
     }
 
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
+        return createPaymentInternal(bill, pm, paymentMethodData, department, webUser, false);
+    }
+
+    private List<Payment> createPaymentInternal(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, boolean invertPaidValues) {
 
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
@@ -151,6 +159,9 @@ public class PaymentService {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, currentDate);
                 if (payment != null) {
+                    if (invertPaidValues) {
+                        payment.setPaidValue(0 - Math.abs(payment.getPaidValue()));
+                    }
                     paymentFacade.create(payment);
                     cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
                     drawerService.updateDrawer(payment);
@@ -170,7 +181,12 @@ public class PaymentService {
                         new Object[]{bill != null ? bill.getId() : null, pm});
                 return payments;
             }
-            payment.setPaidValue(bill.getNetTotal());
+            double paidValue = bill != null ? bill.getNetTotal() : 0.0;
+            if (invertPaidValues) {
+                payment.setPaidValue(0 - Math.abs(paidValue));
+            } else {
+                payment.setPaidValue(paidValue);
+            }
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
             drawerService.updateDrawer(payment);
