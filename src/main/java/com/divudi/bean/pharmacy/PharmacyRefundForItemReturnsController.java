@@ -227,9 +227,10 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
-
-        total = getRefundBill().getNetTotal();
-        return total - calculateMultiplePaymentMethodTotal();
+        double billTotal = Math.abs(getRefundBill().getNetTotal());
+        double paidTotal = Math.abs(calculateMultiplePaymentMethodTotal());
+        total = billTotal;
+        return billTotal - paidTotal;
     }
 
     public void recieveRemainAmountAutomatically() {
@@ -1257,12 +1258,12 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         if (refundBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getCash().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getCheque().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getSlip().getTotalValue());
             }
         }
         return multiplePaymentMethodTotalValue;
@@ -1359,29 +1360,30 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         System.out.println("=== END CHECKANDUPDATE DEBUG ===");
 
         if (getRefundBill().getPaymentMethod() != null) {
+            double billTotal = Math.abs(getRefundBill().getNetTotal());
             switch (getRefundBill().getPaymentMethod()) {
                 case Cash:
-                    balance = getRefundBill().getNetTotal() - cashPaid;
+                    balance = billTotal - Math.abs(cashPaid);
                     break;
                 case Card:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getCreditCard().getTotalValue());
                     break;
                 case Cheque:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getCheque().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getCheque().getTotalValue());
                     break;
                 case Slip:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getSlip().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getSlip().getTotalValue());
                     break;
                 case ewallet:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getEwallet().getTotalValue());
                     break;
                 case MultiplePaymentMethods:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - calculateMultiplePaymentMethodTotal();
+                    balance = billTotal - Math.abs(calculateMultiplePaymentMethodTotal());
                     break;
                 case Staff_Welfare:
                     cashPaid = 0;
@@ -1389,7 +1391,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     break;
                 case PatientDeposit:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getPatient_deposit().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getPatient_deposit().getTotalValue());
                     break;
             }
         }
