@@ -14,22 +14,32 @@ import javax.inject.Named;
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
-
 @Named
 @SessionScoped
 public class RequestController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private RequestFacade requestFacade;
+    // </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Variables">
+    private static final long serialVersionUID = 1L;
+    
+    
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Navigation Method">
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Function">
+    
+    
+    
     public RequestController() {
-
-    }
-
-    public RequestFacade getRequestFacade() {
-        return requestFacade;
     }
 
     @FacesConverter(forClass = Request.class)
@@ -72,4 +82,13 @@ public class RequestController implements Serializable {
         }
     }
 
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
+    public RequestFacade getRequestFacade() {
+        return requestFacade;
+    }
+
+    // </editor-fold>
+    
 }
