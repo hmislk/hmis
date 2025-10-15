@@ -50,7 +50,7 @@ public class Request implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reviewedAt;
     
-    //Approvell Properties
+    //Approval Properties
     @ManyToOne
     private WebUser approvedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -84,7 +84,7 @@ public class Request implements Serializable {
     
     //Creating properties
     @ManyToOne
-    private WebUser creater;
+    private WebUser creator;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     @ManyToOne
@@ -175,12 +175,12 @@ public class Request implements Serializable {
         this.referenceNumber = referenceNumber;
     }
 
-    public WebUser getCreater() {
-        return creater;
+    public WebUser getCreator() {
+        return creator;
     }
 
-    public void setCreater(WebUser creater) {
-        this.creater = creater;
+    public void setCreater(WebUser creator) {
+        this.creator = creator;
     }
 
     public Date getCreatedAt() {
