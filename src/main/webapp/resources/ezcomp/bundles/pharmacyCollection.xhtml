@@ -233,7 +233,7 @@
                 </p:column>
 
                 <p:column headerText="Collection Total" styleClass="text-end">
-                    <h:outputText value="#{row.cashierCollectionTotal}">
+                    <h:outputText id="lblPharmacyCollectionCollectionTotal" value="#{row.cashierCollectionTotal}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                     <f:facet name="footer">
