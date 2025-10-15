@@ -57,6 +57,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillSessionFacade;
 import com.divudi.core.facade.ConsultantFacade;
+import com.divudi.core.facade.DoctorFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.facade.OnlineBookingFacade;
@@ -2227,6 +2228,20 @@ public class ChannelService {
         
         return sessionInstanceFacade.findByJpql(sql, params, TemporalType.TIMESTAMP);
         
+    }
+    
+    @EJB
+    private DoctorFacade doctorFacade;
+    
+    public List<Doctor> findScanningDoctors(){
+        String jpql = "select doc from Doctor doc "
+                + " where doc.speciality in :specialities "
+                + " and doc.retired = :ret";
+        
+        Map <String, Object> params = new HashMap();
+        params.put("ret", false);
+        
+        return doctorFacade.findByJpql(jpql, params);
     }
 
     public List<Institution> findHospitals() {

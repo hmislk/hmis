@@ -67,18 +67,18 @@
                             </p:selectOneMenu>
                             <p:spacer width="50"/>
 
-                            <h:outputText class="mx-2" value="&#xf073;"
-                                          styleClass="fa mr-2"/>
+                            <i class="fa fa-user-md" aria-hidden="true"></i>
+
                             <h:outputLabel class="mx-2" value="Doctor " />
                             <h:outputLabel value=":" />
 
-                            <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
+                            <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Doctors"
                                                   id="doctorMenu"
                                                   filter="true"
                                                   class="w-100 mx-4"
                                                   converter="deal"
                                                   filterMatchMode="contains">
-                                <f:selectItems value="#{doctorController.selectedItems}" var="item"
+                                <f:selectItems value="#{channelReportController.doctorsForScanningReport}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
 
                                 <p:ajax event="change" 
@@ -88,12 +88,12 @@
                             </p:selectCheckboxMenu>
                             <p:spacer width="50"/>
 
-                            <h:outputText class="mx-2" value="&#xf073;"
-                                          styleClass="fa mr-2"/>
+                            <i class="fa fa-window-restore" aria-hidden="true"></i>
+
                             <h:outputLabel class="mx-2" value="Session " />
                             <h:outputLabel value=":" />
 
-                            <p:selectCheckboxMenu value="#{channelReportController.sessionInstanceList}" label="Select Suppliers"
+                            <p:selectCheckboxMenu value="#{channelReportController.sessionInstanceList}" label="Select Sessions"
                                                   id="sessionsMenu"
                                                   filter="true"
                                                   class="w-100 mx-4"
@@ -105,12 +105,12 @@
 
                             <p:spacer width="50"/>
 
-                            <h:outputText class="mx-2" value="&#xf073;"
-                                          styleClass="fa mr-2"/>
+                           <i class="fa fa-thermometer-quarter" aria-hidden="true"></i>
+
                             <h:outputLabel class="mx-2" value="Item " />
                             <h:outputLabel value=":" />
 
-                            <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Suppliers"
+                            <p:selectCheckboxMenu value="#{channelReportController.doctorList}" label="Select Items"
                                                   id="supplierMenu"
                                                   filter="true"
                                                   class="w-100 mx-4"

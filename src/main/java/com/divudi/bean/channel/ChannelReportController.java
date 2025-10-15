@@ -176,6 +176,9 @@ public class ChannelReportController implements Serializable {
         this.sessionListFilterByDoctors = sessionListFilterByDoctors;
     }
     
+    public List<Doctor> getDoctorsForScanningReport(){
+        return channelService.findScanningDoctors();
+    }
     
     
     public void getSessionInstanceFromDoctor(){
