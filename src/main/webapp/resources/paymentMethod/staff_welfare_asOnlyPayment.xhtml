@@ -30,7 +30,7 @@
                     <p:autoComplete
                         minQueryLength="1"
                         forceSelection="true"
-                        value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}"
+                        value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
                         id="welfareStaff"
                         completeMethod="#{staffController.completeStaff}"
                         var="mys"
@@ -69,17 +69,17 @@
             </div>
 
             <h:panelGroup id="staffWelfareDetails" class="mt-3">
-                <h:panelGroup rendered="#{cc.attrs.paymentMethodData.staffCredit.toStaff != null}">
+                <h:panelGroup rendered="#{cc.attrs.paymentMethodData.staffWelfare.toStaff != null}">
                     <div class="row">
                         <div class="col-md-4 col-sm-6 mb-3">
                             <div class="border rounded p-3 h-100 bg-light">
                                 <h:outputText styleClass="fas fa-user text-primary mb-2 d-block" style="font-size: 1.2em;"/>
                                 <strong>Staff Information</strong>
                                 <hr class="my-2"/>
-                                <div><strong>Name:</strong> #{cc.attrs.paymentMethodData.staffCredit.toStaff.person.nameWithTitle}</div>
-                                <div><strong>Code:</strong> #{cc.attrs.paymentMethodData.staffCredit.toStaff.staffCode}</div>
-                                <div><strong>EPF No:</strong> #{cc.attrs.paymentMethodData.staffCredit.toStaff.epfNo}</div>
-                                <div><strong>Designation:</strong> #{cc.attrs.paymentMethodData.staffCredit.toStaff.designation.name}</div>
+                                <div><strong>Name:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.person.nameWithTitle}</div>
+                                <div><strong>Code:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.staffCode}</div>
+                                <div><strong>EPF No:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.epfNo}</div>
+                                <div><strong>Designation:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.designation.name}</div>
                             </div>
                         </div>
 
@@ -89,7 +89,7 @@
                                 <strong>Welfare Entitlement</strong>
                                 <hr class="my-2"/>
                                 <div class="text-center">
-                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareQualified}"
+                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified}"
                                                   styleClass="h4 text-success fw-bold">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
@@ -104,13 +104,13 @@
                                 <strong>Welfare Utilization</strong>
                                 <hr class="my-2"/>
                                 <div><strong>Utilized:</strong>
-                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareUtilized}" styleClass="text-warning">
+                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized}" styleClass="text-warning">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </div>
                                 <div><strong>Available:</strong>
-                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareQualified - cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareUtilized}"
-                                                  styleClass="#{(cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareQualified - cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareUtilized) gt 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}">
+                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified - cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized}"
+                                                  styleClass="#{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified - cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized) gt 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </div>
@@ -118,7 +118,7 @@
                         </div>
                     </div>
 
-                    <h:panelGroup rendered="#{(cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareQualified - cc.attrs.paymentMethodData.staffCredit.toStaff.annualWelfareUtilized) le 0}">
+                    <h:panelGroup rendered="#{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified - cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized) le 0}">
                         <div class="alert alert-danger d-flex align-items-center mt-3" role="alert">
                             <h:outputText styleClass="fas fa-exclamation-triangle me-2"/>
                             <div>
