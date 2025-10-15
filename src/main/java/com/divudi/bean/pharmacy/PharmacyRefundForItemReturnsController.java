@@ -1732,6 +1732,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         editingQty = null;
         saveBill();
 
+        applyRefundSignToPaymentData();
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
         saveSaleReturnBillItems(refundPayments);
 
@@ -1743,6 +1744,54 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         clearBillItem();
         printPreview = true;
 
+    }
+
+    private void applyRefundSignToPaymentData() {
+        PaymentMethodData data = getPaymentMethodData();
+        if (data == null) {
+            return;
+        }
+
+        if (getRefundBill() != null && getRefundBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            ComponentDetail multiple = data.getPaymentMethodMultiple();
+            if (multiple != null && multiple.getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail component : multiple.getMultiplePaymentMethodComponentDetails()) {
+                    if (component == null) {
+                        continue;
+                    }
+                    negateComponentTotal(component);
+                    negatePaymentMethodData(component.getPaymentMethodData());
+                }
+            }
+        } else {
+            negatePaymentMethodData(data);
+        }
+    }
+
+    private void negatePaymentMethodData(PaymentMethodData paymentMethodData) {
+        if (paymentMethodData == null) {
+            return;
+        }
+
+        negateComponentTotal(paymentMethodData.getCash());
+        negateComponentTotal(paymentMethodData.getCreditCard());
+        negateComponentTotal(paymentMethodData.getCheque());
+        negateComponentTotal(paymentMethodData.getSlip());
+        negateComponentTotal(paymentMethodData.getEwallet());
+        negateComponentTotal(paymentMethodData.getPatient_deposit());
+        negateComponentTotal(paymentMethodData.getCredit());
+        negateComponentTotal(paymentMethodData.getStaffCredit());
+        negateComponentTotal(paymentMethodData.getStaffWelfare());
+        negateComponentTotal(paymentMethodData.getOnlineSettlement());
+        negateComponentTotal(paymentMethodData.getIou());
+    }
+
+    private void negateComponentTotal(ComponentDetail componentDetail) {
+        if (componentDetail == null) {
+            return;
+        }
+
+        componentDetail.setTotalValue(0 - Math.abs(componentDetail.getTotalValue()));
     }
 
     private void clearBill() {
@@ -2340,7 +2389,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 ComponentDetail cd = new ComponentDetail();
                 cd.setPaymentMethod(originalPayment.getPaymentMethod());
 
-                // Set payment details based on method - use absolute value for refunds
+                // Set payment details based on method - use absolute value for UI display
                 double refundAmount = Math.abs(originalPayment.getPaidValue());
 
                 switch (originalPayment.getPaymentMethod()) {

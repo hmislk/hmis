@@ -2831,15 +2831,21 @@ public class BillBeanController implements Serializable {
         Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 
         if (obj == null) {
-            Double[] dbl = new Double[3];
+            Double[] dbl = new Double[4];
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
-//            dbl[3] = 0.0;
+            dbl[3] = 0.0;
             return dbl;
         }
 
-        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+        Double[] dbl = Arrays.copyOf(obj, Math.max(4, obj.length), Double[].class);
+
+        for (int i = 0; i < 4; i++) {
+            if (dbl[i] == null) {
+                dbl[i] = 0.0;
+            }
+        }
 
         return dbl;
     }
