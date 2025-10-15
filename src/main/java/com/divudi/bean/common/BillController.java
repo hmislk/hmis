@@ -1889,14 +1889,21 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return "";
         }
+
         bills = billsOfBatchBill(batchBill);
         paymentMethod = null;
         patient = batchBill.getPatient();
         paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
         comment = null;
         printPreview = false;
-        batchBillCancellationStarted = false;
-        return "/opd/batch_bill_cancel?faces-redirect=true";
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            
+            return "/opd/opd_bill_cancel_request?faces-redirect=true";
+        } else {
+            batchBillCancellationStarted = false;
+            return "/opd/batch_bill_cancel?faces-redirect=true";
+        }
     }
 
     private List<Bill> cancelSingleBills = new ArrayList<>();
@@ -5097,13 +5104,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
         }
-        
+
         Bill foundBill = billFacade.find(billId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
-        
+
         return billSearch.navigateToViewBillByAtomicBillTypeByBillId(billId);
     }
 
