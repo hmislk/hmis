@@ -491,10 +491,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             JsfUtil.addErrorMessage("Please select a payment method to return");
             return;
         }
-        if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed. Please select another payment method to return");
-            return;
-        }
+//        if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+//            JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed. Please select another payment method to return");
+//            return;
+//        }
 
         savePreReturnBill();
         savePreReturnBillComponents();
