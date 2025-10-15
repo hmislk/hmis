@@ -234,7 +234,8 @@ public class PaymentService {
                     payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
                     payment.setComments(paymentMethodData.getEwallet().getComment());
                     payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
-                    payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution()); // Keeping for backword compatibility
+                    payment.setBank(paymentMethodData.getEwallet().getInstitution());
                 }
                 break;
             case Agent:
@@ -284,6 +285,10 @@ public class PaymentService {
             case OnlineSettlement:
                 if (paymentMethodData.getOnlineSettlement() != null) {
                     payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    payment.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    payment.setRealizedAt(paymentMethodData.getOnlineSettlement().getDate());
+                    payment.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    payment.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
                     payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
                 }
                 break;
