@@ -584,7 +584,7 @@
                               maximizable="true"
                               closeOnEscape="true">
 
-                        <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="disposalIssueConfigForm" />
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="disposalIssueConfigForm" />
 
                         <h:form id="disposalIssueConfigForm">
                             <div class="row">
@@ -597,21 +597,21 @@
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="disposalIssueA4"
-                                                    value="#{pharmacyRetailConfigController.disposalIssueA4Paper}" />
+                                                    value="#{pharmacyConfigController.disposalIssueA4Paper}" />
                                                 <p:outputLabel for="disposalIssueA4" value="A4 Paper Format" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Standard A4 paper format for disposal issue receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="disposalIssueCustom1"
-                                                    value="#{pharmacyRetailConfigController.disposalIssueCustom1}" />
+                                                    value="#{pharmacyConfigController.disposalIssueCustom1}" />
                                                 <p:outputLabel for="disposalIssueCustom1" value="Custom Format 1" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Custom format 1 for disposal issue receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="disposalIssueCustom2"
-                                                    value="#{pharmacyRetailConfigController.disposalIssueCustom2}" />
+                                                    value="#{pharmacyConfigController.disposalIssueCustom2}" />
                                                 <p:outputLabel for="disposalIssueCustom2" value="Custom Format 2" class="ms-2" />
                                                 <small class="form-text text-muted d-block">Custom format 2 for disposal issue receipts</small>
                                             </div>
@@ -632,7 +632,7 @@
                                                         icon="fas fa-save"
                                                         class="ui-button-success"
                                                         ajax="false"
-                                                        action="#{pharmacyRetailConfigController.saveDisposalIssueConfig}" />
+                                                        action="#{pharmacyConfigController.saveDisposalIssueConfig}" />
                                                     <p:commandButton
                                                         value="Cancel"
                                                         icon="fas fa-times"

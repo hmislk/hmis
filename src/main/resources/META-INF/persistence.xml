@@ -11,7 +11,6 @@
            
         </properties>
     </persistence-unit>
-
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/hmisaudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>

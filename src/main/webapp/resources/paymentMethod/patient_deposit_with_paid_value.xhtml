@@ -10,38 +10,42 @@
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGroup rendered="#{cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}" >
-            <div class="row" >
-                <div class="col mx-1" style="font-size: 1.2em; font-weight: 700" >
-                    <h:outputText value="Patient's Department Deposit Balance : " ></h:outputText>
-                    <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance}" >
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
+        <h:panelGroup rendered="#{cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}">
+            <div class="d-flex flex-column gap-3">
+                <div class="alert alert-info mb-0 d-flex align-items-center gap-2" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Patient Deposit Balance:</strong>
+                        <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance}" styleClass="ms-2">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </div>
                 </div>
-                <div class="d-flex gap-3 mt-2">
-                    <h:outputText value="Paid Value : " class="mt-2" ></h:outputText>
+
+                <div class="d-flex align-items-center gap-2">
+                    <p:outputLabel for="txtMpPd" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
                     <p:inputText
                         id="txtMpPd"
                         autocomplete="off"
                         onfocus="this.select();"
                         value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
-                        style="width: 7em!important;"
-                        class="w-100"  >
+                        styleClass="form-control"
+                        style="width: 150px;">
                         <f:convertNumber pattern="#,##0.00" />
-                        <p:ajax event="keyup" process="txtMpPd" ></p:ajax>
+                        <p:ajax event="keyup" process="txtMpPd" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     </p:inputText>
                 </div>
             </div>
         </h:panelGroup>
-        <h:panelGroup rendered="#{!cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}" >
-            <div class="row" >
-                <div class="col mx-1" >
-                    <h:outputText value="Patient has NO Patient Deposit." ></h:outputText>
-                </div>
+        <h:panelGroup rendered="#{!cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}">
+            <div class="alert alert-warning mb-0 d-flex align-items-center gap-2" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Patient has no Patient Deposit account.</span>
             </div>
         </h:panelGroup>
     </cc:implementation>

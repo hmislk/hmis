@@ -1863,6 +1863,8 @@ public class PharmacyReportController implements Serializable {
     }
 
     private List<StockCorrectionRow> stockCorrectionRows;
+    private Map<String, List<StockCorrectionRow>> positiveVarianceMap;
+    private Map<String, List<StockCorrectionRow>> negativeVarianceMap;
 
     public void createStockCorrectionReportWithDTO() {
         stockCorrectionRows = new ArrayList<>();
@@ -1899,6 +1901,33 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "bi.bill.department", "dep", department);
 
             stockCorrectionRows = (List<StockCorrectionRow>) billItemFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            positiveVarianceMap = new HashMap<>();
+            negativeVarianceMap = new HashMap<>();
+
+            for (StockCorrectionRow row : stockCorrectionRows) {
+                // Calculate variance
+                Double beforeValue = row.getBeforeAdjustment();
+                Double afterValue = row.getAfterAdjustment();
+
+                if (beforeValue == null || afterValue == null || row.getQuantity() == null) {
+                    continue;
+                }
+
+                double variance = (afterValue - beforeValue) * row.getQuantity().doubleValue();
+
+                // Group by item name
+                String itemName = row.getItemName();
+
+                if (variance > 0) {
+                    // Positive variance - add to positiveVarianceMap
+                    positiveVarianceMap.putIfAbsent(itemName, new ArrayList<>());
+                    positiveVarianceMap.get(itemName).add(row);
+                } else if (variance < 0) {
+                    // Negative variance - add to negativeVarianceMap
+                    negativeVarianceMap.putIfAbsent(itemName, new ArrayList<>());
+                    negativeVarianceMap.get(itemName).add(row);
+                }
+            }
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error creating Stock Correction Report");
@@ -2535,6 +2564,7 @@ public class PharmacyReportController implements Serializable {
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        btasToGetBillItems.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_ISSUE);
         retrieveBillItems(btasToGetBillItems);
         calculateStockConsumptionTotals(billItems);
@@ -3441,6 +3471,28 @@ public class PharmacyReportController implements Serializable {
 
     public void setTotalRetailValue(double totalRetailValue) {
         this.totalRetailValue = totalRetailValue;
+    }
+
+    public Map<String, List<StockCorrectionRow>> getPositiveVarianceMap() {
+        if (positiveVarianceMap == null) {
+            positiveVarianceMap = new LinkedHashMap<>();
+        }
+        return positiveVarianceMap;
+    }
+
+    public void setPositiveVarianceMap(Map<String, List<StockCorrectionRow>> positiveVarianceMap) {
+        this.positiveVarianceMap = positiveVarianceMap;
+    }
+
+    public Map<String, List<StockCorrectionRow>> getNegativeVarianceMap() {
+        if (negativeVarianceMap == null) {
+            negativeVarianceMap = new LinkedHashMap<>();
+        }
+        return negativeVarianceMap;
+    }
+
+    public void setNegativeVarianceMap(Map<String, List<StockCorrectionRow>> negativeVarianceMap) {
+        this.negativeVarianceMap = negativeVarianceMap;
     }
 
     public static class DirectPurchaseReportDto {

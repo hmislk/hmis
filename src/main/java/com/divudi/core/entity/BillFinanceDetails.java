@@ -178,6 +178,15 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal netTotal;
 
+    // Actual physical net value (entered by user during GRN return)
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal actualNetValue;
+
+    // Adjustment between calculated net total and actual physical net value
+    // netValueAdjustment = actualNetValue - netTotal
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal netValueAdjustment;
+
 //    // Payment method totals
 //    private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
 //    private BigDecimal totalPaidAsCard = BigDecimal.ZERO;
@@ -264,6 +273,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setLineNetTotal(this.lineNetTotal);
         clone.setBillNetTotal(this.billNetTotal);
         clone.setNetTotal(this.netTotal);
+        clone.setActualNetValue(this.actualNetValue);
+        clone.setNetValueAdjustment(this.netValueAdjustment);
 
 //        // ------------------ PAYMENT METHODS ------------------
 //        clone.setTotalPaidAsCash(this.totalPaidAsCash);
@@ -672,6 +683,22 @@ public class BillFinanceDetails implements Serializable {
 
     public void setBillExpensesNotConsideredForCosting(BigDecimal billExpensesNotConsideredForCosting) {
         this.billExpensesNotConsideredForCosting = billExpensesNotConsideredForCosting;
+    }
+
+    public BigDecimal getActualNetValue() {
+        return actualNetValue;
+    }
+
+    public void setActualNetValue(BigDecimal actualNetValue) {
+        this.actualNetValue = actualNetValue;
+    }
+
+    public BigDecimal getNetValueAdjustment() {
+        return netValueAdjustment;
+    }
+
+    public void setNetValueAdjustment(BigDecimal netValueAdjustment) {
+        this.netValueAdjustment = netValueAdjustment;
     }
 
 }

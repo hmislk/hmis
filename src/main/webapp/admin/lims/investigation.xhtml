@@ -432,6 +432,27 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Assignee staff" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:autoComplete 
+                                    completeMethod="#{staffController.completeStaff}"
+                                    value="#{investigationController.current.staff}" 
+                                    var="mys" 
+                                    class="w-100 mt-2" 
+                                    maxResults="15"
+                                    inputStyleClass="form-control"
+                                    itemLabel="#{mys.person.nameWithTitle}" 
+                                    panelStyleClass="custom-dropdown-panel"
+                                    itemValue="#{mys}">
+                                    <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
+                                    <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                </p:autoComplete>
+                                    </div>
+                                </div>
+                                
 
                                 <div class="row mt-2">
                                     <div class="col-md-3"><h:outputText value="Institution" ></h:outputText></div>

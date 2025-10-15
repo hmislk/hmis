@@ -24,6 +24,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
@@ -94,6 +95,10 @@ public class CashRecieveBillController implements Serializable {
     private PaymentMethodData paymentMethodData;
     private PaymentMethod paymentMethod;
     private Institution institution;
+    Department department;
+    Institution site;
+    
+    private Institution creditCompany;
     private String comment;
 
     public void makeNull() {
@@ -103,13 +108,21 @@ public class CashRecieveBillController implements Serializable {
         billItems = null;
         selectedBillItems = null;
         paymentMethodData = null;
-        institution = null;
+        creditCompany = null;
         recreateModel();
     }
 
     public void selectInstitutionListener() {
-        Institution ins = institution;
+        Institution ins = creditCompany;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getBillController().getCreditBills(ins);
         for (Bill b : list) {
@@ -129,9 +142,20 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void selectVoucherListener() {
+        if (selectedBill == null) {
+            return;
+        }
         Institution ins = selectedBill.getCreditCompany();
         current = selectedBill;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getBillController().getCreditBills(ins);
         for (Bill b : list) {
@@ -149,8 +173,16 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void selectInstitutionListenerPharmacy() {
-        Institution ins = institution;
+        Institution ins = creditCompany;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getBillController().getCreditBillsPharmacy(ins);
         for (Bill b : list) {
@@ -176,7 +208,7 @@ public class CashRecieveBillController implements Serializable {
     private AdmissionController admissionController;
 
 //    public void selectInstitutionListenerBht() {
-//        Institution ins = institution;
+//        Institution ins = creditCompany;
 //        makeNull();
 //
 //        List<Admission> list = getAdmissionController().getCreditBillsBht(ins);
@@ -192,8 +224,16 @@ public class CashRecieveBillController implements Serializable {
 //    }
 
     public void selectInstitutionListenerBht() {
-        Institution ins = institution;
+        Institution ins = creditCompany;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getAdmissionController().getCreditPaymentBillsBht(ins);
         for (Bill b : list) {
@@ -673,7 +713,9 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(billType);
         getCurrent().setBillTypeAtomic(billTypeAtomic);
-        getCurrent().setCreditCompany(institution);
+        if (creditCompany != null) {
+            getCurrent().setCreditCompany(creditCompany);
+        }
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getCurrent().setComments(comment);
@@ -849,6 +891,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void settleBill() {
+        // Validate creditCompany first
+        if (creditCompany == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return;
+        }
+
         if (errorCheck()) {
             return;
         }
@@ -984,7 +1032,7 @@ public class CashRecieveBillController implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setBalance(getCurrent().getNetTotal());
-        getCurrent().setCreditCompany(institution);
+        getCurrent().setCreditCompany(creditCompany);
 
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         //saveBillItem();
@@ -1427,7 +1475,7 @@ public class CashRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         selectedBillItems = null;
-        institution = null;
+        creditCompany = null;
         comment = null;
         selectedBill = null;
     }
@@ -1568,14 +1616,17 @@ public class CashRecieveBillController implements Serializable {
         this.creditBean = creditBean;
     }
 
-    public Institution getInstitution() {
-        return institution;
+    public Institution getCreditCompany() {
+        return creditCompany;
     }
 
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
+
+    
+    
     public BillController getBillController() {
         return billController;
     }
@@ -1626,5 +1677,31 @@ public class CashRecieveBillController implements Serializable {
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+    
+    
 
 }

@@ -12,6 +12,7 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
+
                 <h:form>
 
                     <p:panel header="Pharmacy Transfer Issue Bills"
@@ -93,7 +94,9 @@
                                 scrollable="true"
                                 scrollWidth="100%"
                                 value="#{reportsTransfer.transferIssueDtos}"
-                                var="i" >
+                                var="i"
+                                class="bg-warning text-white"
+                                rowStyleClass="#{i.billClassSimpleName eq 'CancelledBill' ? 'bg-danger text-white' : ''}" >
                                 <f:facet name="header">
                                     <div class="table-header-info p-2 bg-light border-bottom">
                                         <div class="row">
@@ -133,7 +136,7 @@
                                     </div>
                                 </f:facet>
 
-                                <p:column headerText="Bill No" sortBy="#{i.deptId}">
+                                <p:column headerText="Bill No*" sortBy="#{i.deptId}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No" />
                                     </f:facet>
@@ -178,10 +181,22 @@
                                         <h:outputLabel value="Remarks" />
                                     </f:facet>
                                     <h:panelGroup rendered="#{i.cancelled}">
-                                        <span class="badge bg-danger">Cancelled</span>                                   
+                                        <span class="badge bg-danger">Cancelled</span> 
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{i.refunded}">
                                         <span class="badge bg-warning">Returned</span>
+                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup
+                                        id="lblOriginalBillIdOfCancelledBill"
+                                        rendered="#{i.billClassSimpleName eq 'CancelledBill'}">
+                                        Original Bill - #{i.billedBillDeptId}
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="View"
+                                            icon="pi pi-eye"
+                                            styleClass="ui-button-secondary"
+                                            action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueByIdWithParam(i.billedBillId)}" />
                                     </h:panelGroup>
                                 </p:column>
 
@@ -239,7 +254,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="Comment" />
@@ -265,12 +280,14 @@
                         </h:panelGroup>
 
 
+
                         <h:panelGroup id="gpBillPreviewPrinting" styleClass="noBorder summeryBorder" class="printingOnly">
                             <p:dataTable
                                 id="tblPrinting"
                                 styleClass="noBorder normalFont table-responsive"
                                 value="#{reportsTransfer.transferIssueDtos}"
-                                var="i" >
+                                var="i"
+                                rowStyleClass="#{i.billClassSimpleName eq 'CancelledBill' ? 'table-warning' : ''}" >
                                 <f:facet name="header">
                                     <div class="table-header-info p-2 bg-light border-bottom">
                                         <div class="row">
@@ -310,9 +327,9 @@
                                     </div>
                                 </f:facet>
 
-                                <p:column headerText="Bill No" sortBy="#{i.deptId}">
+                                <p:column headerText="Bill No*" sortBy="#{i.deptId}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Bill No" />
+                                        <h:outputLabel value="Bill No *" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.deptId}"></h:outputLabel>                                    
                                 </p:column>

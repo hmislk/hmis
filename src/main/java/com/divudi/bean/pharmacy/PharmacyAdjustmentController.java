@@ -1282,6 +1282,32 @@ public class PharmacyAdjustmentController implements Serializable {
             // Save entities
             getBillItemFacade().create(tbi);
             getDeptAdjustmentPreBill().getBillItems().add(tbi);
+            
+            BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
+            if (bfd == null) {
+                bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
+                getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
+            }
+
+            java.math.BigDecimal changeVal = java.math.BigDecimal.valueOf(changeValue);
+            java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldRetailRate * dto.getStockQty());
+            java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newRetailRate * dto.getStockQty());
+
+            bfd.setTotalRetailSaleValue(changeVal);
+            bfd.setNetTotal(changeVal);
+            bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+            bfd.setTotalQuantity(java.math.BigDecimal.valueOf(dto.getStockQty()));
+
+            // Aggregate before/after totals
+            java.math.BigDecimal prevBefore = bfd.getTotalBeforeAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalBeforeAdjustmentValue();
+            java.math.BigDecimal prevAfter = bfd.getTotalAfterAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalAfterAdjustmentValue();
+            bfd.setTotalBeforeAdjustmentValue(prevBefore.add(beforeVal));
+            bfd.setTotalAfterAdjustmentValue(prevAfter.add(afterVal));
+
+            // Ensure other rate values are NOT recorded (only retail rate changes)
+            bfd.setTotalPurchaseValue(java.math.BigDecimal.ZERO);
+            bfd.setTotalCostValue(java.math.BigDecimal.ZERO);
+            bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
 
         } catch (Exception e) {
             Logger.getLogger(PharmacyAdjustmentController.class.getName()).log(Level.SEVERE, "Failed to create retail rate adjustment bill item", e);

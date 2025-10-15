@@ -72,42 +72,45 @@
 
                 <p:panel rendered="#{transferRequestController.toDepartment ne null and transferRequestController.toDepartment  ne sessionController.loggedUser.department}">
                     <f:facet name="header" >
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
+                        <div class="row">
+                            <div class="col-2">
                                 <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
-                                <h:outputLabel value="Transfer Request To #{transferRequestController.toDepartment} From #{sessionController.department}" class="mx-4" />
+                                <h:outputLabel value="Transfer Request" class="mx-4" />
                             </div>
-                            <div>
-                                <p:defaultCommand target="btnSave" />
-                                <p:commandButton
-                                    id="btnSave"
-                                    value="Save"
-                                    action="#{transferRequestController.saveTranserRequestPreBill()}"
-                                    ajax="false"
-                                    icon="pi pi-save"
-                                    class="mx-1 ui-button-success"
-                                    />
-                                <p:commandButton
-                                    value="Finalize"
-                                    action="#{transferRequestController.finalizeTranserRequestPreBill()}"
-                                    ajax="false"
-                                    icon="pi pi-check"
-                                    class="mx-1 ui-button-warning"
-                                    />
-                                <p:commandButton
-                                    value="New Bill"
-                                    action="#{transferRequestController.recreate}"
-                                    ajax="false"
-                                    icon="pi pi-plus"
-                                    class="ui-button-danger"/>
-
-                                <p:commandButton 
-                                    value="Change Department" 
-                                    class="ui-button-primary mx-1"
-                                    ajax="false" 
-                                    icon="pi pi-refresh"
-                                    action="#{transferRequestController.changeDepartment()}" />
-
+                            <div class="col-5">
+                                <div class="float-left" >
+                                    <p:commandButton 
+                                        value="Change Department" 
+                                        class="ui-button-primary mx-1"
+                                        ajax="false" 
+                                        icon="pi pi-refresh"
+                                        action="#{transferRequestController.changeDepartment()}" />
+                                    <p:commandButton
+                                        value="Clear &amp; Create A New Transfer Request Bill"
+                                        action="#{transferRequestController.recreate}"
+                                        ajax="false"
+                                        icon="pi pi-plus"
+                                        class="ui-button-warning"/>
+                                </div>
+                            </div>
+                            <div class="col-5" >
+                                <div class="float-end" >
+                                    <p:commandButton
+                                        id="btnSave"
+                                        value="Save"
+                                        action="#{transferRequestController.saveTranserRequestPreBill()}"
+                                        ajax="false"
+                                        icon="pi pi-save"
+                                        class="mx-1 ui-button-success"
+                                        />
+                                    <p:commandButton
+                                        value="Finalize"
+                                        action="#{transferRequestController.finalizeTranserRequestPreBill()}"
+                                        ajax="false"
+                                        icon="pi pi-check"
+                                        class="mx-1 ui-button-success"
+                                        />
+                                </div>
                             </div>
                         </div>
                     </f:facet>
@@ -313,28 +316,29 @@
             <p:panel id="printPanel" rendered="#{transferRequestController.printPreview}" >
                 <div class="d-flex justify-content-between mb-2">
                     <p:commandButton
-                        value="New Bill"
-                        icon="fas fa-plus"
-                        class="ui-button-warning"
-                        ajax="false"
-                        action="#{transferRequestController.recreate}" >
+                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                        value="Settings"
+                        icon="fas fa-cog"
+                        class="ui-button-secondary mx-1"
+                        type="button"
+                        onclick="PF('transferRequestConfigDialog').show();" >
                     </p:commandButton>
 
+
                     <div class="d-flex">
-                        <p:commandButton
-                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                            value="Settings"
-                            icon="fas fa-cog"
-                            class="ui-button-secondary mx-1"
-                            type="button"
-                            onclick="PF('transferRequestConfigDialog').show();" >
-                        </p:commandButton>
                         <p:commandButton
                             value="Print"
                             icon="fas fa-print"
                             class="ui-button-info mx-2"
                             ajax="false" >
                             <p:printer target="gpBillPreview"></p:printer>
+                        </p:commandButton>
+                        <p:commandButton
+                            value="To Create New Transfer Request"
+                            icon="fas fa-plus"
+                            class="ui-button-success"
+                            ajax="false"
+                            action="#{transferRequestController.recreate}" >
                         </p:commandButton>
                     </div>
                 </div>
@@ -368,7 +372,7 @@
                       maximizable="true"
                       closeOnEscape="true">
 
-                <p:ajax event="open" listener="#{pharmacyRetailConfigController.loadCurrentConfig}" update="transferRequestConfigForm" />
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferRequestConfigForm" />
 
                 <h:form id="transferRequestConfigForm">
 
@@ -382,7 +386,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferRequestA4"
-                                            value="#{pharmacyRetailConfigController.transferRequestA4}" />
+                                            value="#{pharmacyConfigController.transferRequestA4}" />
                                         <p:outputLabel for="transferRequestA4" value="A4 Receipt Format" class="ms-2" />
                                         <small class="form-text text-muted d-block">Standard A4 size paper format for transfer request receipts</small>
                                     </div>
@@ -390,7 +394,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferRequestCustom1"
-                                            value="#{pharmacyRetailConfigController.transferRequestCustom1}" />
+                                            value="#{pharmacyConfigController.transferRequestCustom1}" />
                                         <p:outputLabel for="transferRequestCustom1" value="Custom Format 1" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom transfer request receipt template design 1</small>
                                     </div>
@@ -398,7 +402,7 @@
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
                                             id="transferRequestCustom2"
-                                            value="#{pharmacyRetailConfigController.transferRequestCustom2}" />
+                                            value="#{pharmacyConfigController.transferRequestCustom2}" />
                                         <p:outputLabel for="transferRequestCustom2" value="Custom Format 2" class="ms-2" />
                                         <small class="form-text text-muted d-block">Custom transfer request receipt template design 2</small>
                                     </div>
@@ -419,7 +423,7 @@
                                                 icon="fas fa-save"
                                                 class="ui-button-success"
                                                 ajax="false"
-                                                action="#{pharmacyRetailConfigController.saveConfig}" />
+                                                action="#{pharmacyConfigController.saveConfig}" />
                                             <p:commandButton
                                                 value="Cancel"
                                                 icon="fas fa-times"
