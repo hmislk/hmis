@@ -59,7 +59,7 @@
                                 <p:commandButton
                                     ajax="false"
                                     value="Cancel Bill"
-                                    icon="fa fa-cancel"
+                                    icon="fa-solid fa-ban"
                                     style="float: right"
                                     class="ui-button-danger"
                                     action="#{billSearch.cancelCollectingCentreBill()}"
@@ -87,9 +87,11 @@
                                             <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
                                         </p:selectOneMenu>
 
-                                        <p:selectOneMenu id="cmbPs2" value="#{billSearch.paymentMethod}"  
-                                                         disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
-                                                         rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                        <p:selectOneMenu 
+                                            id="cmbPs2" 
+                                            value="#{billSearch.paymentMethod}"  
+                                            disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
+                                            rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
                                             <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
                                         </p:selectOneMenu>
