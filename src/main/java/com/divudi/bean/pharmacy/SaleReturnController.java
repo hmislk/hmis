@@ -504,7 +504,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         finalReturnBill = saveSaleFinalReturnBill();
         saveSaleComponent(finalReturnBill);
-        List<Payment> payments = paymentService.createRefundPayments(finalReturnBill, getPaymentMethodData());
+        applyRefundSignToPaymentData();
+        List<Payment> payments = paymentService.createPayment(finalReturnBill, getPaymentMethodData());
         // Update patient deposit balances and create history records
         paymentService.updateBalances(payments);
 
@@ -519,6 +520,62 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         JsfUtil.addSuccessMessage("Successfully Returned");
         returnBillcomment = null;
 
+    }
+
+    private void applyRefundSignToPaymentData() {
+        PaymentMethodData data = getPaymentMethodData();
+        if (data == null) {
+            return;
+        }
+
+        PaymentMethod paymentMethod = null;
+        if (getFinalReturnBill() != null) {
+            paymentMethod = getFinalReturnBill().getPaymentMethod();
+        }
+        if (paymentMethod == null) {
+            paymentMethod = getReturnPaymentMethod();
+        }
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            ComponentDetail multiple = data.getPaymentMethodMultiple();
+            if (multiple != null && multiple.getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail component : multiple.getMultiplePaymentMethodComponentDetails()) {
+                    if (component == null) {
+                        continue;
+                    }
+                    negateComponentTotal(component);
+                    negatePaymentMethodData(component.getPaymentMethodData());
+                }
+            }
+        } else {
+            negatePaymentMethodData(data);
+        }
+    }
+
+    private void negatePaymentMethodData(PaymentMethodData paymentMethodData) {
+        if (paymentMethodData == null) {
+            return;
+        }
+
+        negateComponentTotal(paymentMethodData.getCash());
+        negateComponentTotal(paymentMethodData.getCreditCard());
+        negateComponentTotal(paymentMethodData.getCheque());
+        negateComponentTotal(paymentMethodData.getSlip());
+        negateComponentTotal(paymentMethodData.getEwallet());
+        negateComponentTotal(paymentMethodData.getPatient_deposit());
+        negateComponentTotal(paymentMethodData.getCredit());
+        negateComponentTotal(paymentMethodData.getStaffCredit());
+        negateComponentTotal(paymentMethodData.getStaffWelfare());
+        negateComponentTotal(paymentMethodData.getOnlineSettlement());
+        negateComponentTotal(paymentMethodData.getIou());
+    }
+
+    private void negateComponentTotal(ComponentDetail componentDetail) {
+        if (componentDetail == null) {
+            return;
+        }
+
+        componentDetail.setTotalValue(0 - Math.abs(componentDetail.getTotalValue()));
     }
 
     public void fillReturningQty() {
