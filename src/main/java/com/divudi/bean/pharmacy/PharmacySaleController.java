@@ -2778,6 +2778,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
                         break;
                     case Staff:
+                        p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
                             staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
@@ -2785,6 +2786,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         }
                         break;
                     case Staff_Welfare:
+                        p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
                             staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
@@ -2864,6 +2866,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     p.setComments(paymentMethodData.getOnlineSettlement().getComment());
                     break;
                 case Staff:
+                    p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                     if (paymentMethodData.getStaffCredit().getToStaff() != null) {
                         staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
@@ -2871,6 +2874,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     }
                     break;
                 case Staff_Welfare:
+                    p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
                     if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
                         staffBean.updateStaffWelfare(paymentMethodData.getStaffWelfare().getToStaff(), paymentMethodData.getStaffWelfare().getTotalValue());
