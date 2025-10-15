@@ -1733,6 +1733,11 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         saveBill();
 
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
+        // Negate payment values for refunds (money going out)
+        for (Payment p : refundPayments) {
+            p.setPaidValue(0 - Math.abs(p.getPaidValue()));
+            paymentFacade.edit(p);
+        }
         saveSaleReturnBillItems(refundPayments);
 
         getBillFacade().edit(getRefundBill());
@@ -2340,7 +2345,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 ComponentDetail cd = new ComponentDetail();
                 cd.setPaymentMethod(originalPayment.getPaymentMethod());
 
-                // Set payment details based on method - use absolute value for refunds
+                // Set payment details based on method - use absolute value for UI display
                 double refundAmount = Math.abs(originalPayment.getPaidValue());
 
                 switch (originalPayment.getPaymentMethod()) {

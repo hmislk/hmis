@@ -505,7 +505,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         finalReturnBill = saveSaleFinalReturnBill();
         saveSaleComponent(finalReturnBill);
         List<Payment> payments = paymentService.createPayment(finalReturnBill, getPaymentMethodData());
+        // Negate payment values for refunds (money going out)
         for (Payment p : payments) {
+            p.setPaidValue(0 - Math.abs(p.getPaidValue()));
+            paymentFacade.edit(p);
             drawerController.updateDrawerForOuts(p);
         }
         // Update patient deposit balances and create history records
@@ -553,7 +556,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             Payment originalPayment = originalPayments.get(0);
             returnPaymentMethod = originalPayment.getPaymentMethod();
 
-            // Initialize paymentMethodData based on payment method
+            // Initialize paymentMethodData based on payment method (using absolute values for UI display)
             switch (originalPayment.getPaymentMethod()) {
                 case Cash:
                     getPaymentMethodData().getCash().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
@@ -625,7 +628,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 ComponentDetail cd = new ComponentDetail();
                 cd.setPaymentMethod(originalPayment.getPaymentMethod());
 
-                // Set payment details based on method - use absolute value for refunds
+                // Set payment details based on method - use absolute value for UI display
                 double refundAmount = Math.abs(originalPayment.getPaidValue());
 
                 switch (originalPayment.getPaymentMethod()) {
