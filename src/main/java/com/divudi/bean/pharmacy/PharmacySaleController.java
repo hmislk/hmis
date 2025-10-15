@@ -2729,6 +2729,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
                         p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
                         break;
                     case Cheque:
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
