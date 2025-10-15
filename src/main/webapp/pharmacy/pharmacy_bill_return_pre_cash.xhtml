@@ -175,7 +175,6 @@
 
                                         <h:panelGroup layout="block" id="slip" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Slip'}">
                                             <div class="my-2">
-                                                #{pharmacyRefundForItemReturnsController.paymentMethodData.slip.comment}
                                                 <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
