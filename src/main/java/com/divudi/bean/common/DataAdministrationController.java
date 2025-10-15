@@ -6,6 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
+import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
@@ -443,6 +444,92 @@ public class DataAdministrationController implements Serializable {
             billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
         } catch (Exception e) {
             billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void correctCancellationAndRefundPaymentValues() {
+        billController.setOutput("");
+
+        StringBuilder output = new StringBuilder();
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("types", Arrays.asList(BillClassType.CancelledBill, BillClassType.RefundBill));
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billClassType IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                billController.setOutput("No cancellation or refund bills found for payment correction.");
+                return;
+            }
+
+            int billsUpdated = 0;
+            int paymentsCorrected = 0;
+
+            for (Bill candidate : billsToProcess) {
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                List<Payment> payments = billService.fetchBillPayments(bill);
+                if (payments == null || payments.isEmpty()) {
+                    continue;
+                }
+
+                boolean billHadCorrections = false;
+                for (Payment payment : payments) {
+                    if (payment == null || payment.isRetired()) {
+                        continue;
+                    }
+
+                    double paidValue = payment.getPaidValue();
+                    if (paidValue > 0d) {
+                        payment.setPaidValue(-Math.abs(paidValue));
+                        paymentFacade.edit(payment);
+                        paymentsCorrected++;
+                        billHadCorrections = true;
+                    }
+                }
+
+                if (billHadCorrections) {
+                    billsUpdated++;
+                }
+            }
+
+            output.append("Processed ").append(billsToProcess.size()).append(" cancellation/refund bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Filtered by createdAt ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Updated ").append(billsUpdated).append(" bills and corrected ")
+                    .append(paymentsCorrected).append(" payment value(s).");
+            billController.setOutput(output.toString());
+        } catch (Exception e) {
+            billController.setOutput("Error correcting payment values: " + e.getMessage());
             e.printStackTrace();
         }
     }
