@@ -456,8 +456,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         Bill originalSalePreBill = originalSaleBill.getReferenceBill();
-        
-        
 
         Bill reloadedReturnBill = this.itemReturnBill;
 
@@ -1058,24 +1056,24 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
             sbi.setBill(getRefundBill());
             sbi.setReferanceBillItem(tbi);
-            sbi.setCreatedAt(Calendar.getInstance().getTime());
-            sbi.setCreater(getSessionController().getLoggedUser());
 
-            if (sbi.getId() == null) {
-                getBillItemFacade().create(sbi);
-            }
-
+           
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.copy(tbi.getPharmaceuticalBillItem());
 
             ph.setBillItem(sbi);
+            sbi.setPharmaceuticalBillItem(ph);
 
             if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
+                sbi.setCreatedAt(Calendar.getInstance().getTime());
+                sbi.setCreater(getSessionController().getLoggedUser());
+                getBillItemFacade().create(sbi);
+            }else{
+                getBillItemFacade().edit(sbi);
             }
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
-            getRefundBill().getBillItems().add(sbi);
+//            getRefundBill().getBillItems().add(sbi);
         }
     }
 
@@ -1479,7 +1477,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 //
 //        return navigateToPrintPharmacyRetailBillSettlePrint();
 //    }
-
     public String navigateToPrintPharmacyRetailBillSettlePrint() {
         return "/pharmacy/printing/settle_retail_sale_for_cashier?faces-redirect=true";
     }
@@ -1564,7 +1561,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 //        printPreview = true;
 //
 //    }
-
     public Token findTokenFromBill(Bill bill) {
         return tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
     }
@@ -1685,11 +1681,11 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        setPaymentMethodData(p, pm);
+        createPaymentMethodData(p, pm);
         return p;
     }
 
-    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+    public void createPaymentMethodData(Payment p, PaymentMethod pm) {
         if (p == null) {
             return;
         }
@@ -1729,10 +1725,12 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     }
 
     /**
-     * Validates that the absolute value of total payments equals the absolute value of the refund bill's netTotal.
-     * This is called during settlement to ensure that the payment amounts match the refund amount.
+     * Validates that the absolute value of total payments equals the absolute
+     * value of the refund bill's netTotal. This is called during settlement to
+     * ensure that the payment amounts match the refund amount.
      *
-     * @return true if validation fails (there's an error), false if validation passes
+     * @return true if validation fails (there's an error), false if validation
+     * passes
      */
     private boolean validatePaymentRefundMatch() {
         if (getRefundBill() == null) {
@@ -1788,12 +1786,15 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
         saveSaleReturnBillItems(refundPayments);
 
-        getBillFacade().edit(getRefundBill());
-
-        setBill(getBillFacade().find(getRefundBill().getId()));
+//        getBillFacade().edit(getRefundBill());
         paymentService.updateBalances(refundPayments);
+
+        Long tmpBillId = getRefundBill().getId();
+
         clearBill();
         clearBillItem();
+
+        setBill(billService.reloadBill(tmpBillId));
         printPreview = true;
 
     }
@@ -2400,8 +2401,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     // Load and set the PatientDeposit object for displaying balance
                     if (getRefundBill().getPatient() != null) {
                         PatientDeposit pd = patientDepositController.getDepositOfThePatient(
-                            getRefundBill().getPatient(),
-                            sessionController.getDepartment()
+                                getRefundBill().getPatient(),
+                                sessionController.getDepartment()
                         );
                         if (pd != null && pd.getId() != null) {
                             getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
@@ -2478,8 +2479,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         // Load and set the PatientDeposit object for displaying balance
                         if (getRefundBill().getPatient() != null) {
                             PatientDeposit pd = patientDepositController.getDepositOfThePatient(
-                                getRefundBill().getPatient(),
-                                sessionController.getDepartment()
+                                    getRefundBill().getPatient(),
+                                    sessionController.getDepartment()
                             );
                             if (pd != null && pd.getId() != null) {
                                 cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
