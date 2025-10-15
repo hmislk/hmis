@@ -72,6 +72,84 @@
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
+                                                <h:outputLabel value="Institution" />
+                                                <p:autoComplete
+                                                    id="acIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{institutionController.completeCompany}"
+                                                    var="ins"
+                                                    itemLabel="#{ins.name}"
+                                                    itemValue="#{ins}"
+                                                    value="#{billSearch.viewingBill.institution}">
+                                                    <p:ajax event="itemSelect" update="acDept"/>
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="Department" />
+                                                <p:autoComplete
+                                                    id="acDept"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="dept"
+                                                    itemLabel="#{dept.name}"
+                                                    itemValue="#{dept}"
+                                                    value="#{billSearch.viewingBill.department}"/>
+
+                                                <h:outputLabel value="From Institution" />
+                                                <p:autoComplete
+                                                    id="acFIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{institutionController.completeIns}"
+                                                    var="fins"
+                                                    itemLabel="#{fins.name}"
+                                                    itemValue="#{fins}"
+                                                    value="#{billSearch.viewingBill.fromInstitution}">
+                                                    <p:ajax event="itemSelect" update="acFDept"/>
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="From Department" />
+                                                <p:autoComplete
+                                                    id="acFDept"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="fdept"
+                                                    itemLabel="#{fdept.name}"
+                                                    itemValue="#{fdept}"
+                                                    value="#{billSearch.viewingBill.fromDepartment}"/>
+
+                                                <h:outputLabel value="To Institution" />
+                                                <p:autoComplete
+                                                    id="acTIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{institutionController.completeIns}"
+                                                    var="tins"
+                                                    itemLabel="#{tins.name}"
+                                                    itemValue="#{tins}"
+                                                    value="#{billSearch.viewingBill.toInstitution}">
+                                                    <p:ajax event="itemSelect" update="acTDept"/>
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="To Department" />
+                                                <p:autoComplete
+                                                    id="acTDept"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="tdept"
+                                                    itemLabel="#{tdept.name}"
+                                                    itemValue="#{tdept}"
+                                                    value="#{billSearch.viewingBill.toDepartment}"/>
+
 
                                                 <h:outputLabel value="From" />
                                                 <h:outputText value="#{billSearch.viewingBill.fromDepartment.name}" />
