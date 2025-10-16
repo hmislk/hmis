@@ -298,7 +298,9 @@
                             </p:column>
 
                             <p:column headerText="Net Total">
-                                <h:outputText value="#{row.bill.netTotal}" />
+                                <h:outputText value="#{row.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyReportController.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
