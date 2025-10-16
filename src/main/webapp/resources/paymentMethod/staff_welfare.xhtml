@@ -111,7 +111,7 @@
                                 <div><strong>Available:</strong>
                                     <h:outputText
                                         value="Rs. #{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)}"
-                                        styleClass="#{((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)) gt 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}">
+                                        styleClass="#{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0) gt 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </div>
@@ -132,7 +132,7 @@
                         </h:panelGroup>
                     </div>
 
-                    <h:panelGroup rendered="#{((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)) le 0}" layout="block">
+                    <h:panelGroup rendered="#{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0) le 0}" layout="block">
                         <div class="alert alert-danger d-flex align-items-center mt-3" role="alert">
                             <h:outputText styleClass="fas fa-exclamation-triangle me-2" />
                             <div>
@@ -141,7 +141,7 @@
                         </div>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.valueRequired and not empty cc.attrs.paymentMethodData.staffWelfare.totalValue and ((cc.attrs.paymentMethodData.staffWelfare.totalValue ?: 0) gt ((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)))}" layout="block">
+                    <h:panelGroup rendered="#{cc.attrs.valueRequired and not empty cc.attrs.paymentMethodData.staffWelfare.totalValue and (cc.attrs.paymentMethodData.staffWelfare.totalValue ?: 0) gt ((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0))}" layout="block">
                         <div class="alert alert-warning d-flex align-items-center mt-3" role="alert">
                             <h:outputText styleClass="fas fa-info-circle me-2" />
                             <div>
