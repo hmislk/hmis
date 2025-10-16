@@ -525,7 +525,7 @@ public class PurchaseOrderController implements Serializable {
 
     public void generateBillComponent() {
 
-        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getRequestedBill())) {
+        for (PharmaceuticalBillItem i : pharmaceuticalBillItemFacade.getPharmaceuticalBillItems(getRequestedBill())) {
             BillItem bi = new BillItem();
             bi.copy(i.getBillItem());
 
@@ -638,14 +638,6 @@ public class PurchaseOrderController implements Serializable {
 
     public void setAprovedBill(Bill aprovedBill) {
         this.aprovedBill = aprovedBill;
-    }
-
-    public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
-        return pharmaceuticalBillItemFacade;
-    }
-
-    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
-        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
     public SessionController getSessionController() {
