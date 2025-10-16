@@ -56,7 +56,7 @@
                     <h:outputText value="#{row.department.name}" />
                 </p:column>
 
-                <p:column headerText="Cash" styleClass="text-end">
+                <p:column headerText="Cash" styleClass="text-end" rendered="#{cc.attrs.bundle.cashValue ne 0}">
                     <h:outputText value="#{row.cashValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -67,7 +67,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Card" styleClass="text-end">
+                <p:column headerText="Card" styleClass="text-end" rendered="#{cc.attrs.bundle.cardValue ne 0}">
                     <h:outputText value="#{row.cardValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -78,7 +78,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Multiple" styleClass="text-end">
+                <p:column headerText="Multiple" styleClass="text-end" rendered="#{cc.attrs.bundle.multiplePaymentMethodsValue ne 0}">
                     <h:outputText value="#{row.multiplePaymentMethodsValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -89,7 +89,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Staff" styleClass="text-end">
+                <p:column headerText="Staff" styleClass="text-end" rendered="#{cc.attrs.bundle.staffValue ne 0}">
                     <h:outputText value="#{row.staffValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -100,7 +100,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Credit" styleClass="text-end">
+                <p:column headerText="Credit" styleClass="text-end" rendered="#{cc.attrs.bundle.creditValue ne 0}">
                     <h:outputText value="#{row.creditValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -111,7 +111,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Staff Welfare" styleClass="text-end">
+                <p:column headerText="Staff Welfare" styleClass="text-end" rendered="#{cc.attrs.bundle.staffWelfareValue ne 0}">
                     <h:outputText value="#{row.staffWelfareValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -122,7 +122,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Voucher" styleClass="text-end">
+                <p:column headerText="Voucher" styleClass="text-end" rendered="#{cc.attrs.bundle.voucherValue ne 0}">
                     <h:outputText value="#{row.voucherValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -133,7 +133,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="IOU" styleClass="text-end">
+                <p:column headerText="IOU" styleClass="text-end" rendered="#{cc.attrs.bundle.iouValue ne 0}">
                     <h:outputText value="#{row.iouValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -144,7 +144,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Agent" styleClass="text-end">
+                <p:column headerText="Agent" styleClass="text-end" rendered="#{cc.attrs.bundle.agentValue ne 0}">
                     <h:outputText value="#{row.agentValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -155,7 +155,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Cheque" styleClass="text-end">
+                <p:column headerText="Cheque" styleClass="text-end" rendered="#{cc.attrs.bundle.chequeValue ne 0}">
                     <h:outputText value="#{row.chequeValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -166,7 +166,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Slip" styleClass="text-end">
+                <p:column headerText="Slip" styleClass="text-end" rendered="#{cc.attrs.bundle.slipValue ne 0}">
                     <h:outputText value="#{row.slipValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -177,7 +177,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="eWallet" styleClass="text-end">
+                <p:column headerText="eWallet" styleClass="text-end" rendered="#{cc.attrs.bundle.eWalletValue ne 0}">
                     <h:outputText value="#{row.ewalletValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -188,7 +188,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Patient Deposit" styleClass="text-end">
+                <p:column headerText="Patient Deposit" styleClass="text-end" rendered="#{cc.attrs.bundle.patientDepositValue ne 0}">
                     <h:outputText value="#{row.patientDepositValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -199,7 +199,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Patient Points" styleClass="text-end">
+                <p:column headerText="Patient Points" styleClass="text-end" rendered="#{cc.attrs.bundle.patientPointsValue ne 0}">
                     <h:outputText value="#{row.patientPointsValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -210,7 +210,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column headerText="Online Settlement" styleClass="text-end">
+                <p:column headerText="Online Settlement" styleClass="text-end" rendered="#{cc.attrs.bundle.onlineSettlementValue ne 0}">
                     <h:outputText value="#{row.onlineSettlementValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
@@ -233,7 +233,7 @@
                 </p:column>
 
                 <p:column headerText="Collection Total" styleClass="text-end">
-                    <h:outputText value="#{row.cashierCollectionTotal}">
+                    <h:outputText id="lblPharmacyCollectionCollectionTotal" value="#{row.cashierCollectionTotal}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                     <f:facet name="footer">
@@ -256,6 +256,7 @@
             </p:dataTable>
 
             <h:panelGrid columns="1" styleClass="mt-2 w-100">
+                <h:outputText value="Note: Credit bills are NOT listed in this section. See 'Pharmacy Collection Bills - Credit' section below for credit transactions." styleClass="text-info font-weight-bold" />
                 <h:outputText value="Collection Total includes: #{searchController.formatPaymentMethodLabels(cc.attrs.bundle.cashierCollectionPaymentMethods)}" />
                 <h:outputText value="Total NOT included in Collection Total: #{searchController.formatPaymentMethodLabels(cc.attrs.bundle.cashierExcludedPaymentMethods)}" />
             </h:panelGrid>
