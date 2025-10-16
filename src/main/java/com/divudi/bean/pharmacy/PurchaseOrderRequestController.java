@@ -22,7 +22,6 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Ampp;
-import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -36,6 +35,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -102,13 +102,18 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     NotificationController notificationController;
 
+    @EJB
+    BillService billService;
+
     private String emailRecipient;
 
     public void removeSelected() {
         if (selectedBillItems == null) {
             return;
         }
+        saveRequestWithoutMessage();
         for (BillItem b : selectedBillItems) {
+            b.setBill(null);
             b.setRetired(true);
             b.setRetirer(sessionController.getLoggedUser());
             b.setRetiredAt(new Date());
@@ -121,6 +126,9 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getBillItems().removeAll(selectedBillItems);
         calculateBillTotals();
+        if (getCurrentBill().getId() != null) {
+            currentBill = billService.reloadBill(currentBill);
+        }
         selectedBillItems = null;
     }
 
@@ -215,14 +223,13 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
-        Bill currentBill = getCurrentBill();
         if (currentBill == null || bi == null) {
             return;
         }
-
+        saveRequestWithoutMessage();
         Date now = new Date();
-
         bi.setRetired(true);
+        bi.setBill(null);
         bi.setRetirer(sessionController.getLoggedUser());
         bi.setRetiredAt(now);
 
@@ -236,15 +243,9 @@ public class PurchaseOrderRequestController implements Serializable {
         if (bi.getId() != null) {
             billItemFacade.edit(bi);
         }
-
-        if (tmpPbi != null && tmpPbi.getId() != null) {
-            pharmaceuticalBillItemFacade.edit(tmpPbi);
-        }
-
         getBillItems().remove(bi);
-
+        currentBill = billService.reloadBill(currentBill);
         calculateBillTotals();
-
         currentBillItem = null;
     }
 
@@ -398,6 +399,24 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void saveBill() {
+        if (getCurrentBill().getId() == null) {
+            getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
+            getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+            getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+            getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+            getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+            createAndAssignBillNumber();
+            getCurrentBill().setCreater(getSessionController().getLoggedUser());
+            getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
+            getBillFacade().create(getCurrentBill());
+        } else {
+            getCurrentBill().setEditedAt(Calendar.getInstance().getTime());
+            getCurrentBill().setEditor(getSessionController().getLoggedUser());
+            getBillFacade().edit(getCurrentBill());
+        }
+    }
+
+    private void createAndAssignBillNumber() {
         // Check if bill number suffix is configured, if not set default "POR" for Purchase Order Requests
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "");
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
@@ -441,23 +460,6 @@ public class PurchaseOrderRequestController implements Serializable {
                     getCurrentBill().setInsId(billId);
                 }
             }
-        }
-
-        getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
-
-        if (getCurrentBill().getId() == null) {
-            getCurrentBill().setCreater(getSessionController().getLoggedUser());
-            getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
-            getBillFacade().create(getCurrentBill());
-        } else {
-            getCurrentBill().setEditedAt(Calendar.getInstance().getTime());
-            getCurrentBill().setEditor(getSessionController().getLoggedUser());
-            getBillFacade().edit(getCurrentBill());
         }
     }
 
@@ -1002,44 +1004,16 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
-    public BillItemFacade getBillItemFacade() {
+    private BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
 
-    public void setBillItemFacade(BillItemFacade billItemFacade) {
-        this.billItemFacade = billItemFacade;
-    }
-
-    public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
-        return pharmaceuticalBillItemFacade;
-    }
-
-    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
-        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
-    }
-
-    public PharmacyBean getPharmacyBean() {
+    private PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
-    }
-
-    public ItemsDistributorsFacade getItemsDistributorsFacade() {
-        return itemsDistributorsFacade;
-    }
-
-    public void setItemsDistributorsFacade(ItemsDistributorsFacade itemsDistributorsFacade) {
-        this.itemsDistributorsFacade = itemsDistributorsFacade;
-    }
-
-    public PharmacyController getPharmacyController() {
+    private PharmacyController getPharmacyController() {
         return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
     }
 
     public List<BillItem> getSelectedBillItems() {

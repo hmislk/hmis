@@ -11,6 +11,7 @@ import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.bean.lab.PatientInvestigationController;
+import com.divudi.bean.lab.PatientReportController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.GrnReturnApprovalController;
 import com.divudi.core.data.BillClassType;
@@ -118,7 +119,12 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.pharmacy.PreReturnController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
@@ -2600,6 +2606,20 @@ public class BillSearch implements Serializable {
 //            JsfUtil.addSuccessMessage("Awaiting Cancellation");
     }
 
+    public PatientInvestigation getPatientInvestigationsFromBillItem(BillItem billItem) {
+        String j = "select pi from PatientInvestigation pi where pi.retired = :ret and pi.billItem =:billItem";
+
+        Map m = new HashMap();
+        m.put("billItem", billItem);
+        m.put("ret", false);
+        return patientInvestigationFacade.findFirstByJpql(j, m);
+    }
+
+    @EJB
+    PatientSampleComponantFacade patientSampleComponantFacade;
+    @Inject
+    PatientReportController patientReportController;
+
     public void cancelCollectingCentreBill() {
         if (!ccBillCancellingStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Cancellation already Started");
@@ -2614,6 +2634,67 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             ccBillCancellingStarted.set(false);
             return;
+        }
+
+        if (!getWebUserController().hasPrivilege("BillCancel")) {
+
+            // check have PatientReport
+            List<PatientReport> pr = patientReportController.allPatientReportsInBill(getBill());
+
+            if (pr == null || pr.isEmpty()) {
+                
+                for (BillItem bi : billService.fetchBillItems(bill)) {
+                    if (bi.getItem() instanceof Investigation) {
+                        PatientInvestigation pi = getPatientInvestigationsFromBillItem(bi);
+                        if (pi == null) {
+                            JsfUtil.addErrorMessage("Patient Investigation not found for this item.");
+                            ccBillCancellingStarted.set(false);
+                            return;
+                        }
+                        if (pi.getStatus() != PatientInvestigationStatus.ORDERED) {
+
+                            String investigationjpql = "select psc from PatientSampleComponant psc "
+                                    + " where psc.patientInvestigation = :pi "
+                                    + " and psc.separated = :sept and psc.retired = :ret "
+                                    + " and psc.patientSample.sampleRejected = :rej";
+
+                            Map params = new HashMap();
+                            params.put("pi", pi);
+                            params.put("sept", false);
+                            params.put("ret", false);
+                            params.put("rej", false);
+
+                            PatientSampleComponant psc = patientSampleComponantFacade.findFirstByJpql(investigationjpql, params);
+
+                            if (psc == null) {
+                                //can Cancel Bill
+                            } else {
+                                PatientSample currentPatientSample = psc.getPatientSample();
+
+                                if (currentPatientSample == null) {
+                                    //can Cancel bill
+                                } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                                    JsfUtil.addErrorMessage("This Bill can't be Canceled. This " + pi.getBillItem().getItem().getName() + " sample has been sent to an external lab.");
+                                    ccBillCancellingStarted.set(false);
+                                    return;
+                                } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+                                    JsfUtil.addErrorMessage("This Bill can't be Canceled. This " + pi.getBillItem().getItem().getName() + " sample has been sent to the lab.");
+                                    ccBillCancellingStarted.set(false);
+                                    return;
+                                } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
+                                    JsfUtil.addErrorMessage("This Bill can't be Canceled. This " + pi.getBillItem().getItem().getName() + " sample is currently in the lab.");
+                                    ccBillCancellingStarted.set(false);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                JsfUtil.addErrorMessage("This Bill can't be Canceled. Becose " + pr.size() + " Reports on this bill have already been completed..");
+                ccBillCancellingStarted.set(false);
+                return;
+            }
         }
 
         if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
@@ -4539,6 +4620,7 @@ public class BillSearch implements Serializable {
         pharmacyPurchaseController.setBill(bb);
         return "/pharmacy/pharmacy_purchase?faces-redirect=true";
     }
+
     public String navigateToPharmacyGrnBillView() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");

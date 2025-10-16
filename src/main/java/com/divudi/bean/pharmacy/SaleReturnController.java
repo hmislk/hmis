@@ -468,6 +468,55 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    /**
+     * Validates that the absolute value of total payments equals the absolute value of the refund bill's netTotal.
+     * This is called during settlement to ensure that the payment amounts match the refund amount.
+     *
+     * @return true if validation fails (there's an error), false if validation passes
+     */
+    private boolean validatePaymentRefundMatch() {
+        if (getReturnBill() == null) {
+            JsfUtil.addErrorMessage("Return bill is not initialized");
+            return true;
+        }
+
+        // Calculate total of payments that will be created
+        double totalPayments = 0.0;
+
+        if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            // For multiple payment methods, calculate the sum from payment method data
+            if (getPaymentMethodData() != null
+                    && getPaymentMethodData().getPaymentMethodMultiple() != null
+                    && getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                // Calculate the sum of all payment components
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    totalPayments += multiplePaymentComponentValue(cd);
+                }
+            }
+        } else {
+            // For single payment methods, use the bill's netTotal as the payment amount
+            // (This is how paymentService.createPayment works for single payment methods)
+            totalPayments = getReturnBill().getNetTotal();
+        }
+
+        // Get absolute values for comparison (both should be positive for comparison)
+        double absRefundTotal = Math.abs(getReturnBill().getNetTotal());
+        double absPaymentTotal = Math.abs(totalPayments);
+
+        // Allow a tolerance of 1.0 for rounding differences
+        double difference = Math.abs(absRefundTotal - absPaymentTotal);
+
+        if (difference > 1.0) {
+            JsfUtil.addErrorMessage("Payment total does not match refund total. "
+                    + "Refund Amount: " + String.format("%.2f", absRefundTotal)
+                    + ", Payment Total: " + String.format("%.2f", absPaymentTotal)
+                    + ". Please edit payment methods to match the refund amount.");
+            return true;
+        }
+
+        return false;
+    }
+
     public void settle() {
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
@@ -496,6 +545,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 //            return;
 //        }
 
+        // Validate that payment total matches refund total
+        if (validatePaymentRefundMatch()) {
+            return; // Validation failed, error message already displayed
+        }
+
         savePreReturnBill();
         savePreReturnBillComponents();
 
@@ -504,10 +558,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         finalReturnBill = saveSaleFinalReturnBill();
         saveSaleComponent(finalReturnBill);
+        applyRefundSignToPaymentData();
         List<Payment> payments = paymentService.createPayment(finalReturnBill, getPaymentMethodData());
-        for (Payment p : payments) {
-            drawerController.updateDrawerForOuts(p);
-        }
         // Update patient deposit balances and create history records
         paymentService.updateBalances(payments);
 
@@ -522,6 +574,62 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         JsfUtil.addSuccessMessage("Successfully Returned");
         returnBillcomment = null;
 
+    }
+
+    private void applyRefundSignToPaymentData() {
+        PaymentMethodData data = getPaymentMethodData();
+        if (data == null) {
+            return;
+        }
+
+        PaymentMethod paymentMethod = null;
+        if (getFinalReturnBill() != null) {
+            paymentMethod = getFinalReturnBill().getPaymentMethod();
+        }
+        if (paymentMethod == null) {
+            paymentMethod = getReturnPaymentMethod();
+        }
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            ComponentDetail multiple = data.getPaymentMethodMultiple();
+            if (multiple != null && multiple.getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail component : multiple.getMultiplePaymentMethodComponentDetails()) {
+                    if (component == null) {
+                        continue;
+                    }
+                    negateComponentTotal(component);
+                    negatePaymentMethodData(component.getPaymentMethodData());
+                }
+            }
+        } else {
+            negatePaymentMethodData(data);
+        }
+    }
+
+    private void negatePaymentMethodData(PaymentMethodData paymentMethodData) {
+        if (paymentMethodData == null) {
+            return;
+        }
+
+        negateComponentTotal(paymentMethodData.getCash());
+        negateComponentTotal(paymentMethodData.getCreditCard());
+        negateComponentTotal(paymentMethodData.getCheque());
+        negateComponentTotal(paymentMethodData.getSlip());
+        negateComponentTotal(paymentMethodData.getEwallet());
+        negateComponentTotal(paymentMethodData.getPatient_deposit());
+        negateComponentTotal(paymentMethodData.getCredit());
+        negateComponentTotal(paymentMethodData.getStaffCredit());
+        negateComponentTotal(paymentMethodData.getStaffWelfare());
+        negateComponentTotal(paymentMethodData.getOnlineSettlement());
+        negateComponentTotal(paymentMethodData.getIou());
+    }
+
+    private void negateComponentTotal(ComponentDetail componentDetail) {
+        if (componentDetail == null) {
+            return;
+        }
+
+        componentDetail.setTotalValue(0 - Math.abs(componentDetail.getTotalValue()));
     }
 
     public void fillReturningQty() {
@@ -553,7 +661,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             Payment originalPayment = originalPayments.get(0);
             returnPaymentMethod = originalPayment.getPaymentMethod();
 
-            // Initialize paymentMethodData based on payment method
+            // Initialize paymentMethodData based on payment method (using absolute values for UI display)
             switch (originalPayment.getPaymentMethod()) {
                 case Cash:
                     getPaymentMethodData().getCash().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
@@ -602,13 +710,22 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                     getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                     break;
                 case Staff:
-                case Staff_Welfare:
-                    // Staff information is stored in bill.toStaff, not in payment
-                    if (bill != null && bill.getToStaff() != null) {
-                        toStaff = bill.getToStaff();
-                        getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
-                        getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    Staff staffForCredit = originalPayment.getToStaff();
+                    if (staffForCredit == null && getBill() != null) {
+                        staffForCredit = getBill().getToStaff();
                     }
+                    getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                    getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    break;
+                case Staff_Welfare:
+                    Staff staffForWelfare = originalPayment.getToStaff();
+                    if (staffForWelfare == null && getBill() != null) {
+                        staffForWelfare = getBill().getToStaff();
+                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                     break;
                 default:
                     // For other payment methods, just set the total value
@@ -625,7 +742,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 ComponentDetail cd = new ComponentDetail();
                 cd.setPaymentMethod(originalPayment.getPaymentMethod());
 
-                // Set payment details based on method - use absolute value for refunds
+                // Set payment details based on method - use absolute value for UI display
                 double refundAmount = Math.abs(originalPayment.getPaidValue());
 
                 switch (originalPayment.getPaymentMethod()) {
@@ -676,12 +793,22 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                         cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                         break;
                     case Staff:
-                    case Staff_Welfare:
-                        // Staff information is stored in bill.toStaff
-                        if (bill != null && bill.getToStaff() != null) {
-                            cd.getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
-                            cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        Staff staffForCredit = originalPayment.getToStaff();
+                        if (staffForCredit == null && getBill() != null) {
+                            staffForCredit = getBill().getToStaff();
                         }
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff_Welfare:
+                        Staff staffForWelfare = originalPayment.getToStaff();
+                        if (staffForWelfare == null && getBill() != null) {
+                            staffForWelfare = getBill().getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     default:
                         // For other payment methods

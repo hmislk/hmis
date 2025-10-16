@@ -4,6 +4,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BillValidation;
 import com.divudi.core.data.PaymentMethod;
+import static com.divudi.core.data.PaymentMethod.Staff;
 import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -234,7 +235,8 @@ public class PaymentService {
                     payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
                     payment.setComments(paymentMethodData.getEwallet().getComment());
                     payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
-                    payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution()); // Keeping for backword compatibility
+                    payment.setBank(paymentMethodData.getEwallet().getInstitution());
                 }
                 break;
             case Agent:
@@ -277,13 +279,25 @@ public class PaymentService {
             case OnCall:
             case Staff:
                 if (paymentMethodData.getStaffCredit() != null) {
+                    payment.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
                     payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                     payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                }
+                break;
+            case Staff_Welfare:
+                if (paymentMethodData.getStaffWelfare() != null) {
+                    payment.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
+                    payment.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
+                    payment.setComments(paymentMethodData.getStaffWelfare().getComment());
                 }
                 break;
             case OnlineSettlement:
                 if (paymentMethodData.getOnlineSettlement() != null) {
                     payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    payment.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    payment.setRealizedAt(paymentMethodData.getOnlineSettlement().getDate());
+                    payment.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    payment.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
                     payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
                 }
                 break;
@@ -570,35 +584,56 @@ public class PaymentService {
 
                 switch (pm) {
                     case Cash:
-                        if (pmd.getCash() != null) multiplePaymentMethodTotalValue += pmd.getCash().getTotalValue();
+                        if (pmd.getCash() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getCash().getTotalValue();
+                        }
                         break;
                     case Card:
-                        if (pmd.getCreditCard() != null) multiplePaymentMethodTotalValue += pmd.getCreditCard().getTotalValue();
+                        if (pmd.getCreditCard() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getCreditCard().getTotalValue();
+                        }
                         break;
                     case Cheque:
-                        if (pmd.getCheque() != null) multiplePaymentMethodTotalValue += pmd.getCheque().getTotalValue();
+                        if (pmd.getCheque() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getCheque().getTotalValue();
+                        }
                         break;
                     case ewallet:
-                        if (pmd.getEwallet() != null) multiplePaymentMethodTotalValue += pmd.getEwallet().getTotalValue();
+                        if (pmd.getEwallet() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getEwallet().getTotalValue();
+                        }
                         break;
                     case PatientDeposit:
-                        if (pmd.getPatient_deposit() != null) multiplePaymentMethodTotalValue += pmd.getPatient_deposit().getTotalValue();
+                        if (pmd.getPatient_deposit() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getPatient_deposit().getTotalValue();
+                        }
                         break;
                     case Slip:
-                        if (pmd.getSlip() != null) multiplePaymentMethodTotalValue += pmd.getSlip().getTotalValue();
+                        if (pmd.getSlip() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getSlip().getTotalValue();
+                        }
                         break;
                     case Staff:
-                        if (pmd.getStaffCredit() != null) multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
+                        if (pmd.getStaffCredit() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
+                        }
+                        break;
+                    case Staff_Welfare:
+                        if (pmd.getStaffWelfare() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getStaffWelfare().getTotalValue();
+                        }
                         break;
                     case OnlineSettlement:
-                        if (pmd.getOnlineSettlement() != null) multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
+                        if (pmd.getOnlineSettlement() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
+                        }
                         break;
                     default:
                         break;
                 }
 
             }
-            
+
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue >= 1.0) {
@@ -670,7 +705,7 @@ public class PaymentService {
                     }
                     if (paymentMethodData.getEwallet().getInstitution() == null
                             || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
-                                && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
+                            && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                         bv.setErrorMessage("Please Fill eWallet Reference Number and Bank.");
                         bv.setErrorPresent(true);
                         return bv;
@@ -765,7 +800,7 @@ public class PaymentService {
         if (paymentMethod == PaymentMethod.ewallet) {
             if (paymentMethodData.getEwallet().getInstitution() == null
                     || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
-                        && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
+                    && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
             }
