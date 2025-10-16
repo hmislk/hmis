@@ -127,7 +127,7 @@
                                 <div><strong>Available:</strong>
                                     <h:outputText
                                         value="Rs. #{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)}"
-                                        styleClass="#{((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)) gt 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}">
+                                        styleClass="#{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0) gt 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </div>
