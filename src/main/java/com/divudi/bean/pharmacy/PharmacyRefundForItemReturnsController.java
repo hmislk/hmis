@@ -41,6 +41,7 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.WebUser;
@@ -227,9 +228,10 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
-
-        total = getRefundBill().getNetTotal();
-        return total - calculateMultiplePaymentMethodTotal();
+        double billTotal = Math.abs(getRefundBill().getNetTotal());
+        double paidTotal = Math.abs(calculateMultiplePaymentMethodTotal());
+        total = billTotal;
+        return billTotal - paidTotal;
     }
 
     public void recieveRemainAmountAutomatically() {
@@ -456,8 +458,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         Bill originalSalePreBill = originalSaleBill.getReferenceBill();
-        
-        
 
         Bill reloadedReturnBill = this.itemReturnBill;
 
@@ -1058,24 +1058,24 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
             sbi.setBill(getRefundBill());
             sbi.setReferanceBillItem(tbi);
-            sbi.setCreatedAt(Calendar.getInstance().getTime());
-            sbi.setCreater(getSessionController().getLoggedUser());
 
-            if (sbi.getId() == null) {
-                getBillItemFacade().create(sbi);
-            }
-
+           
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.copy(tbi.getPharmaceuticalBillItem());
 
             ph.setBillItem(sbi);
+            sbi.setPharmaceuticalBillItem(ph);
 
             if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
+                sbi.setCreatedAt(Calendar.getInstance().getTime());
+                sbi.setCreater(getSessionController().getLoggedUser());
+                getBillItemFacade().create(sbi);
+            }else{
+                getBillItemFacade().edit(sbi);
             }
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
-            getRefundBill().getBillItems().add(sbi);
+//            getRefundBill().getBillItems().add(sbi);
         }
     }
 
@@ -1259,12 +1259,12 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         if (refundBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getCash().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getCheque().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getSlip().getTotalValue());
             }
         }
         return multiplePaymentMethodTotalValue;
@@ -1361,29 +1361,30 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         System.out.println("=== END CHECKANDUPDATE DEBUG ===");
 
         if (getRefundBill().getPaymentMethod() != null) {
+            double billTotal = Math.abs(getRefundBill().getNetTotal());
             switch (getRefundBill().getPaymentMethod()) {
                 case Cash:
-                    balance = getRefundBill().getNetTotal() - cashPaid;
+                    balance = billTotal - Math.abs(cashPaid);
                     break;
                 case Card:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getCreditCard().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getCreditCard().getTotalValue());
                     break;
                 case Cheque:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getCheque().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getCheque().getTotalValue());
                     break;
                 case Slip:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getSlip().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getSlip().getTotalValue());
                     break;
                 case ewallet:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getEwallet().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getEwallet().getTotalValue());
                     break;
                 case MultiplePaymentMethods:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - calculateMultiplePaymentMethodTotal();
+                    balance = billTotal - Math.abs(calculateMultiplePaymentMethodTotal());
                     break;
                 case Staff_Welfare:
                     cashPaid = 0;
@@ -1391,7 +1392,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     break;
                 case PatientDeposit:
                     cashPaid = 0;
-                    balance = getRefundBill().getNetTotal() - getPaymentMethodData().getPatient_deposit().getTotalValue();
+                    balance = billTotal - Math.abs(getPaymentMethodData().getPatient_deposit().getTotalValue());
                     break;
             }
         }
@@ -1479,7 +1480,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 //
 //        return navigateToPrintPharmacyRetailBillSettlePrint();
 //    }
-
     public String navigateToPrintPharmacyRetailBillSettlePrint() {
         return "/pharmacy/printing/settle_retail_sale_for_cashier?faces-redirect=true";
     }
@@ -1564,7 +1564,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 //        printPreview = true;
 //
 //    }
-
     public Token findTokenFromBill(Bill bill) {
         return tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
     }
@@ -1685,11 +1684,11 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        setPaymentMethodData(p, pm);
+        createPaymentMethodData(p, pm);
         return p;
     }
 
-    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+    public void createPaymentMethodData(Payment p, PaymentMethod pm) {
         if (p == null) {
             return;
         }
@@ -1729,10 +1728,12 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     }
 
     /**
-     * Validates that the absolute value of total payments equals the absolute value of the refund bill's netTotal.
-     * This is called during settlement to ensure that the payment amounts match the refund amount.
+     * Validates that the absolute value of total payments equals the absolute
+     * value of the refund bill's netTotal. This is called during settlement to
+     * ensure that the payment amounts match the refund amount.
      *
-     * @return true if validation fails (there's an error), false if validation passes
+     * @return true if validation fails (there's an error), false if validation
+     * passes
      */
     private boolean validatePaymentRefundMatch() {
         if (getRefundBill() == null) {
@@ -1788,12 +1789,15 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
         saveSaleReturnBillItems(refundPayments);
 
-        getBillFacade().edit(getRefundBill());
-
-        setBill(getBillFacade().find(getRefundBill().getId()));
+//        getBillFacade().edit(getRefundBill());
         paymentService.updateBalances(refundPayments);
+
+        Long tmpBillId = getRefundBill().getId();
+
         clearBill();
         clearBillItem();
+
+        setBill(billService.reloadBill(tmpBillId));
         printPreview = true;
 
     }
@@ -2358,6 +2362,13 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         System.out.println("=== INIT REFUND PAYMENT DEBUG ===");
         System.out.println("Original payments count: " + originalPayments.size());
 
+        // Fetch the original sale bill for Staff/Staff_Welfare payment methods
+        Bill irb = getItemReturnBill();
+        Bill originalSaleBill = null;
+        if (irb != null && irb.getReferenceBill() instanceof Bill) {
+            originalSaleBill = (Bill) irb.getReferenceBill();
+        }
+
         // If single payment method
         if (originalPayments.size() == 1) {
             Payment originalPayment = originalPayments.get(0);
@@ -2400,8 +2411,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     // Load and set the PatientDeposit object for displaying balance
                     if (getRefundBill().getPatient() != null) {
                         PatientDeposit pd = patientDepositController.getDepositOfThePatient(
-                            getRefundBill().getPatient(),
-                            sessionController.getDepartment()
+                                getRefundBill().getPatient(),
+                                sessionController.getDepartment()
                         );
                         if (pd != null && pd.getId() != null) {
                             getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
@@ -2425,6 +2436,24 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     System.out.println("After setting - Referral No: " + getPaymentMethodData().getCredit().getReferralNo());
                     System.out.println("After setting - Reference No: " + getPaymentMethodData().getCredit().getReferenceNo());
                     System.out.println("After setting - Comment: " + getPaymentMethodData().getCredit().getComment());
+                    break;
+                case Staff:
+                    Staff staffForCredit = originalPayment.getToStaff();
+                    if (staffForCredit == null && originalSaleBill != null) {
+                        staffForCredit = originalSaleBill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                    getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    break;
+                case Staff_Welfare:
+                    Staff staffForWelfare = originalPayment.getToStaff();
+                    if (staffForWelfare == null && originalSaleBill != null) {
+                        staffForWelfare = originalSaleBill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                     break;
                 default:
                     // For other payment methods, just set the total value
@@ -2478,8 +2507,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         // Load and set the PatientDeposit object for displaying balance
                         if (getRefundBill().getPatient() != null) {
                             PatientDeposit pd = patientDepositController.getDepositOfThePatient(
-                                getRefundBill().getPatient(),
-                                sessionController.getDepartment()
+                                    getRefundBill().getPatient(),
+                                    sessionController.getDepartment()
                             );
                             if (pd != null && pd.getId() != null) {
                                 cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
@@ -2493,6 +2522,24 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
                         cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff:
+                        Staff staffForCredit = originalPayment.getToStaff();
+                        if (staffForCredit == null && originalSaleBill != null) {
+                            staffForCredit = originalSaleBill.getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff_Welfare:
+                        Staff staffForWelfare = originalPayment.getToStaff();
+                        if (staffForWelfare == null && originalSaleBill != null) {
+                            staffForWelfare = originalSaleBill.getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     default:
                         // For other payment methods

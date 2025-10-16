@@ -15,54 +15,158 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-column gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel for="txtVal" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
-                <p:inputText
-                    autocomplete="off"
-                    value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}"
-                    id="txtVal"
-                    styleClass="form-control"
-                    style="width: 150px;">
-                    <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
-                    <f:convertNumber pattern="#,##0.00" />
-                </p:inputText>
+        <p:panel class="m-1 w-100">
+            <f:facet name="header">
+                <h:outputText styleClass="fa fa-users" />
+                <h:outputText value="Staff Welfare Payment" class="mx-4" />
+            </f:facet>
+
+            <div class="row">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <p:outputLabel for="txtVal" value="Amount" styleClass="form-label" />
+                    <p:inputText
+                        autocomplete="off"
+                        value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}"
+                        id="txtVal"
+                        styleClass="form-control"
+                        placeholder="Enter amount to pay">
+                        <p:ajax
+                            event="keyup"
+                            process="@this"
+                            update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId} welfareDetails"
+                            listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:inputText>
+                </div>
             </div>
 
-            <div class="d-flex flex-column gap-2">
-                <p:outputLabel for="welfareStaff" value="Select Staff:" styleClass="form-label mb-0"/>
-                <p:autoComplete
-                    minQueryLength="4"
-                    forceSelection="true"
-                    value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
-                    id="welfareStaff"
-                    completeMethod="#{staffController.completeStaff}"
-                    var="mys"
-                    styleClass="w-100"
-                    placeholder="Type at least 4 letters to search staff"
-                    inputStyleClass="form-control"
-                    itemLabel="#{mys.person.name}"
-                    itemValue="#{mys}"
-                    size="10">
-                    <p:column headerText="Name" style="padding: 8px;">
-                        <h:outputText value="#{mys.person.nameWithTitle}" />
-                    </p:column>
-                    <p:column headerText="EPF" style="padding: 8px;">
-                        <h:outputText value="#{mys.epfNo}" />
-                    </p:column>
-                    <p:column headerText="Welfare Entitlement" style="padding: 8px;">
-                        <h:outputText value="#{mys.annualWelfareQualified}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Welfare Utilized" style="padding: 8px;">
-                        <h:outputText value="#{mys.annualWelfareUtilized}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputText>
-                    </p:column>
-                    <p:ajax event="itemSelect" process="@this" />
-                </p:autoComplete>
+            <div class="row">
+                <div class="col-12">
+                    <p:outputLabel value="Select Staff" class="form-label" />
+                    <p:autoComplete
+                        minQueryLength="1"
+                        forceSelection="true"
+                        value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
+                        id="welfareStaff"
+                        completeMethod="#{staffController.completeStaff}"
+                        var="mys"
+                        class="w-100"
+                        placeholder="Staff (Type Name, Code or EPF No to search)"
+                        inputStyleClass="form-control"
+                        itemLabel="#{mys.person.name}"
+                        itemValue="#{mys}"
+                        size="10">
+                        <p:column headerText="Name" style="padding: 2px;">
+                            <h:outputText value="#{mys.person.nameWithTitle}" />
+                        </p:column>
+                        <p:column headerText="Code" style="padding: 2px;">
+                            <h:outputText value="#{mys.staffCode}" />
+                        </p:column>
+                        <p:column headerText="EPF" style="padding: 2px;">
+                            <h:outputText value="#{mys.epfNo}" />
+                        </p:column>
+                        <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                            <h:outputText value="#{mys.annualWelfareQualified}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Welfare Utilized" style="padding: 2px;">
+                            <h:outputText value="#{mys.annualWelfareUtilized}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+                        <p:ajax
+                            event="itemSelect"
+                            process="@this"
+                            update="welfareDetails :#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" />
+                    </p:autoComplete>
+                </div>
             </div>
-        </div>
+
+            <h:panelGroup id="welfareDetails" class="mt-3">
+                <h:panelGroup rendered="#{cc.attrs.paymentMethodData.staffWelfare.toStaff != null}">
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="border rounded p-3 h-100 bg-light">
+                                <h:outputText styleClass="fas fa-user text-primary mb-2 d-block" style="font-size: 1.2em;" />
+                                <strong>Staff Information</strong>
+                                <hr class="my-2" />
+                                <div><strong>Name:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.person.nameWithTitle}</div>
+                                <div><strong>Code:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.staffCode}</div>
+                                <div><strong>EPF No:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.epfNo}</div>
+                                <div><strong>Designation:</strong> #{cc.attrs.paymentMethodData.staffWelfare.toStaff.designation.name}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="border rounded p-3 h-100" style="background-color: #e8f5e8;">
+                                <h:outputText styleClass="fas fa-coins text-success mb-2 d-block" style="font-size: 1.2em;" />
+                                <strong>Welfare Entitlement</strong>
+                                <hr class="my-2" />
+                                <div class="text-center">
+                                    <h:outputText
+                                        value="Rs. #{cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified}"
+                                        styleClass="h4 text-success fw-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </div>
+                                <div class="text-muted text-center">Annual Qualified Amount</div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="border rounded p-3 h-100" style="background-color: #fff3cd;">
+                                <h:outputText styleClass="fas fa-chart-line text-warning mb-2 d-block" style="font-size: 1.2em;" />
+                                <strong>Welfare Utilization</strong>
+                                <hr class="my-2" />
+                                <div><strong>Utilized:</strong>
+                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized}" styleClass="text-warning">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </div>
+                                <div><strong>Available:</strong>
+                                    <h:outputText
+                                        value="Rs. #{(cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)}"
+                                        styleClass="#{((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)) gt 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h:panelGroup rendered="#{not empty cc.attrs.paymentMethodData.staffWelfare.totalValue}" layout="block" styleClass="col-lg-3 col-md-6 col-sm-6">
+                            <div class="border rounded p-3 h-100" style="background-color: #e1f0ff;">
+                                <h:outputText styleClass="fas fa-hand-holding-usd text-info mb-2 d-block" style="font-size: 1.2em;" />
+                                <strong>Requested Amount</strong>
+                                <hr class="my-2" />
+                                <div class="text-center">
+                                    <h:outputText value="Rs. #{cc.attrs.paymentMethodData.staffWelfare.totalValue}" styleClass="h4 text-info fw-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+
+                    <h:panelGroup rendered="#{((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)) le 0}" layout="block">
+                        <div class="alert alert-danger d-flex align-items-center mt-3" role="alert">
+                            <h:outputText styleClass="fas fa-exclamation-triangle me-2" />
+                            <div>
+                                <strong>Insufficient Welfare Balance!</strong> This staff member has no remaining welfare entitlement.
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{not empty cc.attrs.paymentMethodData.staffWelfare.totalValue and ((cc.attrs.paymentMethodData.staffWelfare.totalValue ?: 0) gt ((cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareQualified ?: 0) - (cc.attrs.paymentMethodData.staffWelfare.toStaff.annualWelfareUtilized ?: 0)))}" layout="block">
+                        <div class="alert alert-warning d-flex align-items-center mt-3" role="alert">
+                            <h:outputText styleClass="fas fa-info-circle me-2" />
+                            <div>
+                                <strong>Requested amount exceeds available balance.</strong> Review the payment amount or select a different payment option.
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+        </p:panel>
     </cc:implementation>
 </html>
