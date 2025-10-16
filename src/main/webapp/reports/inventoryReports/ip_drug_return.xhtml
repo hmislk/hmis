@@ -280,14 +280,14 @@
                             </p:column>
 
 
-                            <p:column headerText="Rate">
-                                <h:outputText value="#{0.0 - row.rate}">
+                            <p:column headerText="Purchase Rate">
+                                <h:outputText value="#{0.0 - row.pharmaceuticalBillItem.itemBatch.purcahseRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Total">
-                                <h:outputText value="#{row.rate * row.qty}">
+                            <p:column headerText="Purchase Value">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
