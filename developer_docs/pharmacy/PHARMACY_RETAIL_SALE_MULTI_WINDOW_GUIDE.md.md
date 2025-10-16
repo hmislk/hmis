@@ -64,57 +64,68 @@ Smoke tests (add item, discount, settle, print, return) pass on all four pages.
 
 When using Claude Code or similar AI tools to perform this synchronization:
 
-1. **Use a specialized agent**: Launch a `general-purpose` agent with explicit instructions to:
-   - Read the original files first to understand current state
-   - Copy entire file contents to each numbered copy
-   - Apply systematic find-and-replace for bean names
-   - Update page-specific elements (titles, navigation actions)
+### Recommended Workflow: Delete, Copy, and Update
 
-2. **Provide complete context in a single prompt** rather than iterative instructions:
-   - List all 8 files (2 originals + 6 copies) with their exact paths
-   - Specify exact bean name mappings (e.g., `pharmacySaleController` → `pharmacySaleController1`)
-   - Include page title mappings (e.g., "Sale 1" → "Sale 2")
-   - List action URL mappings (e.g., `pharmacy_bill_retail_sale` → `pharmacy_bill_retail_sale_1`)
+This approach is simpler and avoids many synchronization errors:
 
-3. **Token optimization**:
-   - DO NOT read large files line-by-line for comparison
-   - DO NOT use Grep for multiple patterns sequentially
-   - Instead: Read original once, then perform complete file replacement with systematic substitutions
-   - For Java files: Read first 150 lines to verify package/imports/class declaration, then perform full replacement
+1. **Step 1: Delete all existing copies**
+   - Delete `pharmacy_bill_retail_sale_1.xhtml`
+   - Delete `pharmacy_bill_retail_sale_2.xhtml`
+   - Delete `pharmacy_bill_retail_sale_3.xhtml`
+   - Delete `PharmacySaleController1.java`
+   - Delete `PharmacySaleController2.java`
+   - Delete `PharmacySaleController3.java`
 
-3a. **CRITICAL: Constructor name synchronization**:
-   - ⚠️ **ALWAYS update constructor names** to match the new class name
-   - Original: `public PharmacySaleController() {}`
-   - Copy 1 must be: `public PharmacySaleController1() {}`
-   - Copy 2 must be: `public PharmacySaleController2() {}`
-   - Copy 3 must be: `public PharmacySaleController3() {}`
-   - **This is a Java requirement**: Constructor name MUST match class name
-   - **Common error**: Forgetting to rename constructors causes compilation failure: "invalid method declaration; return type required"
-   - **Agent instruction**: When performing find-replace on class names, ALWAYS include constructor names in the replacement pattern
+2. **Step 2: Create fresh copies from originals**
+   - Copy `pharmacy_bill_retail_sale.xhtml` → `pharmacy_bill_retail_sale_1.xhtml`
+   - Copy `pharmacy_bill_retail_sale.xhtml` → `pharmacy_bill_retail_sale_2.xhtml`
+   - Copy `pharmacy_bill_retail_sale.xhtml` → `pharmacy_bill_retail_sale_3.xhtml`
+   - Copy `PharmacySaleController.java` → `PharmacySaleController1.java`
+   - Copy `PharmacySaleController.java` → `PharmacySaleController2.java`
+   - Copy `PharmacySaleController.java` → `PharmacySaleController3.java`
 
-4. **Verification strategy**:
-   - After updates, spot-check 2-3 EL expressions per file using Grep
-   - Verify class names and @Named annotations in Java files using Grep with pattern matching
-   - Check navigation button disabled states match the page number
+3. **Step 3: Update specific locations in each copy**
 
-5. **Example agent prompt structure**:
-   ```
-   Task: Synchronize 3 copies from 2 originals
+   For each numbered copy, update these exact locations (use find-and-replace):
 
-   Originals (DO NOT MODIFY):
-   - [full path] uses #{beanName}
-   - [full path] @Named("beanName")
+   **XHTML Files (_1.xhtml, _2.xhtml, _3.xhtml):**
+   - Page title: "Sale 1" → "Sale 2/3/4"
+   - Bean name: `#{pharmacySaleController` → `#{pharmacySaleController1/2/3` (GLOBAL replace)
+   - Navigation actions: `pharmacy_bill_retail_sale?` → `pharmacy_bill_retail_sale_1/2/3?` (for "New Bill" button)
+   - Disabled button: Update which "Sale N" button is disabled to match page number
 
-   Copies to UPDATE (list all 6):
-   - [full path] → use #{beanName1}, title "Sale 2", action "page_1"
-   - [full path] → @Named("beanName1")
-   (repeat for all copies)
+   **Java Files (Controller1/2/3.java):**
+   - Class name: `class PharmacySaleController` → `class PharmacySaleController1/2/3`
+   - Constructor: `public PharmacySaleController()` → `public PharmacySaleController1/2/3()`
+   - @Named annotation: `@Named` → `@Named("pharmacySaleController1/2/3")` (or add if just `@Named`)
+   - Navigation returns: `return "pharmacy_bill_retail_sale"` → `return "pharmacy_bill_retail_sale_1/2/3"` (GLOBAL replace)
+   - Converter bean lookup: `"pharmacySaleController"` in ELResolver → `"pharmacySaleController1/2/3"`
 
-   Instructions:
-   1. Read original files
-   2. For each copy: full content replacement with substitutions
-   3. Verify with spot checks
-   ```
+### Why This Approach Is Better
 
-This approach typically uses 30-40% fewer tokens than iterative comparison methods.
+- **Prevents drift**: Copies are always in sync with the original
+- **Fewer errors**: No partial updates or missed locations
+- **Easier to verify**: Only need to check the specific update points
+- **Token efficient**: Simple copy operation + targeted find-replace
+- **No mixed references**: Fresh copy eliminates risk of stale references
+
+### Verification Checklist
+
+After completing the copy and update process, verify:
+
+1. **Java files compile**: Run Maven compile to catch constructor/class name mismatches
+2. **Bean names correct**: Grep for `@Named` in each Java file to verify `"pharmacySaleController1/2/3"`
+3. **No mixed references**: Grep for `pharmacySaleController\.` (base controller without number) in XHTML copies - should find ZERO matches
+4. **Navigation buttons**: Check that the correct "Sale N" button is disabled on each page
+5. **Page titles**: Verify each page shows "Sale 2", "Sale 3", "Sale 4" respectively
+
+### Common Compilation Errors After Sync
+
+If compilation fails, check these common issues:
+
+1. **"invalid method declaration; return type required"** → Constructor name doesn't match class name (line ~130)
+2. **"cannot find symbol: class PharmacySaleController"** → Class name not updated in some location
+3. **Navigation issues at runtime** → Check return statements still have base page name instead of numbered versions
+
+This delete-copy-update workflow typically prevents 90% of synchronization errors and uses 30-40% fewer tokens than comparison-based methods.
 
