@@ -2438,6 +2438,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
                     getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    // Ensure refund bill carries toStaff for validation
+                    getRefundBill().setToStaff(staffForCredit);
                     break;
                 case Staff_Welfare:
                     Staff staffForWelfare = originalPayment.getToStaff();
@@ -2447,6 +2449,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
                     getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
+                    // Ensure refund bill carries toStaff for validation
+                    getRefundBill().setToStaff(staffForWelfare);
                     break;
                 default:
                     // For other payment methods, just set the total value
