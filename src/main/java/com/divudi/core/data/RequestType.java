@@ -6,7 +6,7 @@ package com.divudi.core.data;
 
 public enum RequestType {
     // Cancellation types
-    BILL_CANCELLATION("Save Cancellation", RequestCategory.CANCELLATION),
+    BILL_CANCELLATION("Bill Cancellation", RequestCategory.CANCELLATION),
     
     // Refund types ()
     ITEM_REFUND("Item Refund", RequestCategory.REFUND),

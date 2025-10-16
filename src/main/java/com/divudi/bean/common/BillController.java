@@ -1884,23 +1884,24 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return canCancelBill;
     }
 
+    @Inject
+    RequestController requestController;
+
     public String navigateToCancelOpdBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return "";
         }
 
-        bills = billsOfBatchBill(batchBill);
-        paymentMethod = null;
-        patient = batchBill.getPatient();
-        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
-        comment = null;
-        printPreview = false;
-        
         if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
-            
-            return "/opd/opd_bill_cancel_request?faces-redirect=true";
+            return requestController.navigateToCreateRequest(batchBill);
         } else {
+            bills = billsOfBatchBill(batchBill);
+            paymentMethod = null;
+            patient = batchBill.getPatient();
+            paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
+            comment = null;
+            printPreview = false;
             batchBillCancellationStarted = false;
             return "/opd/batch_bill_cancel?faces-redirect=true";
         }
