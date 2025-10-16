@@ -282,6 +282,11 @@
                                 <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Purchase Rate" width="5em">
@@ -294,6 +299,11 @@
                                 <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate* row.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Total" width="5em">
@@ -318,6 +328,11 @@
                                 <h:outputText value="#{row.pharmaceuticalBillItem.retailRate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Payment Mode" width="5em">
