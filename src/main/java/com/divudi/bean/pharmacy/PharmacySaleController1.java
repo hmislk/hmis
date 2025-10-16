@@ -271,22 +271,22 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
                 setBillSettlingStarted(false);
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
             } else {
                 setBillSettlingStarted(false);
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
             }
         } else {
             resetAll();
             setBillSettlingStarted(false);
-            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
         }
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
         setBillSettlingStarted(false);
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
     }
 
     public String navigateToBillCancellationView() {
@@ -759,7 +759,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         clearBillItem();
         billPreview = false;
         setBillSettlingStarted(false);
-        return "pharmacy_bill_retail_sale";
+        return "pharmacy_bill_retail_sale_1";
     }
 
     public String newSaleBillWithoutReduceStockForCashier() {
@@ -767,7 +767,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         clearBillItem();
         billPreview = false;
         setBillSettlingStarted(false);
-        return "pharmacy_bill_retail_sale_for_cashier";
+        return "pharmacy_bill_retail_sale_for_cashier_1";
     }
 
     public String navigateToPharmacyRetailSale() {
@@ -776,7 +776,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
                 setBillSettlingStarted(false);
-                return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+                return "/pharmacy/pharmacy_bill_retail_sale_1?faces-redirect=true";
             } else {
                 JsfUtil.addErrorMessage("Start Your Shift First !");
                 return "/cashier/index?faces-redirect=true";
@@ -785,7 +785,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             resetAll();
             setBillSettlingStarted(false);
             setBillSettlingStarted(false);
-            return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+            return "/pharmacy/pharmacy_bill_retail_sale_1?faces-redirect=true";
         }
     }
 
@@ -808,7 +808,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         paymentScheme = ps;
         setPatient(getPatient());
         setBillSettlingStarted(false);
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        return "/pharmacy/pharmacy_bill_retail_sale_1?faces-redirect=true";
     }
 
     public String navigateToPharmacyRetailSale(Patient pt, PaymentScheme ps) {
@@ -844,7 +844,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         paymentScheme = ps;
         setPatient(getPatient());
         setBillSettlingStarted(false);
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
     }
 
     public String navigateToPharmacyRetailSaleForCashier(Patient pt, PaymentScheme ps) {
@@ -880,12 +880,12 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
 
     public String pharmacyRetailSale() {
         setBillSettlingStarted(false);
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_1?faces-redirect=true";
     }
 
     public String toPharmacyRetailSale() {
         setBillSettlingStarted(false);
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        return "/pharmacy/pharmacy_bill_retail_sale_1?faces-redirect=true";
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -3132,7 +3132,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         clearBillItem();
         billPreview = false;
         setBillSettlingStarted(false);
-        return "pharmacy_bill_retail_sale";
+        return "pharmacy_bill_retail_sale_1";
     }
 
     //    checked

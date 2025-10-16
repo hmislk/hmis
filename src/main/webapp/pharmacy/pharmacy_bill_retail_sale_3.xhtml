@@ -18,7 +18,7 @@
                     </script>
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
-                    <p:panel rendered="#{!pharmacySaleController.billPreview}">
+                    <p:panel rendered="#{!pharmacySaleController3.billPreview}">
                         <i
                             type="button"
                             class="fas fa-shopping-cart rounded-circle shadow-lg"
@@ -610,7 +610,7 @@
                                                                         process="@this"
                                                                         update="viewPatient editPatient btnDone edit" />
                                                                 </p:selectBooleanButton>
-                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacySaleController.patient)}" rendered="#{pharmacySaleController3.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} " />
+                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacySaleController3.patient)}" rendered="#{pharmacySaleController3.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} " />
                                                             </h:panelGroup>
 
                                                         </h:panelGroup>
@@ -629,7 +629,7 @@
                                                                 id="btnSearchbyPhoneNo"
                                                                 icon="fa fa-search"
                                                                 title="Quick Search from Phone Number"
-                                                                action="#{patientController.quickSearchPatientLongPhoneNumber(pharmacySaleController)}"
+                                                                action="#{patientController.quickSearchPatientLongPhoneNumber(pharmacySaleController3)}"
                                                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber panelPayment"
                                                                 update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                                 styleClass="btn-sm mx-1"/>
@@ -638,7 +638,7 @@
                                                                 id="btnAddNewPatient"
                                                                 icon="fa fa-plus-circle"
                                                                 title="Add New Patient"
-                                                                action="#{patientController.quickSearchNewPatient(pharmacySaleController)}"
+                                                                action="#{patientController.quickSearchNewPatient(pharmacySaleController3)}"
                                                                 process="btnAddNewPatient"
                                                                 update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                                 styleClass="btn-sm mx-1"/>
@@ -660,7 +660,7 @@
                                                         </p:column>
                                                         <p:column>
                                                             <p:commandButton
-                                                                action="#{patientController.selectQuickOneFromQuickSearchPatient(pharmacySaleController)}"
+                                                                action="#{patientController.selectQuickOneFromQuickSearchPatient(pharmacySaleController3)}"
                                                                 id="btnSelectPt"
                                                                 process="btnSelectPt panelPayment"
                                                                 update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} :#{p:resolveFirstComponentWithId('panelPayment',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"
@@ -841,7 +841,7 @@
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                             <h:panelGroup id="viewPatient" >
-                                                <h:panelGroup  rendered="#{not pharmacySaleController.patientDetailsEditable}"  >
+                                                <h:panelGroup  rendered="#{not pharmacySaleController3.patientDetailsEditable}"  >
                                                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacySaleController3.patient ne null}" >
                                                             <h:outputLabel value="Name " class="mx-3"/>
@@ -1246,7 +1246,7 @@
 
                                     <p:commandButton value="Print Label"
                                                      class="ui-button-info w-100 my-4"
-                                                     action="#{pharmacySaleController3.enableLabelPrint(pharmacySaleController.billItem.prescription)}"
+                                                     action="#{pharmacySaleController3.enableLabelPrint(pharmacySaleController3.billItem.prescription)}"
                                                      ajax="false"
                                                      update="PrintLableSectionAfterSettleBill"
                                                      oncomplete="PF('printLabelSectionView').show()"
