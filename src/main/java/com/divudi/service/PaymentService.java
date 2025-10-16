@@ -618,6 +618,11 @@ public class PaymentService {
                             multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
                         }
                         break;
+                    case Staff_Welfare:
+                        if (pmd.getStaffWelfare() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getStaffWelfare().getTotalValue();
+                        }
+                        break;
                     case OnlineSettlement:
                         if (pmd.getOnlineSettlement() != null) {
                             multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
