@@ -41,6 +41,7 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.WebUser;
@@ -2430,12 +2431,20 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     System.out.println("After setting - Comment: " + getPaymentMethodData().getCredit().getComment());
                     break;
                 case Staff:
-                    getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
+                    Staff staffForCredit = originalPayment.getToStaff();
+                    if (staffForCredit == null && originalSaleBill != null) {
+                        staffForCredit = originalSaleBill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
                     getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
                     break;
                 case Staff_Welfare:
-                    getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
+                    Staff staffForWelfare = originalPayment.getToStaff();
+                    if (staffForWelfare == null && originalSaleBill != null) {
+                        staffForWelfare = originalSaleBill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
                     getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                     break;
@@ -2508,12 +2517,20 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                         break;
                     case Staff:
-                        cd.getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
+                        Staff staffForCredit = originalPayment.getToStaff();
+                        if (staffForCredit == null && originalSaleBill != null) {
+                            staffForCredit = originalSaleBill.getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
                         cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
                         break;
                     case Staff_Welfare:
-                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
+                        Staff staffForWelfare = originalPayment.getToStaff();
+                        if (staffForWelfare == null && originalSaleBill != null) {
+                            staffForWelfare = originalSaleBill.getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
                         cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
