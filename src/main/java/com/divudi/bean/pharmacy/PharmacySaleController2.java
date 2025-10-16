@@ -4179,7 +4179,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             try {
                 Long id = Long.valueOf(value);
                 PharmacySaleController controller = (PharmacySaleController) facesContext.getApplication().getELResolver()
-                        .getValue(facesContext.getELContext(), null, "pharmacySaleController");
+                        .getValue(facesContext.getELContext(), null, "pharmacySaleController2");
                 if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
                     return controller.getStockDto();
                 }
