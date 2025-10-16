@@ -272,6 +272,11 @@
                                 <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
 
@@ -285,6 +290,11 @@
                                 <h:outputText value="#{row.rate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Net Total">
@@ -306,6 +316,11 @@
                                 <h:outputText value="#{0.0 - row.pharmaceuticalBillItem.retailRate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
 
