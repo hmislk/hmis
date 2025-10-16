@@ -16563,6 +16563,19 @@ public class SearchController implements Serializable {
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
+
+        // Explicitly calculate and set bundle total from bill netTotals for the Net Total column footer
+        // This ensures the total is preserved even if calculateTotalsWithCredit doesn't set it properly
+        double bundleNetTotal = 0.0;
+        if (rs != null) {
+            for (ReportTemplateRow row : rs) {
+                if (row.getBill() != null) {
+                    bundleNetTotal += row.getBill().getNetTotal();
+                }
+            }
+        }
+        b.setTotal(bundleNetTotal);
+
         return b;
     }
 
@@ -16653,9 +16666,20 @@ public class SearchController implements Serializable {
         }
         double bundleExcluded = bundleGrand - bundleCollection;
 
+        // Calculate bundle total from row netTotals for the Net Total column footer
+        double bundleNetTotal = 0.0;
+        if (rs != null) {
+            for (ReportTemplateRow row : rs) {
+                if (row.getBill() != null) {
+                    bundleNetTotal += row.getBill().getNetTotal();
+                }
+            }
+        }
+
         b.setCashierGrandTotal(bundleGrand);
         b.setCashierCollectionTotal(bundleCollection);
         b.setCashierExcludedTotal(bundleExcluded);
+        b.setTotal(bundleNetTotal);
         b.setCashierCollectionPaymentMethods(new ArrayList<>(allCashierCollectionIncludedMethods));
         b.setCashierExcludedPaymentMethods(new ArrayList<>(allCashierCollectionExcludedMethods));
 
@@ -16736,6 +16760,19 @@ public class SearchController implements Serializable {
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
+
+        // Explicitly calculate and set bundle total from bill netTotals for the Net Total column footer
+        // This ensures the total is preserved even if calculateTotalsWithCredit doesn't set it properly
+        double bundleNetTotal = 0.0;
+        if (rs != null) {
+            for (ReportTemplateRow row : rs) {
+                if (row.getBill() != null) {
+                    bundleNetTotal += row.getBill().getNetTotal();
+                }
+            }
+        }
+        b.setTotal(bundleNetTotal);
+
         return b;
     }
 

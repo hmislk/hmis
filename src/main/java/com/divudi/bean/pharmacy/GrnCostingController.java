@@ -186,20 +186,55 @@ public class GrnCostingController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
-        if (bi.getId() != null) {
-            getBillItems().remove(bi);
-            bi.setBill(null);
-            bi.setRetired(true);
-            bi.setRetiredAt(new Date());
-            bi.setRetirer(sessionController.getLoggedUser());
-            billItemFacade.edit(bi);
-            if (currentGrnBillPre.getId() != null) {
-                currentGrnBillPre = billService.reloadBill(currentGrnBillPre);
-            }
-        } else {
-            getBillItems().remove(bi.getSearialNo());
+        if (bi == null) {
+            return;
         }
-        calTotal();
+
+        boolean removed = false;
+        List<BillItem> items = getBillItems();
+        if (items != null) {
+            // First try removing by instance (uses equals/hashCode)
+            removed = items.remove(bi);
+
+            // If not removed, find a matching instance and remove it
+            if (!removed) {
+                BillItem toRemove = null;
+                if (bi.getId() != null) {
+                    for (BillItem it : items) {
+                        if (it != null && bi.getId().equals(it.getId())) {
+                            toRemove = it;
+                            break;
+                        }
+                    }
+                } else {
+                    int serial = bi.getSearialNo();
+                    for (BillItem it : items) {
+                        if (it != null && (it.getId() == null || it.getId() == 0) && it.getSearialNo() == serial) {
+                            toRemove = it;
+                            break;
+                        }
+                    }
+                }
+                if (toRemove != null) {
+                    removed = items.remove(toRemove);
+                    bi = toRemove; // use the actual removed instance for persistence updates if needed
+                }
+            }
+        }
+
+        if (removed) {
+            if (bi.getId() != null) {
+                bi.setBill(null);
+                bi.setRetired(true);
+                bi.setRetiredAt(new Date());
+                bi.setRetirer(sessionController.getLoggedUser());
+                billItemFacade.edit(bi);
+                if (currentGrnBillPre != null && currentGrnBillPre.getId() != null) {
+                    currentGrnBillPre = billService.reloadBill(currentGrnBillPre);
+                }
+            }
+            calTotal();
+        }
     }
 
     public List<BillItem> findAllBillItemsRefernceToOriginalItem(BillItem referenceBillItem) {
@@ -283,7 +318,8 @@ public class GrnCostingController implements Serializable {
                 b.setRetirer(sessionController.getLoggedUser());
                 billItemFacade.edit(b);
             } else {
-                getBillItems().remove(b.getSearialNo());
+                // Remove by instance to avoid index-based removal issues
+                getBillItems().remove(b);
             }
         }
         if (currentGrnBillPre.getId() != null) {
