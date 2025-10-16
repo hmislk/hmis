@@ -18,7 +18,7 @@
                     </script>
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
-                    <p:panel rendered="#{!pharmacySaleController3.billPreview}">
+                    <p:panel rendered="#{!pharmacySaleController.billPreview}">
                         <i
                             type="button"
                             class="fas fa-shopping-cart rounded-circle shadow-lg"
@@ -50,9 +50,9 @@
                                 itemLabel="#{vt.name}"
                                 itemValue="#{vt}" >
 
-                                <p:column headerText="ID" style="padding: 6px;width: 4em;" rendered="#{webUserController.hasPrivilege('Developers')}">
+<!--                                <p:column headerText="ID" style="padding: 6px;width: 4em;" rendered="#{webUserController.hasPrivilege('Developers')}">
                                     <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                </p:column>
+                                </p:column>-->
 
                                 <p:column headerText="Code" style="padding: 6px;width: 4em;">
                                     <h:outputLabel value="#{vt.code}"></h:outputLabel>
@@ -62,7 +62,7 @@
                                     <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Dept. Stock" style="padding: 6px; text-align: center;width: 5em;">
+                                <p:column headerText="Stock" style="padding: 6px; text-align: center;width: 5em;">
                                     <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                     </p:outputLabel>
@@ -83,10 +83,10 @@
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
                                 <h:outputLabel value="Pharmacy Retail Bill (Sale 4)" class="mx-4"></h:outputLabel>
-                                <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" disabled="true" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                                 <p:commandButton
                                     accesskey="n"
                                     icon="fa fa-plus"
@@ -142,12 +142,11 @@
                                                 <h:panelGroup id="acStock" >
                                                     <p:autoComplete
                                                         accesskey="i"
-                                                        rendered="#{not configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Retail Sale',true)}"
                                                         id="acStockWithoutTotalStock"
                                                         inputStyleClass="w-100"
                                                         minQueryLength="3"
                                                         maxResults="10"
-                                                        class="w-100"
+                                                        styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController3.stockDto}"
                                                         completeMethod="#{pharmacySaleController3.completeAvailableStockOptimizedDto}"
@@ -155,89 +154,51 @@
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
-                                                        <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+<!--                                                        <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
                                                             <h:outputLabel value="#{i.id}"></h:outputLabel>
-                                                        </p:column>
+                                                        </p:column>-->
                                                         <p:column 
                                                             headerText="Item" 
+                                                            width="400"
                                                             styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
-                                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
+                                                            <h:outputText value="#{i.itemName}" >
                                                             </h:outputText>
+                                                            &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expiring Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
                                                         </p:column>
                                                         <p:column
+                                                            width="20em"
                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}"
-                                                            headerText="Code"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
+                                                            headerText="Code"  
+                                                            styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputText value="#{i.code}" ></h:outputText>
                                                         </p:column>
-                                                        <p:column headerText="Generic"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
+                                                        <p:column 
+                                                            width="20em"
+                                                            headerText="Generic" 
+                                                            styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputText value="#{i.genericName}" ></h:outputText>
                                                         </p:column>
                                                         <p:column
-                                                            headerText="Rate"  styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
+                                                            width="20em"
+                                                            headerText="Rate"
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.retailRate}" >
                                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Stocks"  styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                        <p:column 
+                                                            width="20em"
+                                                            headerText="Stocks"  
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.stockQty}" >
                                                                 <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Expiry"  class="w-100" styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController3.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions" ></p:ajax>
-                                                        <p:ajax event="query" process="acStock"></p:ajax>
-                                                    </p:autoComplete>
-                                                    <p:autoComplete
-                                                        accesskey="i"
-                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Total Stock when listing medicines for Retail Sale',true)}"
-                                                        id="acStockWithTotalStock"
-                                                        inputStyleClass="w-100"
-                                                        minQueryLength="3"
-                                                        maxResults="20"
-                                                        class="w-100"
-                                                        forceSelection="true"
-                                                        value="#{pharmacySaleController3.stockDto}"
-                                                        completeMethod="#{stockController.completeAvailableStocksWithItemStockDto}"
-                                                        converter="#{pharmacySaleController3.stockDtoConverter}"
-                                                        scrollHeight="400"
-                                                        var="i"
-                                                        itemLabel="#{i.itemName}"
-                                                        itemValue="#{i}">
-                                                        <p:column headerText="ID"  rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                            <h:outputLabel value="#{i.code}"></h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Item*"  styleClass="table-success">
-                                                            <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
-                                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
-                                                            </h:outputText>
-                                                            <h:outputLabel value=" (" ></h:outputLabel>
-                                                            <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
-                                                            <h:outputLabel value=") - " ></h:outputLabel>
-                                                            <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
-                                                        </p:column>
-                                                        <p:column headerText="Rate"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
-                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Stocks"  styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.stockQty}" >
-                                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Total Stock"  styleClass="#{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
-                                                            <h:outputLabel value="#{i.totalStockQty}" >
-                                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Expiry"  class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                            <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
+                                                        <p:column 
+                                                            width="20em"
+                                                            headerText="Expiry" 
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.dateOfExpire}" >
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                             </h:outputLabel>
                                                         </p:column>
@@ -312,7 +273,7 @@
                                         </div>
                                         <div class="row w-100 m-1 p-1 boder-1">
                                             <div class="col-12" >
-                                                <h:panelGroup id="txtItemInstructions" style="display: #{pharmacySaleController3.billItem != null and not empty pharmacySaleController3.billItem.instructions ? 'block' : 'none'}">
+                                                <h:panelGroup id="txtItemInstructions" style="display: #{pharmacySaleController3.billItem != null and not empty pharmacySaleController.billItem.instructions ? 'block' : 'none'}">
                                                     <h:outputLabel style="font-weight: bold" value="Instructions : " for="instructionText"></h:outputLabel>
                                                     <h:outputText id="instructionText" class=" text-muted" value=" #{pharmacySaleController3.billItem.instructions}" ></h:outputText>
                                                 </h:panelGroup>
@@ -649,7 +610,7 @@
                                                                         process="@this"
                                                                         update="viewPatient editPatient btnDone edit" />
                                                                 </p:selectBooleanButton>
-                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacySaleController3.patient)}" rendered="#{pharmacySaleController3.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} " />
+                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacySaleController.patient)}" rendered="#{pharmacySaleController3.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} " />
                                                             </h:panelGroup>
 
                                                         </h:panelGroup>
@@ -668,7 +629,7 @@
                                                                 id="btnSearchbyPhoneNo"
                                                                 icon="fa fa-search"
                                                                 title="Quick Search from Phone Number"
-                                                                action="#{patientController.quickSearchPatientLongPhoneNumber(pharmacySaleController3)}"
+                                                                action="#{patientController.quickSearchPatientLongPhoneNumber(pharmacySaleController)}"
                                                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber panelPayment"
                                                                 update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                                 styleClass="btn-sm mx-1"/>
@@ -677,7 +638,7 @@
                                                                 id="btnAddNewPatient"
                                                                 icon="fa fa-plus-circle"
                                                                 title="Add New Patient"
-                                                                action="#{patientController.quickSearchNewPatient(pharmacySaleController3)}"
+                                                                action="#{patientController.quickSearchNewPatient(pharmacySaleController)}"
                                                                 process="btnAddNewPatient"
                                                                 update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                                 styleClass="btn-sm mx-1"/>
@@ -699,7 +660,7 @@
                                                         </p:column>
                                                         <p:column>
                                                             <p:commandButton
-                                                                action="#{patientController.selectQuickOneFromQuickSearchPatient(pharmacySaleController3)}"
+                                                                action="#{patientController.selectQuickOneFromQuickSearchPatient(pharmacySaleController)}"
                                                                 id="btnSelectPt"
                                                                 process="btnSelectPt panelPayment"
                                                                 update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} :#{p:resolveFirstComponentWithId('panelPayment',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"
@@ -880,7 +841,7 @@
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                             <h:panelGroup id="viewPatient" >
-                                                <h:panelGroup  rendered="#{not pharmacySaleController3.patientDetailsEditable}"  >
+                                                <h:panelGroup  rendered="#{not pharmacySaleController.patientDetailsEditable}"  >
                                                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacySaleController3.patient ne null}" >
                                                             <h:outputLabel value="Name " class="mx-3"/>
@@ -1249,22 +1210,10 @@
 
                         <p:commandButton id="nullButton3" value="No Action"
                                          action="#" style="display: none;" ></p:commandButton>
-                        <!--<p:defaultCommand  target="btnPrint" />-->
+                        <div  class="row" >
+                            <div class="col-3">
 
-                        <div   >
-                            <div>
                                 <p:commandButton
-                                    accesskey="p"
-                                    id="btnPrint"
-                                    value="Print Bill"
-                                    style="width: 10em;"
-                                    class="ui-button-info"
-                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
-                                    ajax="false"  >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                                <p:commandButton
-
                                     id="btnLabelPrint"
                                     value="Print Labels"
                                     style="width: 10em;"
@@ -1272,9 +1221,7 @@
                                     class="ui-button-info mx-3"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}"
                                     >
-
                                 </p:commandButton>
-
                                 <p:dialog
                                     id="PrintLableSectionAfterSettleBill"
                                     widgetVar="PrintLables"
@@ -1299,7 +1246,7 @@
 
                                     <p:commandButton value="Print Label"
                                                      class="ui-button-info w-100 my-4"
-                                                     action="#{pharmacySaleController3.enableLabelPrint(pharmacySaleController3.billItem.prescription)}"
+                                                     action="#{pharmacySaleController3.enableLabelPrint(pharmacySaleController.billItem.prescription)}"
                                                      ajax="false"
                                                      update="PrintLableSectionAfterSettleBill"
                                                      oncomplete="PF('printLabelSectionView').show()"
@@ -1309,15 +1256,6 @@
 
                                     </p:commandButton>
                                 </p:dialog>
-
-                                <p:commandButton
-                                    accesskey="n"
-                                    value="New Bill"
-                                    icon="fa fa-plus"
-                                    ajax="false"
-                                    action="pharmacy_bill_retail_sale_3"
-                                    class="ui-button-warning mx-2"
-                                    actionListener="#{pharmacySaleController3.resetAll()}" ></p:commandButton>
                                 <p:commandButton
                                     rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                     value="Settings"
@@ -1325,11 +1263,37 @@
                                     class="ui-button-secondary mx-1"
                                     type="button"
                                     onclick="PF('retailSaleConfigDialog').show();" />
-                                <p:spacer width="20em" ></p:spacer>
-                                <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" disabled="true" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                            </div>
+                            <div class="col-6 text-center">
+                                <div  >
+                                    <p:commandButton class="m-1" icon="fas fa-file-invoice" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="float-end" >
+                                    <p:commandButton
+                                        accesskey="n"
+                                        value="New Pharmacy Retail Sale"
+                                        icon="fa fa-plus"
+                                        ajax="false"
+                                        action="pharmacy_bill_retail_sale_3"
+                                        class="ui-button-success mx-2"
+                                        actionListener="#{pharmacySaleController3.resetAll()}" ></p:commandButton>
+                                    <p:commandButton
+                                        accesskey="p"
+                                        id="btnPrint"
+                                        icon="fas fa-print"
+                                        value="Print Bill"
+                                        style="width: 10em;"
+                                        class="ui-button-success"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        ajax="false"  >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
 
                             </div>
 
@@ -1363,19 +1327,19 @@
                                 <phi:saleBill_Header bill="#{pharmacySaleController3.printBill}"></phi:saleBill_Header>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 1',true)}">
+                            <h:panelGroup id="gpBillPreviewCustom1" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 1',false)}">
                                 <phi:saleBill bill="#{pharmacySaleController3.printBill}"></phi:saleBill>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewCustom2" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 2',true)}">
+                            <h:panelGroup id="gpBillPreviewCustom2" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 2',false)}">
                                 <phi:saleBill bill="#{pharmacySaleController3.printBill}"></phi:saleBill>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewCustom3" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 3',true)}">
+                            <h:panelGroup id="gpBillPreviewCustom3" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 3',false)}">
                                 <phi:sale_bill_five_five_custom_3 bill="#{pharmacySaleController3.printBill}"/>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewPosHeaderGeneral" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
+                            <h:panelGroup id="gpBillPreviewPosHeaderGeneral" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',false)}">
                                 <phi:saleBill_Header bill="#{pharmacySaleController3.printBill}"></phi:saleBill_Header>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -1384,6 +1348,7 @@
 
                 <!-- Pharmacy Retail Sale Configuration Dialog -->
                 <p:dialog id="retailSaleConfigDialog"
+                          rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                           header="Pharmacy Retail Sale Printer Configuration"
                           widgetVar="retailSaleConfigDialog"
                           modal="true"
@@ -1400,7 +1365,10 @@
                             <div class="col-12">
                                 <div class="card config-section">
                                     <div class="card-header">
-                                        <h6><i class="fas fa-file-alt"></i> Retail Sale Paper Settings</h6>
+                                        <h:panelGroup layout="block">
+                                            <i class="fas fa-file-alt"></i>
+                                            <h:outputText value=" Retail Sale Paper Settings" styleClass="ms-2"/>
+                                        </h:panelGroup>
                                     </div>
                                     <div class="card-body">
                                         <div class="mb-3">
