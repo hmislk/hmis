@@ -2362,6 +2362,13 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         System.out.println("=== INIT REFUND PAYMENT DEBUG ===");
         System.out.println("Original payments count: " + originalPayments.size());
 
+        // Fetch the original sale bill for Staff/Staff_Welfare payment methods
+        Bill irb = getItemReturnBill();
+        Bill originalSaleBill = null;
+        if (irb != null && irb.getReferenceBill() instanceof Bill) {
+            originalSaleBill = (Bill) irb.getReferenceBill();
+        }
+
         // If single payment method
         if (originalPayments.size() == 1) {
             Payment originalPayment = originalPayments.get(0);
@@ -2438,8 +2445,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
                     getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
-                    // Ensure refund bill carries toStaff for validation
-                    getRefundBill().setToStaff(staffForCredit);
                     break;
                 case Staff_Welfare:
                     Staff staffForWelfare = originalPayment.getToStaff();
@@ -2449,8 +2454,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
                     getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
-                    // Ensure refund bill carries toStaff for validation
-                    getRefundBill().setToStaff(staffForWelfare);
                     break;
                 default:
                     // For other payment methods, just set the total value
