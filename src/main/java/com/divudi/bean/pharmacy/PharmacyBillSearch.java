@@ -4353,9 +4353,10 @@ public class PharmacyBillSearch implements Serializable {
 
     public String navigateToViewPharmacyDisposalIssueBill() {
         if (bill == null) {
-            JsfUtil.addErrorMessage("No Bill Seelctted.");
+            JsfUtil.addErrorMessage("No Bill Selected.");
             return null;
         }
+        // Disposal issues share the generic unit-issue reprint view.
         return "/pharmacy/pharmacy_reprint_bill_unit_issue?faces-redirect=true";
     }
 
