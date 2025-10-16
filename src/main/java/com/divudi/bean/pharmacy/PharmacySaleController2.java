@@ -125,9 +125,9 @@ import org.primefaces.event.TabChangeEvent;
 public class PharmacySaleController2 implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     /**
-     * Creates a new instance of PharmacySaleController
+     * Creates a new instance of PharmacySaleController2
      */
-    public PharmacySaleController() {
+    public PharmacySaleController2() {
     }
 
     @Inject

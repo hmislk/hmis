@@ -82,6 +82,16 @@ When using Claude Code or similar AI tools to perform this synchronization:
    - Instead: Read original once, then perform complete file replacement with systematic substitutions
    - For Java files: Read first 150 lines to verify package/imports/class declaration, then perform full replacement
 
+3a. **CRITICAL: Constructor name synchronization**:
+   - ⚠️ **ALWAYS update constructor names** to match the new class name
+   - Original: `public PharmacySaleController() {}`
+   - Copy 1 must be: `public PharmacySaleController1() {}`
+   - Copy 2 must be: `public PharmacySaleController2() {}`
+   - Copy 3 must be: `public PharmacySaleController3() {}`
+   - **This is a Java requirement**: Constructor name MUST match class name
+   - **Common error**: Forgetting to rename constructors causes compilation failure: "invalid method declaration; return type required"
+   - **Agent instruction**: When performing find-replace on class names, ALWAYS include constructor names in the replacement pattern
+
 4. **Verification strategy**:
    - After updates, spot-check 2-3 EL expressions per file using Grep
    - Verify class names and @Named annotations in Java files using Grep with pattern matching

@@ -273,7 +273,7 @@
                                         </div>
                                         <div class="row w-100 m-1 p-1 boder-1">
                                             <div class="col-12" >
-                                                <h:panelGroup id="txtItemInstructions" style="display: #{pharmacySaleController3.billItem != null and not empty pharmacySaleController.billItem.instructions ? 'block' : 'none'}">
+                                                <h:panelGroup id="txtItemInstructions" style="display: #{pharmacySaleController3.billItem != null and not empty pharmacySaleController3.billItem.instructions ? 'block' : 'none'}">
                                                     <h:outputLabel style="font-weight: bold" value="Instructions : " for="instructionText"></h:outputLabel>
                                                     <h:outputText id="instructionText" class=" text-muted" value=" #{pharmacySaleController3.billItem.instructions}" ></h:outputText>
                                                 </h:panelGroup>
