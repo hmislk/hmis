@@ -2559,7 +2559,6 @@ public class BillSearch implements Serializable {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error = " + e);
         }
 
         cancellationBill.setBillItems(list);
@@ -2642,7 +2641,7 @@ public class BillSearch implements Serializable {
             List<PatientReport> pr = patientReportController.allPatientReportsInBill(getBill());
 
             if (pr == null || pr.isEmpty()) {
-                
+
                 for (BillItem bi : billService.fetchBillItems(bill)) {
                     if (bi.getItem() instanceof Investigation) {
                         PatientInvestigation pi = getPatientInvestigationsFromBillItem(bi);
@@ -2734,7 +2733,6 @@ public class BillSearch implements Serializable {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error = " + e);
         }
 
         cancellationBill.setBillItems(list);
@@ -4179,7 +4177,9 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyIssueReturn();
             case PHARMACY_ISSUE:
             case PHARMACY_DISPOSAL_ISSUE:
-                return navigateToPharmacyIssue();
+//                return navigateToPharmacyIssue();
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyDisposalIssueBill();
             case PHARMACY_ISSUE_CANCELLED:
                 return navigateToPharmacyIssueCancelled();
 
@@ -4349,6 +4349,9 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
 
+            case PHARMACY_DISPOSAL_ISSUE:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyDisposalIssueBill();
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL:
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
