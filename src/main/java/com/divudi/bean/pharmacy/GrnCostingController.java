@@ -318,7 +318,8 @@ public class GrnCostingController implements Serializable {
                 b.setRetirer(sessionController.getLoggedUser());
                 billItemFacade.edit(b);
             } else {
-                getBillItems().remove(b.getSearialNo());
+                // Remove by instance to avoid index-based removal issues
+                getBillItems().remove(b);
             }
         }
         if (currentGrnBillPre.getId() != null) {
