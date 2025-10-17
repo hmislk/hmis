@@ -554,6 +554,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         savePreReturnBillComponents();
 
         getBill().getReturnPreBills().add(getReturnBill());
+
+        // Update the original bill's refundAmount by adding the absolute value of the return bill's netTotal
+        double currentRefundAmount = getBill().getRefundAmount();
+        double returnAmount = Math.abs(getReturnBill().getNetTotal());
+        getBill().setRefundAmount(currentRefundAmount + returnAmount);
+
         getBillFacade().edit(getBill());
 
         finalReturnBill = saveSaleFinalReturnBill();
