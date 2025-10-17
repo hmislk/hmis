@@ -813,6 +813,39 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         } else {
             getBillFacade().edit(getRefundBill());
         }
+
+        // Update the original sale bill's financial tracking fields
+        updateOriginalBillForRefund();
+    }
+
+    private void updateOriginalBillForRefund() {
+        // Get the original sale bill through the itemReturnBill's reference
+        if (getItemReturnBill() == null || getItemReturnBill().getReferenceBill() == null) {
+            return; // No original bill to update
+        }
+
+        Bill originalSaleBill = getItemReturnBill().getReferenceBill();
+
+        // Calculate the absolute value of the refund amount
+        double refundAmount = Math.abs(getRefundBill().getNetTotal());
+
+        // Update the original bill's refundAmount by adding the absolute value of the refund bill's netTotal
+        double currentRefundAmount = originalSaleBill.getRefundAmount();
+        originalSaleBill.setRefundAmount(currentRefundAmount + refundAmount);
+
+        // Deduct the refund amount from the original bill's paidAmount
+        double currentPaidAmount = originalSaleBill.getPaidAmount();
+        originalSaleBill.setPaidAmount(currentPaidAmount - refundAmount);
+
+        // For credit bills, deduct the refund amount from the balance (amount credit company owes)
+        // Only update if balance is greater than zero
+        double currentBalance = originalSaleBill.getBalance();
+        if (currentBalance > 0) {
+            originalSaleBill.setBalance(currentBalance - refundAmount);
+        }
+
+        // Save the updated original bill
+        getBillFacade().edit(originalSaleBill);
     }
 
     private void updatePreBill() {
