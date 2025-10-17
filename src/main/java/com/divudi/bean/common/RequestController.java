@@ -66,9 +66,14 @@ public class RequestController implements Serializable {
     private Request currentRequest;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
+        return "/common/request/view_request?faces-redirect=true";
+    }
+    
+    public String navigateToBackSearchRequest() {
         return "/common/request/view_request?faces-redirect=true";
     }
 
@@ -171,11 +176,11 @@ public class RequestController implements Serializable {
             default:
                 navigation = "";
         }
-
         return navigation;
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         patient = null;
@@ -194,10 +199,10 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Comment is mandatory.");
             return;
         }
-        Request currentRequest = requestService.findRequest(batchBill);
+        Request req = requestService.findRequest(batchBill);
 
-        if (currentRequest != null) {
-            JsfUtil.addErrorMessage("There is already a " + currentRequest.getRequestType().getDisplayName() + " requesr for this bill.");
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
             return;
         } else {
             for (Bill b : billController.billsOfBatchBill(batchBill)) {
@@ -230,9 +235,7 @@ public class RequestController implements Serializable {
                 b.setCurrentRequest(newlyRequest);
                 billFacade.edit(b);
             }
-
         }
-
         printPreview = true;
     }
 
@@ -257,7 +260,33 @@ public class RequestController implements Serializable {
         currentRequest.setStatus(RequestStatus.APPROVED);
         requestFacade.edit(currentRequest);
         
+        JsfUtil.addSuccessMessage("Successfully Approve");
+
+    }
+    
+    public void cancelApprovel() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return;
+        }
+        
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+        
+        if (currentRequest.getStatus() != RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("Can't Cancel Approvel");
+            return;
+        }
+
+        currentRequest.setApprovedAt(null);
+        currentRequest.setApprovedBy(null);
+        currentRequest.setStatus(RequestStatus.CANCELLED);
+        requestFacade.edit(currentRequest);
+        
         System.out.println("Successfully Approve");
+        JsfUtil.addSuccessMessage("Successfully Approvel Cancel");
 
     }
 
@@ -286,9 +315,28 @@ public class RequestController implements Serializable {
             b.setCurrentRequest(null);
             billFacade.edit(b);
         }
+        System.out.println("Successfully Reject = ");
+        JsfUtil.addSuccessMessage("Successfully Reject");
         
-        System.out.println("Successfully Reject");
+    }
+    
+    public void complteRequest(Request req){
+        
+            req.setCompletedBy(sessionController.getLoggedUser());
+            req.setCompletedAt(new Date());
+            req.setStatus(RequestStatus.COMPLETED);
 
+            requestService.save(req, sessionController.getLoggedUser());
+
+            //Update Batch Bill
+            req.getBill().setCurrentRequest(null);
+            billFacade.edit(req.getBill());
+
+            //Update Induvidual Bills of Batch Bil
+            for (Bill b : billController.billsOfBatchBill(req.getBill())) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
+            }
     }
 
     @FacesConverter(forClass = Request.class)
@@ -332,6 +380,7 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public boolean isPrintPreview() {
         return printPreview;

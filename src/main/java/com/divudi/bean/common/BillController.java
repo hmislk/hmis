@@ -1916,7 +1916,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         paymentMethod = null;
                         patient = batchBill.getPatient();
                         paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
-                        comment = null;
+                        comment = currentRequest.getRequestReason();
                         printPreview = false;
                         batchBillCancellationStarted = false;
                         
@@ -2074,6 +2074,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         opdBillController.setBills(cancelSingleBills);
         opdBillController.setBatchBill(cancellationBatchBill);
         getSessionController().setLoggedUser(wb);
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            Request billRequest = requestService.findRequest(batchBill);
+            requestController.complteRequest(billRequest);
+        }
+        
+                
+        
 
         printPreview = true;
         batchBillCancellationStarted = false;
