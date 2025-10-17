@@ -1281,8 +1281,9 @@
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
                                                 <pa:multiple_payment_methods
+                                                    id="ezComponentForMultiplePayments"
                                                     controller="#{opdBillController}"
-                                                    paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}"
+                                                    paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"
                                                     class="w-100"/>
 
                                             </h:panelGroup>

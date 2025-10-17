@@ -4,6 +4,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.bean.common.EnumController;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
@@ -84,19 +85,54 @@ public class ConfigOptionController implements Serializable {
     public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
         boolean allDepartmentsUseSame = configOptionApplicationController.getBooleanValueByKey(
                 "All Departments Use Same Payment Methods for OPD Billing", true);
-        if (allDepartmentsUseSame) {
-            return enumController.getPaymentMethodsForOpdBilling();
-        }
-        if (sessionController == null || sessionController.getDepartment() == null) {
-            return enumController.getPaymentMethodsForOpdBilling();
-        }
         List<PaymentMethod> pms = new ArrayList<>();
-        for (PaymentMethod pm : PaymentMethod.values()) {
-            boolean include = getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
-            if (include) {
-                pms.add(pm);
+
+        if (allDepartmentsUseSame || sessionController == null || sessionController.getDepartment() == null) {
+            if (enumController.getPaymentMethodsForOpdBilling() != null) {
+                pms.addAll(enumController.getPaymentMethodsForOpdBilling());
+            }
+        } else {
+            for (PaymentMethod pm : PaymentMethod.values()) {
+                boolean include = getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+                if (include) {
+                    pms.add(pm);
+                }
             }
         }
+
+        // Always remove disallowed entries from the visible OPD list
+        pms.remove(PaymentMethod.MultiplePaymentMethods);
+        pms.remove(PaymentMethod.Credit);
+        pms.remove(PaymentMethod.Staff);
+        return pms;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsUnderMultipleForOpdBilling() {
+        // Build from the same configuration as OPD Billing but exclude Multiple/Credit/Staff
+        boolean allDepartmentsUseSame = configOptionApplicationController.getBooleanValueByKey(
+                "All Departments Use Same Payment Methods for OPD Billing", true);
+        List<PaymentMethod> pms = new ArrayList<>();
+
+        if (allDepartmentsUseSame || sessionController == null || sessionController.getDepartment() == null) {
+            for (PaymentMethod pm : PaymentMethod.values()) {
+                boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+                if (include) {
+                    pms.add(pm);
+                }
+            }
+        } else {
+            for (PaymentMethod pm : PaymentMethod.values()) {
+                boolean include = getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+                if (include) {
+                    pms.add(pm);
+                }
+            }
+        }
+
+        // Remove methods not valid inside Multiple Payments
+        pms.remove(PaymentMethod.MultiplePaymentMethods);
+        pms.remove(PaymentMethod.Credit);
+        pms.remove(PaymentMethod.Staff);
         return pms;
     }
 

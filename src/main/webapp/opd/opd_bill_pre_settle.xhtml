@@ -194,7 +194,7 @@
                                                 </h:panelGroup>
 
                                                 <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
-                                                    <pa:multiple_payment_methods controller="#{opdPreSettleController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" class="w-100"/>
+                                                    <pa:multiple_payment_methods controller="#{opdPreSettleController}" paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" class="w-100"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
