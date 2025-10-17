@@ -1398,6 +1398,10 @@ public class CashRecieveBillController implements Serializable {
     private void updateReferenceBill(BillItem tmp) {
         double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
         tmp.getReferenceBill().setPaidAmount(0 - dbl);
+        // Update balance: deduct paid value from existing balance
+        double currentBalance = tmp.getReferenceBill().getBalance();
+        double paidValue = tmp.getNetValue();
+        tmp.getReferenceBill().setBalance(currentBalance - paidValue);
         getBillFacade().edit(tmp.getReferenceBill());
     }
 

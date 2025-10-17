@@ -36,24 +36,21 @@
                                 <p:tabView orientation="left">
                                     <p:tab title="Summary" >
                                         <p:panel header="Bill Summary">
-                                            <p:panelGrid 
-                                                columns="2" 
-                                                styleClass="w-100" 
-                                                columnClasses="w-25,w-75"
+                                            <p:panelGrid
+                                                columns="4"
+                                                styleClass="w-100"
+                                                columnClasses="w-15,w-35,w-15,w-35"
                                                 layout="tabular">
 
                                                 <h:outputLabel value="Bill Number:" />
                                                 <h:outputText value="#{billSearch.viewingBill.deptId}" />
-
-
-                                                <h:outputLabel value="Bill Type Atomic:" />
+                                                <h:outputLabel value="Bill Type:" />
                                                 <h:outputText value="#{billSearch.viewingBill.billTypeAtomic}" />
 
                                                 <h:outputLabel value="Total:" />
                                                 <h:outputText value="#{billSearch.viewingBill.total}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
-
                                                 <h:outputLabel value="Discount:" />
                                                 <h:outputText value="#{billSearch.viewingBill.discount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
@@ -63,7 +60,6 @@
                                                 <h:outputText value="#{billSearch.viewingBill.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
-
                                                 <h:outputLabel value="Created By:" />
                                                 <h:outputText value="#{billSearch.viewingBill.creater.webUserPerson.name}" />
 
@@ -71,19 +67,15 @@
                                                 <h:outputText value="#{billSearch.viewingBill.createdAt}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
-
-
-                                                <h:outputLabel value="From" />
+                                                <h:outputLabel value="From:" />
                                                 <h:outputText value="#{billSearch.viewingBill.fromDepartment.name}" />
 
-                                                <h:outputLabel value="To" />
+                                                <h:outputLabel value="To:" />
                                                 <h:outputText value="#{billSearch.viewingBill.toDepartment.name}" />
-
-
-                                                <h:outputLabel value="Cancelled?" />
+                                                <h:outputLabel value="Cancelled:" />
                                                 <h:outputText value="#{billSearch.viewingBill.cancelled ? 'Yes' : 'No'}" />
 
-                                                <h:outputLabel value="Refunded?" />
+                                                <h:outputLabel value="Refunded:" />
                                                 <h:outputText value="#{billSearch.viewingBill.refunded ? 'Yes' : 'No'}" />
 
                                             </p:panelGrid>
@@ -132,44 +124,49 @@
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
                                     </p:tab>
                                     <p:tab title="Bill Payments" >
-                                        <p:commandButton 
-                                            value="Add New Payment" 
-                                            ajax="false" 
-                                            action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" >
-                                        </p:commandButton>
-                                        <p:dataTable 
-                                            value="#{billSearch.viewingBillPayments}" 
+                                        <p:commandButton
+                                            value="Add New Payment"
+                                            icon="pi pi-plus"
+                                            styleClass="ui-button-success mb-2"
+                                            ajax="false"
+                                            action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" />
+                                        <p:dataTable
+                                            value="#{billSearch.viewingBillPayments}"
                                             var="p"
-                                            rowKey="#{p.id}" >
-                                            <p:column headerText="ID" >
-                                                <h:outputText value="#{p.id}" ></h:outputText>
+                                            rowKey="#{p.id}"
+                                            size="small"
+                                            styleClass="compact-table">
+                                            <p:column headerText="ID" width="80">
+                                                <h:outputText value="#{p.id}" />
                                             </p:column>
-                                            <p:column headerText="Payment Method" >
-                                                <h:outputText value="#{p.paymentMethod}" ></h:outputText>
+                                            <p:column headerText="Payment Method">
+                                                <h:outputText value="#{p.paymentMethod}" />
                                             </p:column>
-                                            <p:column headerText="Value">
-                                                <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                            <p:column headerText="Value" styleClass="text-end" width="150">
+                                                <h:outputText value="#{p.paidValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Actions">
-                                                <p:commandButton 
-                                                    value="View" 
-                                                    class="m-2"
+                                            <p:column headerText="Actions" width="100" styleClass="text-center">
+                                                <p:commandButton
+                                                    icon="pi pi-eye"
+                                                    styleClass="ui-button-rounded ui-button-info ui-button-sm m-1"
+                                                    title="View"
                                                     ajax="false"
-                                                    icon="fa fa-eye"
                                                     action="#{billSearch.navigateToViewPayment()}">
-                                                    <f:setPropertyActionListener 
-                                                        value="#{p}" 
-                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                    <f:setPropertyActionListener
+                                                        value="#{p}"
+                                                        target="#{billSearch.payment}" />
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    value="Edit" 
+                                                <p:commandButton
+                                                    icon="pi pi-pencil"
+                                                    styleClass="ui-button-rounded ui-button-warning ui-button-sm m-1"
+                                                    title="Edit"
                                                     ajax="false"
-                                                    class="m-2"
-                                                    icon="fa fa-pencil"
                                                     action="#{billSearch.navigateToEditPayment()}">
-                                                    <f:setPropertyActionListener 
-                                                        value="#{p}" 
-                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                    <f:setPropertyActionListener
+                                                        value="#{p}"
+                                                        target="#{billSearch.payment}" />
                                                 </p:commandButton>
                                             </p:column>
                                         </p:dataTable>
