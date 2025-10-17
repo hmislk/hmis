@@ -40,6 +40,7 @@ import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1334,13 +1335,13 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 && fd.getLineGrossRate() != null) {
             if (originalBillItem.getItem() instanceof Ampp) {
                 if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
-                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack(), 4, RoundingMode.HALF_UP);
                 } else {
                     rate = fd.getLineGrossRate();
                 }
             } else if (originalBillItem.getItem() instanceof Vmpp) {
                 if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
-                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack(), 4, RoundingMode.HALF_UP);
                 } else {
                     rate = fd.getLineGrossRate();
                 }
