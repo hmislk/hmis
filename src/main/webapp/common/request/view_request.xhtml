@@ -70,7 +70,7 @@
 
                                         <hr/>
                                         
-                                        <p:inputText
+<!--                                        <p:inputText
                                             placeholder="Bill No"
                                             autocomplete="off"
                                             class="w-100 my-1"
@@ -88,7 +88,7 @@
                                             autocomplete="off"
                                             value="#{searchController.searchKeyword.patientName}" />
 
-                                        <hr/>
+                                        <hr/>-->
                                         
                                     </h:panelGroup>
                                 </div>
@@ -119,7 +119,7 @@
 
                                     <p:column headerText="Request At">
                                         <p:outputLabel value="#{r.createdAt}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
 
@@ -129,23 +129,26 @@
 
                                     <p:column headerText="Request Type" style="width: 12em;" >
                                         <h:panelGroup id="remark">
-                                            <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" size="large" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'ITEM_REFUND'}" value="#{r.requestType.displayName}"  severity="warning" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'EDIT_REQUEST'}" value="#{r.requestType.displayName}"></p:badge>
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 6em;">
-                                        <p:badge value="#{r.status}"></p:badge>
+                                    <p:column headerText="Status" style="width: 8em;">
+                                        <p:badge 
+                                            size="large"
+                                            value="#{r.status}">
+                                        </p:badge>
                                     </p:column>
 
                                     <p:column headerText="Actions" >
                                         <div class="d-flex gap-2">
-                                            
                                             <p:commandButton
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="To Approve"
+                                                disabled="#{r.status eq 'CANCELLED'}"
                                                 class="ui-button-success"
                                                 action="#{requestController.navigateToApproveRequest()}" >
                                                 <f:setPropertyActionListener value="#{r}" target="#{requestController.currentRequest}"/>
@@ -155,7 +158,7 @@
                                                 icon="fa fa-times-circle"
                                                 ajax="false"
                                                 value="To Cancel"
-                                                disabled="#{requestController.currentRequest.status eq 'APPROVED'}"
+                                                disabled="#{!(r.status eq 'PENDING')}"
                                                 class="ui-button-danger"
                                                 action="#{requestController.navigateToCancelRequest()}" >
                                                 <f:setPropertyActionListener value="#{r}" target="#{requestController.currentRequest}"/>
@@ -163,7 +166,6 @@
                                         </div>
 
                                     </p:column>
-
                                 </p:dataTable>
 
                             </div>
