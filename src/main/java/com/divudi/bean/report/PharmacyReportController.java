@@ -2238,33 +2238,82 @@ public class PharmacyReportController implements Serializable {
         }
 
         for (BillItem billItem : billItems) {
-            totalCostValue += resolveFinanceValue(
+            double resolvedCostValue = resolveFinanceValue(
                     billItem,
                     BillItemFinanceDetails::getValueAtCostRate,
                     BillItemFinanceDetails::getCostRate,
-                    PharmaceuticalBillItem::getCostRate);
+                    PharmaceuticalBillItem::getCostRate,
+                    itemBatch -> itemBatch.getCostRate());
+
+            if (Math.abs(resolvedCostValue) < 0.0000001d) {
+                resolvedCostValue = resolveCostValueFromItemBatch(billItem);
+            }
+
+            totalCostValue += resolvedCostValue;
 
             totalPurchaseValue += resolveFinanceValue(
                     billItem,
                     BillItemFinanceDetails::getValueAtPurchaseRate,
                     BillItemFinanceDetails::getPurchaseRate,
-                    PharmaceuticalBillItem::getPurchaseRate);
+                    PharmaceuticalBillItem::getPurchaseRate,
+                    itemBatch -> itemBatch.getPurcahseRate());
 
             totalRetailValue += resolveFinanceValue(
                     billItem,
                     BillItemFinanceDetails::getValueAtRetailRate,
                     BillItemFinanceDetails::getRetailSaleRate,
-                    PharmaceuticalBillItem::getRetailRate);
+                    PharmaceuticalBillItem::getRetailRate,
+                    itemBatch -> itemBatch.getRetailsaleRate());
         }
+    }
+
+    private double resolveCostValueFromItemBatch(BillItem billItem) {
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaceuticalBillItem == null) {
+            return 0.0;
+        }
+
+        ItemBatch itemBatch = pharmaceuticalBillItem.getItemBatch();
+        if (itemBatch == null) {
+            return 0.0;
+        }
+
+        Double rate = itemBatch.getCostRate();
+        if (rate == null || rate == 0.0) {
+            double batchPurchaseRate = itemBatch.getPurcahseRate();
+            if (batchPurchaseRate != 0.0) {
+                rate = batchPurchaseRate;
+            }
+        }
+
+        if ((rate == null || rate == 0.0)) {
+            double pharmaCostRate = pharmaceuticalBillItem.getCostRate();
+            if (pharmaCostRate != 0.0) {
+                rate = pharmaCostRate;
+            }
+        }
+
+        if (rate == null || rate == 0.0) {
+            return 0.0;
+        }
+
+        double quantity = resolveQuantity(billItem.getBillItemFinanceDetails(), billItem);
+        if (quantity == 0.0) {
+            quantity = pharmaceuticalBillItem.getQty();
+        }
+
+        return rate * quantity;
     }
 
     private double resolveFinanceValue(
             BillItem billItem,
             Function<BillItemFinanceDetails, BigDecimal> valueExtractor,
             Function<BillItemFinanceDetails, BigDecimal> rateExtractor,
-            Function<PharmaceuticalBillItem, Double> pharmaRateExtractor) {
+            Function<PharmaceuticalBillItem, Double> pharmaRateExtractor,
+            Function<ItemBatch, Double> itemBatchRateExtractor) {
 
         BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
 
         BigDecimal directValue = financeDetails != null ? valueExtractor.apply(financeDetails) : null;
         if (directValue != null) {
@@ -2274,17 +2323,24 @@ public class PharmacyReportController implements Serializable {
         Double rate = null;
         if (financeDetails != null) {
             BigDecimal rateValue = rateExtractor.apply(financeDetails);
-            if (rateValue != null) {
+            if (rateValue != null && rateValue.compareTo(BigDecimal.ZERO) != 0) {
                 rate = rateValue.doubleValue();
             }
         }
 
-        if (rate == null) {
-            PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
-            if (pharmaceuticalBillItem != null) {
-                Double fallbackRate = pharmaRateExtractor.apply(pharmaceuticalBillItem);
-                if (fallbackRate != null) {
-                    rate = fallbackRate;
+        if (rate == null && pharmaceuticalBillItem != null) {
+            Double fallbackRate = pharmaRateExtractor.apply(pharmaceuticalBillItem);
+            if (fallbackRate != null && Double.compare(fallbackRate, 0.0) != 0) {
+                rate = fallbackRate;
+            }
+        }
+
+        if (rate == null && itemBatchRateExtractor != null && pharmaceuticalBillItem != null) {
+            ItemBatch itemBatch = pharmaceuticalBillItem.getItemBatch();
+            if (itemBatch != null) {
+                Double batchRate = itemBatchRateExtractor.apply(itemBatch);
+                if (batchRate != null && Double.compare(batchRate, 0.0) != 0) {
+                    rate = batchRate;
                 }
             }
         }
