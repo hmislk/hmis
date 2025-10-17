@@ -2233,7 +2233,7 @@ public class ChannelService {
     @EJB
     private DoctorFacade doctorFacade;
     
-    public List<Doctor> findScanningDoctors(){
+    public List<Doctor> findScanningDoctors(){ //still fetch all doctors. If only scanning need, identify the categories
         String jpql = "select doc from Doctor doc "
                 + " where "
                 + " doc.retired = :ret";
