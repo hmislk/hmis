@@ -3444,14 +3444,15 @@ public class SearchController implements Serializable {
 
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
         jpql.append("b.id, b.deptId, b.createdAt, ");
         jpql.append("b.institution.name, b.department.name, b.toDepartment.name, ");
-        jpql.append("b.billType, b.total, b.netTotal, b.discount) ");
+        jpql.append("b.billType, b.billTypeAtomic, b.cancelled, b.refunded, ");
+        jpql.append("b.total, b.netTotal, b.discount) ");
         jpql.append(" from Bill b");
         jpql.append(" where b.billTypeAtomic in :bts");
         jpql.append(" and b.createdAt between :fd and :td");
@@ -16563,6 +16564,19 @@ public class SearchController implements Serializable {
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
+
+        // Explicitly calculate and set bundle total from bill netTotals for the Net Total column footer
+        // This ensures the total is preserved even if calculateTotalsWithCredit doesn't set it properly
+        double bundleNetTotal = 0.0;
+        if (rs != null) {
+            for (ReportTemplateRow row : rs) {
+                if (row.getBill() != null) {
+                    bundleNetTotal += row.getBill().getNetTotal();
+                }
+            }
+        }
+        b.setTotal(bundleNetTotal);
+
         return b;
     }
 
@@ -16653,9 +16667,20 @@ public class SearchController implements Serializable {
         }
         double bundleExcluded = bundleGrand - bundleCollection;
 
+        // Calculate bundle total from row netTotals for the Net Total column footer
+        double bundleNetTotal = 0.0;
+        if (rs != null) {
+            for (ReportTemplateRow row : rs) {
+                if (row.getBill() != null) {
+                    bundleNetTotal += row.getBill().getNetTotal();
+                }
+            }
+        }
+
         b.setCashierGrandTotal(bundleGrand);
         b.setCashierCollectionTotal(bundleCollection);
         b.setCashierExcludedTotal(bundleExcluded);
+        b.setTotal(bundleNetTotal);
         b.setCashierCollectionPaymentMethods(new ArrayList<>(allCashierCollectionIncludedMethods));
         b.setCashierExcludedPaymentMethods(new ArrayList<>(allCashierCollectionExcludedMethods));
 
@@ -16736,6 +16761,19 @@ public class SearchController implements Serializable {
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBill();
         b.calculateTotalsWithCredit();
+
+        // Explicitly calculate and set bundle total from bill netTotals for the Net Total column footer
+        // This ensures the total is preserved even if calculateTotalsWithCredit doesn't set it properly
+        double bundleNetTotal = 0.0;
+        if (rs != null) {
+            for (ReportTemplateRow row : rs) {
+                if (row.getBill() != null) {
+                    bundleNetTotal += row.getBill().getNetTotal();
+                }
+            }
+        }
+        b.setTotal(bundleNetTotal);
+
         return b;
     }
 

@@ -21,7 +21,7 @@
                 <p:inputText id="txtVal" value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off">
                     <p:tooltip value="Enter the total value of the cheque."/>
                     <f:convertNumber pattern="#,##0.00" />
-                    <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                    <p:ajax event="keyup" process="@this" />
                 </p:inputText>
             </div>
 
