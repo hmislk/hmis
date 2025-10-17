@@ -2242,19 +2242,22 @@ public class PharmacyReportController implements Serializable {
                     billItem,
                     BillItemFinanceDetails::getValueAtCostRate,
                     BillItemFinanceDetails::getCostRate,
-                    PharmaceuticalBillItem::getCostRate);
+                    PharmaceuticalBillItem::getCostRate,
+                    itemBatch -> itemBatch.getCostRate());
 
             totalPurchaseValue += resolveFinanceValue(
                     billItem,
                     BillItemFinanceDetails::getValueAtPurchaseRate,
                     BillItemFinanceDetails::getPurchaseRate,
-                    PharmaceuticalBillItem::getPurchaseRate);
+                    PharmaceuticalBillItem::getPurchaseRate,
+                    itemBatch -> itemBatch.getPurcahseRate());
 
             totalRetailValue += resolveFinanceValue(
                     billItem,
                     BillItemFinanceDetails::getValueAtRetailRate,
                     BillItemFinanceDetails::getRetailSaleRate,
-                    PharmaceuticalBillItem::getRetailRate);
+                    PharmaceuticalBillItem::getRetailRate,
+                    itemBatch -> itemBatch.getRetailsaleRate());
         }
     }
 
@@ -2262,9 +2265,11 @@ public class PharmacyReportController implements Serializable {
             BillItem billItem,
             Function<BillItemFinanceDetails, BigDecimal> valueExtractor,
             Function<BillItemFinanceDetails, BigDecimal> rateExtractor,
-            Function<PharmaceuticalBillItem, Double> pharmaRateExtractor) {
+            Function<PharmaceuticalBillItem, Double> pharmaRateExtractor,
+            Function<ItemBatch, Double> itemBatchRateExtractor) {
 
         BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
 
         BigDecimal directValue = financeDetails != null ? valueExtractor.apply(financeDetails) : null;
         if (directValue != null) {
@@ -2279,12 +2284,19 @@ public class PharmacyReportController implements Serializable {
             }
         }
 
-        if (rate == null) {
-            PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
-            if (pharmaceuticalBillItem != null) {
-                Double fallbackRate = pharmaRateExtractor.apply(pharmaceuticalBillItem);
-                if (fallbackRate != null) {
-                    rate = fallbackRate;
+        if (rate == null && pharmaceuticalBillItem != null) {
+            Double fallbackRate = pharmaRateExtractor.apply(pharmaceuticalBillItem);
+            if (fallbackRate != null) {
+                rate = fallbackRate;
+            }
+        }
+
+        if (rate == null && itemBatchRateExtractor != null && pharmaceuticalBillItem != null) {
+            ItemBatch itemBatch = pharmaceuticalBillItem.getItemBatch();
+            if (itemBatch != null) {
+                Double batchRate = itemBatchRateExtractor.apply(itemBatch);
+                if (batchRate != null) {
+                    rate = batchRate;
                 }
             }
         }
