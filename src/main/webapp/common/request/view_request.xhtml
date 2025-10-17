@@ -141,6 +141,7 @@
 
                                     <p:column headerText="Actions" >
                                         <div class="d-flex gap-2">
+                                            
                                             <p:commandButton
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
@@ -154,6 +155,7 @@
                                                 icon="fa fa-times-circle"
                                                 ajax="false"
                                                 value="To Cancel"
+                                                disabled="#{requestController.currentRequest.status eq 'APPROVED'}"
                                                 class="ui-button-danger"
                                                 action="#{requestController.navigateToCancelRequest()}" >
                                                 <f:setPropertyActionListener value="#{r}" target="#{requestController.currentRequest}"/>
