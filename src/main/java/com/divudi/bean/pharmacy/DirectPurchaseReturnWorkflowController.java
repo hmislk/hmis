@@ -1333,13 +1333,14 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             rate = BigDecimal.ZERO;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
+        // Check Direct Purchase Return specific configuration keys
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
                 && fd.getLineCostRate() != null) {
             rate = fd.getLineCostRate();
-        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
                 && fd.getTotalCostRate() != null) {
             rate = fd.getTotalCostRate();
-        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Purchase Rate", false)
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", false)
                 && fd.getLineGrossRate() != null) {
             if (originalBillItem.getItem() instanceof Ampp) {
                 if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
