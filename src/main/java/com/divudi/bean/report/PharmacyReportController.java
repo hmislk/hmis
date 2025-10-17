@@ -2323,14 +2323,14 @@ public class PharmacyReportController implements Serializable {
         Double rate = null;
         if (financeDetails != null) {
             BigDecimal rateValue = rateExtractor.apply(financeDetails);
-            if (rateValue != null) {
+            if (rateValue != null && rateValue.compareTo(BigDecimal.ZERO) != 0) {
                 rate = rateValue.doubleValue();
             }
         }
 
         if (rate == null && pharmaceuticalBillItem != null) {
             Double fallbackRate = pharmaRateExtractor.apply(pharmaceuticalBillItem);
-            if (fallbackRate != null) {
+            if (fallbackRate != null && Double.compare(fallbackRate, 0.0) != 0) {
                 rate = fallbackRate;
             }
         }
@@ -2339,7 +2339,7 @@ public class PharmacyReportController implements Serializable {
             ItemBatch itemBatch = pharmaceuticalBillItem.getItemBatch();
             if (itemBatch != null) {
                 Double batchRate = itemBatchRateExtractor.apply(itemBatch);
-                if (batchRate != null) {
+                if (batchRate != null && Double.compare(batchRate, 0.0) != 0) {
                     rate = batchRate;
                 }
             }
