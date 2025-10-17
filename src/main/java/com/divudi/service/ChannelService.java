@@ -2235,8 +2235,8 @@ public class ChannelService {
     
     public List<Doctor> findScanningDoctors(){
         String jpql = "select doc from Doctor doc "
-                + " where doc.speciality in :specialities "
-                + " and doc.retired = :ret";
+                + " where "
+                + " doc.retired = :ret";
         
         Map <String, Object> params = new HashMap();
         params.put("ret", false);

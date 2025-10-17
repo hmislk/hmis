@@ -76,9 +76,9 @@
                                                   id="doctorMenu"
                                                   filter="true"
                                                   class="w-100 mx-4"
-                                                  converter="deal"
+                                                  
                                                   filterMatchMode="contains">
-                                <f:selectItems value="#{channelReportController.doctorsForScanningReport}" var="item"
+                                <f:selectItems value="#{channelReportController.doctorListForChannelings}" var="item"
                                                itemLabel="#{item.name}" itemValue="#{item}" />
 
                                 <p:ajax event="change" 
