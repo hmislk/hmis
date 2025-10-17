@@ -66,13 +66,12 @@ public class RequestController implements Serializable {
     private Request currentRequest;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
         return "/common/request/view_request?faces-redirect=true";
     }
-    
+
     public String navigateToBackSearchRequest() {
         return "/common/request/view_request?faces-redirect=true";
     }
@@ -180,7 +179,6 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         patient = null;
@@ -249,7 +247,7 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Not found for a request for Approvel");
             return;
         }
-        
+
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
@@ -259,22 +257,22 @@ public class RequestController implements Serializable {
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.APPROVED);
         requestFacade.edit(currentRequest);
-        
+
         JsfUtil.addSuccessMessage("Successfully Approve");
 
     }
-    
+
     public void cancelApprovel() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Not found for a request for Approvel");
             return;
         }
-        
+
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
         }
-        
+
         if (currentRequest.getStatus() != RequestStatus.APPROVED) {
             JsfUtil.addErrorMessage("Can't Cancel Approvel");
             return;
@@ -282,10 +280,10 @@ public class RequestController implements Serializable {
 
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
-        currentRequest.setStatus(RequestStatus.CANCELLED);
+        currentRequest.setStatus(RequestStatus.PENDING);
         requestFacade.edit(currentRequest);
-        
-        System.out.println("Successfully Approve");
+
+        System.out.println("Successfully Cancel Approvel");
         JsfUtil.addSuccessMessage("Successfully Approvel Cancel");
 
     }
@@ -317,27 +315,50 @@ public class RequestController implements Serializable {
         }
         System.out.println("Successfully Reject = ");
         JsfUtil.addSuccessMessage("Successfully Reject");
-        
+
+    }
+
+    public void complteRequest(Request req) {
+
+        req.setCompletedBy(sessionController.getLoggedUser());
+        req.setCompletedAt(new Date());
+        req.setStatus(RequestStatus.COMPLETED);
+
+        requestService.save(req, sessionController.getLoggedUser());
+
+        //Update Batch Bill
+        req.getBill().setCurrentRequest(null);
+        billFacade.edit(req.getBill());
+
+        //Update Induvidual Bills of Batch Bil
+        for (Bill b : billController.billsOfBatchBill(req.getBill())) {
+            b.setCurrentRequest(null);
+            billFacade.edit(b);
+        }
+
+        JsfUtil.addSuccessMessage("Successfully Reject");
     }
     
-    public void complteRequest(Request req){
-        
-            req.setCompletedBy(sessionController.getLoggedUser());
-            req.setCompletedAt(new Date());
-            req.setStatus(RequestStatus.COMPLETED);
+    public void cancelRequestbyUser() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return;
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
 
-            requestService.save(req, sessionController.getLoggedUser());
+        currentRequest.setCancelledAt(new Date());
+        currentRequest.setCancelledBy(sessionController.getLoggedUser());
+        currentRequest.setCancellationReason(comment);
+        currentRequest.setStatus(RequestStatus.CANCELLED);
+        requestFacade.edit(currentRequest);
 
-            //Update Batch Bill
-            req.getBill().setCurrentRequest(null);
-            billFacade.edit(req.getBill());
-
-            //Update Induvidual Bills of Batch Bil
-            for (Bill b : billController.billsOfBatchBill(req.getBill())) {
-                b.setCurrentRequest(null);
-                billFacade.edit(b);
-            }
+        System.out.println("Successfully Reject = ");
+        JsfUtil.addSuccessMessage("Successfully Cancel");
     }
+    
 
     @FacesConverter(forClass = Request.class)
     public static class AreaConverter implements Converter {
@@ -380,7 +401,6 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public boolean isPrintPreview() {
         return printPreview;

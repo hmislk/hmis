@@ -82,6 +82,8 @@ public class RequestService {
             params.put("type",requestType);
         }
         
+        jpql += " order by q.id desc ";
+        
         params.put("deptType",departmentType);
         params.put("ret",false);
         params.put("frm",fromDate);
