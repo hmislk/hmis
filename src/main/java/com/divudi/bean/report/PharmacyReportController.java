@@ -2238,12 +2238,18 @@ public class PharmacyReportController implements Serializable {
         }
 
         for (BillItem billItem : billItems) {
-            totalCostValue += resolveFinanceValue(
+            double resolvedCostValue = resolveFinanceValue(
                     billItem,
                     BillItemFinanceDetails::getValueAtCostRate,
                     BillItemFinanceDetails::getCostRate,
                     PharmaceuticalBillItem::getCostRate,
                     itemBatch -> itemBatch.getCostRate());
+
+            if (Math.abs(resolvedCostValue) < 0.0000001d) {
+                resolvedCostValue = resolveCostValueFromItemBatch(billItem);
+            }
+
+            totalCostValue += resolvedCostValue;
 
             totalPurchaseValue += resolveFinanceValue(
                     billItem,
@@ -2259,6 +2265,44 @@ public class PharmacyReportController implements Serializable {
                     PharmaceuticalBillItem::getRetailRate,
                     itemBatch -> itemBatch.getRetailsaleRate());
         }
+    }
+
+    private double resolveCostValueFromItemBatch(BillItem billItem) {
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaceuticalBillItem == null) {
+            return 0.0;
+        }
+
+        ItemBatch itemBatch = pharmaceuticalBillItem.getItemBatch();
+        if (itemBatch == null) {
+            return 0.0;
+        }
+
+        Double rate = itemBatch.getCostRate();
+        if (rate == null || rate == 0.0) {
+            double batchPurchaseRate = itemBatch.getPurcahseRate();
+            if (batchPurchaseRate != 0.0) {
+                rate = batchPurchaseRate;
+            }
+        }
+
+        if ((rate == null || rate == 0.0)) {
+            double pharmaCostRate = pharmaceuticalBillItem.getCostRate();
+            if (pharmaCostRate != 0.0) {
+                rate = pharmaCostRate;
+            }
+        }
+
+        if (rate == null || rate == 0.0) {
+            return 0.0;
+        }
+
+        double quantity = resolveQuantity(billItem.getBillItemFinanceDetails(), billItem);
+        if (quantity == 0.0) {
+            quantity = pharmaceuticalBillItem.getQty();
+        }
+
+        return rate * quantity;
     }
 
     private double resolveFinanceValue(
