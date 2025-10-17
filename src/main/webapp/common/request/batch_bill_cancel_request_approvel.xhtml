@@ -33,6 +33,7 @@
                                         id="commentsMenu"
                                         value="#{requestController.comment}"
                                         placeholder="Approval Comment"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
                                         style="float: right; width: 500px;"
                                         >
                                     </p:inputText>
@@ -42,6 +43,7 @@
                                         value="Approve" 
                                         icon="fa fa-cancel"
                                         rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
                                         class="ui-button-success" 
                                         action="#{requestController.approveRequest()}">
                                     </p:commandButton>
@@ -51,6 +53,7 @@
                                         value="Reject" 
                                         icon="fa fa-cancel"
                                         rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
                                         class="ui-button-danger" 
                                         action="#{requestController.rejectRequest()}">
                                     </p:commandButton>
@@ -61,6 +64,7 @@
                                         icon="fa fa-cancel"
                                         class="ui-button-danger" 
                                         rendered="#{(requestController.currentRequest.status eq 'APPROVED')}"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
                                         action="#{requestController.cancelApprovel()}">
                                     </p:commandButton>
                                 </div>

@@ -33,6 +33,7 @@
                                         id="commentsMenu"
                                         value="#{requestController.comment}"
                                         placeholder="Request Cancel Reason"
+                                        disabled="#{(requestController.currentRequest.status eq 'CANCELLED')}"
                                         style="float: right; width: 500px;"
                                         >
                                     </p:inputText>
@@ -41,8 +42,9 @@
                                         ajax="false"
                                         value="Cancel Request" 
                                         icon="fa fa-cancel"
-                                        class="ui-button-danger" 
-                                        action="#{billController.cancelOpdBatchBill()}">
+                                        class="ui-button-danger"
+                                        disabled="#{(requestController.currentRequest.status eq 'CANCELLED')}"
+                                        action="#{requestController.cancelRequestbyUser()}">
                                     </p:commandButton>
                                 </div>
                             </div>
