@@ -1907,9 +1907,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             } else {
                 switch (currentRequest.getStatus()) {
                     case PENDING:
-                        return "/opd/request_status?faces-redirect=true";
+                        return "/common/request/request_status?faces-redirect=true";
                     case UNDER_REVIEW:
-                        return "/opd/request_status?faces-redirect=true";
+                        return "/common/request/request_status?faces-redirect=true";
                     case APPROVED:
                         
                         bills = billsOfBatchBill(batchBill);
