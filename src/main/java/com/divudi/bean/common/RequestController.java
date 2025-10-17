@@ -1,6 +1,8 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
+import static com.divudi.core.data.RequestType.BILL_CANCELLATION;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Request;
@@ -40,114 +42,115 @@ public class RequestController implements Serializable {
     @Inject
     BillController billController;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private static final long serialVersionUID = 1L;
-    
+
     private Patient patient;
     private Bill batchBill;
     private List<Bill> bills;
     private String comment;
     private boolean printPreview;
-    
+
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
-    public void makeNull(){
+    public void makeNull() {
         patient = null;
         batchBill = null;
         bills = null;
         comment = null;
         printPreview = false;
     }
-    
-    
-    public String navigateToCreateRequest(Bill bill){
-        if( bill== null || bill.getId() == null){
+
+    public String navigateToCreateRequest(Bill bill) {
+        if (bill == null || bill.getId() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return "";
         }
         String navigation = "";
         Bill originalBill = billFacade.find(bill.getId());
-        printPreview = false;
-        System.out.println("originalBill = " + originalBill);
-        System.out.println("BillTypeAtomic = " + originalBill.getBillTypeAtomic());
-        switch (originalBill.getBillTypeAtomic()) {
-            case OPD_BATCH_BILL_WITH_PAYMENT:
-                System.out.println("Case = OPD_BATCH_BILL_WITH_PAYMENT");
-                setBatchBill(originalBill);
-                bills = billController.billsOfBatchBill(batchBill);
-                patient = batchBill.getPatient();
-                comment = null;
-                
-                System.out.println("batchBill = " + batchBill.getDeptId());
-                System.out.println("bills = " + bills.size());
-                System.out.println("patient = " + patient.getPerson().getNameWithTitle());
-                
-                navigation = "/opd/opd_bill_cancel_request?faces-redirect=true";
-                break;
-            case OPD_BILL_WITH_PAYMENT:
-                navigation = "OPD_BATCH_BILL_WITH_PAYMENT";
-                break;
-            default:
-                
-                
+
+        Request currentRequest = requestService.findRequest(originalBill);
+
+        if (currentRequest != null) {
+            JsfUtil.addErrorMessage("There is already a " + currentRequest.getRequestType().getDisplayName() + " requesr for this bill.");
+            return "";
+        } else {
+            printPreview = false;
+
+            switch (originalBill.getBillTypeAtomic()) {
+                case OPD_BATCH_BILL_WITH_PAYMENT:
+                    setBatchBill(originalBill);
+                    bills = billController.billsOfBatchBill(batchBill);
+                    patient = batchBill.getPatient();
+                    comment = null;
+
+                    navigation = "/opd/opd_bill_cancel_request?faces-redirect=true";
+                    break;
+                case OPD_BILL_WITH_PAYMENT:
+                    navigation = "OPD_BATCH_BILL_WITH_PAYMENT";
+                    break;
+                default:
+                    navigation = "OPD_BATCH_BILL_WITH_PAYMENT";
+            }
         }
+
         return navigation;
     }
-    
+
     @Inject
     RequestService requestService;
-    @EJB
-    BillFacade billFacade1;
-    
-    public void createRequestforOPDBatchBill(){
-        if(batchBill== null){
+
+    public void createRequestforOPDBatchBill() {
+        if (batchBill == null) {
             JsfUtil.addErrorMessage("Bill not found for Create Request ");
-            return ;
+            return;
         }
-        if(comment == null || comment.trim().contains("")){
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Comment is mandatory.");
-            return ;
+            return;
         }
         Request currentRequest = requestService.findRequest(batchBill);
-        
-        if(currentRequest != null){
-            JsfUtil.addErrorMessage("There is already a "+currentRequest.getRequestType().getDisplayName() +" for this bill.");
-            return ;
-        }else{
+
+        if (currentRequest != null) {
+            JsfUtil.addErrorMessage("There is already a " + currentRequest.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+            for (Bill b : billController.billsOfBatchBill(batchBill)) {
+                if (b.getCurrentRequest() != null) {
+                    JsfUtil.addErrorMessage("There is already a " + b.getCurrentRequest().getRequestType().getDisplayName() + " requesr for this bill.");
+                    return;
+                }
+            }
+
             Request newlyRequest = new Request();
-            
+
             newlyRequest.setBill(batchBill);
             newlyRequest.setRequester(sessionController.getLoggedUser());
             newlyRequest.setRequestAt(new Date());
-            newlyRequest.setRejectionReason(comment);
+            newlyRequest.setRequestReason(comment);
             newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
-            
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
             requestService.save(newlyRequest, sessionController.getLoggedUser());
-            
+
             //Update Batch Bill
-            batchBill.setCurrentRequest(currentRequest);
-            billFacade1.edit(batchBill);
-            
+            batchBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(batchBill);
+
             //Update Induvidual Bills of Batch Bil
-            for(Bill b : billController.billsOfBatchBill(batchBill)){
-                b.setCurrentRequest(currentRequest);
-                billFacade1.edit(b);
+            for (Bill b : billController.billsOfBatchBill(batchBill)) {
+                b.setCurrentRequest(newlyRequest);
+                billFacade.edit(b);
             }
-            
-            
-            
+
         }
-        
-        
+
         printPreview = true;
     }
-    
-    
+
     public RequestController() {
     }
 
@@ -200,7 +203,6 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public RequestFacade getRequestFacade() {
         return requestFacade;
@@ -237,7 +239,6 @@ public class RequestController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
+
     // </editor-fold>
-    
 }
