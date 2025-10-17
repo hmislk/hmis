@@ -64,6 +64,7 @@ import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -73,6 +74,7 @@ import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
+import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -1886,6 +1888,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     @Inject
     RequestController requestController;
+    @Inject
+    RequestService requestService;
+    
+    private Request currentRequest;
 
     public String navigateToCancelOpdBatchBill() {
         if (batchBill == null) {
@@ -1894,7 +1900,31 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
-            return requestController.navigateToCreateRequest(batchBill);
+            currentRequest = requestService.findRequest(batchBill);
+
+            if (currentRequest == null) {
+                return requestController.navigateToCreateRequest(batchBill);
+            } else {
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        return "/opd/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        return "/opd/request_status?faces-redirect=true";
+                    case APPROVED:
+                        
+                        bills = billsOfBatchBill(batchBill);
+                        paymentMethod = null;
+                        patient = batchBill.getPatient();
+                        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
+                        comment = null;
+                        printPreview = false;
+                        batchBillCancellationStarted = false;
+                        
+                        return "/opd/batch_bill_cancel?faces-redirect=true";
+                    default:
+                        throw new AssertionError();
+                }
+            }
         } else {
             bills = billsOfBatchBill(batchBill);
             paymentMethod = null;
@@ -5047,6 +5077,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setCancelSingleBills(List<Bill> cancelSingleBills) {
         this.cancelSingleBills = cancelSingleBills;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
     }
 
     /**
