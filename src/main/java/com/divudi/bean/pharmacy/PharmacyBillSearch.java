@@ -730,8 +730,8 @@ public class PharmacyBillSearch implements Serializable {
                     sessionController.getLoggedUser().getDepartment(), BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
         } else {
             // Smart fallback logic
-            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
-                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Institution Code + Year + Yearly Number", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Department Code + Institution Code + Year + Yearly Number", false)
+                    || configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Institution Code + Year + Yearly Number", false)) {
                 insId = deptId; // Use same number as department
             } else {
                 // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
@@ -3336,8 +3336,8 @@ public class PharmacyBillSearch implements Serializable {
                 insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                         getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             } else {
-                if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
-                    configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+                if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)
+                        || configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
                     insId = deptId;
                 } else {
                     // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
@@ -4349,6 +4349,15 @@ public class PharmacyBillSearch implements Serializable {
      */
     public String navigateToSearchSalePreBill() {
         return "/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewPharmacyDisposalIssueBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected.");
+            return null;
+        }
+        // Disposal issues share the generic unit-issue reprint view.
+        return "/pharmacy/pharmacy_reprint_bill_unit_issue?faces-redirect=true";
     }
 
     /**
