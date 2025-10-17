@@ -470,9 +470,12 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
         getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
-        getBillFacade().edit(getCurrentBill());
+        if (currentBill.getId() == null) {
+            getBillFacade().create(getCurrentBill());
+        } else {
+            getBillFacade().edit(getCurrentBill());
+        }
         notificationController.createNotification(getCurrentBill());
-
     }
 
     public void generateBillComponentsForAllSupplierItems(List<Item> items) {
@@ -628,17 +631,17 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
             return;
         }
+        if (totalBillItemsCount == 0) {
+            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
+            return;
+        }
         if (currentBill.getId() == null) {
             saveRequestWithoutMessage();
         }
         finalizeBill();
         totalBillItemsCount = 0;
         finalizeBillComponent();
-        if (totalBillItemsCount == 0) {
-            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
-            return;
-        }
-
+        currentBill = billService.reloadBill(currentBill);
         JsfUtil.addSuccessMessage("Request successfully finalized.");
         printPreview = true;
     }
