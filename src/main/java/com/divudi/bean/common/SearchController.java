@@ -3444,14 +3444,15 @@ public class SearchController implements Serializable {
 
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
         jpql.append("b.id, b.deptId, b.createdAt, ");
         jpql.append("b.institution.name, b.department.name, b.toDepartment.name, ");
-        jpql.append("b.billType, b.total, b.netTotal, b.discount) ");
+        jpql.append("b.billType, b.billTypeAtomic, b.cancelled, b.refunded, ");
+        jpql.append("b.total, b.netTotal, b.discount) ");
         jpql.append(" from Bill b");
         jpql.append(" where b.billTypeAtomic in :bts");
         jpql.append(" and b.createdAt between :fd and :td");
