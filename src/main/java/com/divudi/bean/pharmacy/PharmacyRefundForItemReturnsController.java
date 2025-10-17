@@ -883,14 +883,17 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         double currentRefundAmount = billToUpdate.getRefundAmount();
         billToUpdate.setRefundAmount(currentRefundAmount + refundAmount);
 
-        // Update paidAmount - deduct the refund amount
+        // Update paidAmount - deduct the refund amount only when paid amount exists
         double currentPaidAmount = billToUpdate.getPaidAmount();
-        billToUpdate.setPaidAmount(currentPaidAmount - refundAmount);
+        if (currentPaidAmount > 0) {
+            double updatedPaidAmount = currentPaidAmount - refundAmount;
+            billToUpdate.setPaidAmount(Math.max(0d, updatedPaidAmount));
+        }
 
         // Update balance for credit bills (only if balance > 0)
         double currentBalance = billToUpdate.getBalance();
         if (currentBalance > 0) {
-            billToUpdate.setBalance(currentBalance - refundAmount);
+            billToUpdate.setBalance(Math.max(0d, currentBalance - refundAmount));
         }
 
         // Save the updated bill

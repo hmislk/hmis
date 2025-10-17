@@ -638,14 +638,17 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         double currentRefundAmount = billToUpdate.getRefundAmount();
         billToUpdate.setRefundAmount(currentRefundAmount + returnAmount);
 
-        // Update paidAmount - deduct the return amount
+        // Update paidAmount - deduct the return amount only when a payment exists
         double currentPaidAmount = billToUpdate.getPaidAmount();
-        billToUpdate.setPaidAmount(currentPaidAmount - returnAmount);
+        if (currentPaidAmount > 0) {
+            double updatedPaidAmount = currentPaidAmount - returnAmount;
+            billToUpdate.setPaidAmount(Math.max(0d, updatedPaidAmount));
+        }
 
         // Update balance for credit bills (only if balance > 0)
         double currentBalance = billToUpdate.getBalance();
         if (currentBalance > 0) {
-            billToUpdate.setBalance(currentBalance - returnAmount);
+            billToUpdate.setBalance(Math.max(0d, currentBalance - returnAmount));
         }
 
         // Save the updated bill
