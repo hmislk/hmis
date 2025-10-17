@@ -117,7 +117,11 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render="val" listener="#{cashRecieveBillController.selectBillListener()}"/>
+                                            <f:ajax 
+                                                execute="@this" 
+                                                event="itemSelect" 
+                                                render="val" 
+                                                listener="#{cashRecieveBillController.selectBillListener()}"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>

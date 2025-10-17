@@ -311,9 +311,13 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private double getReferenceBallance(BillItem billItem) {
+        System.out.println("getReferenceBallance");
+        System.out.println("billItem = " + billItem);
+        
         double refBallance = 0;
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
+        System.out.println("refAmount = " + refAmount);
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(billItem.getReferenceBill()));
         refBallance = neTotal - (paidAmt + refAmount);
         return refBallance;
@@ -1396,13 +1400,45 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateReferenceBill(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
-        tmp.getReferenceBill().setPaidAmount(0 - dbl);
-        // Update balance: deduct paid value from existing balance
-        double currentBalance = tmp.getReferenceBill().getBalance();
-        double paidValue = tmp.getNetValue();
-        tmp.getReferenceBill().setBalance(currentBalance - paidValue);
-        getBillFacade().edit(tmp.getReferenceBill());
+        // Get the absolute payment value
+        double paymentValue = Math.abs(tmp.getNetValue());
+
+        // Step 1: Update the original bill (tmp.referenceBill)
+        Bill originalBill = tmp.getReferenceBill();
+        if (originalBill == null) {
+            throw new RuntimeException("Reference bill is null for BillItem ID: " + tmp.getId()
+                    + ". This indicates a data integrity issue.");
+        }
+
+        // Update original bill's financial fields
+        updateBillFinancialFieldsForPayment(originalBill, paymentValue);
+
+        // Step 2: Get and update the reference bill's reference bill if it exists
+        Bill referenceBillOfOriginal = originalBill.getReferenceBill();
+        if (referenceBillOfOriginal != null) {
+            // Update reference bill's financial fields as well
+            updateBillFinancialFieldsForPayment(referenceBillOfOriginal, paymentValue);
+        }
+    }
+
+    /**
+     * Helper method to update bill financial fields when receiving credit company payment
+     * @param bill The bill to update
+     * @param paymentValue The absolute payment value
+     */
+    private void updateBillFinancialFieldsForPayment(Bill bill, double paymentValue) {
+        // Update paidAmount - add the payment amount
+        double currentPaidAmount = bill.getPaidAmount();
+        bill.setPaidAmount(currentPaidAmount + paymentValue);
+
+        // Update balance - deduct the payment amount (only if balance > 0)
+        double currentBalance = bill.getBalance();
+        if (currentBalance > 0) {
+            bill.setBalance(currentBalance - paymentValue);
+        }
+
+        // Save the updated bill
+        getBillFacade().edit(bill);
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
