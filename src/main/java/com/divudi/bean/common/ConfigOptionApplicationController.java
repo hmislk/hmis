@@ -109,9 +109,15 @@ public class ConfigOptionApplicationController implements Serializable {
             loadPharmacyAnalyticsConfigurationDefaults();
             loadReportMethodConfigurationDefaults();
             loadAllCashierSummaryConfigurationDefaults();
+            loadOpdBillingConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
         }
+    }
+
+    private void loadOpdBillingConfigurationDefaults() {
+        // Feature toggle: whether all departments share the same OPD payment methods
+        getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
     }
 
     private void loadEmailGatewayConfigurationDefaults() {

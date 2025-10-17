@@ -63,7 +63,7 @@
                                             <p:selectOneMenu
                                                 id="cmbPs"
                                                 value="#{opdPreSettleController.preBill.paymentMethod}">                                                                     
-                                                <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}" />
+                                                <f:selectItems value="#{configOptionController.paymentMethodsForOpdBilling}" />
                                                 <p:ajax process="@this cmbPs" 
                                                         listener="#{opdPreSettleController.listnerForPaymentMethodChange()}"
                                                         update=":#{p:resolveFirstComponentWithId('payDetails',view).clientId} pBillDetails" event="change" />

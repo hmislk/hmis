@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
@@ -52,6 +53,9 @@ public class ConfigOptionController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
+    @Inject
+    EnumController enumController;
+
     @EJB
     AuditService auditService;
 
@@ -75,6 +79,25 @@ public class ConfigOptionController implements Serializable {
      * Creates a new instance of OptionController
      */
     public ConfigOptionController() {
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
+        boolean allDepartmentsUseSame = configOptionApplicationController.getBooleanValueByKey(
+                "All Departments Use Same Payment Methods for OPD Billing", true);
+        if (allDepartmentsUseSame) {
+            return enumController.getPaymentMethodsForOpdBilling();
+        }
+        if (sessionController == null || sessionController.getDepartment() == null) {
+            return enumController.getPaymentMethodsForOpdBilling();
+        }
+        List<PaymentMethod> pms = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+            if (include) {
+                pms.add(pm);
+            }
+        }
+        return pms;
     }
 
     public boolean getBooleanValueByKey(String key) {
