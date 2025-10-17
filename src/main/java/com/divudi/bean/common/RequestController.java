@@ -2,15 +2,16 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
-import static com.divudi.core.data.RequestType.BILL_CANCELLATION;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Request;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.RequestFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.RequestService;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -29,6 +30,9 @@ import javax.inject.Named;
 @SessionScoped
 public class RequestController implements Serializable {
 
+    public RequestController() {
+    }
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private RequestFacade requestFacade;
@@ -41,6 +45,8 @@ public class RequestController implements Serializable {
     SessionController sessionController;
     @Inject
     BillController billController;
+    @Inject
+    RequestService requestService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -52,16 +58,18 @@ public class RequestController implements Serializable {
     private String comment;
     private boolean printPreview;
 
+    private Date fromDate;
+    private Date toDate;
+    private List<Request> requests;
+    private RequestType requestType;
+    private RequestStatus status;
+    private Request currentRequest;
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
-    // </editor-fold>
-    // <editor-fold defaultstate="collapsed" desc="Function">
-    public void makeNull() {
-        patient = null;
-        batchBill = null;
-        bills = null;
-        comment = null;
-        printPreview = false;
+    public String navigateToSearchRequest() {
+        requests = new ArrayList<>();
+        return "/common/request/view_request?faces-redirect=true";
     }
 
     public String navigateToCreateRequest(Bill bill) {
@@ -72,10 +80,10 @@ public class RequestController implements Serializable {
         String navigation = "";
         Bill originalBill = billFacade.find(bill.getId());
 
-        Request currentRequest = requestService.findRequest(originalBill);
+        Request req = requestService.findRequest(originalBill);
 
-        if (currentRequest != null) {
-            JsfUtil.addErrorMessage("There is already a " + currentRequest.getRequestType().getDisplayName() + " requesr for this bill.");
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
             return "";
         } else {
             printPreview = false;
@@ -90,18 +98,92 @@ public class RequestController implements Serializable {
                     navigation = "/opd/opd_bill_cancel_request?faces-redirect=true";
                     break;
                 case OPD_BILL_WITH_PAYMENT:
-                    navigation = "OPD_BATCH_BILL_WITH_PAYMENT";
+                    navigation = "";
                     break;
                 default:
-                    navigation = "OPD_BATCH_BILL_WITH_PAYMENT";
+                    navigation = "";
             }
+        }
+        return navigation;
+    }
+
+    public String navigateToApproveRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return "";
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return "";
+        }
+
+        //Update Review Status
+        if (currentRequest.getStatus() == RequestStatus.PENDING) {
+            currentRequest.setReviewedBy(sessionController.getLoggedUser());
+            currentRequest.setReviewedAt(new Date());
+            currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
+            requestFacade.edit(currentRequest);
+        }
+
+        String navigation = "";
+
+        switch (currentRequest.getBill().getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                bills = billController.billsOfBatchBill(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                comment = null;
+
+                navigation = "/common/request/batch_bill_cancel_request_approvel?faces-redirect=true";
+                break;
+            case OPD_BILL_WITH_PAYMENT:
+                navigation = "";
+                break;
+            default:
+                navigation = "";
         }
 
         return navigation;
     }
 
-    @Inject
-    RequestService requestService;
+    public String navigateToCancelRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return "";
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return "";
+        }
+
+        String navigation = "";
+
+        switch (currentRequest.getBill().getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                bills = billController.billsOfBatchBill(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                comment = null;
+
+                navigation = "/common/request/batch_bill_cancel_request_cancel?faces-redirect=true";
+                break;
+            case OPD_BILL_WITH_PAYMENT:
+                navigation = "";
+                break;
+            default:
+                navigation = "";
+        }
+
+        return navigation;
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Function">
+    public void makeNull() {
+        patient = null;
+        batchBill = null;
+        bills = null;
+        comment = null;
+        printPreview = false;
+    }
 
     public void createRequestforOPDBatchBill() {
         if (batchBill == null) {
@@ -134,6 +216,9 @@ public class RequestController implements Serializable {
             newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
             newlyRequest.setStatus(RequestStatus.PENDING);
 
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
             requestService.save(newlyRequest, sessionController.getLoggedUser());
 
             //Update Batch Bill
@@ -151,15 +236,59 @@ public class RequestController implements Serializable {
         printPreview = true;
     }
 
-    public RequestController() {
+    public void searchRequest() {
+        requests = new ArrayList<>();
+        requests = requestService.fillAllRequest(fromDate, toDate, requestType, status, sessionController.getDepartment().getDepartmentType());
     }
 
-    public boolean isPrintPreview() {
-        return printPreview;
+    public void approveRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return;
+        }
+        
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestFacade.edit(currentRequest);
+        
+        System.out.println("Successfully Approve");
+
     }
 
-    public void setPrintPreview(boolean printPreview) {
-        this.printPreview = printPreview;
+    public void rejectRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            return;
+        }
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+
+        currentRequest.setRejectedAt(new Date());
+        currentRequest.setRejectedBy(sessionController.getLoggedUser());
+        currentRequest.setRejectionReason(comment);
+        currentRequest.setStatus(RequestStatus.REJECTED);
+        requestFacade.edit(currentRequest);
+
+        //Update Batch Bill
+        currentRequest.getBill().setCurrentRequest(null);
+        billFacade.edit(currentRequest.getBill());
+
+        //Update Induvidual Bills of Batch Bil
+        for (Bill b : billController.billsOfBatchBill(currentRequest.getBill())) {
+            b.setCurrentRequest(null);
+            billFacade.edit(b);
+        }
+        
+        System.out.println("Successfully Reject");
+
     }
 
     @FacesConverter(forClass = Request.class)
@@ -204,6 +333,18 @@ public class RequestController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
+    }
+
     public RequestFacade getRequestFacade() {
         return requestFacade;
     }
@@ -238,6 +379,56 @@ public class RequestController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<Request> getRequests() {
+        return requests;
+    }
+
+    public void setRequests(List<Request> requests) {
+        this.requests = requests;
+    }
+
+    public RequestType getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(RequestType requestType) {
+        this.requestType = requestType;
+    }
+
+    public RequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RequestStatus status) {
+        this.status = status;
     }
 
     // </editor-fold>
