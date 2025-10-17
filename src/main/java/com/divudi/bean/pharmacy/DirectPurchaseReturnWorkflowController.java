@@ -24,6 +24,9 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -1310,22 +1313,44 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         calculateTotal();
     }
 
-    // Helper method to get return rate for units (following legacy pattern)
+    // Helper method to get return rate for units based on configuration
     private BigDecimal getReturnRateForUnits(BillItem originalBillItem) {
-        if (originalBillItem == null || originalBillItem.getBillItemFinanceDetails() == null) {
+        BillItemFinanceDetails fd = originalBillItem.getBillItemFinanceDetails();
+        if (fd == null) {
             return BigDecimal.ZERO;
         }
-
-        BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
-
-        // Return the purchase rate per unit
-        if (originalFd.getLineGrossRate() != null && originalFd.getUnitsPerPack() != null) {
-            return originalFd.getLineGrossRate().divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
-        } else if (originalBillItem.getPharmaceuticalBillItem() != null) {
-            return BigDecimal.valueOf(originalBillItem.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+        BigDecimal rate = fd.getGrossRate();
+        if (rate == null) {
+            rate = BigDecimal.ZERO;
         }
 
-        return BigDecimal.ZERO;
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
+                && fd.getLineCostRate() != null) {
+            rate = fd.getLineCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
+                && fd.getTotalCostRate() != null) {
+            rate = fd.getTotalCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Purchase Rate", false)
+                && fd.getLineGrossRate() != null) {
+            if (originalBillItem.getItem() instanceof Ampp) {
+                if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                } else {
+                    rate = fd.getLineGrossRate();
+                }
+            } else if (originalBillItem.getItem() instanceof Vmpp) {
+                if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                } else {
+                    rate = fd.getLineGrossRate();
+                }
+            } else if (originalBillItem.getItem() instanceof Amp) {
+                rate = fd.getLineGrossRate();
+            } else if (originalBillItem.getItem() instanceof Vmp) {
+                rate = fd.getLineGrossRate();
+            }
+        }
+        return rate != null ? rate : BigDecimal.ZERO;
     }
 
     private void generateBillItemsForUpdate() {
