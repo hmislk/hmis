@@ -99,8 +99,12 @@
                     <p:outputLabel value="Paid Amount" />
                     <p:inputText value="#{cc.attrs.bill.paidAmount}" styleClass="w-100" />
 
+                    <p:outputLabel value="Balance Amount" />
+                    <p:inputText value="#{cc.attrs.bill.balance}" styleClass="w-100" />
+
                     <p:outputLabel value="Refund Amount" />
                     <p:inputText value="#{cc.attrs.bill.refundAmount}" styleClass="w-100" />
+                    
                     <p:outputLabel value="Service Charge" />
                     <p:inputText value="#{cc.attrs.bill.serviceCharge}" styleClass="w-100" />
 
@@ -161,8 +165,7 @@
                 <p:panelGrid columns="4" layout="tabular" styleClass="w-100" columnClasses="w-15,w-35,w-15,w-35">
                     <p:outputLabel value="Paid" />
                     <p:selectBooleanCheckbox value="#{cc.attrs.bill.paid}" />
-                    <p:outputLabel value="Balance Amount" />
-                    <p:inputText value="#{cc.attrs.bill.balance}" styleClass="w-100" />
+
 
                     <p:outputLabel value="Cancelled" />
                     <p:selectBooleanCheckbox value="#{cc.attrs.bill.cancelled}" />
