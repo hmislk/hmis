@@ -95,9 +95,9 @@
                                             </p:column>
                                             <p:column>
                                                 <f:facet name="header">
-                                                    <h:outputLabel value="Due Amount"/>
+                                                    <h:outputLabel value="Due Amount*"/>
                                                 </f:facet>
-                                                <h:outputLabel value="#{ix.netTotal+ix.vat - ix.paidAmount}" style="color: red;">
+                                                <h:outputLabel value="#{ix.balance}" style="color: red;">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
