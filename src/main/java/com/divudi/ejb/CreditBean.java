@@ -99,13 +99,12 @@ public class CreditBean {
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-
         List<Bill> bs = (List<Bill>) getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return bs;
 
     }
-    
+
     public List<Payment> getCreditPayments(Institution ins, List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, boolean lessThan) {
         String jpql = "Select p From Payment p"
                 + " where p.retired=false "
@@ -128,7 +127,6 @@ public class CreditBean {
         params.put("pm", PaymentMethod.Credit);
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
-
 
         List<Payment> bs = (List<Payment>) paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -297,10 +295,8 @@ public class CreditBean {
         params.put("billTypeAtomics", billTypeAtomics);
         params.put("val", 0.1);
 
-
         List<Institution> ins = getInstitutionFacade()
                 .findByJpql(jpql, params, TemporalType.TIMESTAMP);
-
 
         return ins == null ? Collections.emptyList() : ins;
     }
@@ -762,16 +758,14 @@ public class CreditBean {
     }
 
     public double getRefundAmount(Bill b) {
-        String sql = "Select sum(b.netTotal+b.vat) "
+        String jpql = "Select sum(b.netTotal+b.vat) "
                 + " From Bill b "
                 + " where b.retired=false "
-                + " and b.billedBill=:b ";
-
-        HashMap hm = new HashMap();
-        hm.put("b", b);
-
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
-
+                + " and (b.billedBill=:b or b.billedBill.referenceBill=:b) ";
+        HashMap params = new HashMap();
+        params.put("b", b);
+        double returnedAmount = getBillItemFacade().findDoubleByJpql(jpql, params);
+        return returnedAmount;
     }
 
     public Object[] getRefundAmounts(Bill b) {
