@@ -252,6 +252,11 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Refund Value">
+                                        <h:outputLabel value="#{cashRecieveBillController.getRefundAmountForBill(b.referenceBill)}" style="color: red;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Paying this time">
                                         <h:outputLabel value="#{b.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />

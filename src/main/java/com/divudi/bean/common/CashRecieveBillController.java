@@ -1701,7 +1701,12 @@ public class CashRecieveBillController implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
-    
+
+    public double getRefundAmountForBill(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        return creditBean.getRefundAmount(bill);
+    }
 
 }
