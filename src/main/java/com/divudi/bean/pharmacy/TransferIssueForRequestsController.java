@@ -250,7 +250,7 @@ public class TransferIssueForRequestsController implements Serializable {
         // Setup department details
         getIssuedBill().setDepartment(requestedBill.getDepartment());
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
-        getIssuedBill().setToDepartment(requestedBill.getDepartment());
+        getIssuedBill().setToDepartment(requestedBill.getFromDepartment());
 
         // OPTIMIZATION 1: Bulk fetch all calculations for all bill items (replaces 2N individual queries)
         java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> calculationsMap
@@ -507,6 +507,9 @@ public class TransferIssueForRequestsController implements Serializable {
             getIssuedBill().getBillItems().add(billItemsInIssue);
         }
 
+        // Calculate bill totals BEFORE persisting to ensure qty is negative
+        calculateBillTotalsForTransferIssue(getIssuedBill());
+
         getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSave);
 
         // Handle Department ID generation
@@ -567,7 +570,7 @@ public class TransferIssueForRequestsController implements Serializable {
         // Calling edit/merge again can create a duplicate bill
         // getBillFacade().edit(getIssuedBill());
         createBillFinancialDetailsForPharmacyTransferIssueBill(getIssuedBill());
-        calculateBillTotalsForTransferIssue(getIssuedBill());
+        // calculateBillTotalsForTransferIssue was already called before persistence at line 511
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
@@ -625,6 +628,10 @@ public class TransferIssueForRequestsController implements Serializable {
         // Quantity signs for ISSUE: negative (stock out)
         BigDecimal absQtyInPacks = qtyInPacks.abs();
         BigDecimal absQtyInUnits = qtyInUnits.abs();
+
+        // Set BillItem qty to negative for transfer issue (stock out)
+        b.setQty(0 - absQtyInPacks.doubleValue());
+
         f.setQuantity(BigDecimal.ZERO.subtract(absQtyInPacks));
         f.setTotalQuantity(BigDecimal.ZERO.subtract(absQtyInPacks));
         f.setLineGrossRate(rateBig);
