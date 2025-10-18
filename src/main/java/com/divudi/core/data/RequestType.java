@@ -8,7 +8,7 @@ public enum RequestType {
     // Cancellation types
     BILL_CANCELLATION("Bill Cancellation", RequestCategory.CANCELLATION),
     
-    // Refund types ()
+    // Refund types
     ITEM_REFUND("Item Refund", RequestCategory.REFUND),
     FULL_REFUND("Full Refund", RequestCategory.REFUND),
     PARTIAL_REFUND("Partial Refund", RequestCategory.REFUND),

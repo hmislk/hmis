@@ -9,7 +9,7 @@ public enum RequestStatus {
     // In-progress states
     PENDING("Pending"),
     
-    // In-progress states
+    // Review states
     UNDER_REVIEW("Under Review"),
     
     // Approval/Rejection states
