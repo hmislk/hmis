@@ -24,17 +24,21 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.Department;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -57,6 +61,8 @@ public class TransferIssueDirectController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private StockFacade stockFacade;
+    @EJB
+    private DepartmentFacade departmentFacade;
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
@@ -83,6 +89,7 @@ public class TransferIssueDirectController implements Serializable {
     private Stock tmpStock;
     private StockDTO stockDto;
     UserStockContainer userStockContainer;
+    private List<Department> recentToDepartments;
 
     public TransferIssueDirectController() {
     }
@@ -372,6 +379,60 @@ public class TransferIssueDirectController implements Serializable {
         tmpStock = null;
         stockDto = null;
         qty = null;
+    }
+
+    /**
+     * Changes the selected department and resets bill items
+     */
+    public void changeDepartment() {
+        billItems = null;
+        getIssuedBill().setToDepartment(null);
+    }
+
+    /**
+     * Processes the transfer issue after department selection
+     */
+    public String processTransferIssue() {
+        if (getIssuedBill().getToDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select a Department");
+            return "";
+        }
+        if (Objects.equals(getIssuedBill().getToDepartment(), sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+            return "";
+        }
+        getIssuedBill().setFromInstitution(sessionController.getInstitution());
+        getIssuedBill().setFromDepartment(sessionController.getDepartment());
+        return "";
+    }
+
+    /**
+     * Gets list of recent departments that have received direct issues
+     */
+    public List<Department> getRecentToDepartments() {
+        if (recentToDepartments == null) {
+            String jpql = "select distinct b.toDepartment from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTypeAtomic=:bt "
+                    + " and b.fromDepartment=:fd "
+                    + " order by b.id desc";
+            Map<String, Object> m = new HashMap<>();
+            m.put("bt", BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            m.put("fd", sessionController.getDepartment());
+            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+        }
+        return recentToDepartments;
+    }
+
+    /**
+     * Selects a department from recent departments and processes the transfer issue
+     */
+    public String selectFromRecentDepartment(Department d) {
+        if (d == null) {
+            return "";
+        }
+        getIssuedBill().setToDepartment(d);
+        return processTransferIssue();
     }
 
     // ------------------------------------------------------------------

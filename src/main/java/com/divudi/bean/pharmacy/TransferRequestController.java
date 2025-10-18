@@ -114,6 +114,12 @@ public class TransferRequestController implements Serializable {
     private List<Department> recentToDepartments;
     // </editor-fold>
 
+    public String navigateToCreateANewTransferRequest(){
+        recreate();
+        
+        return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
+    }
+    
     public void recreate() {
         toDepartment = null;
         bill = null;

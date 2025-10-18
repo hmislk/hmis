@@ -172,9 +172,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     boolean requestForQuentity;
     boolean marginNotAllowed;
     private boolean printSessionNumber;
-    @Column
     private boolean allowFractions = false;
-    @Column
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
