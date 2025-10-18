@@ -901,7 +901,9 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
 
-        getBillFacade().edit(getIssuedBill());
+        // Don't call edit() here - bill was already created in saveBill()
+        // Calling edit/merge again can create a duplicate bill
+        // getBillFacade().edit(getIssuedBill());
         createBillFinancialDetailsForPharmacyTransferIssueBill(getIssuedBill());
         calculateBillTotalsForTransferIssue(getIssuedBill());
 
@@ -1773,6 +1775,7 @@ public class TransferIssueController implements Serializable {
         if (issuedBill == null) {
             issuedBill = new BilledBill();
             issuedBill.setBillType(BillType.PharmacyTransferIssue);
+            issuedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
         }
         return issuedBill;
     }

@@ -388,9 +388,9 @@
                             id="itemDetailsBlockGrnReturn"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Block', true)}" >
                             <p:panel>
-                                
-                                
-                                
+
+
+
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                     GRN Return Details
                                 </div>
@@ -511,10 +511,9 @@
                     id="gpTabs" >
                     <p:tabView  
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Tabview', true)}"
-                        class="w-100"  
-                        activeIndex="0" 
-                        style="border: 1px solid lightgray; padding: 10px;">
-
+                        class="w-100" 
+                        focusOnLastActiveTab="true"
+                        activeIndex="#{pharmacyController.pharmacyHistoryIndex}">
                         <p:tab
                             title="Stock"
                             id="itemDetailsTabStocks"
@@ -1021,8 +1020,8 @@
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15" >
 
-                                <p:column headerText="GRN Number">
-                                    #{pendingGrnRow.bill.deptId}
+                                <p:column headerText="PO Number">
+                                    #{pendingGrnRow.bill.referenceBill.deptId}
                                 </p:column>
                                 <p:column headerText="Department">
                                     #{pendingGrnRow.bill.department.name}
@@ -1310,6 +1309,10 @@
                         </p:tab>
 
                         <p:tab title="Pack Sizes" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pack Sizes Tab', true)}">
+                            <p:outputLabel value="Item ID" ></p:outputLabel>
+                            <p:inputText value="#{pharmacyController.pharmacyItem}" ></p:inputText>
+                            sdf#{pharmacyController}aaa
+                            
                             <h:panelGroup rendered="#{empty pharmacyController.ampps}">
                                 <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
                                     <i class="fas fa-info-circle" style="margin-right: 8px;"></i>

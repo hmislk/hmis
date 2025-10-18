@@ -599,6 +599,7 @@ public class BillService {
         jpql = "SELECT bi "
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
                 + " order by bi.id";
         params.put("bl", b);
         return billItemFacade.findByJpql(jpql, params);
