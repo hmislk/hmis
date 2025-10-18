@@ -148,6 +148,7 @@ public class PharmacyController implements Serializable {
     private static final long serialVersionUID = 1L;
     private int pharmacyAdminIndex;
     private int pharmacySummaryIndex;
+    private int pharmacyHistoryIndex;
 
     private Item pharmacyItem;
     boolean hasSale;
@@ -5993,6 +5994,7 @@ public class PharmacyController implements Serializable {
                 + "b.bill.creater.webUserPerson.name, "
                 + "b.bill.createdAt, "
                 + "b.pharmaceuticalBillItem.purchaseRate, "
+                + "b.pharmaceuticalBillItem.costRate, "
                 + "b.pharmaceuticalBillItem.retailRate, "
                 + "b.pharmaceuticalBillItem.qty, "
                 + "b.pharmaceuticalBillItem.freeQty, "
@@ -7190,6 +7192,8 @@ public class PharmacyController implements Serializable {
     public void setPharmacyAdminIndex(int pharmacyAdminIndex) {
         this.pharmacyAdminIndex = pharmacyAdminIndex;
     }
+    
+    
 
     public int getPharmacySummaryIndex() {
         return pharmacySummaryIndex;
@@ -7832,6 +7836,14 @@ public class PharmacyController implements Serializable {
 
     public void setPendingPoDtos(List<com.divudi.core.data.dto.PharmacyItemPoDTO> pendingPoDtos) {
         this.pendingPoDtos = pendingPoDtos;
+    }
+
+    public int getPharmacyHistoryIndex() {
+        return pharmacyHistoryIndex;
+    }
+
+    public void setPharmacyHistoryIndex(int pharmacyHistoryIndex) {
+        this.pharmacyHistoryIndex = pharmacyHistoryIndex;
     }
 
     public static class TransferBreakdownGroup implements Serializable {

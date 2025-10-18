@@ -121,6 +121,9 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         if (bill.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
             return null;
+        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE) {
+            paymentBill = bill;
+            bill.getReferenceBill();
         } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE) {
             paymentBill = bill.getReferenceBill();
             if (paymentBill.getBillTypeAtomic() == null) {
@@ -469,10 +472,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     /**
-     * Validates that the absolute value of total payments equals the absolute value of the refund bill's netTotal.
-     * This is called during settlement to ensure that the payment amounts match the refund amount.
+     * Validates that the absolute value of total payments equals the absolute
+     * value of the refund bill's netTotal. This is called during settlement to
+     * ensure that the payment amounts match the refund amount.
      *
-     * @return true if validation fails (there's an error), false if validation passes
+     * @return true if validation fails (there's an error), false if validation
+     * passes
      */
     private boolean validatePaymentRefundMatch() {
         if (getReturnBill() == null) {
@@ -581,54 +586,58 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     /**
-     * Updates the original bill's financial tracking fields (refundAmount, paidAmount, balance).
-     * This method validates bill types and updates both the PHARMACY_RETAIL_SALE_PRE bill
-     * and its related PHARMACY_RETAIL_SALE bill.
+     * Updates the original bill's financial tracking fields (refundAmount,
+     * paidAmount, balance). This method validates bill types and updates both
+     * the PHARMACY_RETAIL_SALE_PRE bill and its related PHARMACY_RETAIL_SALE
+     * bill.
      *
      * @throws RuntimeException if bill type validation fails
      */
     private void updateOriginalBillsForReturn() {
+        Bill originalBill = null;
+        Bill salePreBill;
+        Bill saleBill;
         if (getBill() == null) {
             throw new RuntimeException("Original bill is null. Cannot update financial tracking fields.");
+        } else {
+            originalBill = getBill();
+        }
+
+        if (null == originalBill.getBillTypeAtomic()) {
+            JsfUtil.addErrorMessage("Data Flow Error");
+            return;
+        } else switch (originalBill.getBillTypeAtomic()) {
+            case PHARMACY_RETAIL_SALE:
+                saleBill = originalBill;
+                salePreBill = originalBill.getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE:
+                saleBill = originalBill.getReferenceBill();
+                salePreBill = originalBill;
+                break;
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                saleBill = originalBill;
+                salePreBill = originalBill.getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                saleBill = originalBill.getReferenceBill();
+                salePreBill = originalBill;
+                break;
+            default:
+                JsfUtil.addErrorMessage("Data Flow Error");
+                return;
         }
 
         // Calculate the absolute value of the return amount
         double returnAmount = Math.abs(getReturnBill().getNetTotal());
 
-        // Step 1: Validate and update the PRE bill (getBill())
-        BillTypeAtomic preBillType = getBill().getBillTypeAtomic();
-        if (preBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE
-                && preBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
-            throw new RuntimeException("Expected bill type PHARMACY_RETAIL_SALE_PRE or PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER, "
-                    + "but found: " + (preBillType != null ? preBillType.name() : "null")
-                    + ". This indicates a workflow issue that needs to be fixed.");
-        }
-
-        // Update the PRE bill's financial fields
-        updateBillFinancialFields(getBill(), returnAmount);
-
-        // Step 2: Get and validate the SALE bill from bill.referenceBill
-        Bill saleBill = getBill().getReferenceBill();
-        if (saleBill == null) {
-            throw new RuntimeException("Reference bill (PHARMACY_RETAIL_SALE) is null for PRE bill ID: " + getBill().getId()
-                    + ". This indicates a data integrity issue.");
-        }
-
-        BillTypeAtomic saleBillType = saleBill.getBillTypeAtomic();
-        if (saleBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE
-                && saleBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
-            throw new RuntimeException("Expected reference bill type PHARMACY_RETAIL_SALE or PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER, "
-                    + "but found: " + (saleBillType != null ? saleBillType.name() : "null")
-                    + ". This indicates a workflow issue that needs to be fixed.");
-        }
-
-        // Update the SALE bill's financial fields
+        updateBillFinancialFields(salePreBill, returnAmount);
         updateBillFinancialFields(saleBill, returnAmount);
     }
 
     /**
-     * Helper method to update a bill's financial tracking fields.
-     * Updates refundAmount, paidAmount, and balance (if applicable).
+     * Helper method to update a bill's financial tracking fields. Updates
+     * refundAmount, paidAmount, and balance (if applicable).
      *
      * @param billToUpdate The bill to update
      * @param returnAmount The absolute value of the return amount
