@@ -1274,10 +1274,10 @@
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_issue_for_request' and webUserController.hasPrivilege('PharmacyTransfer')}">
                     <h:form>
                         <p:tooltip for="pharmacy_issue_for_request" value="Issue for Requests"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:commandLink
                             id="pharmacy_issue_for_request"
-                            ajax="false" 
-                            action="#{transferIssueController.navigateToListPharmacyIssueRequests}" 
+                            ajax="false"
+                            action="pharmacy/pharmacy_transfer_request_list"
                             actionListener="#{searchController.makeListNull()}" 
 
                             styleClass="svg-link" >
@@ -1291,11 +1291,11 @@
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_direct_issue' and webUserController.hasPrivilege('PharmacyTransfer')}">
                     <h:form>
                         <p:tooltip for="pharmacy_direct_issue" value="Direct Issue"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:commandLink
                             id="pharmacy_direct_issue"
-                            ajax="false" 
-                            action="#{transferIssueController.navigateToDirectPharmacyIssue}" 
-                            actionListener="#{transferIssueController.makeNull()}" 
+                            ajax="false"
+                            action="#{transferIssueDirectController.navigateToDirectPharmacyIssue}"
+                            actionListener="#{transferIssueDirectController.makeNull()}" 
 
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>

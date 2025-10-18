@@ -10,18 +10,18 @@
     <ui:define name="content">
         <h:form>
 
-            <p:panel rendered="#{!transferIssueController.printPreview}">
+            <p:panel rendered="#{!transferIssueForRequestsController.printPreview}">
 
                 <f:facet name="header" >                                  
                     <h:panelGrid columns="4">
                         <f:facet name="header">
-                            <h:outputLabel value="To Department : &nbsp; #{transferIssueController.requestedBill.department.name}" class="mb-1"/>
+                            <h:outputLabel value="To Department : &nbsp; #{transferIssueForRequestsController.requestedBill.department.name}" class="mb-1"/>
                         </f:facet>
                         <h:outputLabel value="Select Staff Name :" />&nbsp;
                         <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
                                          forceSelection="true" 
                                          var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
-                                         value="#{transferIssueController.issuedBill.toStaff}" >
+                                         value="#{transferIssueForRequestsController.issuedBill.toStaff}" >
 
                             <p:column headerText="Name">
                                 <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
@@ -36,7 +36,7 @@
                                 <h:outputText value="#{w.staffCode}" ></h:outputText>
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" ajax="false" class="ui-button-success mx-2" >
+                        <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueForRequestsController.settle}" ajax="false" class="ui-button-success mx-2" >
                         </p:commandButton>                        
                     </h:panelGrid>
                 </f:facet>
@@ -47,13 +47,13 @@
                         <h:outputLabel value="Requested Items" class="mx-4" />
                     </f:facet>
                     <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
-                                 value="#{transferIssueController.billItems}" 
+                                 value="#{transferIssueForRequestsController.billItems}" 
                                  id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
 
 
 
-                        <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />  
-                        <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" /> 
+                        <p:ajax event="rowEdit" listener="#{transferIssueForRequestsController.onEdit}"  />  
+                        <p:ajax event="rowEditCancel" listener="#{transferIssueForRequestsController.onEdit}" /> 
 
 
 
@@ -90,14 +90,14 @@
                                 </f:facet>                        
                                 <f:facet name="input">  
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueForRequestsController.onFocus(bItm)}"/>
                                     </p:inputText>
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>              
 
                         <p:column style="width: 10px!important;">
-                            <p:commandButton value="Remove" ajax="false" action="#{transferIssueController.remove(bItm)}">
+                            <p:commandButton value="Remove" ajax="false" action="#{transferIssueForRequestsController.remove(bItm)}">
                             </p:commandButton>
                         </p:column>
                     </p:dataTable>  
@@ -106,13 +106,13 @@
                 <ph:history/>
 
             </p:panel>
-            <p:panel rendered="#{transferIssueController.printPreview}">
+            <p:panel rendered="#{transferIssueForRequestsController.printPreview}">
                 <p:commandButton 
                     ajax="false" 
                     icon="fas fa-list"
                     class="ui-button-warning"
                     action="pharmacy_transfer_request_list" 
-                    actionListener="#{transferIssueController.makeNull()}" 
+                    actionListener="#{transferIssueForRequestsController.makeNull()}" 
                     value="Requested List"/>                    
                 <p:commandButton 
                     value="Print" 
@@ -125,14 +125,14 @@
 
                 <h:panelGroup   id="gpBillPreview" >
 
-<!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
+<!--                    <ph:transferIssue bill="#{transferIssueForRequestsController.issuedBill}"/>-->
 
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
-                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                        <ph:transferIssue bill="#{transferIssueForRequestsController.issuedBill}"/>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
-                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                        <ph:transferIssue_detailed bill="#{transferIssueForRequestsController.issuedBill}"/>
                     </h:panelGroup>
 
                 </h:panelGroup>
