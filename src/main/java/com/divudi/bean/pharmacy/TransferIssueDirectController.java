@@ -4,8 +4,10 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.BillService;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.StockDTO;
@@ -18,10 +20,14 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import java.math.BigDecimal;
@@ -55,8 +61,12 @@ public class TransferIssueDirectController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private BillService billService;
     @Inject
     private UserStockController userStockController;
+    @Inject
+    private NotificationController notificationController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -220,7 +230,7 @@ public class TransferIssueDirectController implements Serializable {
         boolean stockWasNotSufficientToIssueFound = false;
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQty(0 - i.getPharmaceuticalBillItem().getQty());
-            if (i.getQty() == 0.0) {
+            if (i.getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
             i.setBill(getIssuedBill());
@@ -261,7 +271,7 @@ public class TransferIssueDirectController implements Serializable {
 
         getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
 
-        // Handle Department ID generation
+         // Handle Department ID generation
         String deptId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
@@ -271,17 +281,49 @@ public class TransferIssueDirectController implements Serializable {
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
             deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment().getInstitution(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         } else {
-            deptId = getBillNumberBean().institutionBillNumberGenerator(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE, BillClassType.BilledBill);
+            // Use existing method for backward compatibility
+            if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
+                deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            } else {
+                deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            }
         }
+
+        // Handle Institution ID generation
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+        } else {
+            // Check if department strategy is enabled
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department to avoid consuming counter twice
+            } else {
+                // Use existing method for backward compatibility
+                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+            }
+        }
+        getIssuedBill().setInsId(insId);
         getIssuedBill().setDeptId(deptId);
-        getIssuedBill().setInsId(deptId);
 
+        getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
+        getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
+        getIssuedBill().setCreater(getSessionController().getLoggedUser());
+        getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());
+        double calculatedNetTotal = calculateBillNetTotal();
+        getIssuedBill().setNetTotal(calculatedNetTotal);
+        getIssuedBill().setTotal(calculatedNetTotal);
+        getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        billService.createBillFinancialDetailsForPharmacyDirectIssueBill(getIssuedBill(), getBillItems());
+        updateBillFinanceDetailsForDirectIssue(getIssuedBill(), calculatedNetTotal);
+        notificationController.createNotification(issuedBill);
 
+        Bill b = getBillFacade().find(getIssuedBill().getId());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        issuedBill = b;
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Successfully Saved");
@@ -460,6 +502,35 @@ public class TransferIssueDirectController implements Serializable {
         } else {
             return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
         }
+    }
+
+    /**
+     * Calculates the net total for the direct issue bill
+     * Uses line gross rate from bill item finance details
+     */
+    private double calculateBillNetTotal() {
+        double value = 0;
+        int serialNo = 0;
+        for (BillItem b : getIssuedBill().getBillItems()) {
+            double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+            // Use absolute value for revenue calculation - money comes in (positive)
+            value += rate * Math.abs(b.getPharmaceuticalBillItem().getQty());
+            b.setSearialNo(serialNo++);
+        }
+        return value;
+    }
+
+    /**
+     * Updates the BillFinanceDetails with netTotal and grossTotal for Direct Issue
+     * Sets both values to the calculated net total
+     */
+    private void updateBillFinanceDetailsForDirectIssue(Bill bill, double netTotal) {
+        if (bill == null || bill.getBillFinanceDetails() == null) {
+            return;
+        }
+        bill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(netTotal));
+        bill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(netTotal));
+        getBillFacade().edit(bill);
     }
 
     /**
