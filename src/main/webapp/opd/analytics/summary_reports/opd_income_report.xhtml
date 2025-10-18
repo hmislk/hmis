@@ -411,6 +411,28 @@
                             </f:facet>
 
                         </p:column>
+                        <p:column headerText="Slip"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                            <h:outputText value="#{row.slipValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{opdReportController.bundle.summaryRow.slipValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
+                        <p:column headerText="Online"   width="10em"  class="text-end" style="padding: 0px!important; margin: 0px!important;" >
+                            <h:outputText value="#{row.onlineSettlementValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <f:facet name="footer" >
+                                <h:outputText value="#{opdReportController.bundle.summaryRow.onlineSettlementValue}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+
+                        </p:column>
                         <p:column headerText="Inpatient Credit"   width="10em" class="text-end light-grey-background"  style="padding: 0px!important; margin: 0px!important;" >
                             <h:outputText value="#{row.inpatientCreditValue}">
                                 <f:convertNumber pattern="#,##0.00" />
