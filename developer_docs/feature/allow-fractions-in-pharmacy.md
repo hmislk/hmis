@@ -171,3 +171,32 @@ Notes
 
 - If switching the `Allow Fractions` state during testing, reselect the item on the transaction page to ensure updated behavior.
 - Retail sale pages using `intQty` remain integer‑only in this phase by design.
+
+Test Data Suggestions
+
+- Departments: Use a non-production department (e.g., “Test Pharmacy”).
+- Items:
+  - Item A (allows fractions):
+    - AMP Name: “Frac Amp Test”, Code: “FRA-001”, Allow Fractions: Yes.
+    - Optionally add AMPP “Frac Pack Test”, linked to Item A, Allow Fractions: Yes.
+  - Item B (integers only):
+    - AMP Name: “Int Amp Test”, Code: “INT-001”, Allow Fractions: No.
+    - Optionally add AMPP “Int Pack Test”, linked to Item B, Allow Fractions: No.
+- Stock:
+  - Seed inventory for both items in “Test Pharmacy” using either Direct Purchase or GRN.
+  - Use easy math rates (e.g., retail 100.00, cost 80.00) to quickly verify totals.
+- Sample quantities to test:
+  - Integers: 1, 2, 10
+  - Decimals: 0.5, 1.25, 2.5
+
+Screenshot Anchors (suggested)
+
+- AMP admin (amp.xhtml): “Allow Fractions” toggle visible and saved.
+- AMPP admin (ampp.xhtml): “Allow Fractions” toggle visible and saved.
+- Pharmacy Issue (pharmacy_issue.xhtml): Qty input showing integer vs decimal behavior after selecting Item A/B.
+- Direct Purchase (direct_purchase.xhtml): Qty and Free Qty inputs for Item A/B.
+- GRN (pharmacy_grn*.xhtml): Receiving Qty and Free Qty row inputs for Item A/B.
+- Direct Purchase Return (pharmacy_direct_purchase_return_form.xhtml): Returning Total/Qty/Free Qty inputs.
+- GRN Return (pharmacy_grn_return_form.xhtml / grn_return_with_costing.xhtml): Returning Total/Qty/Free Qty inputs.
+- Direct Purchase Return (direct_purchase_return.xhtml): Returning Total/Qty/Free Qty inputs.
+- Store Transfer Issue (store_transfer_issue.xhtml): Row Qty editor with Item A/B.
