@@ -488,7 +488,10 @@ public class TransferIssueForRequestsController implements Serializable {
 
                 originalOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
 
-                originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
+                // Null-safe handling for issuedPhamaceuticalItemQty to prevent NPE
+                Double currentIssued = originalOrderItem.getIssuedPhamaceuticalItemQty();
+                double currentIssuedValue = (currentIssued != null) ? currentIssued : 0.0;
+                originalOrderItem.setIssuedPhamaceuticalItemQty(currentIssuedValue + billItemsInIssue.getQty());
                 // Update remaining quantity to track what's left to issue
                 Double remainingQty = originalOrderItem.getRemainingQty();
                 double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
