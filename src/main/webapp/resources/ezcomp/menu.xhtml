@@ -1504,6 +1504,14 @@
                         icon="pi pi-wallet"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+                    
+                    <p:menuitem  
+                        ajax="false"
+                        value="Request Manager" 
+                        action="#{requestController.navigateToSearchRequest()}"
+                        icon="fa-solid fa-envelope" 
+                        >
+                    </p:menuitem>
 
                     <p:menuitem  
                         ajax="false"  

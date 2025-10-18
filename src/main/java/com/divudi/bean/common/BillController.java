@@ -64,6 +64,7 @@ import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -73,6 +74,7 @@ import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
+import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -1884,19 +1886,55 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return canCancelBill;
     }
 
+    @Inject
+    RequestController requestController;
+    @Inject
+    RequestService requestService;
+
+    private Request currentRequest;
+
     public String navigateToCancelOpdBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return "";
         }
-        bills = billsOfBatchBill(batchBill);
-        paymentMethod = null;
-        patient = batchBill.getPatient();
-        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
-        comment = null;
-        printPreview = false;
-        batchBillCancellationStarted = false;
-        return "/opd/batch_bill_cancel?faces-redirect=true";
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            currentRequest = requestService.findRequest(batchBill);
+
+            if (currentRequest == null) {
+                return requestController.navigateToCreateRequest(batchBill);
+            } else {
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        return "/common/request/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        return "/common/request/request_status?faces-redirect=true";
+                    case APPROVED:
+
+                        bills = billsOfBatchBill(batchBill);
+                        paymentMethod = null;
+                        patient = batchBill.getPatient();
+                        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
+                        comment = currentRequest.getRequestReason();
+                        printPreview = false;
+                        batchBillCancellationStarted = false;
+
+                        return "/opd/batch_bill_cancel?faces-redirect=true";
+                    default:
+                        return "";
+                }
+            }
+        } else {
+            bills = billsOfBatchBill(batchBill);
+            paymentMethod = null;
+            patient = batchBill.getPatient();
+            paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
+            comment = null;
+            printPreview = false;
+            batchBillCancellationStarted = false;
+            return "/opd/batch_bill_cancel?faces-redirect=true";
+        }
     }
 
     private List<Bill> cancelSingleBills = new ArrayList<>();
@@ -2036,6 +2074,15 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         opdBillController.setBills(cancelSingleBills);
         opdBillController.setBatchBill(cancellationBatchBill);
         getSessionController().setLoggedUser(wb);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            Request billRequest = requestService.findRequest(batchBill);
+            if (billRequest != null) {
+                requestController.complteRequest(billRequest);
+            } else {
+                JsfUtil.addErrorMessage("Related approval request not found to complete.");
+            }
+        }
 
         printPreview = true;
         batchBillCancellationStarted = false;
@@ -5041,6 +5088,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         this.cancelSingleBills = cancelSingleBills;
     }
 
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
+    }
+
     /**
      *
      */
@@ -5097,13 +5152,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
         }
-        
+
         Bill foundBill = billFacade.find(billId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
-        
+
         return billSearch.navigateToViewBillByAtomicBillTypeByBillId(billId);
     }
 

@@ -197,9 +197,9 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <p:ajax 
-                                            event="blur" 
+                                            event="keyup" 
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal messages @form" 
+                                            update="txtLineReturnValue returnTotal messages" 
                                             listener="#{directPurchaseReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
