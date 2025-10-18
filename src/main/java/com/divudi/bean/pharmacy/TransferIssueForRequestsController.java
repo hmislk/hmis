@@ -248,7 +248,6 @@ public class TransferIssueForRequestsController implements Serializable {
         List<BillItem> billItemsOfRequest = billController.billItemsOfBill(requestedBill);
 
         // Setup department details
-        getIssuedBill().setDepartment(requestedBill.getDepartment());
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
         getIssuedBill().setToDepartment(requestedBill.getFromDepartment());
 
