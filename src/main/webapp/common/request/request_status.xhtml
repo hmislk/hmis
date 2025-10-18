@@ -9,10 +9,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{billController.currentRequest.status eq 'PENDING'}" >
+                    <h:panelGroup rendered="#{billController.currentRequest ne null and billController.currentRequest.status eq 'PENDING'}" >
                       <p:outputLabel value="PENDING" class="m-2"></p:outputLabel>
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{billController.currentRequest.status eq 'UNDER_REVIEW'}" >
+                    <h:panelGroup rendered="#{billController.currentRequest ne null and billController.currentRequest.status eq 'UNDER_REVIEW'}" >
                       <p:outputLabel value="UNDER_REVIEW" class="m-2"></p:outputLabel>
                     </h:panelGroup>
                 </h:form>         

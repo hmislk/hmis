@@ -12,7 +12,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!billController.printPreview}" styleClass="alignTop">
+                    <h:panelGroup rendered="#{!requestController.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
                                 <h:outputText value="Bill Cancellation Request Cancellation" class="mt-5"/> 
@@ -107,12 +107,12 @@
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Bill Priview" class="mx-2"></h:outputLabel>
+                                            <h:outputLabel value="Bill Preview" class="mx-2"></h:outputLabel>
                                         </f:facet>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
                                             <div class="d-flex justify-content-center">
                                                 <ui:repeat value="#{requestController.bills}" var="ffb" >
-                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true" billCount="#{opdBillController.bills.size()}"/>                        
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true"/>                        
                                                 </ui:repeat>
                                             </div>
                                         </h:panelGroup>
