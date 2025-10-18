@@ -605,21 +605,33 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void updateBalanceInBill(Bill preBill, Bill saleBill, PaymentMethod salePaymentMethod, PaymentMethodData paymentMethodDataForSaleBill) {
-        if (salePaymentMethod == PaymentMethod.Cash) {
+        // For credit methods (Credit and Staff Credit): paidAmount = 0, balance = netTotal
+        if (salePaymentMethod == PaymentMethod.Credit || salePaymentMethod == PaymentMethod.Staff) {
+            saleBill.setPaidAmount(0);
+            saleBill.setBalance(preBill.getNetTotal());
+        } else if (salePaymentMethod == PaymentMethod.Cash) {
             saleBill.setCashPaid(cashPaid);
+            saleBill.setPaidAmount(cashPaid);
             saleBill.setBalance(cashPaid - preBill.getNetTotal());
         } else if (salePaymentMethod == PaymentMethod.Card) {
-            saleBill.setBalance(paymentMethodDataForSaleBill.getCreditCard().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.Cheque) {
-            saleBill.setBalance(paymentMethodData.getCheque().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            saleBill.setBalance(calculatRemainForMultiplePaymentTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.Slip) {
-            saleBill.setBalance(paymentMethodData.getSlip().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.ewallet) {
-            saleBill.setBalance(paymentMethodData.getEwallet().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else {
-            saleBill.setBalance(-preBill.getNetTotal());
+            // Default for other payment methods
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         }
     }
 

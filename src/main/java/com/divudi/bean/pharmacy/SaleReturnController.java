@@ -554,6 +554,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         savePreReturnBillComponents();
 
         getBill().getReturnPreBills().add(getReturnBill());
+
+        // Update original bills (both PRE and SALE)
+        updateOriginalBillsForReturn();
+
         getBillFacade().edit(getBill());
 
         finalReturnBill = saveSaleFinalReturnBill();
@@ -574,6 +578,81 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         JsfUtil.addSuccessMessage("Successfully Returned");
         returnBillcomment = null;
 
+    }
+
+    /**
+     * Updates the original bill's financial tracking fields (refundAmount, paidAmount, balance).
+     * This method validates bill types and updates both the PHARMACY_RETAIL_SALE_PRE bill
+     * and its related PHARMACY_RETAIL_SALE bill.
+     *
+     * @throws RuntimeException if bill type validation fails
+     */
+    private void updateOriginalBillsForReturn() {
+        if (getBill() == null) {
+            throw new RuntimeException("Original bill is null. Cannot update financial tracking fields.");
+        }
+
+        // Calculate the absolute value of the return amount
+        double returnAmount = Math.abs(getReturnBill().getNetTotal());
+
+        // Step 1: Validate and update the PRE bill (getBill())
+        BillTypeAtomic preBillType = getBill().getBillTypeAtomic();
+        if (preBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE
+                && preBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
+            throw new RuntimeException("Expected bill type PHARMACY_RETAIL_SALE_PRE or PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER, "
+                    + "but found: " + (preBillType != null ? preBillType.name() : "null")
+                    + ". This indicates a workflow issue that needs to be fixed.");
+        }
+
+        // Update the PRE bill's financial fields
+        updateBillFinancialFields(getBill(), returnAmount);
+
+        // Step 2: Get and validate the SALE bill from bill.referenceBill
+        Bill saleBill = getBill().getReferenceBill();
+        if (saleBill == null) {
+            throw new RuntimeException("Reference bill (PHARMACY_RETAIL_SALE) is null for PRE bill ID: " + getBill().getId()
+                    + ". This indicates a data integrity issue.");
+        }
+
+        BillTypeAtomic saleBillType = saleBill.getBillTypeAtomic();
+        if (saleBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE
+                && saleBillType != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
+            throw new RuntimeException("Expected reference bill type PHARMACY_RETAIL_SALE or PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER, "
+                    + "but found: " + (saleBillType != null ? saleBillType.name() : "null")
+                    + ". This indicates a workflow issue that needs to be fixed.");
+        }
+
+        // Update the SALE bill's financial fields
+        updateBillFinancialFields(saleBill, returnAmount);
+    }
+
+    /**
+     * Helper method to update a bill's financial tracking fields.
+     * Updates refundAmount, paidAmount, and balance (if applicable).
+     *
+     * @param billToUpdate The bill to update
+     * @param returnAmount The absolute value of the return amount
+     */
+    private void updateBillFinancialFields(Bill billToUpdate, double returnAmount) {
+        // Update refundAmount - add the return amount
+        double currentRefundAmount = billToUpdate.getRefundAmount();
+        billToUpdate.setRefundAmount(currentRefundAmount + returnAmount);
+
+        // Update paidAmount - deduct the return amount only when a payment exists
+        double currentPaidAmount = billToUpdate.getPaidAmount();
+        if (currentPaidAmount > 0) {
+            double updatedPaidAmount = currentPaidAmount - returnAmount;
+            billToUpdate.setPaidAmount(Math.max(0d, updatedPaidAmount));
+        }
+
+        // Update balance for credit bills (only if balance > 0)
+        double currentBalance = billToUpdate.getBalance();
+        if (currentBalance > 0) {
+            billToUpdate.setBalance(Math.max(0d, currentBalance - returnAmount));
+        }
+
+        // Save the updated bill
+        getBillFacade().edit(billToUpdate);
     }
 
     private void applyRefundSignToPaymentData() {

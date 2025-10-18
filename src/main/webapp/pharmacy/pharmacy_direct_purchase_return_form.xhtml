@@ -197,9 +197,9 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                         <p:ajax 
-                                            event="blur" 
+                                            event="keyup" 
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal messages @form" 
+                                            update="txtLineReturnValue returnTotal messages" 
                                             listener="#{directPurchaseReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
