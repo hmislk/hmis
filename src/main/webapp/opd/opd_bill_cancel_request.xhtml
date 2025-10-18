@@ -93,7 +93,9 @@
                                             </p:column>
                                             <p:column>
                                                 <f:facet name="header">Net Total</f:facet>
-                                                <h:outputLabel value="#{bill.netTotal}"/>
+                                                <h:outputLabel value="#{bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
                                             </p:column>
                                         </p:dataTable>
                                     </p:panel>
@@ -105,7 +107,7 @@
 
                     <!-- Print Preview Panel -->
                     <h:panelGroup rendered="#{requestController.printPreview}" >
-                      <p:outputLabel value="Successfully create a Request" class="m-2"></p:outputLabel>
+                      <p:outputLabel value="Request created successfully" class="m-2"></p:outputLabel>
                     </h:panelGroup>
                 </h:form>                
             </ui:define>
