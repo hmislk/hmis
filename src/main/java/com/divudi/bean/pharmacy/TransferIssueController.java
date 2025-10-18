@@ -1429,7 +1429,7 @@ public class TransferIssueController implements Serializable {
             bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
         }
 
-        getBillFacade().edit(bill);
+//        getBillFacade().edit(bill);
     }
 
     public void addNewBillItem() {

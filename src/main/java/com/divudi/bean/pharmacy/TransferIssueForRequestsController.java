@@ -784,7 +784,7 @@ public class TransferIssueForRequestsController implements Serializable {
             bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
         }
 
-        getBillFacade().edit(bill);
+//        getBillFacade().edit(bill);
     }
 
     private BigDecimal determineTransferRate(ItemBatch itemBatch) {
