@@ -5994,6 +5994,7 @@ public class PharmacyController implements Serializable {
                 + "b.bill.creater.webUserPerson.name, "
                 + "b.bill.createdAt, "
                 + "b.pharmaceuticalBillItem.purchaseRate, "
+                + "b.pharmaceuticalBillItem.costRate, "
                 + "b.pharmaceuticalBillItem.retailRate, "
                 + "b.pharmaceuticalBillItem.qty, "
                 + "b.pharmaceuticalBillItem.freeQty, "

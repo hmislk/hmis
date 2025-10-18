@@ -244,6 +244,8 @@ public class TransferIssueDirectController implements Serializable {
             //Checking User Stock Entity
             if (!userStockController.isStockAvailable(i.getPharmaceuticalBillItem().getStock(), i.getPharmaceuticalBillItem().getQty(), getSessionController().getLoggedUser())) {
                 i.setQty(0.0);
+                i.setRetired(true);
+                stockWasNotSufficientToIssueFound = true;
                 continue;
             }
             if (i.getId() == null) {
@@ -261,6 +263,8 @@ public class TransferIssueDirectController implements Serializable {
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
             } else {
                 i.setQty(0.0);
+                i.setRetired(true);
+                stockWasNotSufficientToIssueFound = true;
             }
             getBillItemFacade().editAndCommit(i);
         }
@@ -519,9 +523,16 @@ public class TransferIssueDirectController implements Serializable {
         double value = 0;
         int serialNo = 0;
         for (BillItem b : issuedBill.getBillItems()) {
-            double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+            double lineGrossRate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+            double unitQty = Math.abs(b.getPharmaceuticalBillItem().getQty());
+            double unitsPerPack = b.getBillItemFinanceDetails().getUnitsPerPack().doubleValue();
+
+            // Calculate pack quantity: lineGrossRate is already a pack rate,
+            // so we need to multiply by number of packs, not unit quantity
+            double packQty = unitQty / unitsPerPack;
+
             // Use absolute value for revenue calculation - money comes in (positive)
-            value += rate * Math.abs(b.getPharmaceuticalBillItem().getQty());
+            value += lineGrossRate * packQty;
             b.setSearialNo(serialNo++);
         }
         return value;

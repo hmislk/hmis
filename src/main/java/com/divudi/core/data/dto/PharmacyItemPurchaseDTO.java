@@ -38,6 +38,7 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     // Batch and pricing information
     private String batchNo;
     private Double purchaseRate;
+    private Double costRate;
     private Double retailRate;
     private Double marginValue;
 
@@ -184,9 +185,9 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billTotal = billTotal;
     }
 
-    // Constructor for Direct Purchase table (11 parameters)
-    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName, 
-                                   String billCreaterName, Date billCreatedAt, Double purchaseRate, 
+    // Constructor for Direct Purchase table (10 parameters) - LEGACY - KEEP for backward compatibility
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName,
+                                   String billCreaterName, Date billCreatedAt, Double purchaseRate,
                                    Double retailRate, Double qty, Double freeQty, Double billNetTotal) {
         this.billId = billId;
         this.billDeptId = billDeptId;
@@ -194,6 +195,23 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billCreaterName = billCreaterName;
         this.billCreatedAt = billCreatedAt;
         this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.billNetTotal = billNetTotal;
+    }
+
+    // Constructor for Direct Purchase table with costRate (11 parameters)
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName,
+                                   String billCreaterName, Date billCreatedAt, Double purchaseRate,
+                                   Double costRate, Double retailRate, Double qty, Double freeQty, Double billNetTotal) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billCreaterName = billCreaterName;
+        this.billCreatedAt = billCreatedAt;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
         this.retailRate = retailRate;
         this.qty = qty;
         this.freeQty = freeQty;
@@ -290,6 +308,9 @@ public class PharmacyItemPurchaseDTO implements Serializable {
 
     public Double getPurchaseRate() { return purchaseRate; }
     public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
+
+    public Double getCostRate() { return costRate; }
+    public void setCostRate(Double costRate) { this.costRate = costRate; }
 
     public Double getRetailRate() { return retailRate; }
     public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }
