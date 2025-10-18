@@ -30,7 +30,7 @@ public class RequestService {
             return;
         }
         if (req.getId() == null) {
-                req.setCreater(user);
+                req.setCreator(user);
                 req.setCreatedAt(new Date());
             
             requestFacade.create(req);

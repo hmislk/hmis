@@ -179,7 +179,7 @@ public class Request implements Serializable {
         return creator;
     }
 
-    public void setCreater(WebUser creator) {
+    public void setCreator(WebUser creator) {
         this.creator = creator;
     }
 
