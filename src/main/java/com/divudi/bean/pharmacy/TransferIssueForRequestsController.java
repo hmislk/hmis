@@ -176,7 +176,9 @@ public class TransferIssueForRequestsController implements Serializable {
             userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
         }
 
-        getBillItems().remove(billItem.getSearialNo());
+        // Remove by object instance instead of index to avoid removing wrong item
+        getBillItems().remove(billItem);
+        // Reindex all items sequentially after successful removal
         int serialNo = 0;
         for (BillItem b : getBillItems()) {
             b.setSearialNo(serialNo++);
@@ -922,12 +924,12 @@ public class TransferIssueForRequestsController implements Serializable {
         }
 
         //Check Is There Any Other User using same Stock
-        if (!userStockController.isStockAvailable(billItem.getPharmaceuticalBillItem().getStock(), billItem.getQty(), getSessionController().getLoggedUser())) {
+        if (!userStockController.isStockAvailable(billItem.getPharmaceuticalBillItem().getStock(), billItem.getPharmaceuticalBillItem().getQtyInUnit(), getSessionController().getLoggedUser())) {
             billItem.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
         }
 
-        userStockController.updateUserStock(billItem.getTransUserStock(), billItem.getQty());
+        userStockController.updateUserStock(billItem.getTransUserStock(), billItem.getPharmaceuticalBillItem().getQtyInUnit());
 
     }
 
