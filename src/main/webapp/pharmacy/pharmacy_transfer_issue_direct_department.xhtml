@@ -8,12 +8,13 @@
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
-        <h:form>
 
-            <p:panel rendered="#{!transferIssueDirectController.printPreview}">
 
-                <h:panelGroup class="row" rendered="#{transferIssueDirectController.issuedBill.toDepartment eq null or transferIssueDirectController.issuedBill.toDepartment eq sessionController.loggedUser.department}">
-                    <p:panel>
+
+        <h:panelGroup  rendered="#{!transferIssueDirectController.printPreview}">
+            <h:form>
+                <h:panelGroup class="row" rendered="#{transferIssueDirectController.toDepartment eq null or transferIssueDirectController.toDepartment eq sessionController.loggedUser.department}">
+                    <p:panel id="panelSelectDepartment">
                         <f:facet name="header">
                             <h:outputLabel styleClass="fas fa-building" />
                             <h:outputLabel value="Select Department to Issue" class="mx-4" />
@@ -32,7 +33,7 @@
                                                 <p:outputLabel value="Department to Issue Items:" for="acDepartment" styleClass="form-label fw-bold"/>
                                                 <p:autoComplete
                                                     id="acDepartment"
-                                                    value="#{transferIssueDirectController.issuedBill.toDepartment}"
+                                                    value="#{transferIssueDirectController.toDepartment}"
                                                     forceSelection="true"
                                                     inputStyleClass="w-100 form-control-lg"
                                                     class="w-100"
@@ -41,18 +42,22 @@
                                                     var="dept"
                                                     itemLabel="#{dept.name}"
                                                     itemValue="#{dept}">
-                                                    <p:ajax process="@this" update="btnSelectPanel"></p:ajax>
+                                                    <p:ajax process="@this" update="@form"></p:ajax>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-12 text-center">
                                                 <h:panelGroup id="btnSelectPanel">
+                                                    <h1>#{transferIssueDirectController.issuedBill}</h1>
+                                                    <h1>#{transferIssueDirectController.issuedBill.toDepartment}</h1>
+                                                    <h1>#{transferIssueDirectController.issuedBill.toDepartment eq null}</h1>
                                                     <p:commandButton
+                                                        id="btnSelectIssueingDepartment"
                                                         value="Proceed with Selected Department"
                                                         icon="pi pi-arrow-right"
                                                         iconPos="right"
                                                         ajax="false"
                                                         styleClass="ui-button-lg ui-button-success"
-                                                        disabled="#{transferIssueDirectController.issuedBill.toDepartment eq null}"
+                                                        disabled="#{transferIssueDirectController.toDepartment eq null}"
                                                         action="#{transferIssueDirectController.processTransferIssue}" />
                                                 </h:panelGroup>
                                             </div>
@@ -81,8 +86,16 @@
                         </div>
                     </p:panel>
                 </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
 
-                <p:panel rendered="#{transferIssueDirectController.issuedBill.toDepartment ne null and transferIssueDirectController.issuedBill.toDepartment ne sessionController.loggedUser.department}">
+
+        <p:panel rendered="#{!transferIssueDirectController.printPreview}">
+
+
+
+            <p:panel rendered="#{transferIssueDirectController.toDepartment ne null and transferIssueDirectController.toDepartment ne sessionController.loggedUser.department}">
+                <h:form>
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center w-100">
                             <div>
@@ -97,6 +110,7 @@
                                     value="Change Department"
                                     styleClass="ui-button-warning"
                                     ajax="false"
+                                    immediate="true"
                                     icon="pi pi-refresh"
                                     action="#{transferIssueDirectController.changeDepartment()}" />
                             </div>
@@ -394,13 +408,13 @@
                             <ph:history/>
                         </div>
                     </div>
-
-                </p:panel>
-
+                </h:form>
             </p:panel>
 
-            <p:panel rendered="#{transferIssueDirectController.printPreview}">
+        </p:panel>
 
+        <p:panel rendered="#{transferIssueDirectController.printPreview}">
+            <h:form>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <p:commandButton
@@ -437,7 +451,6 @@
                             onclick="PF('transferIssueDirectDepartmentConfigDialog').show();" />
                     </div>
                 </div>
-
                 <h:panelGroup id="gpBillPreview" >
 
                     <!-- A4 Paper Format (transferIssue component) -->
@@ -471,95 +484,91 @@
                     </h:panelGroup>
 
                 </h:panelGroup>
+            </h:form>
+        </p:panel>
 
-            </p:panel>
-
-            <!-- Transfer Issue (Direct Department) Printer Configuration Dialog -->
-            <p:dialog id="transferIssueDirectDepartmentConfigDialog"
-                      header="Transfer Issue Printer Configuration"
-                      widgetVar="transferIssueDirectDepartmentConfigDialog"
-                      modal="true"
-                      width="700"
-                      height="500"
-                      resizable="true"
-                      maximizable="true"
-                      closeOnEscape="true">
-
-                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferIssueDirectDepartmentConfigForm" />
-
-                <h:form id="transferIssueDirectDepartmentConfigForm">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card config-section">
-                                <div class="card-header">
-                                    <h:outputText value="Transfer Issue Paper Settings" />
+        <!-- Transfer Issue (Direct Department) Printer Configuration Dialog -->
+        <p:dialog id="transferIssueDirectDepartmentConfigDialog"
+                  header="Transfer Issue Printer Configuration"
+                  widgetVar="transferIssueDirectDepartmentConfigDialog"
+                  modal="true"
+                  width="700"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferIssueDirectDepartmentConfigForm" />
+            <h:form id="transferIssueDirectDepartmentConfigForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h:outputText value="Transfer Issue Paper Settings" />
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiA4" value="#{pharmacyConfigController.transferIssueA4Paper}" />
+                                    <p:outputLabel for="tiA4" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 paper format (transferIssue component)</small>
                                 </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiA4" value="#{pharmacyConfigController.transferIssueA4Paper}" />
-                                        <p:outputLabel for="tiA4" value="A4 Paper Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Standard A4 paper format (transferIssue component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiA4Detailed" value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
-                                        <p:outputLabel for="tiA4Detailed" value="A4 Paper Format Detailed" class="ms-2" />
-                                        <small class="form-text text-muted d-block">A4 detailed format (transferIssue_detailed component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiCustom1" value="#{pharmacyConfigController.transferIssueCustom1}" />
-                                        <p:outputLabel for="tiCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiPos" value="#{pharmacyConfigController.transferIssuePosPaper}" />
-                                        <p:outputLabel for="tiPos" value="POS Paper Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiPosHeader" value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
-                                        <p:outputLabel for="tiPosHeader" value="POS Paper with Header" class="ms-2" />
-                                        <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiTemplate" value="#{pharmacyConfigController.transferIssueTemplate}" />
-                                        <p:outputLabel for="tiTemplate" value="Template Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiA4Detailed" value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
+                                    <p:outputLabel for="tiA4Detailed" value="A4 Paper Format Detailed" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 detailed format (transferIssue_detailed component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiCustom1" value="#{pharmacyConfigController.transferIssueCustom1}" />
+                                    <p:outputLabel for="tiCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiPos" value="#{pharmacyConfigController.transferIssuePosPaper}" />
+                                    <p:outputLabel for="tiPos" value="POS Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiPosHeader" value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
+                                    <p:outputLabel for="tiPosHeader" value="POS Paper with Header" class="ms-2" />
+                                    <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiTemplate" value="#{pharmacyConfigController.transferIssueTemplate}" />
+                                    <p:outputLabel for="tiTemplate" value="Template Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="transferIssueDirectDepartmentConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.saveTransferIssueConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('transferIssueDirectDepartmentConfigDialog').hide(); return false;"
+                                            type="button" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <p:messages id="transferIssueDirectDepartmentConfigMessages" showDetail="true" closable="true" />
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="d-flex gap-2">
-                                            <p:commandButton
-                                                value="Apply &amp; Close"
-                                                icon="fas fa-save"
-                                                class="ui-button-success"
-                                                ajax="false"
-                                                action="#{pharmacyConfigController.saveTransferIssueConfig}" />
-                                            <p:commandButton
-                                                value="Cancel"
-                                                icon="fas fa-times"
-                                                class="ui-button-secondary"
-                                                onclick="PF('transferIssueDirectDepartmentConfigDialog').hide(); return false;"
-                                                type="button" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </h:form>
-            </p:dialog>
-
-        </h:form>
+            </h:form>
+        </p:dialog>
     </ui:define>
 
 </ui:composition>

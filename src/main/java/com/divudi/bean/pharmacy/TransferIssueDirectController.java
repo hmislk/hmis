@@ -90,6 +90,7 @@ public class TransferIssueDirectController implements Serializable {
     private StockDTO stockDto;
     UserStockContainer userStockContainer;
     private List<Department> recentToDepartments;
+    private Department toDepartment;
 
     public TransferIssueDirectController() {
     }
@@ -379,28 +380,30 @@ public class TransferIssueDirectController implements Serializable {
         tmpStock = null;
         stockDto = null;
         qty = null;
+        toDepartment=null;
     }
 
     /**
      * Changes the selected department and resets bill items
      */
     public void changeDepartment() {
-        billItems = null;
-        getIssuedBill().setToDepartment(null);
+        makeNull();
     }
 
     /**
      * Processes the transfer issue after department selection
      */
     public String processTransferIssue() {
-        if (getIssuedBill().getToDepartment() == null) {
+        if (getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select a Department");
             return "";
         }
-        if (Objects.equals(getIssuedBill().getToDepartment(), sessionController.getLoggedUser().getDepartment())) {
+        if (Objects.equals(getToDepartment(), sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
             return "";
         }
+        getIssuedBill().setToDepartment(getToDepartment());
+        getIssuedBill().setToInstitution(getToDepartment().getInstitution());
         getIssuedBill().setFromInstitution(sessionController.getInstitution());
         getIssuedBill().setFromDepartment(sessionController.getDepartment());
         return "";
@@ -725,4 +728,15 @@ public class TransferIssueDirectController implements Serializable {
     public PharmacyController getPharmacyController() {
         return pharmacyController;
     }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+    
+    
+    
 }
