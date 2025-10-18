@@ -9,99 +9,86 @@
 
     <ui:define name="content">
 
+        <h:form >
 
 
-        <h:panelGroup  rendered="#{!transferIssueDirectController.printPreview}">
-            <h:form>
-                <h:panelGroup class="row" rendered="#{transferIssueDirectController.toDepartment eq null or transferIssueDirectController.toDepartment eq sessionController.loggedUser.department}">
-                    <p:panel id="panelSelectDepartment">
-                        <f:facet name="header">
-                            <h:outputLabel styleClass="fas fa-building" />
-                            <h:outputLabel value="Select Department to Issue" class="mx-4" />
-                        </f:facet>
-                        <div class="row">
-                            <div class="col-2"></div>
-                            <div class="col-8">
-                                <div class="card border-primary mb-3">
-                                    <div class="card-header bg-primary text-white">
-                                        <h:outputLabel styleClass="fas fa-building me-2" />
-                                        <h:outputText value="Select Destination Department" />
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col-12 mb-3">
-                                                <p:outputLabel value="Department to Issue Items:" for="acDepartment" styleClass="form-label fw-bold"/>
-                                                <p:autoComplete
-                                                    id="acDepartment"
-                                                    value="#{transferIssueDirectController.toDepartment}"
-                                                    forceSelection="true"
-                                                    inputStyleClass="w-100 form-control-lg"
-                                                    class="w-100"
-                                                    placeholder="Type to search departments..."
-                                                    completeMethod="#{departmentController.completeDept}"
-                                                    var="dept"
-                                                    itemLabel="#{dept.name}"
-                                                    itemValue="#{dept}">
-                                                    <p:ajax process="@this" update="@form"></p:ajax>
-                                                </p:autoComplete>
-                                            </div>
-                                            <div class="col-12 text-center">
-                                                <h:panelGroup id="btnSelectPanel">
-                                                    <h1>#{transferIssueDirectController.issuedBill}</h1>
-                                                    <h1>#{transferIssueDirectController.issuedBill.toDepartment}</h1>
-                                                    <h1>#{transferIssueDirectController.issuedBill.toDepartment eq null}</h1>
-                                                    <p:commandButton
-                                                        id="btnSelectIssueingDepartment"
-                                                        value="Proceed with Selected Department"
-                                                        icon="pi pi-arrow-right"
-                                                        iconPos="right"
-                                                        ajax="false"
-                                                        styleClass="ui-button-lg ui-button-success"
-                                                        disabled="#{transferIssueDirectController.toDepartment eq null}"
-                                                        action="#{transferIssueDirectController.processTransferIssue}" />
-                                                </h:panelGroup>
-                                            </div>
+
+            <h:panelGroup  rendered="#{!transferIssueDirectController.printPreview}">
+                <h:panelGroup 
+                    rendered="#{transferIssueDirectController.toDepartment eq null}">
+                    <div class="row">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            <div class="card border-primary mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h:outputLabel styleClass="fas fa-building me-2" />
+                                    <h:outputText value="Select Destination Department" />
+                                </div>
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-12 mb-3">
+                                            <p:outputLabel value="Department to Issue Items:" for="acDepartment" styleClass="form-label fw-bold"/>
+                                            <p:autoComplete
+                                                id="acDepartment"
+                                                value="#{transferIssueDirectController.toDepartment}"
+                                                forceSelection="true"
+                                                inputStyleClass="w-100"
+                                                class="w-100"
+                                                placeholder="Type to search departments..."
+                                                completeMethod="#{departmentController.completeDept}"
+                                                var="depts"
+                                                itemLabel="#{depts.name}"
+                                                itemValue="#{depts}">
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="col-12 text-center">
+                                            <h:panelGroup id="btnSelectPanel">
+                                                <p:commandButton
+                                                    id="btnSelectIssueingDepartment"
+                                                    value="Proceed with Selected Department"
+                                                    icon="pi pi-arrow-right"
+                                                    iconPos="right"
+                                                    ajax="false"
+                                                    onclick="console.log('Button clicked'); console.log('toDepartment:', '#{transferIssueDirectController.toDepartment}'); return true;"
+                                                    styleClass="ui-button-success m-1"
+                                                    action="#{transferIssueDirectController.processTransferIssue}" />
+                                            </h:panelGroup>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="card border-success mt-3" rendered="#{not empty transferIssueDirectController.recentToDepartments}">
-                                    <div class="card-header bg-light">
-                                        <h:outputLabel styleClass="fas fa-history me-2 text-success" />
-                                        <small class="fw-bold text-success">Quick Access - Recently Issued To</small>
-                                    </div>
-                                    <div class="card-body p-3 text-center">
-                                        <ui:repeat value="#{transferIssueDirectController.recentToDepartments}" var="dept">
-                                            <p:commandButton
-                                                value="#{dept.name}"
-                                                icon="pi pi-building"
-                                                styleClass="m-1 ui-button-success rounded-pill fw-bold"
-                                                action="#{transferIssueDirectController.selectFromRecentDepartment(dept)}"
-                                                ajax="false" />
-                                        </ui:repeat>
-                                    </div>
+                            </div>
+                            <div class="card border-success mt-3" rendered="#{not empty transferIssueDirectController.recentToDepartments}">
+                                <div class="card-header bg-light">
+                                    <h:outputLabel styleClass="fas fa-history me-2 text-success" />
+                                    <small class="fw-bold text-success">Quick Access - Recently Issued To</small>
+                                </div>
+                                <div class="card-body p-3 text-center">
+                                    <ui:repeat value="#{transferIssueDirectController.recentToDepartments}" var="dept">
+                                        <p:commandButton
+                                            value="#{dept.name}"
+                                            icon="pi pi-building"
+                                            styleClass="m-1 ui-button-success rounded-pill fw-bold"
+                                            action="#{transferIssueDirectController.selectFromRecentDepartment(dept)}"
+                                            ajax="false" />
+                                    </ui:repeat>
                                 </div>
                             </div>
-                            <div class="col-2"></div>
                         </div>
-                    </p:panel>
+                        <div class="col-2"></div>
+                    </div>
                 </h:panelGroup>
-            </h:form>
-        </h:panelGroup>
 
+            </h:panelGroup>
+            <p:panel rendered="#{!transferIssueDirectController.printPreview}">
 
-        <p:panel rendered="#{!transferIssueDirectController.printPreview}">
+                <p:panel rendered="#{transferIssueDirectController.toDepartment ne null}">
 
-
-
-            <p:panel rendered="#{transferIssueDirectController.toDepartment ne null and transferIssueDirectController.toDepartment ne sessionController.loggedUser.department}">
-                <h:form>
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center w-100">
                             <div>
                                 <h:outputLabel styleClass="fas fa-arrow-right-arrow-left me-2" />
                                 <h:outputText value="Pharmacy Direct Issue - " />
-                                <h:outputText value="#{sessionController.department.name}" styleClass="fw-bold" />
+                                <h:outputText value="#{transferIssueDirectController.issuedBill.fromDepartment.name}" styleClass="fw-bold" />
                                 <h:outputText value=" → " styleClass="mx-2" />
                                 <h:outputText value="#{transferIssueDirectController.issuedBill.toDepartment.name}" styleClass="fw-bold text-primary" />
                             </div>
@@ -135,7 +122,7 @@
                                                 class="w-100"
                                                 inputStyleClass="w-100"
                                                 id="acStock"
-                                                value="#{transferIssueController.stockDto}"
+                                                value="#{transferIssueDirectController.stockDto}"
                                                 completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments}"
                                                 converter="stockDtoConverter"
                                                 var="i"
@@ -322,7 +309,7 @@
                                                 <small class="text-muted">Issue From</small>
                                                 <div class="fw-bold text-primary">
                                                     <h:outputLabel styleClass="fas fa-hospital me-1" />
-                                                    <h:outputText value="#{sessionController.department.name}"/>
+                                                    <h:outputText value="#{transferIssueDirectController.issuedBill.fromDepartment.name}"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -408,13 +395,12 @@
                             <ph:history/>
                         </div>
                     </div>
-                </h:form>
+
+                </p:panel>
+
             </p:panel>
+            <p:panel rendered="#{transferIssueDirectController.printPreview}">
 
-        </p:panel>
-
-        <p:panel rendered="#{transferIssueDirectController.printPreview}">
-            <h:form>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <p:commandButton
@@ -484,8 +470,11 @@
                     </h:panelGroup>
 
                 </h:panelGroup>
-            </h:form>
-        </p:panel>
+
+            </p:panel>
+
+        </h:form>
+
 
         <!-- Transfer Issue (Direct Department) Printer Configuration Dialog -->
         <p:dialog id="transferIssueDirectDepartmentConfigDialog"
