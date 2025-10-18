@@ -452,14 +452,15 @@ public class PharmacyIssueController implements Serializable {
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(");
 
         if (showRatesAndValues) {
-            // Constructor with all rates: id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate, costRate
+            // Constructor with all rates: id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate, costRate, allowFractions
             sql.append("s.id, s.id, s.itemBatch.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
                 .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.batchNo, ")
-                .append("s.itemBatch.purcahseRate, s.itemBatch.wholesaleRate, s.itemBatch.costRate) ");
+                .append("s.itemBatch.purcahseRate, s.itemBatch.wholesaleRate, s.itemBatch.costRate, ")
+                .append("s.itemBatch.item.allowFractions) ");
         } else {
-            // Simple constructor: id, itemName, code, genericName, retailRate, stockQty, dateOfExpire
+            // Simple constructor: id, itemName, code, genericName, retailRate, stockQty, dateOfExpire, allowFractions
             sql.append("s.id, s.itemBatch.item.name, s.itemBatch.item.code, s.itemBatch.item.vmp.name, ")
-                .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire) ");
+                .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.allowFractions) ");
         }
 
         sql.append("FROM Stock s ")

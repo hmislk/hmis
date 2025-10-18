@@ -282,6 +282,11 @@
                                 <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText id="lblTotalCostValueFooter" value="#{pharmacyReportController.totalCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Purchase Rate" width="5em">
@@ -289,9 +294,43 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Purchase Value" width="5em">
                                 <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate* row.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText id="lblTotalPurchaseValueFooter" value="#{pharmacyReportController.totalPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+
+
+                            <p:column headerText="MRP" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="MRP Value" width="5em">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate * row.qty}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Payment Mode" width="5em">
+                                <h:outputText value="#{row.bill.paymentMethod}" />
+                            </p:column>
+
+                            <p:column headerText="Discount" width="5em">
+                                <h:outputText value="#{row.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
@@ -308,27 +347,9 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="MRP" width="5em">
-                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
 
-                            <p:column headerText="MRP Value" width="5em">
-                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate * row.qty}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
 
-                            <p:column headerText="Payment Mode" width="5em">
-                                <h:outputText value="#{row.bill.paymentMethod}" />
-                            </p:column>
 
-                            <p:column headerText="Discount" width="5em">
-                                <h:outputText value="#{row.discount}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
 
                         </p:dataTable>
 

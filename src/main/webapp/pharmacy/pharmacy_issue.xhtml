@@ -182,20 +182,22 @@
                                         </div>
                                         <div class="col-2">
                                             <p:outputLabel value="Quantity" ></p:outputLabel>
-                                            <p:inputText
-                                                autocomplete="off"
-                                                accesskey="q"
-                                                id="txtQty"
-                                                onfocus="this.select()"
-                                                value="#{pharmacyIssueController.qty}"
-                                                class="w-100">
-                                                <p:ajax
-                                                    event="keyup"
-                                                    listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
-                                                    process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                    update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal" ></p:ajax>
-                                                <p:ajax event="blur"  listener="#{pharmacyIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal" ></p:ajax>
-                                            </p:inputText>
+                                             <p:inputText
+                                                 autocomplete="off"
+                                                 accesskey="q"
+                                                 id="txtQty"
+                                                 onfocus="this.select()"
+                                                 value="#{pharmacyIssueController.qty}"
+                                                 class="w-100">
+                                                 <f:convertNumber integerOnly="#{!pharmacyIssueController.stockDto.allowFractions}" />
+                                                 <p:ajax
+                                                     event="keyup"
+                                                     listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
+                                                     process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
+                                                     update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal" ></p:ajax>
+                                                 <p:ajax event="blur"  listener="#{pharmacyIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal" ></p:ajax>
+                                             </p:inputText>
+                                             <p:keyFilter for="txtQty" mask="#{pharmacyIssueController.stockDto.allowFractions ? 'num' : 'int'}" />
                                         </div>
                                         <div class="col-2  d-grid">
                                             <p:outputLabel value="&nbsp;" ></p:outputLabel>

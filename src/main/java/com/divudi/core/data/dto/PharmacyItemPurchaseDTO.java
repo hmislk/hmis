@@ -3,6 +3,7 @@ package com.divudi.core.data.dto;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -23,6 +24,9 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     private String billFromInstitutionName;
     private String billCreaterName;
     private BillType billType;
+    private BillTypeAtomic billTypeAtomic;
+    private Boolean cancelled;
+    private Boolean refunded;
     private Double billTotal;
     private Double billNetTotal;
     private Double billDiscount;
@@ -34,6 +38,7 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     // Batch and pricing information
     private String batchNo;
     private Double purchaseRate;
+    private Double costRate;
     private Double retailRate;
     private Double marginValue;
 
@@ -90,8 +95,8 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     }
 
     // Constructor for BY_BILL report without qty and free qty
-    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt, 
-                                   String billInstitutionName, String billDepartmentName, 
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt,
+                                   String billInstitutionName, String billDepartmentName,
                                    String billFromInstitutionName, BillType billType,
                                    Double billTotal, Double billNetTotal, Double billDiscount) {
         this.billId = billId;
@@ -101,6 +106,27 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billDepartmentName = billDepartmentName;
         this.billFromInstitutionName = billFromInstitutionName;
         this.billType = billType;
+        this.billTotal = billTotal;
+        this.billNetTotal = billNetTotal;
+        this.billDiscount = billDiscount;
+    }
+
+    // Constructor for Pharmacy Issue list with billTypeAtomic, cancelled, and refunded fields
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt,
+                                   String billInstitutionName, String billDepartmentName,
+                                   String billFromInstitutionName, BillType billType,
+                                   BillTypeAtomic billTypeAtomic, Boolean cancelled, Boolean refunded,
+                                   Double billTotal, Double billNetTotal, Double billDiscount) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billCreatedAt = billCreatedAt;
+        this.billInstitutionName = billInstitutionName;
+        this.billDepartmentName = billDepartmentName;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billType = billType;
+        this.billTypeAtomic = billTypeAtomic;
+        this.cancelled = cancelled;
+        this.refunded = refunded;
         this.billTotal = billTotal;
         this.billNetTotal = billNetTotal;
         this.billDiscount = billDiscount;
@@ -159,9 +185,9 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billTotal = billTotal;
     }
 
-    // Constructor for Direct Purchase table (11 parameters)
-    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName, 
-                                   String billCreaterName, Date billCreatedAt, Double purchaseRate, 
+    // Constructor for Direct Purchase table (10 parameters) - LEGACY - KEEP for backward compatibility
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName,
+                                   String billCreaterName, Date billCreatedAt, Double purchaseRate,
                                    Double retailRate, Double qty, Double freeQty, Double billNetTotal) {
         this.billId = billId;
         this.billDeptId = billDeptId;
@@ -169,6 +195,23 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billCreaterName = billCreaterName;
         this.billCreatedAt = billCreatedAt;
         this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.billNetTotal = billNetTotal;
+    }
+
+    // Constructor for Direct Purchase table with costRate (11 parameters)
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName,
+                                   String billCreaterName, Date billCreatedAt, Double purchaseRate,
+                                   Double costRate, Double retailRate, Double qty, Double freeQty, Double billNetTotal) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billCreaterName = billCreaterName;
+        this.billCreatedAt = billCreatedAt;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
         this.retailRate = retailRate;
         this.qty = qty;
         this.freeQty = freeQty;
@@ -232,6 +275,15 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     public BillType getBillType() { return billType; }
     public void setBillType(BillType billType) { this.billType = billType; }
 
+    public BillTypeAtomic getBillTypeAtomic() { return billTypeAtomic; }
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) { this.billTypeAtomic = billTypeAtomic; }
+
+    public Boolean getCancelled() { return cancelled; }
+    public void setCancelled(Boolean cancelled) { this.cancelled = cancelled; }
+
+    public Boolean getRefunded() { return refunded; }
+    public void setRefunded(Boolean refunded) { this.refunded = refunded; }
+
     public Double getBillTotal() { return billTotal; }
     public void setBillTotal(Double billTotal) { this.billTotal = billTotal; }
 
@@ -256,6 +308,9 @@ public class PharmacyItemPurchaseDTO implements Serializable {
 
     public Double getPurchaseRate() { return purchaseRate; }
     public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
+
+    public Double getCostRate() { return costRate; }
+    public void setCostRate(Double costRate) { this.costRate = costRate; }
 
     public Double getRetailRate() { return retailRate; }
     public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }

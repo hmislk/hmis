@@ -41,7 +41,7 @@
                             icon="fas fa-search"
                             class="ui-button-warning w-100 my-2"
                             action="#{searchController.createRequestTableDto()}"
-                            actionListener="#{transferIssueController.makeNull()}">
+                            actionListener="#{transferIssueForRequestsController.makeNull()}">
                         </p:commandButton>
                         
                         <h:outputLabel value="Request No"/>   
@@ -94,9 +94,9 @@
                                     title="Issue"
                                     class="ui-button-success mx-2"
                                     actionListener="#{pharmacyController.clearItemHistory()}"
-                                    action="#{transferIssueController.navigateToPharmacyIssueForRequestsById}"
+                                    action="#{transferIssueForRequestsController.navigateToPharmacyIssueForRequestsById}"
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
-                                    <f:setPropertyActionListener target="#{transferIssueController.requestedBillId}" value="#{p.billId}"/>
+                                    <f:setPropertyActionListener target="#{transferIssueForRequestsController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
                             </p:column>
 
