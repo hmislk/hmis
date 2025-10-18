@@ -84,7 +84,8 @@ public class StockSearchService {
                 .append("s.itemBatch.item.vmp.name, ")
                 .append("s.itemBatch.retailsaleRate, ")
                 .append("s.stock, ")
-                .append("s.itemBatch.dateOfExpire) ")
+                .append("s.itemBatch.dateOfExpire, ")
+                .append("s.itemBatch.item.allowFractions) ")
                 .append("FROM Stock s ")
                 .append("WHERE s.stock > :stockMin ")
                 .append("AND s.department = :department ")
@@ -122,7 +123,8 @@ public class StockSearchService {
                 "s.itemBatch.batchNo, " +
                 "s.itemBatch.purcahseRate, " +
                 "s.itemBatch.wholesaleRate, " +
-                "s.itemBatch.retailsaleRate) " +
+                "s.itemBatch.retailsaleRate, " +
+                "s.itemBatch.item.allowFractions) " +
                 "FROM Stock s " +
                 "WHERE s.department = :d " +
                 "AND s.itemBatch.item = :amp " +
@@ -149,7 +151,8 @@ public class StockSearchService {
                 "s.itemBatch.batchNo, " +
                 "s.itemBatch.purcahseRate, " +
                 "s.itemBatch.wholesaleRate, " +
-                "s.itemBatch.costRate) " +
+                "s.itemBatch.costRate, " +
+                "s.itemBatch.item.allowFractions) " +
                 "FROM Stock s " +
                 "WHERE s.department = :d " +
                 "AND s.itemBatch.item = :amp " +
