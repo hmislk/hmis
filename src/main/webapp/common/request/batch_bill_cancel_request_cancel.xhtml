@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!requestController.printPreview}" styleClass="alignTop">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Bill Cancellation Request Cancellation" class="mt-5"/> 
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Back to Search" 
+                                    icon="fa fa-arrow-left"
+                                    style="float: right;"
+                                    class="ui-button-warning" 
+                                    action="#{requestController.navigateToBackSearchRequest()}">
+                                </p:commandButton>
+                            </f:facet>
+
+
+                            <div class="row mt-2 mb-3">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <p:inputText
+                                        id="commentsMenu"
+                                        value="#{requestController.comment}"
+                                        placeholder="Request Cancel Reason"
+                                        disabled="#{(requestController.currentRequest.status eq 'CANCELLED')}"
+                                        style="float: right; width: 500px;"
+                                        >
+                                    </p:inputText>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Cancel Request" 
+                                        icon="fa fa-cancel"
+                                        class="ui-button-danger"
+                                        disabled="#{(requestController.currentRequest.status eq 'CANCELLED')}"
+                                        action="#{requestController.cancelRequestbyUser()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <!-- Patient Details and Bill Details Panels -->
+                            <div class="row">
+                                <div class="col-3">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                            <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <common:patient patient="#{requestController.patient}" class="w-100"/>
+                                    </p:panel>
+                                </div>
+                                <div class="col-5">
+                                    <p:panel class="mb-2" id="payment">
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                            <h:outputText value="Request Details" class="mx-4"></h:outputText>
+                                        </f:facet>
+
+                                        <p:panelGrid columns="3">
+                                            <h:outputLabel value="Request No" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.currentRequest.requestNo}" ></h:outputLabel>
+                                            <h:outputLabel value="Request Type" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <h:panelGroup>
+                                                <p:badge rendered="#{requestController.currentRequest.requestType eq 'BILL_CANCELLATION'}" value="#{requestController.currentRequest.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{requestController.currentRequest.requestType eq 'ITEM_REFUND'}" value="#{requestController.currentRequest.requestType.displayName}"  severity="warning" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{requestController.currentRequest.requestType eq 'EDIT_REQUEST'}" value="#{requestController.currentRequest.requestType.displayName}"></p:badge>
+                                            </h:panelGroup>
+                                            <h:outputLabel value="Request Status" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <p:badge value="#{requestController.currentRequest.status.label}"></p:badge>
+                                            <h:outputLabel value="Requested Bill" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.currentRequest.bill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Request By" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.currentRequest.requester.webUserPerson.nameWithTitle}" ></h:outputLabel>
+                                            <h:outputLabel value="Request From" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.currentRequest.department.name}" ></h:outputLabel>
+                                            <h:outputLabel value="Request At" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.currentRequest.requestAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Request Reason" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.currentRequest.requestReason}" ></h:outputLabel>
+                                        </p:panelGrid>
+
+                                    </p:panel>
+
+                                </div>
+                                <div class="col-4">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Bill Preview" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                            <div class="d-flex justify-content-center">
+                                                <ui:repeat value="#{requestController.bills}" var="ffb" >
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true"/>                        
+                                                </ui:repeat>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+
+                        </p:panel>
+                    </h:panelGroup>
+
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
