@@ -215,21 +215,19 @@
                                 </f:facet>
                                 <p:columnGroup type="header">
                                     <p:row>
-                                        <p:column headerText="Bill No">                                    
+                                        <p:column headerText="Bill Number">                                    
                                         </p:column>
-                                        <p:column headerText="Bill No">                                    
+                                        <p:column headerText="Billed At">                                    
                                         </p:column>
-                                        <p:column headerText="Bill Date">                                    
+                                        <p:column headerText="Client">                                    
                                         </p:column>
-                                        <p:column headerText="Client Name">                                    
+                                        <p:column headerText="Billed Value">                                    
                                         </p:column>
-                                        <p:column headerText="Billed Amount">                                    
-                                        </p:column>
-                                        <p:column headerText="Staff Fee">                                    
+                                        <p:column headerText="Returned Value">                                    
                                         </p:column>
                                         <p:column headerText="Paid Amount">                                    
                                         </p:column>
-                                        <p:column headerText="Net Amount">                                    
+                                        <p:column headerText="Due Amount">                                    
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
@@ -240,33 +238,30 @@
                                     <p:column>                              
                                         <h:outputLabel value="#{b.deptId}" />                                
                                     </p:column>
-                                    <p:column>                              
-                                        <h:outputLabel value="#{b.deptId}" />                                
-                                    </p:column>
                                     <p:column>                                
                                         <h:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime pattern="yyyy MM dd" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputLabel>                                 
                                     </p:column>
                                     <p:column>                               
                                         <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
                                     </p:column>
-                                    <p:column style="text-align: right;">                                
+                                    <p:column class="text-end">                                
                                         <h:outputLabel value="#{b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
-                                    <p:column style="text-align: right;">                                
+                                    <p:column class="text-end">                                
                                         <h:outputLabel value="#{b.staffFee}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
-                                    <p:column style="text-align: right;">                              
+                                    <p:column class="text-end">                              
                                         <h:outputLabel value="#{b.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column style="text-align: right;">                              
+                                    <p:column class="text-end">                              
                                         <h:outputLabel value="#{b.netTotal+b.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -274,7 +269,7 @@
                                     <p:columnGroup type="footer">
                                         <p:row>
                                             <p:column footerText="Total" colspan="3" />
-                                            <p:column style="text-align: right;">
+                                            <p:column class="text-end">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total}">
                                                         <f:convertNumber pattern="#,##0.00" />
@@ -284,14 +279,14 @@
                                             <p:column>
 
                                             </p:column>
-                                            <p:column style="text-align: right;" >
+                                            <p:column class="text-end" >
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.paidTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </f:facet>
                                             </p:column>
-                                            <p:column style="text-align: right;" >
+                                            <p:column class="text-end" >
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total+i.paidTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />

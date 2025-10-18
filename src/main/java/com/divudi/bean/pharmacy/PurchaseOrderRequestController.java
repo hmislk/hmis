@@ -470,9 +470,12 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
         getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
-        getBillFacade().edit(getCurrentBill());
+        if (currentBill.getId() == null) {
+            getBillFacade().create(getCurrentBill());
+        } else {
+            getBillFacade().edit(getCurrentBill());
+        }
         notificationController.createNotification(getCurrentBill());
-
     }
 
     public void generateBillComponentsForAllSupplierItems(List<Item> items) {
@@ -628,19 +631,38 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
             return;
         }
+        double recalculatedTotalBillItemsCount = calculateTotalBillItemsCount(billItems);
+        if (recalculatedTotalBillItemsCount == 0) {
+            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
+            return;
+        }
         if (currentBill.getId() == null) {
             saveRequestWithoutMessage();
         }
         finalizeBill();
         totalBillItemsCount = 0;
         finalizeBillComponent();
-        if (totalBillItemsCount == 0) {
-            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
-            return;
-        }
-
+        currentBill = billService.reloadBill(currentBill);
         JsfUtil.addSuccessMessage("Request successfully finalized.");
         printPreview = true;
+    }
+
+    private double calculateTotalBillItemsCount(List<BillItem> billItems) {
+        double total = 0d;
+        if (billItems == null) {
+            return total;
+        }
+        for (BillItem b : billItems) {
+            BigDecimal qUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal fqUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getFreeQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getFreeQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal totalUnits = qUnits.add(fqUnits);
+            if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
+                total += totalUnits.doubleValue();
+            }
+        }
+        return total;
     }
 
     public void prepareEmailDialog() {

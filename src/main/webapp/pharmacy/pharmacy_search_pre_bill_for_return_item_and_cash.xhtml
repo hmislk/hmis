@@ -38,7 +38,7 @@
                                     icon="fa fa-search"
                                     class="w-100 ui-button-warning mt-2 mb-3"
                                     value="Search" 
-                                    action="#{searchController.createPreBillsForReturn}"/>
+                                    action="#{searchController.listBillsToReturnItemsAndPayments}"/>
                                 <h:outputLabel value="Item Name"/>    
                                 <p:autoComplete 
                                     id="item"
@@ -77,11 +77,11 @@
                                     >
 
 
-                                    <p:column headerText="Pre Bill No" >
+                                    <p:column headerText="Pre Bill No"  width="16em">
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>    
 
-                                    <p:column headerText="Billed At">
+                                    <p:column headerText="Billed At" width="10em">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -95,7 +95,7 @@
                                         </h:panelGroup>                             
                                     </p:column>       
 
-                                    <p:column headerText="Billed By" >
+                                    <p:column headerText="Billed By"  width="8em">
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>
@@ -105,34 +105,46 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column> 
+                                    
+                                    <p:column headerText="Client" >
+                                        <h:outputLabel value="#{bill.patient.person.name}" >                                      
+                                        </h:outputLabel>
+                                    </p:column> 
 
-                                    <p:column headerText="Payment Method" >
+                                    <p:column headerText="Payment Method"  width="8em">
                                         <h:outputLabel value="#{bill.paymentMethod.label}" >
                                         </h:outputLabel>
+                                        <h:panelGroup styleClass="flex align-items-center p-2 bg-blue-100 text-blue-800 border-round" rendered="#{bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE'}">
+                                            <i class="pi pi-heart mr-2 text-2xl"></i>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup styleClass="flex align-items-center p-2 bg-green-100 text-green-800 border-round" rendered="#{bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER'}">
+                                            <i class="pi pi-money-bill mr-2 text-2xl"></i>
+                                        </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Net Value" >
+                                    <p:column headerText="Net Value" width="10em" class="text-end">
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Actions" >
+                                    <p:column headerText="Actions" width="25em" class="text-center">
                                         <p:commandButton 
                                             ajax="false" 
                                             id="viewBill"
                                             icon="fas fa-file-invoice"
                                             value="View"
-                                            class="mx-1 ui-button-success"
+                                            class="m-1 ui-button-success"
                                             action="pharmacy_reprint_bill_sale?faces-redirect=true">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                         </p:commandButton>
-                                        <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
                                         <p:commandButton 
                                             ajax="false" 
-                                            class="mx-1 ui-button-warning"
-                                            value="Return"
+                                            class="m-1 ui-button-warning"
+                                            value="Accept Return Items &amp; Refund"
                                             title="Return Items and Payments"
+                                            icon="pi pi-undo"
                                             action="#{saleReturnController.navigateToReturnItemsAndPaymentsForPharmacyRetailSale()}"
                                             disabled="#{bill.cancelled eq true}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{saleReturnController.bill}"/>

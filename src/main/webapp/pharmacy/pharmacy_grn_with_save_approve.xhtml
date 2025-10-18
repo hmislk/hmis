@@ -143,12 +143,15 @@
                         headerText="Receiving Qty" 
                         styleClass="text-end #{grnController.isProfitAboveThreshold(bi) ? 'ui-messages-fatal' : ''}" >
                         <p:inputText 
+                            id="ordQty"
                             onfocus="this.select();"
                             autocomplete="off" 
                             class="text-end text-primary w-100"
                             value="#{bi.tmpQty}" >
+                            <f:convertNumber integerOnly="#{!bi.item.allowFractions}" />
                             <f:ajax event="blur" execute="@this pRate rRate doeDateOnlyShort batch ordQty" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total ordQty doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnController.checkQty(bi)}"></f:ajax>
                         </p:inputText>
+                        <p:keyFilter for="ordQty" mask="#{bi.item.allowFractions ? 'num' : 'int'}" />
                     </p:column>  
 
                     <p:column 
@@ -171,8 +174,10 @@
                             onfocus="this.select();"
                             value="#{bi.tmpFreeQty}" 
                             id="freeQty" >
+                            <f:convertNumber integerOnly="#{!bi.item.allowFractions}" />
                             <f:ajax event="blur" execute="@this pRate freeQty rRate ordQty doeDateOnlyShort batch" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total freeQty doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnController.checkQty(bi)}"></f:ajax>
                         </p:inputText>
+                        <p:keyFilter for="freeQty" mask="#{bi.item.allowFractions ? 'num' : 'int'}" />
                     </p:column> 
 
                     <p:column

@@ -813,6 +813,103 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         } else {
             getBillFacade().edit(getRefundBill());
         }
+
+        // Update the original sale bill's financial tracking fields
+        updateOriginalBillForRefund();
+    }
+
+    /**
+     * Updates the original bill's financial tracking fields (refundAmount,
+     * paidAmount, balance). This method validates bill types and updates both
+     * the PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY bill and its related
+     * PHARMACY_RETAIL_SALE_PRE and PHARMACY_RETAIL_SALE bills.
+     *
+     * @throws RuntimeException if bill type validation fails
+     */
+    private void updateOriginalBillForRefund() {
+        if (getItemReturnBill() == null) {
+            throw new RuntimeException("Item return bill is null. Cannot update financial tracking fields.");
+        }
+        if (getItemReturnBill().getBillTypeAtomic() == null) {
+            throw new RuntimeException("Item return bill has no Bill Type Atomic. Cannot update financial tracking fields.");
+        }
+        if (getItemReturnBill().getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY) {
+            throw new RuntimeException("Item return bill is not a BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY. Cannot update financial tracking fields.");
+        }
+        Bill originalBill = null;
+        Bill saleBill = null;
+        Bill salePreBill = null;
+        if (getItemReturnBill().getReferenceBill() == null) {
+            throw new RuntimeException("Item return bill has no referance bill. Cannot update financial tracking fields.");
+        } else {
+            originalBill = getItemReturnBill().getReferenceBill();
+        }
+
+        if (originalBill.getBillTypeAtomic() == null) {
+            throw new RuntimeException("Retail Sale bill has no Bill Type Atomic. Cannot update financial tracking fields.");
+        }
+
+        if (null == originalBill.getBillTypeAtomic()) {
+            throw new RuntimeException("Retail Sale found has a wrong Bill Type Atomic. Cannot update financial tracking fields.");
+        } else switch (originalBill.getBillTypeAtomic()) {
+            case PHARMACY_RETAIL_SALE:
+                saleBill = originalBill;
+                salePreBill = originalBill.getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE:
+                salePreBill = originalBill;
+                saleBill = originalBill.getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                saleBill = originalBill;
+                salePreBill = originalBill.getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                salePreBill = originalBill;
+                saleBill = originalBill.getReferenceBill();
+                break;
+            default:
+                throw new RuntimeException("Retail Sale found has a wrong Bill Type Atomic. Cannot update financial tracking fields.");
+        }
+
+        if (salePreBill == null) {
+            throw new RuntimeException("Data integrity issue.");
+        }
+        if (saleBill == null) {
+            throw new RuntimeException("Data integrity issue.");
+        }
+        double refundAmount = Math.abs(getRefundBill().getNetTotal());
+        updateBillFinancialFields(salePreBill, refundAmount);
+        updateBillFinancialFields(saleBill, refundAmount);
+    }
+
+    /**
+     * Helper method to update a bill's financial tracking fields. Updates
+     * refundAmount, paidAmount, and balance (if applicable).
+     *
+     * @param billToUpdate The bill to update
+     * @param refundAmount The absolute value of the refund amount
+     */
+    private void updateBillFinancialFields(Bill billToUpdate, double refundAmount) {
+        // Update refundAmount - add the refund amount
+        double currentRefundAmount = billToUpdate.getRefundAmount();
+        billToUpdate.setRefundAmount(currentRefundAmount + refundAmount);
+
+        // Update paidAmount - deduct the refund amount only when paid amount exists
+        double currentPaidAmount = billToUpdate.getPaidAmount();
+        if (currentPaidAmount > 0) {
+            double updatedPaidAmount = currentPaidAmount - refundAmount;
+            billToUpdate.setPaidAmount(Math.max(0d, updatedPaidAmount));
+        }
+
+        // Update balance for credit bills (only if balance > 0)
+        double currentBalance = billToUpdate.getBalance();
+        if (currentBalance > 0) {
+            billToUpdate.setBalance(Math.max(0d, currentBalance - refundAmount));
+        }
+
+        // Save the updated bill
+        getBillFacade().edit(billToUpdate);
     }
 
     private void updatePreBill() {
@@ -1059,7 +1156,6 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
             sbi.setBill(getRefundBill());
             sbi.setReferanceBillItem(tbi);
 
-           
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.copy(tbi.getPharmaceuticalBillItem());
 
@@ -1070,7 +1166,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 sbi.setCreatedAt(Calendar.getInstance().getTime());
                 sbi.setCreater(getSessionController().getLoggedUser());
                 getBillItemFacade().create(sbi);
-            }else{
+            } else {
                 getBillItemFacade().edit(sbi);
             }
 

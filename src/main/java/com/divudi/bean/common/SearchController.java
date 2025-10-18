@@ -138,7 +138,6 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 // </editor-fold>
-
 /**
  * @author Dr M H B Ariyaratne
  */
@@ -147,7 +146,6 @@ import java.util.stream.Collectors;
 public class SearchController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -1843,9 +1841,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
-    
-
     public void createPreRefundOpdTable() {
 
         bills = null;
@@ -2677,8 +2672,6 @@ public class SearchController implements Serializable {
     public void setSelectedOpdPackageBillSelector(String selectedOpdPackageBillSelector) {
         this.selectedOpdPackageBillSelector = selectedOpdPackageBillSelector;
     }
-    
-    
 
     public List<String> getOpdPackageBillSelector() {
         if (OpdPackageBillSelector == null) {
@@ -3744,9 +3737,7 @@ public class SearchController implements Serializable {
         params.put("fromDate", getFromDate());
         params.put("dep", getSessionController().getDepartment());
         params.put("bTp", btas);
-        
-        
-        
+
         jpql = "Select b "
                 + " From Bill b "
                 + " where b.retired=false "
@@ -3982,7 +3973,7 @@ public class SearchController implements Serializable {
         hm.put("btp", BillType.PharmacyTransferReceive);
         return getBillFacade().findFirstByJpql(sql, hm);
     }
-    
+
     private Bill getPharmacyTransferReceivedBills(Bill pharmacyTransferIsseBill) {
         String sql = "Select b "
                 + " From Bill b "
@@ -8301,15 +8292,62 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createPreBillsForReturn() {
-        createPreBillsForReturn(BillType.PharmacyPre, BillType.PharmacySale);
-
+    public void listBillsToReturnItemsAndPayments() {
+        List<BillTypeAtomic> billTypesForReturnItemsAndPayments = new ArrayList<>();
+        billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        bills = createBillsToReturnItemsAndPayments(billTypesForReturnItemsAndPayments);
     }
 
     public void createWholePreBillsForReturn() {
         createPreBillsForReturn(BillType.PharmacyWholesalePre, BillType.PharmacyWholeSale);
     }
 
+    public List<Bill> createBillsToReturnItemsAndPayments(List<BillTypeAtomic> billTypeAtomics) {
+        List<Bill> outBills = null;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "select b "
+                + "from Bill b "
+                + "where b.billTypeAtomic in :btas "
+                + "and b.institution = :ins "
+                + "and b.department = :dept "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired = false "
+                + "and b.referenceBill.retired = false  "
+                + "and b.cancelled = false "
+                + "and b.referenceBill.cancelled = false ";
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += "and b.deptId like :billNo ";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            try {
+                Double netTotalValue = Double.parseDouble(netTotalString);
+                jpql += "and b.netTotal = :netTotal ";
+                params.put("netTotal", netTotalValue);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                System.out.println("Invalid net total search value: " + netTotalString);
+            }
+        }
+
+        jpql += "order by b.createdAt desc ";
+
+        params.put("btas", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", getSessionController().getLoggedUser().getDepartment());
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        outBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        return outBills;
+    }
+
+    @Deprecated // Use createBillsToReturnItemsAndPayments
     public void createPreBillsForReturn(BillType billType, BillType refBillType) {
         bills = null;
         String jpql;
@@ -8352,7 +8390,7 @@ public class SearchController implements Serializable {
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
 
         } else {
-            System.out.println("Items not null" );
+            System.out.println("Items not null");
             jpql = "select DISTINCT(bi.bill) from BillItem bi where bi.bill.billType = :billType and "
                     + " bi.bill.institution=:ins and (bi.bill.billedBill is null) and "
                     + " bi.item=:item and "
@@ -15580,7 +15618,7 @@ public class SearchController implements Serializable {
 
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(" 
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, MIN(p.createdAt), "
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
@@ -19847,10 +19885,6 @@ public class SearchController implements Serializable {
         public Item getItm() {
             return itm;
         }
-        
-        
-        
-        
 
         public void setItm(Item itm) {
             this.itm = itm;
@@ -19941,7 +19975,7 @@ public class SearchController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
-        } 
+        }
         return toDate;
     }
 
