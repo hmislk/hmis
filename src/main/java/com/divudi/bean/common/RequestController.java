@@ -66,6 +66,7 @@ public class RequestController implements Serializable {
     private Request currentRequest;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
@@ -126,7 +127,7 @@ public class RequestController implements Serializable {
             currentRequest.setReviewedBy(sessionController.getLoggedUser());
             currentRequest.setReviewedAt(new Date());
             currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
-            requestFacade.edit(currentRequest);
+            requestService.save(currentRequest, sessionController.getLoggedUser());
         }
 
         String navigation = "";
@@ -179,6 +180,7 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         patient = null;
@@ -244,7 +246,7 @@ public class RequestController implements Serializable {
 
     public void approveRequest() {
         if (currentRequest == null) {
-            JsfUtil.addErrorMessage("Not found for a request for Approvel");
+            JsfUtil.addErrorMessage("Request not found for approval");
             return;
         }
 
@@ -256,7 +258,7 @@ public class RequestController implements Serializable {
         currentRequest.setApprovedAt(new Date());
         currentRequest.setApprovedBy(sessionController.getLoggedUser());
         currentRequest.setStatus(RequestStatus.APPROVED);
-        requestFacade.edit(currentRequest);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
 
         JsfUtil.addSuccessMessage("Successfully Approve");
 
@@ -281,10 +283,10 @@ public class RequestController implements Serializable {
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
         currentRequest.setStatus(RequestStatus.PENDING);
-        requestFacade.edit(currentRequest);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
 
         System.out.println("Successfully Cancel Approvel");
-        JsfUtil.addSuccessMessage("Successfully Approvel Cancel");
+        JsfUtil.addSuccessMessage("Approval cancelled");
 
     }
 
@@ -302,7 +304,7 @@ public class RequestController implements Serializable {
         currentRequest.setRejectedBy(sessionController.getLoggedUser());
         currentRequest.setRejectionReason(comment);
         currentRequest.setStatus(RequestStatus.REJECTED);
-        requestFacade.edit(currentRequest);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
 
         //Update Batch Bill
         currentRequest.getBill().setCurrentRequest(null);
@@ -314,7 +316,7 @@ public class RequestController implements Serializable {
             billFacade.edit(b);
         }
         System.out.println("Successfully Reject = ");
-        JsfUtil.addSuccessMessage("Successfully Reject");
+        JsfUtil.addSuccessMessage("Rejected successfully");
 
     }
 
@@ -353,10 +355,10 @@ public class RequestController implements Serializable {
         currentRequest.setCancelledBy(sessionController.getLoggedUser());
         currentRequest.setCancellationReason(comment);
         currentRequest.setStatus(RequestStatus.CANCELLED);
-        requestFacade.edit(currentRequest);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
 
         System.out.println("Successfully Reject = ");
-        JsfUtil.addSuccessMessage("Successfully Cancel");
+        JsfUtil.addSuccessMessage("Cancelled successfully");
     }
     
 
@@ -401,6 +403,7 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public boolean isPrintPreview() {
         return printPreview;
