@@ -221,7 +221,8 @@ public class PharmacyAdjustmentController implements Serializable {
                 + "s.itemBatch.batchNo, "
                 + "s.itemBatch.purcahseRate, "
                 + "s.itemBatch.wholesaleRate, "
-                + "s.itemBatch.costRate) "
+                + "s.itemBatch.costRate, "
+                + "s.itemBatch.item.allowFractions) "
                 + "FROM Stock s "
                 + "WHERE s.department = :d "
                 + "AND s.itemBatch.item = :amp ";

@@ -195,13 +195,14 @@
                                         class="w-100 text-end"
                                         onfocus="this.select()"
                                         value="#{ph.billItemFinanceDetails.quantity}">
-                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <p:ajax 
                                             event="blur" 
                                             process="@this"
                                             update="txtLineReturnValue returnTotal messages @form" 
                                             listener="#{directPurchaseReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
+                                    <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                 </p:column>
 
@@ -215,6 +216,7 @@
                                         onfocus="this.select()"
                                         class="w-100 text-end"
                                         value="#{ph.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <p:ajax 
                                             process="@this"
                                             event="blur" 
@@ -222,6 +224,7 @@
                                             listener="#{directPurchaseReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
+                                    <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column
@@ -232,12 +235,14 @@
                                         class="w-100 text-end"
                                         id="txtReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <p:ajax
                                             event="blur" 
                                             process="@this" 
                                             update="txtLineReturnValue returnTotal messages @form"
                                             listener="#{directPurchaseReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
+                                    <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column headerText="Return Value" width="5em" >
