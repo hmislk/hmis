@@ -93,3 +93,81 @@ Operational Notes
 - No schema changes requiring migration are introduced beyond a new boolean column with default `false`.
 - Testing: Manual UI verification is sufficient for JSF-only pages. For Java changes, run `./detect-maven.sh test` when requested.
 
+Changed XHTML Files (for QA)
+
+- `src/main/webapp/pharmacy/admin/amp.xhtml`
+- `src/main/webapp/pharmacy/admin/ampp.xhtml`
+- `src/main/webapp/pharmacy/pharmacy_issue.xhtml`
+- `src/main/webapp/pharmacy/direct_purchase.xhtml`
+- `src/main/webapp/pharmacy/pharmacy_grn.xhtml`
+- `src/main/webapp/pharmacy/pharmacy_grn_with_approval.xhtml`
+- `src/main/webapp/pharmacy/pharmacy_grn_approval_finalized.xhtml`
+- `src/main/webapp/pharmacy/pharmacy_grn_with_save_approve.xhtml`
+- `src/main/webapp/pharmacy/pharmacy_direct_purchase_return_form.xhtml`
+- `src/main/webapp/pharmacy/pharmacy_grn_return_form.xhtml`
+- `src/main/webapp/pharmacy/grn_return_with_costing.xhtml`
+- `src/main/webapp/pharmacy/direct_purchase_return.xhtml`
+- `src/main/webapp/store/store_transfer_issue.xhtml`
+
+QA Verification Checklist
+
+Pre‑setup
+
+- Prepare two test items with stock in a test department:
+  - Item A: AMP/AMPP where `Allow Fractions = Yes`.
+  - Item B: AMP/AMPP where `Allow Fractions = No`.
+- If needed, use AMP/AMPP admin to toggle and save; refresh the transaction page after saving.
+
+What to check on every page below
+
+- When the selected item is Item A (allow fractions):
+  - Typing/pasting decimals in quantity inputs is allowed (keyFilter mask = `num`).
+  - Values like `1.5` or `2.25` are accepted after blur and used in calculations.
+- When the selected item is Item B (disallow fractions):
+  - Typing/pasting decimals is blocked in the field (keyFilter mask = `int`).
+  - If pasted via context menu, server‑side converter rejects non‑integer input on blur; value should not be accepted.
+
+Pages and steps
+
+1) AMP admin — `pharmacy/admin/amp.xhtml`
+- Find an AMP and verify the new `Allow Fractions` toggle is present.
+- Toggle it, Save, reselect the AMP to confirm persistence.
+
+2) AMPP admin — `pharmacy/admin/ampp.xhtml`
+- Find an AMPP and verify `Allow Fractions` toggle is present.
+- Toggle it, Save, reselect to confirm persistence.
+
+3) Disposal/Issue — `pharmacy/pharmacy_issue.xhtml`
+- In the item autocomplete, select a stock for Item A; in `Quantity` (`txtQty`), confirm decimals allowed; integers still work.
+- Select a stock for Item B; confirm only integers allowed; decimals are blocked or rejected on blur.
+
+4) Direct Purchase — `pharmacy/direct_purchase.xhtml`
+- Select Item A under “Add New Item”; in `Quantity` (`txtQty`) and `Free Qty` (`txtFreeQty`), confirm decimals allowed.
+- Repeat with Item B; confirm only integers allowed.
+
+5) GRN Receive — `pharmacy/pharmacy_grn.xhtml`
+- Ensure the bill contains Item A; in the table, for `Receiving Qty` (`ordQty`) and `Recieved Free Qty` (`freeQty`), confirm decimals allowed.
+- For Item B rows, confirm only integers accepted.
+
+6) GRN Receive (with approval variants)
+- `pharmacy/pharmacy_grn_with_save_approve.xhtml`, `pharmacy/pharmacy_grn_with_approval.xhtml`, `pharmacy/pharmacy_grn_approval_finalized.xhtml`:
+  - For Item A rows, decimals allowed; for Item B rows, only integers.
+
+7) Direct Purchase Return — `pharmacy/pharmacy_direct_purchase_return_form.xhtml`
+- For Item A, verify decimals accepted for `Returning Total Qty`, `Returning Qty`, `Returning Free Qty`.
+- For Item B, verify only integers accepted in the same fields.
+
+8) GRN Return — `pharmacy/pharmacy_grn_return_form.xhtml` and `pharmacy/grn_return_with_costing.xhtml`
+- For Item A, verify decimals in `Returning Total Qty`, `Returning Qty`, `Returning Free Qty`.
+- For Item B, verify integer‑only behavior.
+
+9) Direct Purchase Return (simple) — `pharmacy/direct_purchase_return.xhtml`
+- For Item A and B, verify the same decimal vs. integer behavior on `Returning Total Qty`, `Returning Qty`, `Returning Free Qty`.
+
+10) Store Disbursement — `store/store_transfer_issue.xhtml`
+- In the editable qty fields for a row with Item A, decimals accepted; for Item B, integers only.
+
+Notes
+
+- If switching the `Allow Fractions` state during testing, reselect the item on the transaction page to ensure updated behavior.
+- Retail sale pages using `intQty` remain integer‑only in this phase by design.
