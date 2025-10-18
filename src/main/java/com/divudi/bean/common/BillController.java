@@ -1890,7 +1890,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     RequestController requestController;
     @Inject
     RequestService requestService;
-    
+
     private Request currentRequest;
 
     public String navigateToCancelOpdBatchBill() {
@@ -1911,7 +1911,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     case UNDER_REVIEW:
                         return "/common/request/request_status?faces-redirect=true";
                     case APPROVED:
-                        
+
                         bills = billsOfBatchBill(batchBill);
                         paymentMethod = null;
                         patient = batchBill.getPatient();
@@ -1919,10 +1919,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         comment = currentRequest.getRequestReason();
                         printPreview = false;
                         batchBillCancellationStarted = false;
-                        
+
                         return "/opd/batch_bill_cancel?faces-redirect=true";
                     default:
-                        throw new AssertionError();
+                        return "";
                 }
             }
         } else {
@@ -2074,14 +2074,15 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         opdBillController.setBills(cancelSingleBills);
         opdBillController.setBatchBill(cancellationBatchBill);
         getSessionController().setLoggedUser(wb);
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
             Request billRequest = requestService.findRequest(batchBill);
-            requestController.complteRequest(billRequest);
+            if (billRequest != null) {
+                requestController.complteRequest(billRequest);
+            } else {
+                JsfUtil.addErrorMessage("Related approval request not found to complete.");
+            }
         }
-        
-                
-        
 
         printPreview = true;
         batchBillCancellationStarted = false;
