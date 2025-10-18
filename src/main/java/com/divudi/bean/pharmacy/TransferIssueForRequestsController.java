@@ -679,7 +679,8 @@ public class TransferIssueForRequestsController implements Serializable {
         for (BillItem b : getIssuedBill().getBillItems()) {
             double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
             // Use absolute value for revenue calculation - money comes in (positive)
-            value += rate * Math.abs(b.getPharmaceuticalBillItem().getQty());
+            // Use pack quantity (b.getQty()) not unit quantity to match lineGrossRate (per-pack rate)
+            value += rate * Math.abs(b.getQty());
             b.setSearialNo(serialNo++);
         }
         return value;
