@@ -815,7 +815,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethodData() == null) {
+                if (cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
                     continue;
                 }
                 Payment p = new Payment();

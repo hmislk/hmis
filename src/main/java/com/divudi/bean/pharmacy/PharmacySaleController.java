@@ -2753,7 +2753,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethodData() == null) {
+                if (cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
                     continue;
                 }
                 Payment p = new Payment();
@@ -3558,7 +3558,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
         } else if (inputPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethodData() == null) {
+                if (cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
                     continue;
                 }
                 Payment p = new Payment();
