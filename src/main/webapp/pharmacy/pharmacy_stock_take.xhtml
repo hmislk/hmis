@@ -17,7 +17,7 @@
                         <div class="card-body">
                             <h:form>
                                 <p:panel header="Filters" styleClass="mb-3">
-                                    <p:panelGrid columns="2" styleClass="w-100" layout="tabular">
+                                    <p:panelGrid columns="6" styleClass="w-100" layout="tabular">
                                         <h:outputLabel for="ins" value="Institution"/>
                                         <p:selectOneMenu id="ins" class="w-100 " value="#{pharmacyStockTakeController.institution}" filter="true">
                                             <f:selectItem itemLabel="Select Institution" itemValue="#{null}"/>
@@ -25,23 +25,80 @@
                                             <p:ajax process="@this" update="cmbDept"/>
                                         </p:selectOneMenu>
 
+                                        <h:outputLabel value="Site"/>
+                                        <p:selectOneMenu id="site" class="w-100 " value="#{pharmacyStockTakeController.site}" filter="true">
+                                            <f:selectItem itemLabel="Select Site" itemValue="#{null}"/>
+                                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                            <p:ajax process="@this" update="cmbDept"/>
+                                        </p:selectOneMenu>
+
                                         <h:outputLabel value="Department"/>
                                         <h:panelGroup id="cmbDept">
+                                            <!-- Component 1: Without Institution and Site -->
+                                            <p:autoComplete
+                                                rendered="#{pharmacyStockTakeController.institution eq null and pharmacyStockTakeController.site eq null}"
+                                                styleClass="w-100 form-control"
+                                                value="#{pharmacyStockTakeController.department}"
+                                                completeMethod="#{departmentController.completeDepartments}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}"
+                                                forceSelection="true">
+                                                <f:ajax event="itemSelect" execute="@this" render="cmbDept"/>
+                                            </p:autoComplete>
+
+                                            <!-- Component 2: With Site Only -->
                                             <p:selectOneMenu
+                                                rendered="#{pharmacyStockTakeController.institution eq null and pharmacyStockTakeController.site ne null}"
                                                 styleClass="w-100 form-control"
                                                 value="#{pharmacyStockTakeController.department}"
                                                 filterMatchMode="contains"
                                                 filter="true">
                                                 <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
-                                                <f:selectItems 
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyStockTakeController.site)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 3: With Institution Only -->
+                                            <p:selectOneMenu
+                                                rendered="#{pharmacyStockTakeController.institution ne null and pharmacyStockTakeController.site eq null}"
+                                                styleClass="w-100 form-control"
+                                                value="#{pharmacyStockTakeController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                                <f:selectItems
                                                     value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyStockTakeController.institution)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 4: With Both Institution and Site -->
+                                            <p:selectOneMenu
+                                                rendered="#{pharmacyStockTakeController.institution ne null and pharmacyStockTakeController.site ne null}"
+                                                styleClass="w-100 form-control"
+                                                value="#{pharmacyStockTakeController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyStockTakeController.institution, pharmacyStockTakeController.site)}"
                                                     var="d"
                                                     itemLabel="#{d.name}"
                                                     itemValue="#{d}" />
                                             </p:selectOneMenu>
                                         </h:panelGroup>
 
-                                        <p:spacer ></p:spacer>
+
+                                        <p:spacer/>
+                                        <p:spacer/>
+                                        <p:spacer/>
+                                        <p:spacer/>
+
                                         <p:commandButton 
                                             value="Generate Stock Count Bill" 
                                             action="#{pharmacyStockTakeController.generateStockCountBill}" 

@@ -713,6 +713,22 @@ public class DepartmentController implements Serializable {
         return getFacade().findByJpql(sql, hm);
     }
 
+    public List<Department> completeDepartments(String qry) {
+        List<Department> results;
+        if (qry == null) {
+            qry = "";
+        }
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        results = getFacade().findByJpql(sql, hm);
+        return results;
+    }
+
     public void prepareAdd() {
         codeDisabled = false;
         current = new Department();

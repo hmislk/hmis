@@ -91,6 +91,7 @@ public class PharmacyStockTakeController implements Serializable {
     private Bill physicalCountBill;
     private UploadedFile file;
     private Institution institution;
+    private Institution site;
     private Department department;
     private Date fromDate;
     private Date toDate;
@@ -111,26 +112,16 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
             return null;
         }
-        if (institution == null) {
-            JsfUtil.addErrorMessage("Please select an institution");
-            return null;
-        }
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return null;
         }
-        // Optional cross-check to prevent mismatch selections
-        if (department.getInstitution() != null && !department.getInstitution().equals(institution)) {
-            JsfUtil.addErrorMessage("Selected department does not belong to chosen institution");
-            return null;
-        }
-        // Site selection is not used on this page
         Department dept = department;
         String jpql = "select s from Stock s "
                 + "where s.department=:d and s.stock>0 "
-                + "order by s.itemBatch.item.category.name asc, "
-                + "s.itemBatch.item.name asc, "
-                + "s.itemBatch.dateOfExpire asc";
+                + "order by coalesce(s.itemBatch.item.category.name, '') asc, "
+                + "coalesce(s.itemBatch.item.name, '') asc, "
+                + "coalesce(s.itemBatch.dateOfExpire, current_date) asc";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
         List<Stock> stocks = stockFacade.findByJpql(jpql, params);
@@ -1151,6 +1142,14 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
     public Department getDepartment() {
