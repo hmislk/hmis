@@ -1152,16 +1152,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
-        if (paymentMethodData == null ||
+        if (cd == null ||
+            paymentMethodData == null ||
             paymentMethodData.getPaymentMethodMultiple() == null ||
             paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
             paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
-        int size = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
-        ComponentDetail lastEntry = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(size - 1);
-        return cd == lastEntry;
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
