@@ -21,42 +21,101 @@
                         <div class="card-body">
                             <h:form id="frmFilters">
                                 <p:panel header="Filters" styleClass="mb-3">
-                                    <p:panelGrid columns="2" styleClass="w-100" layout="tabular">
-                                        <h:outputLabel for="ins" value="Institution"/>
-                                        <p:selectOneMenu id="ins" value="#{pharmacyStockTakeController.institution}" filter="true" styleClass="w-100">
-                                            <f:selectItem itemLabel="Select Institution" itemValue="#{null}"/>
-                                            <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
-                                            <p:ajax process="@this" update="dept"/>
-                                        </p:selectOneMenu>
-
-                                        <h:outputLabel for="dept" value="Department"/>
-                                        <p:selectOneMenu id="dept" value="#{pharmacyStockTakeController.department}" filter="true" styleClass="w-100">
-                                            <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
-                                            <f:selectItems 
-                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyStockTakeController.institution)}"
-                                                var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                        </p:selectOneMenu>
-
-                                        <h:outputLabel for="fd" value="From Date"/>
-                                        <p:calendar 
-                                            id="fd" 
-                                            value="#{pharmacyStockTakeController.fromDate}"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-
-                                        <h:outputLabel for="td" value="To Date"/>
-                                        <p:calendar
-                                            id="td" 
-                                            value="#{pharmacyStockTakeController.toDate}"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-
-                                        <p:spacer/>
-                                        <p:commandButton
-                                            value="List" 
-                                            icon="fa fa-list" 
-                                            action="#{pharmacyStockTakeController.listSnapshotBillRows()}" 
-                                            ajax="false"/>
-                                    </p:panelGrid>
-                                </p:panel>
+                                                                        <p:panelGrid columns="6" styleClass="w-100" layout="tabular">
+                                                                            <h:outputLabel for="ins" value="Institution"/>
+                                                                            <p:selectOneMenu id="ins" class="w-100 " value="#{pharmacyStockTakeController.institution}" filter="true">
+                                                                                <f:selectItem itemLabel="Select Institution" itemValue="#{null}"/>
+                                                                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                                                                <p:ajax process="@this" update="cmbDept"/>
+                                                                            </p:selectOneMenu>
+                                    
+                                                                            <h:outputLabel value="Site"/>
+                                                                            <p:selectOneMenu id="site" class="w-100 " value="#{pharmacyStockTakeController.site}" filter="true">
+                                                                                <f:selectItem itemLabel="Select Site" itemValue="#{null}"/>
+                                                                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                                                                <p:ajax process="@this" update="cmbDept"/>
+                                                                            </p:selectOneMenu>
+                                    
+                                                                            <h:outputLabel value="Department"/>
+                                                                            <h:panelGroup id="cmbDept">
+                                                                                <!-- Component 1: Without Institution and Site -->
+                                                                                <p:autoComplete
+                                                                                    rendered="#{pharmacyStockTakeController.institution eq null and pharmacyStockTakeController.site eq null}"
+                                                                                    styleClass="w-100 form-control"
+                                                                                    value="#{pharmacyStockTakeController.department}"
+                                                                                    completeMethod="#{departmentController.completeDepartments}"
+                                                                                    var="d"
+                                                                                    itemLabel="#{d.name}"
+                                                                                    itemValue="#{d}"
+                                                                                    forceSelection="true">
+                                                                                    <f:ajax event="itemSelect" execute="@this" render="cmbDept"/>
+                                                                                </p:autoComplete>
+                                    
+                                                                                <!-- Component 2: With Site Only -->
+                                                                                <p:selectOneMenu
+                                                                                    rendered="#{pharmacyStockTakeController.institution eq null and pharmacyStockTakeController.site ne null}"
+                                                                                    styleClass="w-100 form-control"
+                                                                                    value="#{pharmacyStockTakeController.department}"
+                                                                                    filterMatchMode="contains"
+                                                                                    filter="true">
+                                                                                    <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                                                                    <f:selectItems
+                                                                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyStockTakeController.site)}"
+                                                                                        var="d"
+                                                                                        itemLabel="#{d.name}"
+                                                                                        itemValue="#{d}" />
+                                                                                </p:selectOneMenu>
+                                    
+                                                                                <!-- Component 3: With Institution Only -->
+                                                                                <p:selectOneMenu
+                                                                                    rendered="#{pharmacyStockTakeController.institution ne null and pharmacyStockTakeController.site eq null}"
+                                                                                    styleClass="w-100 form-control"
+                                                                                    value="#{pharmacyStockTakeController.department}"
+                                                                                    filterMatchMode="contains"
+                                                                                    filter="true">
+                                                                                    <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                                                                    <f:selectItems
+                                                                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyStockTakeController.institution)}"
+                                                                                        var="d"
+                                                                                        itemLabel="#{d.name}"
+                                                                                        itemValue="#{d}" />
+                                                                                </p:selectOneMenu>
+                                    
+                                                                                <!-- Component 4: With Both Institution and Site -->
+                                                                                <p:selectOneMenu
+                                                                                    rendered="#{pharmacyStockTakeController.institution ne null and pharmacyStockTakeController.site ne null}"
+                                                                                    styleClass="w-100 form-control"
+                                                                                    value="#{pharmacyStockTakeController.department}"
+                                                                                    filterMatchMode="contains"
+                                                                                    filter="true">
+                                                                                    <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                                                                    <f:selectItems
+                                                                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyStockTakeController.institution, pharmacyStockTakeController.site)}"
+                                                                                        var="d"
+                                                                                        itemLabel="#{d.name}"
+                                                                                        itemValue="#{d}" />
+                                                                                </p:selectOneMenu>
+                                                                            </h:panelGroup>
+                                                                            
+                                                                            <h:outputLabel for="fd" value="From Date"/>
+                                                                            <p:calendar 
+                                                                                id="fd" 
+                                                                                value="#{pharmacyStockTakeController.fromDate}"
+                                                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    
+                                                                            <h:outputLabel for="td" value="To Date"/>
+                                                                            <p:calendar
+                                                                                id="td" 
+                                                                                value="#{pharmacyStockTakeController.toDate}"
+                                                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    
+                                                                            <p:spacer/>
+                                                                            <p:commandButton
+                                                                                value="List" 
+                                                                                icon="fa fa-list" 
+                                                                                action="#{pharmacyStockTakeController.listSnapshotBillRows()}" 
+                                                                                ajax="false"/>
+                                                                        </p:panelGrid>                                </p:panel>
                             </h:form>
 
                             <h:form id="frmTable">

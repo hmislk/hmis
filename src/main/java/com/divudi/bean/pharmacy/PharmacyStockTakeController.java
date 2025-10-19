@@ -421,9 +421,6 @@ public class PharmacyStockTakeController implements Serializable {
                 cLV.setCellStyle(numberLocked);
             }
 
-            // Protect sheet so that only the input column is editable
-            sheet.protectSheet("protect");
-
             // Autosize columns
             int totalCols = header.getLastCellNum();
             for (int i = 0; i < totalCols; i++) {
@@ -749,6 +746,10 @@ public class PharmacyStockTakeController implements Serializable {
         if (institution != null) {
             jpql.append(" and b.institution=:ins");
             params.put("ins", institution);
+        }
+        if (site != null) {
+            jpql.append(" and b.department.site=:site");
+            params.put("site", site);
         }
         if (department != null) {
             jpql.append(" and b.department=:dep");
