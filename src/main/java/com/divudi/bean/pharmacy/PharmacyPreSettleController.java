@@ -875,9 +875,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     case PatientDeposit:
                         p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
+                        break;
                     case Agent:
                     case Credit:
-                    case Slip:
                     case OnCall:
                     case OnlineSettlement:
                     case Staff:

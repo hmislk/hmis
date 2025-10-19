@@ -197,19 +197,19 @@
                                     <h:outputLabel styleClass="fas fa-list" />
                                     <h:outputLabel value="Items For Issue" class="mx-4" />
                                 </f:facet>
-                                <p:dataTable 
-                                    styleClass="noBorder" 
+                                <p:dataTable
+                                    styleClass="noBorder"
                                     var="bItm"
                                     rowIndexVar="i"
                                     scrollable="true"
-                                    rowKey="#{bi.searialNo}"
+                                    rowKey="#{bItm.searialNo}"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     rows="6"
                                     paginatorAlwaysVisible="false"
                                     value="#{transferIssueDirectController.billItems}"
-                                    id="itemList" 
-                                    sortBy="#{bItm.searialNo}"  
+                                    id="itemList"
+                                    sortBy="#{bItm.searialNo}"
                                     editable="true">
 
                                     <p:column headerText="Item Name" style="min-width: 8em; max-width: 15em">
