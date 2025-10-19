@@ -126,7 +126,11 @@ public class PharmacyStockTakeController implements Serializable {
         }
         // Site selection is not used on this page
         Department dept = department;
-        String jpql = "select s from Stock s where s.department=:d and s.stock>0";
+        String jpql = "select s from Stock s "
+                + "where s.department=:d and s.stock>0 "
+                + "order by s.itemBatch.item.category.name asc, "
+                + "s.itemBatch.item.name asc, "
+                + "s.itemBatch.dateOfExpire asc";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
         List<Stock> stocks = stockFacade.findByJpql(jpql, params);
