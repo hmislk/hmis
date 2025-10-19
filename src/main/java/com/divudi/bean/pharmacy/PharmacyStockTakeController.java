@@ -105,6 +105,8 @@ public class PharmacyStockTakeController implements Serializable {
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
 
     private String comments;
+    private boolean printPreview;
+    private Bill adjustmentBill; // stores the adjustment bill created during approval for printing
 
     /**
      * Generate stock count bill preview without persisting.
@@ -1033,8 +1035,8 @@ public class PharmacyStockTakeController implements Serializable {
             return;
         }
         Department dept = physicalCountBill.getDepartment();
-        Bill adjustmentBill = new Bill();
-        adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);
+        this.adjustmentBill = new Bill();
+        this.adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);
         adjustmentBill.setBillClassType(BillClassType.BilledBill);
         adjustmentBill.setComments(comments);
         adjustmentBill.setDepartment(dept);
@@ -1044,9 +1046,13 @@ public class PharmacyStockTakeController implements Serializable {
         adjustmentBill.setBillTime(now);
         adjustmentBill.setCreatedAt(now);
         adjustmentBill.setCreater(sessionController.getLoggedUser());
+
+        // Generate deptId and insId as per bill number generation strategy
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+        String insId = billNumberBean.institutionBillNumberGeneratorYearly(dept.getInstitution(), BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+
         adjustmentBill.setDeptId(deptId);
-        adjustmentBill.setInsId(deptId);
+        adjustmentBill.setInsId(insId);
         adjustmentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
         adjustmentBill.setFromDepartment(dept);
         adjustmentBill.setFromInstitution(dept.getInstitution());
@@ -1103,6 +1109,10 @@ public class PharmacyStockTakeController implements Serializable {
         billFacade.edit(adjustmentBill);
         LOGGER.log(Level.INFO, "[StockTake] Approval completed. pcBillId={0}, adjBillId={1}, adjItems={2}",
                 new Object[]{physicalCountBill.getId(), adjustmentBill.getId(), adjustmentBill.getBillItems() != null ? adjustmentBill.getBillItems().size() : 0});
+
+        // Set printPreview to true to show the print section
+        this.printPreview = true;
+
         JsfUtil.addSuccessMessage("Physical count approved");
     }
 
@@ -1149,6 +1159,8 @@ public class PharmacyStockTakeController implements Serializable {
         this.snapshotBill = null;
         this.physicalCountBill = null;
         this.file = null;
+        this.printPreview = false;
+        this.adjustmentBill = null;
         JsfUtil.addSuccessMessage("Stock taking session reset");
     }
 
@@ -1538,6 +1550,22 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public Bill getAdjustmentBill() {
+        return adjustmentBill;
+    }
+
+    public void setAdjustmentBill(Bill adjustmentBill) {
+        this.adjustmentBill = adjustmentBill;
     }
 
     // DTO for variance report

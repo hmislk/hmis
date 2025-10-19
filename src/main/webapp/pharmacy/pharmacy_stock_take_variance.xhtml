@@ -9,42 +9,43 @@
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
-                <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h2 class="mb-0">Stock Take Variance Report</h2>
-                            <h:form>
+                <h:form>
+                    <div class="container-fluid">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h2 class="mb-0">Stock Take Variance Report</h2>
+
                                 <p:commandButton value="Print" icon="fa fa-print" ajax="false" style="margin-right: 8px;">
                                     <p:printer target="variancePanel" />
                                 </p:commandButton>
                                 <p:commandButton value="Download" icon="fa fa-download" ajax="false">
                                     <p:dataExporter type="xlsx" target="tblVariance" fileName="pharmacy_stock_take_variance" />
                                 </p:commandButton>
-                            </h:form>
-                        </div>
-                        <div class="card-body">
-                            <h:panelGroup id="variancePanel">
-                                <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
-                                    <div class="alert alert-warning">No snapshot bill selected. Please go back to the list and choose a bill.</div>
-                                </h:panelGroup>
 
-                                <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBill}">
-                                    <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" columnClasses="text-right pr-3 font-weight-bold,text-left">
-                                        <h:outputText value="Institution:"/>
-                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/>
-                                        <h:outputText value="Department:"/>
-                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"/>
-                                        <h:outputText value="Snapshot Bill No:"/>
-                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.deptId}" style="font-family: monospace;"/>
-                                        <h:outputText value="Snapshot Date:"/>
-                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.createdAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                        </h:outputText>
-                                    </p:panelGrid>
+                            </div>
+                            <div class="card-body">
+                                <h:panelGroup id="variancePanel">
+                                    <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
+                                        <div class="alert alert-warning">No snapshot bill selected. Please go back to the list and choose a bill.</div>
+                                    </h:panelGroup>
 
-                                    <p:separator/>
+                                    <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBill}">
+                                        <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" columnClasses="text-right pr-3 font-weight-bold,text-left">
+                                            <h:outputText value="Institution:"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/>
+                                            <h:outputText value="Department:"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"/>
+                                            <h:outputText value="Snapshot Bill No:"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.deptId}" style="font-family: monospace;"/>
+                                            <h:outputText value="Snapshot Date:"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputText>
+                                        </p:panelGrid>
 
-                                    <h:form id="frmVariance">
+                                        <p:separator/>
+
+
                                         <p:dataTable id="tblVariance" value="#{pharmacyStockTakeController.varianceRows}" var="r"
                                                      rows="25" paginator="true"
                                                      paginatorPosition="both"
@@ -64,7 +65,7 @@
                                                 <h:outputText value="#{r.batch}"/>
                                             </p:column>
                                             <p:column headerText="Initial Stock" style="width: 120px; text-align:right;">
-            
+
                                                 <h:outputText value="#{r.initialQty}">
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>
@@ -80,12 +81,13 @@
                                                 </h:outputText>
                                             </p:column>
                                         </p:dataTable>
-                                    </h:form>
+
+                                    </h:panelGroup>
                                 </h:panelGroup>
-                            </h:panelGroup>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>
