@@ -8,291 +8,397 @@
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
-        <h:form>
 
-            <p:panel rendered="#{!transferIssueDirectController.printPreview}">
+        <h:form >
 
-                <f:facet name="header" >
-                    <h:outputLabel value="Pharmacy Direct Issue" />
-                </f:facet>
 
-                <div class="row" >
-                    <div class="col-8" >
-                        <p:panel header="Add Items" class="">
 
-                            <f:facet name="header" >
-                                <h:outputText styleClass="fas fa-cube" />
-                                <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
-                            </f:facet>
-
-                            <div class="row" >
-                                <div class="col-6" >
-                                    <h:panelGrid columns="1" class="w-100">
-                                        <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                        <p:autoComplete
-                                            accesskey="i"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            id="acStock"
-                                            value="#{transferIssueDirectController.stockDto}"
-                                            completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments}"
-                                            converter="stockDtoConverter"
-                                            var="i"
-                                            itemLabel="#{i.itemName}"
-                                            itemValue="#{i}"
-                                            maxResults="5"
-                                            >
-                                            <p:column headerText="Item">
-                                                <h:outputText value="#{i.itemName}" >
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Code" >
-                                                <h:outputLabel value="#{i.code}" >
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Expiry" >
-                                                <h:outputLabel value="#{i.dateOfExpire}"
-                                                               style="width: 100px!important;" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Stocks" styleClass="text-end">
-                                                <h:outputLabel value="#{i.stockQty}" >
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            s                                            <p:column headerText="Retail Rate" styleClass="text-end">
-                                                <h:outputLabel value="#{i.retailRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
-                                        </p:autoComplete>
-                                    </h:panelGrid>
+            <h:panelGroup  rendered="#{!transferIssueDirectController.printPreview}">
+                <h:panelGroup 
+                    rendered="#{transferIssueDirectController.toDepartment eq null}">
+                    <div class="row">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            <div class="card border-primary mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h:outputLabel styleClass="fas fa-building me-2" />
+                                    <h:outputText value="Select Destination Department" />
                                 </div>
-                                <div class="col-4" >
-                                    <h:panelGrid columns="1" class="w-100">
-                                        <p:outputLabel value="Quantity" ></p:outputLabel>
-                                        <p:inputText
-                                            accesskey="q"
-                                            autocomplete="off"
-                                            id="txtQty"
-                                            value="#{transferIssueDirectController.qty}"
-                                            class="w-100">
-
-                                        </p:inputText>
-                                    </h:panelGrid>
-                                </div>
-                                <div class="col-2" >
-                                    <h:panelGrid columns="1" class="w-100">
-                                        <p:outputLabel value="&nbsp;" ></p:outputLabel>
-                                        <p:commandButton  
-                                            accesskey="a"
-                                            id="btnAdd"
-                                            icon="fa fa-plus"
-                                            value="Add"
-                                            class="ui-button-success"
-                                            action="#{transferIssueDirectController.addNewBillItem}"
-                                            ajax="false"
-                                            update="focusItem"
-                                            >
-                                        </p:commandButton>
-                                        <p:focus id="focusQty" for="txtQty"></p:focus>
-                                        <p:focus id="focusItem" for="acStock"></p:focus>
-                                    </h:panelGrid>
-
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-12 mb-3">
+                                            <p:outputLabel value="Department to Issue Items:" for="acDepartment" styleClass="form-label fw-bold"/>
+                                            <p:autoComplete
+                                                id="acDepartment"
+                                                value="#{transferIssueDirectController.toDepartment}"
+                                                forceSelection="true"
+                                                inputStyleClass="w-100"
+                                                class="w-100"
+                                                placeholder="Type to search departments..."
+                                                completeMethod="#{departmentController.completeDept}"
+                                                var="depts"
+                                                itemLabel="#{depts.name}"
+                                                itemValue="#{depts}">
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="col-12 text-center">
+                                            <h:panelGroup id="btnSelectPanel">
+                                                <p:commandButton
+                                                    id="btnSelectIssueingDepartment"
+                                                    value="Proceed with Selected Department"
+                                                    icon="pi pi-arrow-right"
+                                                    iconPos="right"
+                                                    ajax="false"
+                                                    onclick="console.log('Button clicked'); console.log('toDepartment:', '#{transferIssueDirectController.toDepartment}'); return true;"
+                                                    styleClass="ui-button-success m-1"
+                                                    action="#{transferIssueDirectController.processTransferIssue}" />
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </p:panel>
-                        <p:panel >
-                            <f:facet name="header" >
-                                <h:outputLabel styleClass="fas fa-list" />
-                                <h:outputLabel value="Items For Issue" class="mx-4" />
-                            </f:facet>
-                            <p:dataTable 
-                                styleClass="noBorder" 
-                                var="bItm"
-                                rowIndexVar="i"
-                                scrollable="true"
-                                rowKey="#{bi.searialNo}"
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rows="6"
-                                paginatorAlwaysVisible="false"
-                                value="#{transferIssueDirectController.billItems}"
-                                id="itemList" 
-                                sortBy="#{bItm.searialNo}"  
-                                editable="true">
+                            <div class="card border-success mt-3" rendered="#{not empty transferIssueDirectController.recentToDepartments}">
+                                <div class="card-header bg-light">
+                                    <h:outputLabel styleClass="fas fa-history me-2 text-success" />
+                                    <small class="fw-bold text-success">Quick Access - Recently Issued To</small>
+                                </div>
+                                <div class="card-body p-3 text-center">
+                                    <ui:repeat value="#{transferIssueDirectController.recentToDepartments}" var="dept">
+                                        <p:commandButton
+                                            value="#{dept.name}"
+                                            icon="pi pi-building"
+                                            styleClass="m-1 ui-button-success rounded-pill fw-bold"
+                                            action="#{transferIssueDirectController.selectFromRecentDepartment(dept)}"
+                                            ajax="false" />
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-2"></div>
+                    </div>
+                </h:panelGroup>
 
-                                <p:column headerText="Item Name" style="min-width: 8em; max-width: 15em">
-                                    <div style="min-width: 10em; display: flex; align-items: center;">
-                                        <h:outputText 
-                                            id="item" 
-                                            value="#{bItm.item.name}" />
-                                        <p:commandButton 
-                                            icon="pi pi-search"
-                                            id="btnViewSelectedItemDetails"
-                                            title="View Item Details"
-                                            action="#{transferIssueDirectController.displayItemDetails(bItm)}"
-                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
-                                            process="@this"
-                                            class="ui-button-icon-only mx-3"/>
+            </h:panelGroup>
+            <p:panel rendered="#{!transferIssueDirectController.printPreview}">
+
+                <p:panel rendered="#{transferIssueDirectController.toDepartment ne null}">
+
+                    <f:facet name="header" >
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div>
+                                <h:outputLabel styleClass="fas fa-arrow-right-arrow-left me-2" />
+                                <h:outputText value="Pharmacy Direct Issue - " />
+                                <h:outputText value="#{transferIssueDirectController.issuedBill.fromDepartment.name}" styleClass="fw-bold" />
+                                <h:outputText value=" → " styleClass="mx-2" />
+                                <h:outputText value="#{transferIssueDirectController.issuedBill.toDepartment.name}" styleClass="fw-bold text-primary" />
+                            </div>
+                            <div>
+                                <p:commandButton
+                                    value="Change Department"
+                                    styleClass="ui-button-warning"
+                                    ajax="false"
+                                    immediate="true"
+                                    icon="pi pi-refresh"
+                                    action="#{transferIssueDirectController.changeDepartment()}" />
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row" >
+                        <div class="col-8" >
+                            <p:panel header="Add Items" class="">
+
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fas fa-cube" />
+                                    <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
+                                </f:facet>
+
+                                <div class="row" >
+                                    <div class="col-6" >
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                            <p:autoComplete
+                                                accesskey="i"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                id="acStock"
+                                                value="#{transferIssueDirectController.stockDto}"
+                                                completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments}"
+                                                converter="stockDtoConverter"
+                                                var="i"
+                                                itemLabel="#{i.itemName}"
+                                                itemValue="#{i}"
+                                                maxResults="5"
+                                                >
+                                                <p:column headerText="Item">
+                                                    <h:outputText value="#{i.itemName}" >
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Code" >
+                                                    <h:outputLabel value="#{i.code}" >
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Expiry" >
+                                                    <h:outputLabel value="#{i.dateOfExpire}"
+                                                                   style="width: 100px!important;" >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Stocks" styleClass="text-end">
+                                                    <h:outputLabel value="#{i.stockQty}" >
+                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Retail Rate" styleClass="text-end">
+                                                    <h:outputLabel value="#{i.retailRate}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
+                                            </p:autoComplete>
+                                        </h:panelGrid>
                                     </div>
-                                </p:column>
+                                    <div class="col-4" >
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:outputLabel value="Quantity" ></p:outputLabel>
+                                            <p:inputText
+                                                accesskey="q"
+                                                autocomplete="off"
+                                                id="txtQty"
+                                                value="#{transferIssueDirectController.qty}"
+                                                class="w-100">
 
-                                <p:column 
-                                    headerText="Qty" 
-                                    width="8em" 
-                                    class="text-end">
-                                    <h:outputText 
-                                        id="qty" 
-                                        class="w-100"
-                                        value="#{bItm.qty}" />
-                                </p:column>
+                                            </p:inputText>
+                                        </h:panelGrid>
+                                    </div>
+                                    <div class="col-2" >
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:outputLabel value="&nbsp;" ></p:outputLabel>
+                                            <p:commandButton  
+                                                accesskey="a"
+                                                id="btnAdd"
+                                                icon="fa fa-plus"
+                                                value="Add"
+                                                class="ui-button-success"
+                                                action="#{transferIssueDirectController.addNewBillItem}"
+                                                ajax="false"
+                                                update="focusItem"
+                                                >
+                                            </p:commandButton>
+                                            <p:focus id="focusQty" for="txtQty"></p:focus>
+                                            <p:focus id="focusItem" for="acStock"></p:focus>
+                                        </h:panelGrid>
+
+                                    </div>
+                                </div>
+                            </p:panel>
+                            <p:panel >
+                                <f:facet name="header" >
+                                    <h:outputLabel styleClass="fas fa-list" />
+                                    <h:outputLabel value="Items For Issue" class="mx-4" />
+                                </f:facet>
+                                <p:dataTable 
+                                    styleClass="noBorder" 
+                                    var="bItm"
+                                    rowIndexVar="i"
+                                    scrollable="true"
+                                    rowKey="#{bi.searialNo}"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="6"
+                                    paginatorAlwaysVisible="false"
+                                    value="#{transferIssueDirectController.billItems}"
+                                    id="itemList" 
+                                    sortBy="#{bItm.searialNo}"  
+                                    editable="true">
+
+                                    <p:column headerText="Item Name" style="min-width: 8em; max-width: 15em">
+                                        <div style="min-width: 10em; display: flex; align-items: center;">
+                                            <h:outputText 
+                                                id="item" 
+                                                value="#{bItm.item.name}" />
+                                            <p:commandButton 
+                                                icon="pi pi-search"
+                                                id="btnViewSelectedItemDetails"
+                                                title="View Item Details"
+                                                action="#{transferIssueDirectController.displayItemDetails(bItm)}"
+                                                update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                process="@this"
+                                                class="ui-button-icon-only mx-3"/>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column 
+                                        headerText="Qty" 
+                                        width="8em" 
+                                        class="text-end">
+                                        <h:outputText 
+                                            id="qty" 
+                                            class="w-100"
+                                            value="#{bItm.qty}" />
+                                    </p:column>
 
 
-                                <p:column 
-                                    width="6em"
-                                    headerText="Transfer Rate"  
-                                    class="text-end"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
-                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column 
+                                        width="6em"
+                                        headerText="Transfer Rate"  
+                                        class="text-end"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                        <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                <p:column 
-                                    width="6em"
-                                    headerText="Transfer Value"  
-                                    class="text-end">
-                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossTotal}" styleClass="text-end">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column 
+                                        width="6em"
+                                        headerText="Transfer Value"  
+                                        class="text-end">
+                                        <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossTotal}" styleClass="text-end">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
 
 
 
-                                <p:column 
-                                    headerText="DOE" 
-                                    class="text-end"
-                                    width="6em">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" styleClass="text-end">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column 
-                                    headerText="Batch No" width="6em">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>
-                                </p:column>
-                                <p:column width="3em" class="text-end" >
-                                    <p:commandButton
-                                        icon="fas fa-trash" 
-                                        class="ui-button-danger"
-                                        ajax="false"
-                                        action="#{transferIssueDirectController.removeBillItem(bItm)}">
-                                    </p:commandButton>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
+                                    <p:column 
+                                        headerText="DOE" 
+                                        class="text-end"
+                                        width="6em">
+                                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" styleClass="text-end">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column 
+                                        headerText="Batch No" width="6em">
+                                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>
+                                    </p:column>
+                                    <p:column width="3em" class="text-end" >
+                                        <p:commandButton
+                                            icon="fas fa-trash" 
+                                            class="ui-button-danger"
+                                            ajax="false"
+                                            action="#{transferIssueDirectController.removeBillItem(bItm)}">
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+                        <div class="col-4" >
+                            <p:panel styleClass="shadow-sm">
+                                <f:facet name="header" >
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <div>
+                                            <h:outputLabel styleClass="fas fa-info-circle me-2" />
+                                            <h:outputText value="Issue Details" styleClass="fw-bold" />
+                                        </div>
+                                        <p:commandButton
+                                            value="Issue"
+                                            icon="fas fa-check"
+                                            action="#{transferIssueDirectController.settleDirectIssue}"
+                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;"
+                                            ajax="false"
+                                            styleClass="ui-button-success" />
+                                    </div>
+                                </f:facet>
+
+                                <div class="card border-info mb-2">
+                                    <div class="card-body p-2">
+                                        <div class="row mb-2">
+                                            <div class="col-12">
+                                                <small class="text-muted">Issue From</small>
+                                                <div class="fw-bold text-primary">
+                                                    <h:outputLabel styleClass="fas fa-hospital me-1" />
+                                                    <h:outputText value="#{transferIssueDirectController.issuedBill.fromDepartment.name}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <small class="text-muted">Issue To</small>
+                                                <div class="fw-bold text-success">
+                                                    <h:outputLabel styleClass="fas fa-hospital me-1" />
+                                                    <h:outputText value="#{transferIssueDirectController.issuedBill.toDepartment.name}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel value="Receiving Staff" styleClass="form-label fw-bold text-danger"/>
+                                    <small class="text-muted d-block mb-1">Select the staff member who will receive the items</small>
+                                    <p:autoComplete
+                                        inputStyleClass="w-100"
+                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                        forceSelection="true"
+                                        var="w"
+                                        itemLabel="#{w.person.name}"
+                                        itemValue="#{w}"
+                                        placeholder="Search staff by name..."
+                                        value="#{transferIssueDirectController.issuedBill.toStaff}" >
+                                        <p:column headerText="Name">
+                                            <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Speciality">
+                                            <h:outputText value="#{w.speciality.name}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{w.code}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Staff Code">
+                                            <h:outputText value="#{w.staffCode}" ></h:outputText>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="card border-success mb-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                    <div class="card-header bg-light">
+                                        <h:outputLabel styleClass="fas fa-calculator me-2" />
+                                        <small class="fw-bold">Transfer Summary</small>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Transfer Value:</span>
+                                            <span class="fw-bold text-success">
+                                                <h:outputText value="#{transferIssueDirectController.issuedBill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-muted">Cost Value:</span>
+                                            <span class="fw-bold text-info">
+                                                <h:outputText value="#{transferIssueDirectController.issuedBill.billFinanceDetails.totalCostValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel value="Comments" styleClass="form-label fw-bold text-danger"/>
+                                    <small class="text-danger d-block mb-1">* Required field</small>
+                                    <p:inputTextarea
+                                        styleClass="w-100"
+                                        placeholder="Enter comments about this transfer..."
+                                        value="#{transferIssueDirectController.issuedBill.comments}"
+                                        rows="4" />
+                                </div>
+                            </p:panel>
+                        </div>
                     </div>
-                    <div class="col-4" >
-                        <p:panel >
-                            <f:facet name="header" >
-                                <h:outputText value="Issue Details" ></h:outputText>
-                                <p:commandButton  
-                                    value="Issue" 
-                                    icon="fas fa-check" 
-                                    action="#{transferIssueDirectController.settleDirectIssue}" 
-                                    style="float: right;" 
-                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                return false;"
-                                    ajax="false" 
-                                    class="ui-button-success mx-2" >
-                                </p:commandButton>
-                            </f:facet>
-                            <h:panelGrid columns="3" class="w-100">
-                                <h:outputLabel value="Items will be issued from &nbsp;" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete 
-                                    class="w-100"
-                                    inputStyleClass="w-100"
-                                    value="#{transferIssueDirectController.issuedBill.fromDepartment}" 
-                                    disabled="true"
-                                    var="vt" 
-                                    itemLabel="#{vt.name}" 
-                                    itemValue="#{vt}"/>
 
-                                <h:outputLabel value="Items will be issued to"/>
-                                <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete 
-                                    value="#{transferIssueDirectController.issuedBill.toDepartment}" 
-                                    class="w-100"
-                                    inputStyleClass="w-100"
-                                    var="to" 
-                                    itemLabel="#{to.name}" 
-                                    itemValue="#{to}"
-                                    completeMethod="#{departmentController.completeDept}"/>
-
-                                <h:outputLabel value="Select Staff Name" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete  
-                                    class="w-100"
-                                    inputStyleClass="w-100"
-                                    completeMethod="#{staffController.completeStaffWithoutDoctors}"
-                                    forceSelection="true"
-                                    var="w" 
-                                    itemLabel="#{w.person.name}" 
-                                    itemValue="#{w}"
-                                    value="#{transferIssueDirectController.issuedBill.toStaff}" >
-                                    <p:column headerText="Name">
-                                        <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Speciality">
-                                        <h:outputText value="#{w.speciality.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Code">
-                                        <h:outputText value="#{w.code}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Staff Code">
-                                        <h:outputText value="#{w.staffCode}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
-
-                                <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
-                                    <h:outputLabel value="Transfer Value" />
-                                    <h:outputLabel value=": &amp;nbsp;"/>
-                                    <h:outputLabel 
-                                        class="w-100 text-end"
-                                        value="#{transferIssueDirectController.issuedBill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="Transfer Cost Value" />
-                                    <h:outputLabel value=": &amp;nbsp;"/>
-                                </ui:fragment>
-                                <h:outputLabel 
-                                    class="w-100 text-end"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
-                                    value="#{transferIssueDirectController.issuedBill.billFinanceDetails.totalCostValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-
-                                <h:outputLabel value="Comment *" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <p:inputTextarea
-                                    class="w-100"
-                                    value="#{transferIssueDirectController.issuedBill.comments}"
-                                    rows="3" />
-
-                            </h:panelGrid>
-                        </p:panel>
+                    <div class="row">
+                        <div class="col-09">
+                            <ph:history/>
+                        </div>
                     </div>
-                </div>
 
-                <ph:history/>
+                </p:panel>
 
             </p:panel>
-
             <p:panel rendered="#{transferIssueDirectController.printPreview}">
 
                 <div class="d-flex justify-content-between align-items-center">
@@ -331,7 +437,6 @@
                             onclick="PF('transferIssueDirectDepartmentConfigDialog').show();" />
                     </div>
                 </div>
-
                 <h:panelGroup id="gpBillPreview" >
 
                     <!-- A4 Paper Format (transferIssue component) -->
@@ -368,92 +473,91 @@
 
             </p:panel>
 
-            <!-- Transfer Issue (Direct Department) Printer Configuration Dialog -->
-            <p:dialog id="transferIssueDirectDepartmentConfigDialog"
-                      header="Transfer Issue Printer Configuration"
-                      widgetVar="transferIssueDirectDepartmentConfigDialog"
-                      modal="true"
-                      width="700"
-                      height="500"
-                      resizable="true"
-                      maximizable="true"
-                      closeOnEscape="true">
-
-                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferIssueDirectDepartmentConfigForm" />
-
-                <h:form id="transferIssueDirectDepartmentConfigForm">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card config-section">
-                                <div class="card-header">
-                                    <h:outputText value="Transfer Issue Paper Settings" />
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiA4" value="#{pharmacyConfigController.transferIssueA4Paper}" />
-                                        <p:outputLabel for="tiA4" value="A4 Paper Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Standard A4 paper format (transferIssue component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiA4Detailed" value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
-                                        <p:outputLabel for="tiA4Detailed" value="A4 Paper Format Detailed" class="ms-2" />
-                                        <small class="form-text text-muted d-block">A4 detailed format (transferIssue_detailed component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiCustom1" value="#{pharmacyConfigController.transferIssueCustom1}" />
-                                        <p:outputLabel for="tiCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiPos" value="#{pharmacyConfigController.transferIssuePosPaper}" />
-                                        <p:outputLabel for="tiPos" value="POS Paper Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiPosHeader" value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
-                                        <p:outputLabel for="tiPosHeader" value="POS Paper with Header" class="ms-2" />
-                                        <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox id="tiTemplate" value="#{pharmacyConfigController.transferIssueTemplate}" />
-                                        <p:outputLabel for="tiTemplate" value="Template Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <p:messages id="transferIssueDirectDepartmentConfigMessages" showDetail="true" closable="true" />
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="d-flex gap-2">
-                                            <p:commandButton
-                                                value="Apply &amp; Close"
-                                                icon="fas fa-save"
-                                                class="ui-button-success"
-                                                ajax="false"
-                                                action="#{pharmacyConfigController.saveTransferIssueConfig}" />
-                                            <p:commandButton
-                                                value="Cancel"
-                                                icon="fas fa-times"
-                                                class="ui-button-secondary"
-                                                onclick="PF('transferIssueDirectDepartmentConfigDialog').hide(); return false;"
-                                                type="button" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </h:form>
-            </p:dialog>
-
         </h:form>
+
+
+        <!-- Transfer Issue (Direct Department) Printer Configuration Dialog -->
+        <p:dialog id="transferIssueDirectDepartmentConfigDialog"
+                  header="Transfer Issue Printer Configuration"
+                  widgetVar="transferIssueDirectDepartmentConfigDialog"
+                  modal="true"
+                  width="700"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferIssueDirectDepartmentConfigForm" />
+            <h:form id="transferIssueDirectDepartmentConfigForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h:outputText value="Transfer Issue Paper Settings" />
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiA4" value="#{pharmacyConfigController.transferIssueA4Paper}" />
+                                    <p:outputLabel for="tiA4" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 paper format (transferIssue component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiA4Detailed" value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
+                                    <p:outputLabel for="tiA4Detailed" value="A4 Paper Format Detailed" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 detailed format (transferIssue_detailed component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiCustom1" value="#{pharmacyConfigController.transferIssueCustom1}" />
+                                    <p:outputLabel for="tiCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiPos" value="#{pharmacyConfigController.transferIssuePosPaper}" />
+                                    <p:outputLabel for="tiPos" value="POS Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiPosHeader" value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
+                                    <p:outputLabel for="tiPosHeader" value="POS Paper with Header" class="ms-2" />
+                                    <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox id="tiTemplate" value="#{pharmacyConfigController.transferIssueTemplate}" />
+                                    <p:outputLabel for="tiTemplate" value="Template Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="transferIssueDirectDepartmentConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.saveTransferIssueConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('transferIssueDirectDepartmentConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </h:form>
+        </p:dialog>
     </ui:define>
 
 </ui:composition>
