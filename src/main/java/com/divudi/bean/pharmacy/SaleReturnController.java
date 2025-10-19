@@ -121,6 +121,9 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         if (bill.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
             return null;
+        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE) {
+            paymentBill = bill;
+            bill.getReferenceBill();
         } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE) {
             paymentBill = bill.getReferenceBill();
             if (paymentBill.getBillTypeAtomic() == null) {
@@ -469,10 +472,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     /**
-     * Validates that the absolute value of total payments equals the absolute value of the refund bill's netTotal.
-     * This is called during settlement to ensure that the payment amounts match the refund amount.
+     * Validates that the absolute value of total payments equals the absolute
+     * value of the refund bill's netTotal. This is called during settlement to
+     * ensure that the payment amounts match the refund amount.
      *
-     * @return true if validation fails (there's an error), false if validation passes
+     * @return true if validation fails (there's an error), false if validation
+     * passes
      */
     private boolean validatePaymentRefundMatch() {
         if (getReturnBill() == null) {
@@ -554,6 +559,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         savePreReturnBillComponents();
 
         getBill().getReturnPreBills().add(getReturnBill());
+
+        // Update original bills (both PRE and SALE)
+        updateOriginalBillsForReturn();
+
         getBillFacade().edit(getBill());
 
         finalReturnBill = saveSaleFinalReturnBill();
@@ -574,6 +583,85 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         JsfUtil.addSuccessMessage("Successfully Returned");
         returnBillcomment = null;
 
+    }
+
+    /**
+     * Updates the original bill's financial tracking fields (refundAmount,
+     * paidAmount, balance). This method validates bill types and updates both
+     * the PHARMACY_RETAIL_SALE_PRE bill and its related PHARMACY_RETAIL_SALE
+     * bill.
+     *
+     * @throws RuntimeException if bill type validation fails
+     */
+    private void updateOriginalBillsForReturn() {
+        Bill originalBill = null;
+        Bill salePreBill;
+        Bill saleBill;
+        if (getBill() == null) {
+            throw new RuntimeException("Original bill is null. Cannot update financial tracking fields.");
+        } else {
+            originalBill = getBill();
+        }
+
+        if (null == originalBill.getBillTypeAtomic()) {
+            JsfUtil.addErrorMessage("Data Flow Error");
+            return;
+        } else switch (originalBill.getBillTypeAtomic()) {
+            case PHARMACY_RETAIL_SALE:
+                saleBill = originalBill;
+                salePreBill = originalBill.getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE:
+                saleBill = originalBill.getReferenceBill();
+                salePreBill = originalBill;
+                break;
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                saleBill = originalBill;
+                salePreBill = originalBill.getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                saleBill = originalBill.getReferenceBill();
+                salePreBill = originalBill;
+                break;
+            default:
+                JsfUtil.addErrorMessage("Data Flow Error");
+                return;
+        }
+
+        // Calculate the absolute value of the return amount
+        double returnAmount = Math.abs(getReturnBill().getNetTotal());
+
+        updateBillFinancialFields(salePreBill, returnAmount);
+        updateBillFinancialFields(saleBill, returnAmount);
+    }
+
+    /**
+     * Helper method to update a bill's financial tracking fields. Updates
+     * refundAmount, paidAmount, and balance (if applicable).
+     *
+     * @param billToUpdate The bill to update
+     * @param returnAmount The absolute value of the return amount
+     */
+    private void updateBillFinancialFields(Bill billToUpdate, double returnAmount) {
+        // Update refundAmount - add the return amount
+        double currentRefundAmount = billToUpdate.getRefundAmount();
+        billToUpdate.setRefundAmount(currentRefundAmount + returnAmount);
+
+        // Update paidAmount - deduct the return amount only when a payment exists
+        double currentPaidAmount = billToUpdate.getPaidAmount();
+        if (currentPaidAmount > 0) {
+            double updatedPaidAmount = currentPaidAmount - returnAmount;
+            billToUpdate.setPaidAmount(Math.max(0d, updatedPaidAmount));
+        }
+
+        // Update balance for credit bills (only if balance > 0)
+        double currentBalance = billToUpdate.getBalance();
+        if (currentBalance > 0) {
+            billToUpdate.setBalance(Math.max(0d, currentBalance - returnAmount));
+        }
+
+        // Save the updated bill
+        getBillFacade().edit(billToUpdate);
     }
 
     private void applyRefundSignToPaymentData() {
@@ -710,13 +798,22 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                     getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                     break;
                 case Staff:
-                case Staff_Welfare:
-                    // Staff information is stored in bill.toStaff, not in payment
-                    if (bill != null && bill.getToStaff() != null) {
-                        toStaff = bill.getToStaff();
-                        getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
-                        getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    Staff staffForCredit = originalPayment.getToStaff();
+                    if (staffForCredit == null && getBill() != null) {
+                        staffForCredit = getBill().getToStaff();
                     }
+                    getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                    getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    break;
+                case Staff_Welfare:
+                    Staff staffForWelfare = originalPayment.getToStaff();
+                    if (staffForWelfare == null && getBill() != null) {
+                        staffForWelfare = getBill().getToStaff();
+                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                     break;
                 default:
                     // For other payment methods, just set the total value
@@ -784,12 +881,22 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                         cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                         break;
                     case Staff:
-                    case Staff_Welfare:
-                        // Staff information is stored in bill.toStaff
-                        if (bill != null && bill.getToStaff() != null) {
-                            cd.getPaymentMethodData().getStaffCredit().setToStaff(bill.getToStaff());
-                            cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        Staff staffForCredit = originalPayment.getToStaff();
+                        if (staffForCredit == null && getBill() != null) {
+                            staffForCredit = getBill().getToStaff();
                         }
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff_Welfare:
+                        Staff staffForWelfare = originalPayment.getToStaff();
+                        if (staffForWelfare == null && getBill() != null) {
+                            staffForWelfare = getBill().getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     default:
                         // For other payment methods

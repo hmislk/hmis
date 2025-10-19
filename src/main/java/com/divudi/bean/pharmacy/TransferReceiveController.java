@@ -326,14 +326,20 @@ public class TransferReceiveController implements Serializable {
         if (bill == null) {
             return false;
         }
-        
+
         // Get fresh data from the database to avoid caching issues
         Bill freshIssueBill = billFacade.find(bill.getId());
         if (freshIssueBill == null) {
             return false;
         }
-        
+
         List<BillItem> issueItems = billService.fetchBillItems(freshIssueBill);
+
+        // If there are no items in the issue, it cannot be "already received"
+        if (issueItems == null || issueItems.isEmpty()) {
+            return false;
+        }
+
         for (BillItem bi : issueItems) {
             double remainingQty = calculateRemainingQtyWithFreshData(bi);
             if (remainingQty > 0.001) { // Add small tolerance for floating point precision

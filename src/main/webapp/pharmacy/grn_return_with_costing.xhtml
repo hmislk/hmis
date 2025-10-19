@@ -99,19 +99,20 @@
                                     width="5em" 
                                     headerText="Returning Total Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
-                                    <p:inputText
-                                        id="txtReturningTotalQty"
-                                        autocomplete="off"
-                                        class="w-100 text-end"
-                                        onfocus="this.select()"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
-                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                        <p:ajax 
-                                            event="blur" 
-                                            process="@this"
-                                            update="txtLineReturnValue @form" 
-                                            listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
-                                    </p:inputText>
+                                <p:inputText
+                                    id="txtReturningTotalQty"
+                                    autocomplete="off"
+                                    class="w-100 text-end"
+                                    onfocus="this.select()"
+                                    value="#{ph.billItemFinanceDetails.quantity}">
+                                    <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
+                                    <p:ajax 
+                                        event="blur" 
+                                        process="@this" 
+                                        update="txtLineReturnValue @form" 
+                                        listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                 </p:column>
 
@@ -119,35 +120,39 @@
                                     width="5em" 
                                     headerText="Returning Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
-                                    <p:inputText
-                                        id="txtReturningQty"
-                                        autocomplete="off"
-                                        onfocus="this.select()"
-                                        class="w-100 text-end"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
-                                        <p:ajax 
-                                            process="@this"
-                                            event="blur" 
-                                            update="txtLineReturnValue @form" 
-                                            listener="#{grnReturnWithCostingController.onReturningQtyChange(ph)}" 
-                                            />
-                                    </p:inputText>
+                                <p:inputText
+                                    id="txtReturningQty"
+                                    autocomplete="off"
+                                    onfocus="this.select()"
+                                    class="w-100 text-end"
+                                    value="#{ph.billItemFinanceDetails.quantity}">
+                                    <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                    <p:ajax 
+                                        process="@this"
+                                        event="blur" 
+                                        update="txtLineReturnValue @form" 
+                                        listener="#{grnReturnWithCostingController.onReturningQtyChange(ph)}" 
+                                        />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column
                                     headerText="Returning Free Qty"
                                     width="5em" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
-                                    <p:inputText
-                                        class="w-100 text-end"
-                                        id="txtReturningFreeQty"
-                                        autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
-                                        <p:ajax
-                                            event="blur" 
-                                            process="@this" 
-                                            update="txtLineReturnValue @form"
-                                            listener="#{grnReturnWithCostingController.onReturningFreeQtyChange(ph)}" />
-                                    </p:inputText>
+                                <p:inputText
+                                    class="w-100 text-end"
+                                    id="txtReturningFreeQty"
+                                    autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                    <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                    <p:ajax
+                                        event="blur" 
+                                        process="@this" 
+                                        update="txtLineReturnValue @form"
+                                        listener="#{grnReturnWithCostingController.onReturningFreeQtyChange(ph)}" />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column headerText="Return Value" width="5em" >

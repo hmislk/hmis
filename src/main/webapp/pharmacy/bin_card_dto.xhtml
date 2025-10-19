@@ -85,6 +85,10 @@
 
                 </h:panelGrid>
 
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
+                    <p:inputText value="#{pharmacyErrorChecking.item.id}" ></p:inputText>
+                </h:panelGroup>
+
                 <p:dataTable value="#{pharmacyErrorChecking.binCardEntries}"
                              var="sh"
                              rowIndexVar="i"
@@ -180,7 +184,7 @@
 
                     <!-- Stock After Transaction (Batch) -->
                     <p:column headerText="Stock After (Batch)" class="text-end">
-                         <h:outputText value="#{sh.stockQty}">
+                        <h:outputText value="#{sh.stockQty}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>

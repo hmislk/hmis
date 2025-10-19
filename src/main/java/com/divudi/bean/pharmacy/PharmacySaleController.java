@@ -1692,7 +1692,17 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setComments(comment);
 
         getPreBill().setCashPaid(cashPaid);
-        getPreBill().setBalance(balance);
+
+        // Set balance and paidAmount based on payment method
+        // For Credit and Staff credit payment methods, balance is netTotal and paidAmount is zero
+        // For all other payment methods including MultiplePaymentMethods, balance is zero and paidAmount is netTotal
+        if (getPaymentMethod() == PaymentMethod.Credit || getPaymentMethod() == PaymentMethod.Staff) {
+            getPreBill().setBalance(getPreBill().getNetTotal());
+            getPreBill().setPaidAmount(0.0);
+        } else {
+            getPreBill().setBalance(0.0);
+            getPreBill().setPaidAmount(getPreBill().getNetTotal());
+        }
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
@@ -1757,7 +1767,17 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setComments(comment);
 
         getPreBill().setCashPaid(cashPaid);
-        getPreBill().setBalance(balance);
+
+        // Set balance and paidAmount based on payment method
+        // For Credit and Staff credit payment methods, balance is netTotal and paidAmount is zero
+        // For all other payment methods including MultiplePaymentMethods, balance is zero and paidAmount is netTotal
+        if (getPaymentMethod() == PaymentMethod.Credit || getPaymentMethod() == PaymentMethod.Staff) {
+            getPreBill().setBalance(getPreBill().getNetTotal());
+            getPreBill().setPaidAmount(0.0);
+        } else {
+            getPreBill().setBalance(0.0);
+            getPreBill().setPaidAmount(getPreBill().getNetTotal());
+        }
 
         getPreBill().setBillDate(new Date());
         getPreBill().setBillTime(new Date());
@@ -1829,7 +1849,17 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getSaleBill().setComments(comment);
 
         getSaleBill().setCashPaid(cashPaid);
-        getSaleBill().setBalance(balance);
+
+        // Set balance and paidAmount based on payment method
+        // For Credit and Staff credit payment methods, balance is netTotal and paidAmount is zero
+        // For all other payment methods including MultiplePaymentMethods, balance is zero and paidAmount is netTotal
+        if (getPaymentMethod() == PaymentMethod.Credit || getPaymentMethod() == PaymentMethod.Staff) {
+            getSaleBill().setBalance(getSaleBill().getNetTotal());
+            getSaleBill().setPaidAmount(0.0);
+        } else {
+            getSaleBill().setBalance(0.0);
+            getSaleBill().setPaidAmount(getSaleBill().getNetTotal());
+        }
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
         if (getSaleBill().getId() == null) {
@@ -2778,6 +2808,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
                         break;
                     case Staff:
+                        p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
                             staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
@@ -2785,6 +2816,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         }
                         break;
                     case Staff_Welfare:
+                        p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
                             staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
@@ -2864,6 +2896,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     p.setComments(paymentMethodData.getOnlineSettlement().getComment());
                     break;
                 case Staff:
+                    p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                     if (paymentMethodData.getStaffCredit().getToStaff() != null) {
                         staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
@@ -2871,6 +2904,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                     }
                     break;
                 case Staff_Welfare:
+                    p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
                     if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
                         staffBean.updateStaffWelfare(paymentMethodData.getStaffWelfare().getToStaff(), paymentMethodData.getStaffWelfare().getTotalValue());
@@ -3086,8 +3120,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         calculateAllRates();
-
-        getPreBill().setPaidAmount(getPreBill().getTotal());
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
