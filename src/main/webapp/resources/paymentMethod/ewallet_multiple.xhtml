@@ -23,6 +23,7 @@
                     autocomplete="off"
                     value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"
                     id="txtVal"
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     styleClass="form-control"
                     style="width: 150px;">
                     <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
