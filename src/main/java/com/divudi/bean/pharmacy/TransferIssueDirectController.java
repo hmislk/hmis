@@ -191,10 +191,6 @@ public class TransferIssueDirectController implements Serializable {
         if (issuedBill.getFromDepartment() == null) {
             issuedBill.setFromDepartment(sessionController.getDepartment());
         }
-        if (issuedBill.getToDepartment() == null) {
-            JsfUtil.addErrorMessage("No Deparmtnet to send is selected");
-            return;
-        }
         if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please Add Bill Items before issue");
             return;
@@ -346,6 +342,7 @@ public class TransferIssueDirectController implements Serializable {
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
             } else {
                 i.setQty(0.0);
+                i.getPharmaceuticalBillItem().setQty(0.0);
                 stockWasNotSufficientToIssueFound = true;
             }
         }
