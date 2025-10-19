@@ -74,8 +74,8 @@
                                             </h:outputText>
                                         </p:column>
                                         <p:column headerText="Comments" style="width: 120px; text-align:right;">
-                                            <h:outputText value="#{bi.descreption}">
-                                            </h:outputText>
+                                            <p:inputText value="#{bi.descreption}" class="w-100">
+                                            </p:inputText>
                                         </p:column>
                                         <p:column headerText="Variance" style="width: 120px; text-align:right;">
                                             <h:outputText value="#{bi.adjustedValue}" styleClass="font-weight-bold #{bi.adjustedValue gt 0 ? 'text-success' : (bi.adjustedValue lt 0 ? 'text-danger' : 'text-muted')}">

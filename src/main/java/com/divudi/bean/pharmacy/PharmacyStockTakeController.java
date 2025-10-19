@@ -1023,6 +1023,7 @@ public class PharmacyStockTakeController implements Serializable {
         Bill adjustmentBill = new Bill();
         adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);
         adjustmentBill.setBillClassType(BillClassType.BilledBill);
+        adjustmentBill.setComments(comments);
         adjustmentBill.setDepartment(dept);
         adjustmentBill.setInstitution(dept.getInstitution());
         Date now = new Date();
