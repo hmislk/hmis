@@ -64,7 +64,8 @@
                             id="pay"
                             value="#{pm.paymentMethod}"
                             styleClass="flex-grow-1"
-                            style="max-width: 300px;">
+                            style="max-width: 300px;"
+                            disabled="#{pm.paymentMethod ne null and pm.paymentMethod ne ''}">
                             <f:selectItem itemLabel="Select Payment Method" />
                             <f:selectItems
                                 value="#{cc.attrs.paymentMethods}"

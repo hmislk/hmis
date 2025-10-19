@@ -225,6 +225,18 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
     }
 
+    private void cleanupInvalidPaymentDetails() {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return;
+        }
+
+        // Remove ComponentDetails with null paymentMethodData or null paymentMethod
+        paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()
+            .removeIf(cd -> cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null);
+    }
+
     public void updateTotals() {
         calculateAllRates();
     }
@@ -546,6 +558,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
                 return true;
             }
+
+            // Clean up invalid ComponentDetails before validation
+            cleanupInvalidPaymentDetails();
 
             double remain = Math.abs(calculatRemainForMultiplePaymentTotal());
             if (remain > 1.0) {
@@ -1132,19 +1147,40 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethodData() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                    // IMPORTANT: Staff uses getStaffCredit() - do NOT confuse with Staff_Welfare
-                    // PaymentMethod.Staff -> PaymentMethodData.getStaffCredit()
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                    // IMPORTANT: Staff_Welfare uses getStaffWelfare() - do NOT confuse with Staff
-                    // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    // Only add the value from the selected payment method for this ComponentDetail
+                    switch (cd.getPaymentMethod()) {
+                        case Cash:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            break;
+                        case Card:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            break;
+                        case Cheque:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            break;
+                        case ewallet:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            break;
+                        case PatientDeposit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            break;
+                        case Slip:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            break;
+                        case Staff:
+                            // IMPORTANT: Staff uses getStaffCredit() - do NOT confuse with Staff_Welfare
+                            // PaymentMethod.Staff -> PaymentMethodData.getStaffCredit()
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            break;
+                        case Staff_Welfare:
+                            // IMPORTANT: Staff_Welfare uses getStaffWelfare() - do NOT confuse with Staff
+                            // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
