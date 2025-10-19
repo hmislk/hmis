@@ -1046,14 +1046,52 @@ public class PharmacyStockTakeController implements Serializable {
         adjustmentBill.setBillTime(now);
         adjustmentBill.setCreatedAt(now);
         adjustmentBill.setCreater(sessionController.getLoggedUser());
-
-        // Generate deptId and insId as per bill number generation strategy
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
-        String insId = billNumberBean.institutionBillNumberGeneratorYearly(dept.getInstitution(), BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
-
-        adjustmentBill.setDeptId(deptId);
-        adjustmentBill.setInsId(insId);
         adjustmentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+
+        // Generate deptId and insId using configurable bill number generation strategy
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        String billId = "";
+
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        }
+
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            if (adjustmentBill.getInsId() == null || adjustmentBill.getInsId().trim().equals("")) {
+                String insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setInsId(insId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (adjustmentBill.getInsId() == null || adjustmentBill.getInsId().trim().equals("")) {
+                if (billId != null && !billId.trim().isEmpty()) {
+                    adjustmentBill.setInsId(billId);
+                }
+            }
+        }
         adjustmentBill.setFromDepartment(dept);
         adjustmentBill.setFromInstitution(dept.getInstitution());
         adjustmentBill.setToDepartment(null);
