@@ -5045,6 +5045,20 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
     }
 
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        int size = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+        ComponentDetail lastEntry = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(size - 1);
+        return cd == lastEntry;
+    }
+
     public double getRemainAmount() {
         return remainAmount;
     }

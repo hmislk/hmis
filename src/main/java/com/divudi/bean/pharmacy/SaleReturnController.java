@@ -1217,4 +1217,24 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         }
     }
 
+    /**
+     * Checks if the given ComponentDetail is the last payment entry in the multiple payment methods list.
+     * This is used to determine which payment fields should be editable in the UI.
+     *
+     * @param cd The ComponentDetail to check
+     * @return true if cd is the last entry, false otherwise
+     */
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        int size = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+        ComponentDetail lastEntry = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(size - 1);
+        return cd == lastEntry;
+    }
+
 }
