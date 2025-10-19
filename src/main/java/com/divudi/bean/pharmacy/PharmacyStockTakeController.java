@@ -103,6 +103,8 @@ public class PharmacyStockTakeController implements Serializable {
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
+    
+    private String comments;
 
     /**
      * Generate stock count bill preview without persisting.
@@ -1515,6 +1517,16 @@ public class PharmacyStockTakeController implements Serializable {
     public List<com.divudi.core.light.common.PharmacySnapshotBillLight> getSnapshotBillRows() {
         return snapshotBillRows;
     }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+    
+    
 
     // DTO for variance report
     public static class VarianceRow implements Serializable {

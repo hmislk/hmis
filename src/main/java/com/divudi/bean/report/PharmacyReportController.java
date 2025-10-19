@@ -3934,6 +3934,25 @@ public class PharmacyReportController implements Serializable {
             jpql.append("  GROUP BY sh2.item) ");
         }
 
+        // CRITICAL FIX: Apply the same filters to outer query to prevent cross-department data leakage
+        // Without these filters, the outer query retrieves ALL StockHistory records matching the subquery IDs
+        // regardless of department/institution, causing records from other departments to appear in the report
+        if (institution != null) {
+            jpql.append("AND sh.institution = :ins ");
+        }
+        if (site != null) {
+            jpql.append("AND sh.department.site = :sit ");
+        }
+        if (department != null) {
+            jpql.append("AND sh.department = :dep ");
+        }
+        if (category != null) {
+            jpql.append("AND sh.item.category = :cat ");
+        }
+        if (amp != null) {
+            jpql.append("AND sh.item = :itm ");
+        }
+
         // Order by item name
         jpql.append("ORDER BY i.name");
 
@@ -4119,6 +4138,25 @@ public class PharmacyReportController implements Serializable {
             jpql.append("  GROUP BY sh2.institution, sh2.itemBatch) ");
         } else {
             jpql.append("  GROUP BY sh2.itemBatch) ");
+        }
+
+        // CRITICAL FIX: Apply the same filters to outer query to prevent cross-department data leakage
+        // Without these filters, the outer query retrieves ALL StockHistory records matching the subquery IDs
+        // regardless of department/institution, causing records from other departments to appear in the report
+        if (institution != null) {
+            jpql.append("AND sh.institution = :ins ");
+        }
+        if (site != null) {
+            jpql.append("AND sh.department.site = :sit ");
+        }
+        if (department != null) {
+            jpql.append("AND sh.department = :dep ");
+        }
+        if (category != null) {
+            jpql.append("AND sh.itemBatch.item.category = :cat ");
+        }
+        if (amp != null) {
+            jpql.append("AND sh.itemBatch.item = :itm ");
         }
 
         // Order by item name
