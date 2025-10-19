@@ -278,6 +278,7 @@
 
                             <p:column headerText="Department" width="12em">
                                 <h:outputText value="#{f.department.name}" />
+                                 <h:outputText value="#{f.pbItem.billItem.id}" />
                             </p:column>
                             <p:column headerText="Category" width="12em">
                                 <h:outputText value="#{empty f.pbItem.billItem.item.amp ? f.pbItem.billItem.item.category.name : f.pbItem.billItem.item.amp.category.name}" />

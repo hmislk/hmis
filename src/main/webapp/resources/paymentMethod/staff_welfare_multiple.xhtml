@@ -11,6 +11,7 @@
         <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" required="true"/>
+        <cc:attribute name="componentDetail" type="com.divudi.core.data.dataStructure.ComponentDetail" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -29,7 +30,8 @@
                         value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}"
                         id="txtVal"
                         styleClass="form-control"
-                        placeholder="Enter amount to pay">
+                        placeholder="Enter amount to pay"
+                        disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
                         <p:ajax
                             event="keyup"
                             process="@this"

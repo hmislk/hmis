@@ -52,9 +52,8 @@ import javax.inject.Named;
  *
  * Separated from TransferIssueController to focus only on request-based issues.
  *
- * @author safrin
  */
-@Named("transferIssueForRequestsController")
+@Named
 @SessionScoped
 public class TransferIssueForRequestsController implements Serializable {
 

@@ -24,17 +24,21 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.Department;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -45,9 +49,8 @@ import javax.inject.Named;
  * Controller for Direct Department Transfer Issues Handles pharmacy transfers
  * issued directly to departments without a prior request
  *
- * @author safrin
  */
-@Named("transferIssueDirectController")
+@Named
 @SessionScoped
 public class TransferIssueDirectController implements Serializable {
 
@@ -57,6 +60,8 @@ public class TransferIssueDirectController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private StockFacade stockFacade;
+    @EJB
+    private DepartmentFacade departmentFacade;
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
@@ -83,25 +88,23 @@ public class TransferIssueDirectController implements Serializable {
     private Stock tmpStock;
     private StockDTO stockDto;
     UserStockContainer userStockContainer;
+    private List<Department> recentToDepartments;
+    private Department toDepartment;
 
     public TransferIssueDirectController() {
+        System.out.println("TransferIssueDirectController CONSTRUCTOR called");
     }
 
     /**
      * Navigation method for direct pharmacy issue
+     *
+     * @return
      */
     public String navigateToDirectPharmacyIssue() {
-        createDirectIssueBillItems();
-        getIssuedBill().setFromDepartment(getSessionController().getDepartment());
-        return "/pharmacy/pharmacy_transfer_issue_direct_department?faces-redirect=true";
-    }
-
-    /**
-     * Creates and initializes a new direct issue transaction
-     */
-    public void createDirectIssueBillItems() {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         makeNull();
+        getIssuedBill();
+        return "/pharmacy/pharmacy_transfer_issue_direct_department?faces-redirect=true";
     }
 
     /**
@@ -181,14 +184,16 @@ public class TransferIssueDirectController implements Serializable {
      * Settles the direct issue transaction
      */
     public void settleDirectIssue() {
-        System.out.println("1 issuedBill = " + issuedBill);
         if (issuedBill.getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
         }
-        System.out.println("2 issuedBill = " + issuedBill);
         if (issuedBill.getFromDepartment() == null) {
             issuedBill.setFromDepartment(sessionController.getDepartment());
+        }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Add Bill Items before issue");
+            return;
         }
         if (Objects.equals(issuedBill.getFromDepartment().getId(),
                 issuedBill.getToDepartment().getId())) {
@@ -199,146 +204,152 @@ public class TransferIssueDirectController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
-        if (getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Please add items");
-            return;
-        }
         if (issuedBill.getComments() == null || issuedBill.getComments().isBlank()) {
             JsfUtil.addErrorMessage("Please add a comment");
             return;
-        }
-        System.out.println("3 issuedBill = " + issuedBill);
-        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
-        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
-        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
-        if (!pharmacyTransferIsByPurchaseRate && !pharmacyTransferIsByCostRate && !pharmacyTransferIsByRetailRate) {
-            pharmacyTransferIsByRetailRate = true;
         }
         for (BillItem bi : getBillItems()) {
             if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getPharmaceuticalBillItem().getQty(), getSessionController().getLoggedUser())) {
                 JsfUtil.addErrorMessage("No adequate stocks for " + bi.getItem().getName());
                 return;
             }
+            if (Math.abs(bi.getQty()) < 0.0001) {
+                JsfUtil.addErrorMessage("All Items need to have a quantity");
+                return;
+            }
         }
-        System.out.println("4 issuedBill = " + issuedBill);
+
+        saveBill();
+        saveBillItems();
+
+        // Reload the bill to ensure all PharmaceuticalBillItems have been persisted with IDs
+        issuedBill = billService.reloadBill(issuedBill.getId());
+
+        updateStocks();
+
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+        if (!pharmacyTransferIsByPurchaseRate && !pharmacyTransferIsByCostRate && !pharmacyTransferIsByRetailRate) {
+            pharmacyTransferIsByRetailRate = true;
+        }
+
+        
+        issuedBill.getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
+
+        double calculatedNetTotal = calculateBillNetTotal();
+        issuedBill.setNetTotal(calculatedNetTotal);
+        issuedBill.setTotal(calculatedNetTotal);
+        billService.createBillFinancialDetailsForPharmacyDirectIssueBill(issuedBill, issuedBill.getBillItems());
+        updateBillFinanceDetailsForDirectIssue(issuedBill, calculatedNetTotal);
+        notificationController.createNotification(issuedBill);
+        getBillFacade().edit(issuedBill);
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        issuedBill = billService.reloadBill(issuedBill.getId());
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Successfully Saved");
+    }
+
+    private void saveBill() {
+        // Only generate deptId if not already set
+        if (issuedBill.getDeptId() == null || issuedBill.getDeptId().isEmpty()) {
+            String deptId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            } else {
+                // Use existing method for backward compatibility
+                if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
+                    deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), issuedBill.getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+                } else {
+                    deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+                }
+            }
+            issuedBill.setDeptId(deptId);
+        }
+
+        // Only generate insId if not already set
+        if (issuedBill.getInsId() == null || issuedBill.getInsId().isEmpty()) {
+            String insId;
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            } else {
+                // Check if department strategy is enabled
+                if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                    insId = issuedBill.getDeptId(); // Use same number as department to avoid consuming counter twice
+                } else {
+                    // Use existing method for backward compatibility
+                    insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+                }
+            }
+            issuedBill.setInsId(insId);
+        }
+        issuedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+        issuedBill.setBillType(BillType.PharmacyTransferIssue);
         if (issuedBill.getId() == null) {
+            issuedBill.setDepartment(sessionController.getDepartment());
+            issuedBill.setInstitution(sessionController.getInstitution());
+            issuedBill.setToInstitution(issuedBill.getToDepartment().getInstitution());
+            issuedBill.setCreater(getSessionController().getLoggedUser());
+            issuedBill.setCreatedAt(Calendar.getInstance().getTime());
             getBillFacade().createAndFlush(issuedBill);
         } else {
             getBillFacade().editAndCommit(issuedBill);
         }
-        if (getBillItems() == null || getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Please Add Bill Items");
-            return;
-        }
-        boolean stockWasNotSufficientToIssueFound = false;
+
+    }
+
+    private void saveBillItems() {
+        // Clear existing items to avoid duplicates
+        issuedBill.getBillItems().clear();
+
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQty(0 - i.getPharmaceuticalBillItem().getQty());
-            if (i.getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
-                continue;
+            i.getPharmaceuticalBillItem().setQty(0 - Math.abs(i.getPharmaceuticalBillItem().getQty()));
+
+            // Ensure bidirectional relationship is properly set
+            if (i.getPharmaceuticalBillItem() != null) {
+                i.getPharmaceuticalBillItem().setBillItem(i);
             }
+
             i.setBill(issuedBill);
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-            System.out.println("6 issuedBill = " + issuedBill);
-            System.out.println("7 issuedBill = " + issuedBill);
-            //Checking User Stock Entity
-            if (!userStockController.isStockAvailable(i.getPharmaceuticalBillItem().getStock(), i.getPharmaceuticalBillItem().getQty(), getSessionController().getLoggedUser())) {
-                i.setQty(0.0);
-                i.setRetired(true);
-                stockWasNotSufficientToIssueFound = true;
-                continue;
-            }
             if (i.getId() == null) {
-                getBillItemFacade().createAndFlush(i);
-            } else {
-                getBillItemFacade().editAndCommit(i);
+                i.setCreatedAt(Calendar.getInstance().getTime());
+                i.setCreater(getSessionController().getLoggedUser());
             }
+            issuedBill.getBillItems().add(i);
+        }
+        // Use editAndCommit to flush changes to database before updateStocks()
+        billFacade.editAndCommit(issuedBill);
+    }
+
+    private void updateStocks() {
+        boolean stockWasNotSufficientToIssueFound = false;
+        for (BillItem i : getIssuedBill().getBillItems()) {
             boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
                     Math.abs(i.getPharmaceuticalBillItem().getQty()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
             if (returnFlag) {
                 Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
-                        Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), issuedBill.getToStaff());
+                        Math.abs(i.getPharmaceuticalBillItem().getQty()), issuedBill.getToStaff());
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
             } else {
                 i.setQty(0.0);
-                i.setRetired(true);
+                i.getPharmaceuticalBillItem().setQty(0.0);
                 stockWasNotSufficientToIssueFound = true;
             }
-            getBillItemFacade().editAndCommit(i);
         }
-
         if (stockWasNotSufficientToIssueFound) {
             JsfUtil.addErrorMessage("The Current Stock was not sufficient to issue some items. Other items issued except those items. Please check the bill and issue the missing items separately in a new issue.");
             calculateBillTotalsForTransferIssue(issuedBill);
         }
-        System.out.println("9 issuedBill = " + issuedBill);
-        Long issuedBillId = issuedBill.getId();
-        System.out.println("10 issuedBill = " + issuedBill);
-        issuedBill = billService.reloadBill(issuedBillId);
-        System.out.println("11 issuedBill = " + issuedBill);
-        issuedBill.getBillItems().forEach(this::updateBillItemRateAndValueAndSaveForDirectIssue);
-        System.out.println("12 issuedBill = " + issuedBill);
-        // Handle Department ID generation
-        String deptId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        } else {
-            // Use existing method for backward compatibility
-            if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
-                deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), issuedBill.getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
-            } else {
-                deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
-            }
-        }
-
-        // Handle Institution ID generation
-        String insId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        } else {
-            // Check if department strategy is enabled
-            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
-                insId = deptId; // Use same number as department to avoid consuming counter twice
-            } else {
-                // Use existing method for backward compatibility
-                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
-            }
-        }
-        issuedBill.setInsId(insId);
-        issuedBill.setDeptId(deptId);
-
-        issuedBill.setDepartment(issuedBill.getFromDepartment());
-        issuedBill.setToInstitution(issuedBill.getToDepartment().getInstitution());
-        issuedBill.setCreater(getSessionController().getLoggedUser());
-        issuedBill.setCreatedAt(Calendar.getInstance().getTime());
-        double calculatedNetTotal = calculateBillNetTotal();
-        issuedBill.setNetTotal(calculatedNetTotal);
-        issuedBill.setTotal(calculatedNetTotal);
-        issuedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        billFacade.editAndCommit(issuedBill);
-        billService.createBillFinancialDetailsForPharmacyDirectIssueBill(issuedBill, getBillItems());
-        updateBillFinanceDetailsForDirectIssue(issuedBill, calculatedNetTotal);
-        notificationController.createNotification(issuedBill);
-        System.out.println("13 issuedBill = " + issuedBill);
-        getBillFacade().edit(issuedBill);
-        System.out.println("14 issuedBill = " + issuedBill);
-//        Bill b = getBillFacade().find(issuedBill.getId());
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-//        issuedBill = b;
-        issuedBill = billService.reloadBill(issuedBillId);
-        printPreview = true;
-
-        JsfUtil.addSuccessMessage("Successfully Saved");
     }
 
     /**
@@ -372,6 +383,70 @@ public class TransferIssueDirectController implements Serializable {
         tmpStock = null;
         stockDto = null;
         qty = null;
+        toDepartment = null;
+    }
+
+    /**
+     * Changes the selected department and resets bill items
+     */
+    public void changeDepartment() {
+        makeNull();
+    }
+
+    /**
+     * Processes the transfer issue after department selection
+     *
+     * @return
+     */
+    public String processTransferIssue() {
+        System.out.println("processTransferIssue");
+        System.out.println("getToDepartment() = " + getToDepartment());
+        if (getToDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select a Department");
+            return null;
+        }
+        if (Objects.equals(getToDepartment(), sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+            return null;
+        }
+        System.out.println("getIssuedBill() = " + getIssuedBill());
+        getIssuedBill().setToDepartment(getToDepartment());
+        System.out.println("getIssuedBill().getToDepartment() = " + getIssuedBill().getToDepartment());
+        getIssuedBill().setToInstitution(getToDepartment().getInstitution());
+        getIssuedBill().setFromInstitution(sessionController.getInstitution());
+        getIssuedBill().setFromDepartment(sessionController.getDepartment());
+        return null;
+    }
+
+    /**
+     * Gets list of recent departments that have received direct issues
+     */
+    public List<Department> getRecentToDepartments() {
+        if (recentToDepartments == null) {
+            String jpql = "select distinct b.toDepartment from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTypeAtomic=:bt "
+                    + " and b.fromDepartment=:fd "
+                    + " order by b.id desc";
+            Map<String, Object> m = new HashMap<>();
+            m.put("bt", BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            m.put("fd", sessionController.getDepartment());
+            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+        }
+        return recentToDepartments;
+    }
+
+    /**
+     * Selects a department from recent departments and processes the transfer
+     * issue
+     */
+    public String selectFromRecentDepartment(Department d) {
+        if (d == null) {
+            JsfUtil.addErrorMessage("System error");
+            return null;
+        }
+        setToDepartment(d);
+        return processTransferIssue();
     }
 
     // ------------------------------------------------------------------
@@ -433,7 +508,6 @@ public class TransferIssueDirectController implements Serializable {
      */
     private void updateBillItemRateAndValueAndSaveForDirectIssue(BillItem b) {
         updateBillItemRateAndValueForDirectIssue(b);
-        getBillItemFacade().edit(b);
     }
 
     /**
@@ -664,4 +738,13 @@ public class TransferIssueDirectController implements Serializable {
     public PharmacyController getPharmacyController() {
         return pharmacyController;
     }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+
 }
