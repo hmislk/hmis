@@ -313,46 +313,52 @@ public class TransferRequestController implements Serializable {
 
         newApprovedBill.setBillDate(new Date());
         newApprovedBill.setBillTime(new Date());
-        boolean useDeptInsFormat = configOptionApplicationController.getBooleanValueByKey(
-                "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
-        boolean useInsFormat = configOptionApplicationController.getBooleanValueByKey(
-                "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number", false);
 
-        String legacyRequestId = null;
-        if (!useDeptInsFormat && !useInsFormat) {
-            legacyRequestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-                    newApprovedBill.getDepartment(),
-                    newApprovedBill.getToDepartment(),
-                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        // Only generate bill numbers if they are blank (preserve pre-bill numbers)
+        if (newApprovedBill.getDeptId() == null || newApprovedBill.getDeptId().trim().isEmpty()
+                || newApprovedBill.getInsId() == null || newApprovedBill.getInsId().trim().isEmpty()) {
+
+            boolean useDeptInsFormat = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+            boolean useInsFormat = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+            String legacyRequestId = null;
+            if (!useDeptInsFormat && !useInsFormat) {
+                legacyRequestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
+                        newApprovedBill.getDepartment(),
+                        newApprovedBill.getToDepartment(),
+                        BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            }
+
+            String deptId;
+            if (useDeptInsFormat) {
+                deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                        newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else if (configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                        newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else if (useInsFormat) {
+                deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else {
+                deptId = legacyRequestId;
+            }
+
+            String insId;
+            if (useInsFormat) {
+                insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else if (useDeptInsFormat) {
+                insId = deptId;
+            } else {
+                insId = legacyRequestId;
+            }
+
+            newApprovedBill.setDeptId(deptId);
+            newApprovedBill.setInsId(insId);
         }
-
-        String deptId;
-        if (useDeptInsFormat) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
-                    newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        } else if (configOptionApplicationController.getBooleanValueByKey(
-                "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
-                    newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        } else if (useInsFormat) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        } else {
-            deptId = legacyRequestId;
-        }
-
-        String insId;
-        if (useInsFormat) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    newApprovedBill.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        } else if (useDeptInsFormat) {
-            insId = deptId;
-        } else {
-            insId = legacyRequestId;
-        }
-
-        newApprovedBill.setDeptId(deptId);
-        newApprovedBill.setInsId(insId);
         newApprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         newApprovedBill.setBillType(BillType.PharmacyTransferRequest);
         newApprovedBill.setApproveAt(new Date());
