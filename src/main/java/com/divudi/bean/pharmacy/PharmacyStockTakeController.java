@@ -103,7 +103,7 @@ public class PharmacyStockTakeController implements Serializable {
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
-    
+
     private String comments;
 
     /**
@@ -142,6 +142,12 @@ public class PharmacyStockTakeController implements Serializable {
         for (Stock s : stocks) {
             BillItem bi = new BillItem();
             bi.setBill(snapshotBill);
+            if (s.getItemBatch() == null) {
+                continue;
+            }
+            if (s.getItemBatch().getItem() == null) {
+                continue;
+            }
             bi.setItem(s.getItemBatch().getItem());
             // Cache display fields to avoid lazy loading issues in preview pages
             if (s.getItemBatch() != null && s.getItemBatch().getItem() != null) {
@@ -577,7 +583,9 @@ public class PharmacyStockTakeController implements Serializable {
         }
         // Persist items
         for (BillItem bi : physicalCountBill.getBillItems()) {
-            if (bi == null) continue;
+            if (bi == null) {
+                continue;
+            }
             bi.setBill(physicalCountBill);
             if (bi.getPharmaceuticalBillItem() != null) {
                 bi.getPharmaceuticalBillItem().setBillItem(bi);
@@ -602,15 +610,19 @@ public class PharmacyStockTakeController implements Serializable {
         params.put("bt", BillType.PharmacyPhysicalCountBill);
         j.append(" order by b.createdAt desc");
         @SuppressWarnings("unchecked")
-        List<com.divudi.core.light.common.PharmacyPhysicalCountLight> rows =
-                (List<com.divudi.core.light.common.PharmacyPhysicalCountLight>) billFacade.findLightsByJpql(j.toString(), params, javax.persistence.TemporalType.TIMESTAMP);
+        List<com.divudi.core.light.common.PharmacyPhysicalCountLight> rows
+                = (List<com.divudi.core.light.common.PharmacyPhysicalCountLight>) billFacade.findLightsByJpql(j.toString(), params, javax.persistence.TemporalType.TIMESTAMP);
         pendingPhysicalCounts = rows == null ? new java.util.ArrayList<>() : rows;
     }
 
     public String viewPhysicalCountById(Long billId) {
-        if (billId == null) return null;
+        if (billId == null) {
+            return null;
+        }
         Bill b = billFacade.find(billId);
-        if (b == null) return null;
+        if (b == null) {
+            return null;
+        }
         this.physicalCountBill = b;
         this.snapshotBill = b.getReferenceBill();
         this.institution = b.getInstitution();
@@ -1453,7 +1465,7 @@ public class PharmacyStockTakeController implements Serializable {
     public void startApprovePhysicalCountAsync() {
         LOGGER.log(Level.INFO, "[StockTake] startApprovePhysicalCountAsync() called. pcBillId={0}, items={1}",
                 new Object[]{physicalCountBill != null ? physicalCountBill.getId() : null,
-                        physicalCountBill != null && physicalCountBill.getBillItems() != null ? physicalCountBill.getBillItems().size() : 0});
+                    physicalCountBill != null && physicalCountBill.getBillItems() != null ? physicalCountBill.getBillItems().size() : 0});
         if (physicalCountBill == null || physicalCountBill.getBillItems() == null || physicalCountBill.getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No physical count available");
             LOGGER.log(Level.WARNING, "[StockTake] Async approval aborted. No physical count or items.");
@@ -1526,8 +1538,6 @@ public class PharmacyStockTakeController implements Serializable {
     public void setComments(String comments) {
         this.comments = comments;
     }
-    
-    
 
     // DTO for variance report
     public static class VarianceRow implements Serializable {
