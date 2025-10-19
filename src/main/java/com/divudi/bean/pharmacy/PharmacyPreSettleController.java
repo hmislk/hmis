@@ -237,6 +237,19 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             .removeIf(cd -> cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null);
     }
 
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        int size = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+        ComponentDetail lastEntry = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(size - 1);
+        return cd == lastEntry;
+    }
+
     public void updateTotals() {
         calculateAllRates();
     }
@@ -1147,6 +1160,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (cd == null) {
+                    continue;
+                }
                 if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
                     // Only add the value from the selected payment method for this ComponentDetail
                     switch (cd.getPaymentMethod()) {
@@ -1177,6 +1193,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             // IMPORTANT: Staff_Welfare uses getStaffWelfare() - do NOT confuse with Staff
                             // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
                             multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        case Credit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
                             break;
                         default:
                             break;

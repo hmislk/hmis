@@ -432,6 +432,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (cd == null) {
+                    continue;
+                }
                 if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
                     // Only add the value from the selected payment method for this ComponentDetail
                     switch (cd.getPaymentMethod()) {
@@ -458,6 +461,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                             break;
                         case Staff_Welfare:
                             multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        case Credit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
                             break;
                         default:
                             break;
@@ -555,6 +564,19 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         // Remove ComponentDetails with null paymentMethodData or null paymentMethod
         paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()
             .removeIf(cd -> cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null);
+    }
+
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        int size = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+        ComponentDetail lastEntry = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(size - 1);
+        return cd == lastEntry;
     }
 
     public double getOldQty(BillItem bItem) {

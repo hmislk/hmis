@@ -89,31 +89,31 @@
 
                     <h:panelGroup layout="block" class="p-2" id="paymentDetails">
                         <h:panelGroup id="cash" rendered="#{pm.paymentMethod eq 'Cash'}"  layout="block">
-                            <pa:cash_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:cash_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="creditCard" rendered="#{pm.paymentMethod eq 'Card'}" layout="block">
-                            <pa:creditCard_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:creditCard_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="eWallet"  rendered="#{pm.paymentMethod eq 'ewallet'}"  layout="block">
-                            <pa:ewallet_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:ewallet_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="cheque"  rendered="#{pm.paymentMethod eq 'Cheque'}"  layout="block">
-                            <pa:cheque_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:cheque_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}"  layout="block">
-                            <pa:slip_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:slip_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="staffCredit"  rendered="#{pm.paymentMethod eq 'Staff'}"  layout="block">
-                            <pa:staff_credit_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:staff_credit_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block">
-                            <pa:patient_deposit_with_paid_value_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:patient_deposit_with_paid_value_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="Staff_Welfare" rendered="#{pm.paymentMethod eq 'Staff_Welfare'}" layout="block">
-                            <pa:staff_welfare_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:staff_welfare_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                         <h:panelGroup id="online_settlement" rendered="#{pm.paymentMethod eq 'OnlineSettlement'}" layout="block">
-                            <pa:online_settlement_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}"/>
+                            <pa:online_settlement_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                     </h:panelGroup>
                 </p:column>
