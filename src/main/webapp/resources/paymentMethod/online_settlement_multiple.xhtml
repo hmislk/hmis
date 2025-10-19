@@ -25,7 +25,8 @@
                     value="#{cc.attrs.paymentMethodData.onlineSettlement.totalValue}"
                     id="txtVal"
                     styleClass="form-control"
-                    style="width: 150px;">
+                    style="width: 150px;"
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
                     <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
