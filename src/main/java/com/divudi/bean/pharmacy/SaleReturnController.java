@@ -148,14 +148,6 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             }
         } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER) {
             paymentBill = bill;
-            if (paymentBill.getBillTypeAtomic() == null) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
-            if (paymentBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER) {
-                JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
-                return null;
-            }
         } else {
             JsfUtil.addErrorMessage("Programming Error. Not a suitable bill type atomic. Inform the system administrator.");
             return null;
@@ -220,7 +212,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
         double remainingQty = getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem());
         if (tmp.getQty() > remainingQty) {
-            tmp.setQty(remainingQty);
+            tmp.setQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than the remaining quanty to return. The returning qtantity was set to Remaining Quantity.");
         }
 
