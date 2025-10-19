@@ -395,6 +395,20 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         }
     }
 
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        int size = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+        ComponentDetail lastEntry = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(size - 1);
+        return cd == lastEntry;
+    }
+
     public double getOldQty(BillItem bItem) {
         String sql = "Select b.qty From BillItem b where b.retired=false and b.bill=:b and b=:itm";
         HashMap hm = new HashMap();

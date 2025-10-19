@@ -2515,6 +2515,20 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
     }
 
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        int size = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+        ComponentDetail lastEntry = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(size - 1);
+        return cd == lastEntry;
+    }
+
     private boolean errorCheck() {
         if (getLstBillEntries().isEmpty()) {
             JsfUtil.addErrorMessage("No Items are added to the bill to settle");
