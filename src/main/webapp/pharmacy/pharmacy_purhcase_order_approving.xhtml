@@ -32,7 +32,13 @@
                             </p:commandButton>
                         </div>
                     </f:facet>
+
                     <p:panel class="mb-2" id="po">
+                        <div class="row">
+                            <div class="col-12" >
+                                <p:messages id="pageMessages" ></p:messages>
+                            </div>
+                        </div>
                         <div class="row">
 
                             <div class="col-10" >
@@ -211,7 +217,7 @@
                                     <p:outputLabel 
                                         class="form-control"
                                         value="#{purchaseOrderController.requestedBill.comments}"/>
-                                    
+
                                     <p:outputLabel 
                                         value="Approve Comments"
                                         class="form-label mt-1"/>

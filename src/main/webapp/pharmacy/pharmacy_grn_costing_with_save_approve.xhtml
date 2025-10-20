@@ -145,21 +145,21 @@
                                         value="#{bi.referanceBillItem.billItemFinanceDetails.freeQuantity}"/>
                                 </p:column> 
 
-                                <p:column 
+                                <p:column
                                     width="6em"
-                                    headerText="Receiving Qty" 
+                                    headerText="Receiving Qty"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
-                                    <p:inputText 
+                                    <p:inputText
                                         id="txtQty"
                                         onfocus="this.select();"
-                                        autocomplete="off" 
+                                        autocomplete="off"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.quantity}" >
-                                        <f:ajax 
-                                            event="blur" 
-                                            execute="txtQty"
-                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
-                                            listener="#{grnCostingController.qtyChangedListner(bi)}"></f:ajax>
+                                        <p:ajax
+                                            event="blur"
+                                            process="txtQty"
+                                            update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} @this :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                            listener="#{grnCostingController.qtyChangedListner(bi)}"></p:ajax>
                                     </p:inputText>
                                 </p:column>  
 
@@ -168,18 +168,18 @@
                                 <p:column
                                     width="6em"
                                     headerText="Received Free Qty"
-                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">   
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
-                                        autocomplete="off" 
+                                        autocomplete="off"
                                         class="text-end text-primary w-100"
                                         onfocus="this.select();"
                                         value="#{bi.billItemFinanceDetails.freeQuantity}"
                                         id="freeQty" >
-                                        <f:ajax 
-                                            event="blur" 
-                                            execute="freeQty" 
-                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} profMargin :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
-                                            listener="#{grnCostingController.freeQtyChangedListner(bi)}"></f:ajax>
+                                        <p:ajax
+                                            event="blur"
+                                            process="freeQty"
+                                            update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} profMargin :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} @this :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                            listener="#{grnCostingController.freeQtyChangedListner(bi)}"></p:ajax>
                                     </p:inputText>
                                 </p:column> 
                                 <p:column
