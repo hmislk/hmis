@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -305,6 +306,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
+
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            if (qty != null && qty.doubleValue() % 1 != 0) {
+                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+                calculateItemTotals(bi);
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         // Recalculate item totals when quantity changes
         calculateItemTotals(bi);
     }
@@ -319,6 +332,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         if (f.getFreeQuantity() == null) {
             f.setFreeQuantity(BigDecimal.ZERO);
+        }
+
+        // Validate integer-only free quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            BigDecimal freeQty = f.getFreeQuantity();
+            if (freeQty != null && freeQty.doubleValue() % 1 != 0) {
+                f.setFreeQuantity(BigDecimal.ZERO);
+                calculateItemTotals(bi);
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
         }
 
         // Recalculate item totals when free quantity changes
@@ -407,6 +431,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     @Inject
     private PharmacyController pharmacyController;
     /**

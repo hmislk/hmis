@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
@@ -86,6 +87,8 @@ public class PurchaseOrderRequestController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     EnumController enumController;
+    @Inject
+    ConfigOptionController configOptionController;
 
     private Bill currentBill;
     private BillItem currentBillItem;
@@ -253,6 +256,30 @@ public class PurchaseOrderRequestController implements Serializable {
     private PharmacyController pharmacyController;
 
     public void onEdit(BillItem bi) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+
+            // Check quantity for decimal values
+            if (qty != null && qty.doubleValue() % 1 != 0) {
+                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+                calculateLineValues(bi);
+                calculateBillTotals();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+
+            // Check free quantity for decimal values
+            if (freeQty != null && freeQty.doubleValue() % 1 != 0) {
+                bi.getBillItemFinanceDetails().setFreeQuantity(BigDecimal.ZERO);
+                calculateLineValues(bi);
+                calculateBillTotals();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         calculateLineValues(bi);
         calculateBillTotals();
     }

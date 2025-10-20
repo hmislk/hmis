@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -92,6 +93,8 @@ public class GrnController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     /////////////////
     private Institution dealor;
     private Bill approveBill;
@@ -1298,6 +1301,27 @@ public class GrnController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            // Check quantity for decimal values
+            if (tmp.getTmpQty() % 1 != 0) {
+                tmp.setTmpQty(0.0);
+                calGrossTotal();
+                calDifference();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+
+            // Check free quantity for decimal values
+            if (tmp.getTmpFreeQty() % 1 != 0) {
+                tmp.setTmpFreeQty(0.0);
+                calGrossTotal();
+                calDifference();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
 
