@@ -109,14 +109,15 @@
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
                                             <f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />
-                                            <p:ajax 
+                                            <p:ajax
                                                 event="blur"
-                                                process="@this" 
+                                                process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                                 txtRetailValue txtCostValue
-                                                txtPurchaseValue txtUnitsPerPack txtPackOrUnit
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                                txtPurchaseValue txtUnitsPerPack txtPackOrUnit @this
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
+                                                :#{p:resolveFirstComponentWithId('msg', view).clientId}" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -130,11 +131,12 @@
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.freeQuantity}">
                                             <f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />
-                                            <p:ajax 
+                                            <p:ajax
                                                 event="blur"
                                                 process="@this"
-                                                update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                                update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue @this
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
+                                                :#{p:resolveFirstComponentWithId('msg', view).clientId}"
                                                 listener="#{pharmacyDirectPurchaseController.onFreeQuantityChange}" />
                                         </p:inputText>
                                     </div>
