@@ -273,6 +273,12 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number", false);
 
+        // Bill-type-specific numbering strategies for Stock Adjustments (SA)
+        getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        getBooleanValueByKey("Institution Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
         // Bill Number Suffix Configuration Options - Default suffixes for different bill types
         // These provide default values when bill number suffix configurations are empty
         getShortTextValueByKey("Bill Number Suffix for Purchase Order Request", "POR");

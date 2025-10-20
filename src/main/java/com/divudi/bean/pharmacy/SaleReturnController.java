@@ -118,6 +118,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         List<Payment> originalPayments;
         Bill paymentBill = null;
+
+        //PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
         if (bill.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
             return null;
@@ -144,6 +146,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 JsfUtil.addErrorMessage("Programming Error. Inform the system administrator.");
                 return null;
             }
+        } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER) {
+            paymentBill = bill;
         } else {
             JsfUtil.addErrorMessage("Programming Error. Not a suitable bill type atomic. Inform the system administrator.");
             return null;
@@ -208,7 +212,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
         double remainingQty = getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem());
         if (tmp.getQty() > remainingQty) {
-            tmp.setQty(remainingQty);
+            tmp.setQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than the remaining quanty to return. The returning qtantity was set to Remaining Quantity.");
         }
 
@@ -606,26 +610,28 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         if (null == originalBill.getBillTypeAtomic()) {
             JsfUtil.addErrorMessage("Data Flow Error");
             return;
-        } else switch (originalBill.getBillTypeAtomic()) {
-            case PHARMACY_RETAIL_SALE:
-                saleBill = originalBill;
-                salePreBill = originalBill.getReferenceBill();
-                break;
-            case PHARMACY_RETAIL_SALE_PRE:
-                saleBill = originalBill.getReferenceBill();
-                salePreBill = originalBill;
-                break;
-            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
-                saleBill = originalBill;
-                salePreBill = originalBill.getReferenceBill();
-                break;
-            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
-                saleBill = originalBill.getReferenceBill();
-                salePreBill = originalBill;
-                break;
-            default:
-                JsfUtil.addErrorMessage("Data Flow Error");
-                return;
+        } else {
+            switch (originalBill.getBillTypeAtomic()) {
+                case PHARMACY_RETAIL_SALE:
+                    saleBill = originalBill;
+                    salePreBill = originalBill.getReferenceBill();
+                    break;
+                case PHARMACY_RETAIL_SALE_PRE:
+                    saleBill = originalBill.getReferenceBill();
+                    salePreBill = originalBill;
+                    break;
+                case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                    saleBill = originalBill;
+                    salePreBill = originalBill.getReferenceBill();
+                    break;
+                case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                    saleBill = originalBill.getReferenceBill();
+                    salePreBill = originalBill;
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("Data Flow Error");
+                    return;
+            }
         }
 
         // Calculate the absolute value of the return amount
@@ -1215,6 +1221,29 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
             }
         }
+    }
+
+    /**
+     * Checks if the given ComponentDetail is the last payment entry in the
+     * multiple payment methods list. This is used to determine which payment
+     * fields should be editable in the UI.
+     *
+     * @param cd The ComponentDetail to check
+     * @return true if cd is the last entry, false otherwise
+     */
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null
+                || paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
 }

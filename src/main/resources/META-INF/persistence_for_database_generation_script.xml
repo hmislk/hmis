@@ -17,7 +17,7 @@
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
             <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
             <!-- Use an environment-agnostic path for the application location -->
-            <property name="eclipselink.application-location" value="/tmp/hmis-ddl"/>
+            <property name="eclipselink.application-location" value="/home/buddhika/bin"/>
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
 
@@ -33,7 +33,7 @@
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
             <property name="eclipselink.ddl-generation.output-mode" value="sql-script"/>
             <!-- Use an environment-agnostic path for the application location -->
-            <property name="eclipselink.application-location" value="/tmp/hmis-ddl"/>
+            <property name="eclipselink.application-location" value="/home/buddhika/bin"/>
             <!-- After generation, set ddl-generation to 'none' -->
             <!-- <property name="eclipselink.ddl-generation" value="none"/> -->
         </properties>
