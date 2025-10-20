@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.store.StoreIssueController;
@@ -127,6 +128,8 @@ public class PharmacyIssueController implements Serializable {
     private BillNumberFacade billNumberFacade;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ConfigOptionController configOptionController;
     @EJB
     private PharmacyCostingService pharmacyCostingService;
     @Inject
@@ -1118,10 +1121,29 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            if (qty != null && qty % 1 != 0) {
+                qty = 0.0;
+                calculateBillItem();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
         calculateBillItem();
     }
 
     public void calculateBillItemAtQtyChange(AjaxBehaviorEvent event) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            if (qty != null && qty % 1 != 0) {
+                qty = 0.0;
+                performBillItemCalculation();
+                calTotal();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
         performBillItemCalculation();
         calTotal();
     }
