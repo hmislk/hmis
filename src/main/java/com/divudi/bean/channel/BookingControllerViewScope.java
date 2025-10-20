@@ -3593,7 +3593,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addItemToBooking() {
-        System.out.println("addItemToBooking");
+       
         if (itemToAddToBooking == null) {
             JsfUtil.addErrorMessage("Item to add to booking");
             return;

@@ -65,7 +65,7 @@
 
 
                             </p:selectOneMenu>
-               
+
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.fetchScanningSessionForIncome()}" ajax="false" ></p:commandButton>
@@ -133,7 +133,7 @@
                                 </h:outputLabel>
                             </f:facet>
 
-                            <p:column  headerText="Serial No" style=" text-align: center;">
+                            <p:column  headerText="Serial No" style=" text-align: center;" width="2em">
                                 <h:outputText value="#{n+1}">
 
                                 </h:outputText>
@@ -173,16 +173,45 @@
                                 <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
                             </p:column>
 
-                            <p:column headerText="Bill Type" style=" text-align: center;">
+                            <p:column headerText="Bill Type" width="5em" style=" text-align: center;">
                                 <h:outputText value="#{row.bill.billType}">
 
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
+                            <p:column headerText="Patient" width="6em" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
                                 <h:outputText value="#{row.bill.patient.person.name}">
 
                                 </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Doctor" width="8em" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.singleBillItem.item.staff.person.nameWithTitle}">
+                                <h:outputText value="#{row.bill.singleBillItem.item.staff.person.nameWithTitle}">
+
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Session" width="8em" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.singleBillSession.sessionInstance.name}">
+                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.name} / ">
+
+                                </h:outputText>
+                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionDate}">
+                                    <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.shortDateFormat} - "/>
+                                </h:outputText>
+                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionTime}">
+                                    <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column width="9em" headerText="Item" style=" text-align: center;">
+                                <ui:repeat value="#{row.bill.billItems}" var="i">
+
+                                    <p:outputLabel value="#{i.item.name}/ " />
+                                    <br/>
+
+                                </ui:repeat>
                             </p:column>
 
                             <p:column headerText="Cashier" style=" text-align: center;">
