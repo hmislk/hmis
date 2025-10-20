@@ -108,8 +108,8 @@
                                     rowsPerPageTemplate="5,10,25,50"
                                     >
 
-                                    <p:column headerText="Bill No*">
-                                        <h:outputLabel value="#{r.bill.deptId}" />
+                                    <p:column headerText="Request No" width="16em;">
+                                        <h:outputLabel value="#{r.requestNo}" />
                                     </p:column>
 
                                     <p:column headerText="Request From">
@@ -125,10 +125,14 @@
                                     <p:column headerText="Request by">
                                         <h:outputLabel value="#{r.creator.webUserPerson.name}" />
                                     </p:column>
+                                    
+                                    <p:column headerText="Bill No*">
+                                        <h:outputLabel value="#{r.bill.deptId}" />
+                                    </p:column>
 
                                     <p:column headerText="Request Type" style="width: 12em;" >
                                         <h:panelGroup id="remark">
-                                            <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" size="large" severity="danger" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'ITEM_REFUND'}" value="#{r.requestType.displayName}"  severity="warning" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'EDIT_REQUEST'}" value="#{r.requestType.displayName}"></p:badge>
                                         </h:panelGroup>
@@ -136,12 +140,11 @@
 
                                     <p:column headerText="Status" style="width: 8em;">
                                         <p:badge 
-                                            size="large"
                                             value="#{r.status.label}">
                                         </p:badge>
                                     </p:column>
 
-                                    <p:column headerText="Actions" >
+                                    <p:column headerText="Actions" style="width: 260px;" >
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 icon="fa fa-check-circle"
