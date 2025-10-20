@@ -1,5 +1,6 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.Privileges;
@@ -67,6 +68,8 @@ public class PharmacyStockTakeController implements Serializable {
     private SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     private StockFacade stockFacade;

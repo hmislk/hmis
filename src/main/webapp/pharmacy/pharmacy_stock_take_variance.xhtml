@@ -46,12 +46,14 @@
                                         <p:separator/>
 
 
-                                        <p:dataTable id="tblVariance" value="#{pharmacyStockTakeController.varianceRows}" var="r"
-                                                     rows="25" paginator="true"
-                                                     paginatorPosition="both"
-                                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                     rowsPerPageTemplate="10,25,50,100"
-                                                     styleClass="ui-datatable-striped ui-datatable-gridlines">
+                                        <p:dataTable 
+                                            id="tblVariance" value="#{pharmacyStockTakeController.varianceRows}" var="r"
+                                            rows="25" 
+                                            paginator="true"
+                                            paginatorPosition="both"
+                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                            rowsPerPageTemplate="10,25,50,100"
+                                            styleClass="ui-datatable-striped ui-datatable-gridlines">
                                             <p:column headerText="BillItem ID" style="width: 120px; text-align:right;">
                                                 <h:outputText value="#{r.billItemId}"/>
                                             </p:column>
@@ -64,14 +66,33 @@
                                             <p:column headerText="Batch" style="width: 120px; text-align:center;">
                                                 <h:outputText value="#{r.batch}"/>
                                             </p:column>
+                                            <p:column headerText="Purchase Rate" style="width: 120px; text-align:right;">
+                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Retail Rate" style="width: 120px; text-align:right;">
+                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Cost Rate" style="width: 120px; text-align:right;">
+                                                <h:outputText value="#{r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </p:column>
                                             <p:column headerText="Initial Stock" style="width: 120px; text-align:right;">
-
                                                 <h:outputText value="#{r.initialQty}">
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Sum of Variances" style="width: 150px; text-align:right;">
                                                 <h:outputText value="#{r.sumVariance}">
+                                                    <f:convertNumber integerOnly="true"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Sum of Variances at cost rate" style="width: 150px; text-align:right;">
+                                                <h:outputText value="#{r.sumVariance*r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>
                                             </p:column>
