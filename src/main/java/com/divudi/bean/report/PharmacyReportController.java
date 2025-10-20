@@ -80,6 +80,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -1905,6 +1906,12 @@ public class PharmacyReportController implements Serializable {
             negativeVarianceMap = new HashMap<>();
 
             for (StockCorrectionRow row : stockCorrectionRows) {
+                // Use precise calculation for old/new value
+                BigDecimal preciseOldValue = calculatePreciseValue(row.getBeforeAdjustment(), row.getQuantity().doubleValue());
+                row.setPreciseOldValue(preciseOldValue);
+                BigDecimal preciseNewValue = calculatePreciseValue(row.getAfterAdjustment(), row.getQuantity().doubleValue());
+                row.setPreciseNewValue(preciseNewValue);
+
                 // Calculate variance
                 Double beforeValue = row.getBeforeAdjustment();
                 Double afterValue = row.getAfterAdjustment();
@@ -1932,6 +1939,17 @@ public class PharmacyReportController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error creating Stock Correction Report");
         }
+    }
+
+    public BigDecimal calculatePreciseValue(Double rate, Double quantity) {
+        if (rate == null || quantity == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal bdRate = BigDecimal.valueOf(rate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal bdQuantity = BigDecimal.valueOf(quantity);
+
+        return bdRate.multiply(bdQuantity).setScale(2, RoundingMode.HALF_UP);
     }
 
     public Double getTotalStockCorrectionQty() {
@@ -1968,10 +1986,10 @@ public class PharmacyReportController implements Serializable {
         }
         return stockCorrectionRows.stream()
                 .mapToDouble(row -> {
-                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
-                    Double beforeAdj = row.getBeforeAdjustment();
-                    double rate = beforeAdj != null ? beforeAdj : 0.0;
-                    return qty * rate;
+                    if (row.getPreciseOldValue() != null) {
+                        return row.getPreciseOldValue().doubleValue();
+                    }
+                    return 0.0;
                 })
                 .sum();
     }
@@ -1982,10 +2000,10 @@ public class PharmacyReportController implements Serializable {
         }
         return stockCorrectionRows.stream()
                 .mapToDouble(row -> {
-                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
-                    Double afterAdj = row.getAfterAdjustment();
-                    double rate = afterAdj != null ? afterAdj : 0.0;
-                    return qty * rate;
+                    if (row.getPreciseNewValue() != null) {
+                        return row.getPreciseNewValue().doubleValue();
+                    }
+                    return 0.0;
                 })
                 .sum();
     }
@@ -4964,7 +4982,6 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    
     public Map<String, Double> retrievePurchaseAndCostValues(List<BillTypeAtomic> billTypeValue, List<PaymentMethod> paymentMethods) {
         try {
 
@@ -5028,7 +5045,7 @@ public class PharmacyReportController implements Serializable {
             return errorResult;
         }
     }
-    
+
     public void processCostOfGoodSoldReport() {
 
         cogsRows.clear();
