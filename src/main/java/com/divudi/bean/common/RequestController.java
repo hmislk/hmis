@@ -383,6 +383,16 @@ public class RequestController implements Serializable {
         currentRequest.setCancellationReason(comment);
         currentRequest.setStatus(RequestStatus.CANCELLED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
+        
+        //Update Batch Bill
+        currentRequest.getBill().setCurrentRequest(null);
+        billFacade.edit(currentRequest.getBill());
+
+        //Update Induvidual Bills of Batch Bil
+        for (Bill b : billController.billsOfBatchBill(currentRequest.getBill())) {
+            b.setCurrentRequest(null);
+            billFacade.edit(b);
+        }
 
         System.out.println("Successfully Reject = ");
         JsfUtil.addSuccessMessage("Cancelled successfully");
