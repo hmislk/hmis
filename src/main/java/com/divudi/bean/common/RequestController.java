@@ -85,6 +85,15 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return "";
         }
+        
+        System.out.println("Bill Department ID = " + bill.getDepartment().getId());
+        System.out.println("Dession Department ID = " + sessionController.getDepartment().getId());
+        
+        if (!bill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to "+ bill.getDepartment().getName() +" to cancel this bill.");
+            return "";
+        }
+        
         String navigation = "";
         Bill originalBill = billFacade.find(bill.getId());
 
