@@ -48,7 +48,7 @@
                                         class="ui-button-success" 
                                         action="#{requestController.approveRequest()}">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton
                                         ajax="false"
                                         value="Reject" 
@@ -58,7 +58,7 @@
                                         class="ui-button-danger" 
                                         action="#{requestController.rejectRequest()}">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton
                                         ajax="false"
                                         value="Cancel Approvel" 
@@ -96,7 +96,7 @@
                                         </f:facet>
                                         <common:patient patient="#{requestController.patient}" class="w-100"/>
                                     </p:panel>
-                                    
+
                                     <p:panel class="mt-2" id="payment">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> 
@@ -142,20 +142,34 @@
                                 <div class="col-4">
                                     <p:panel>
                                         <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Request Priview" class="mx-2"></h:outputLabel>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex gap-2 mt-2">
+                                                    <h:outputText styleClass="fas fa-list-alt mt-1"></h:outputText>
+                                                    <h:outputLabel value="Request Priview" class="mx-2"></h:outputLabel>
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        icon="fas fa-print"
+                                                        ajax="false"
+                                                        value="Print"
+                                                        disabled="#{!(requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}"
+                                                        class="ui-button-info">
+                                                        <p:printer target="printingView"/>
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
                                         </f:facet>
-                                        
-                                        <div class="d-flex justify-content-center">
-                                <h:panelGroup id="printingView">
-                                    
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
-                                        <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}" />                        
-                                    </h:panelGroup>
-                                    
-                                </h:panelGroup>
 
-                            </div>
+                                        <div class="d-flex justify-content-center">
+                                            <h:panelGroup id="printingView">
+
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                                    <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}" />                        
+                                                </h:panelGroup>
+
+                                            </h:panelGroup>
+
+                                        </div>
                                     </p:panel>
                                 </div>
                             </div>
