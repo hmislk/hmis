@@ -7,6 +7,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 
@@ -914,6 +915,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     @Override
     public void recieveRemainAmountAutomatically() {
+        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
         throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
     }
 

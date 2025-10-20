@@ -285,8 +285,13 @@
                                     <h:outputLabel value="Comment" />
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"/>
 
-                                    <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
-                                                     action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" />
+                                    <p:commandButton 
+                                        id="btnAdjust"
+                                        value="Make Adjustment" 
+                                        ajax="false" 
+                                        class="mt-2 ui-button-warning" 
+                                        icon="fa-solid fa-sliders"
+                                        action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" />
                                     <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>
                             </div>
