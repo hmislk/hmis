@@ -9,6 +9,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.RequestFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class RequestController implements Serializable {
     private RequestFacade requestFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -213,7 +216,7 @@ public class RequestController implements Serializable {
             }
 
             Request newlyRequest = new Request();
-
+            
             newlyRequest.setBill(batchBill);
             newlyRequest.setRequester(sessionController.getLoggedUser());
             newlyRequest.setRequestAt(new Date());
@@ -223,7 +226,10 @@ public class RequestController implements Serializable {
 
             newlyRequest.setInstitution(sessionController.getInstitution());
             newlyRequest.setDepartment(sessionController.getDepartment());
-
+            
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+            
             requestService.save(newlyRequest, sessionController.getLoggedUser());
 
             //Update Batch Bill
