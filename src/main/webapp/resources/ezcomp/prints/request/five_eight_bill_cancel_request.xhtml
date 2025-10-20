@@ -7,7 +7,7 @@
       xmlns:p="http://primefaces.org/ui">
 
     <cc:interface>
-        <cc:attribute name="request" type="com.divudi.core.entity.Request" />
+        <cc:attribute name="request" type="com.divudi.core.entity.Request" required="true" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
     </cc:interface>
@@ -165,7 +165,7 @@
                 
                 <div class="justify-content-end" style="margin-top:25px; min-height: 30px;">
                     <div class="d-flex justify-content-center">
-                        <h:panelGroup rendered="#{cc.attrs.request.approvedBy.staff.id ne null }" >
+                        <h:panelGroup rendered="#{cc.attrs.request.approvedBy ne null and cc.attrs.request.approvedBy.staff ne null and cc.attrs.request.approvedBy.staff.id ne null}" >
                             
                             <h:panelGroup rendered="#{cc.attrs.request.approvedBy.staff.signatureUrl eq null}">
                                 <p:graphicImage
@@ -195,7 +195,9 @@
                         <h:outputLabel value="Approved By"/>
                     </div>
                     <div class="d-flex justify-content-center">
-                        <h:outputLabel value="#{cc.attrs.request.approvedBy.webUserPerson.nameWithTitle}"/>
+                        <h:outputLabel 
+                            rendered="#{cc.attrs.request.approvedBy ne null and cc.attrs.request.approvedBy.webUserPerson ne null}"
+                            value="#{cc.attrs.request.approvedBy.webUserPerson.nameWithTitle}"/>
                     </div>
                 </div>
 
