@@ -85,15 +85,15 @@
                                 </p:column>
 
 
-                                <p:column headerText="Returning Qty" class="text-end">    
+                                <p:column headerText="Returning Qty" class="text-end">
                                     <p:inputText
                                         converter="javax.faces.Double"
                                         converterMessage="It should be a number"
                                         autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
-                                        <p:ajax 
+                                        <p:ajax
                                             event="blur"
-                                            update=":#{p:resolveFirstComponentWithId('totalPanel',view).clientId} :#{p:resolveFirstComponentWithId('msgs',view).clientId}"  
-                                            process="@this" 
+                                            update="@this :#{p:resolveFirstComponentWithId('totalPanel',view).clientId} :#{p:resolveFirstComponentWithId('msgs',view).clientId}"
+                                            process="@this"
                                             listener="#{saleReturnController.onEdit(ph)}" >
                                         </p:ajax>
                                     </p:inputText>

@@ -172,7 +172,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     boolean requestForQuentity;
     boolean marginNotAllowed;
     private boolean printSessionNumber;
-    @Column
+    private boolean allowFractions = false;
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
@@ -1484,6 +1484,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setAlternativeReportAllowed(boolean alternativeReportAllowed) {
         this.alternativeReportAllowed = alternativeReportAllowed;
+    }
+
+    public boolean isAllowFractions() {
+        return allowFractions;
+    }
+
+    public void setAllowFractions(boolean allowFractions) {
+        this.allowFractions = allowFractions;
     }
 
     public String getReserveNumbersForFirstVisit() {

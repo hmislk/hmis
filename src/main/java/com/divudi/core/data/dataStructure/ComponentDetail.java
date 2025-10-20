@@ -46,6 +46,7 @@ public class ComponentDetail {
 
     public void addAnotherPaymentDetail() {
         ComponentDetail cd = new ComponentDetail();
+        cd.setPaymentMethodData(new PaymentMethodData());
         getMultiplePaymentMethodComponentDetails().add(cd);
     }
 

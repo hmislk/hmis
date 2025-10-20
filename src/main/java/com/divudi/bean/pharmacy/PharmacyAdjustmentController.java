@@ -221,7 +221,8 @@ public class PharmacyAdjustmentController implements Serializable {
                 + "s.itemBatch.batchNo, "
                 + "s.itemBatch.purcahseRate, "
                 + "s.itemBatch.wholesaleRate, "
-                + "s.itemBatch.costRate) "
+                + "s.itemBatch.costRate, "
+                + "s.itemBatch.item.allowFractions) "
                 + "FROM Stock s "
                 + "WHERE s.department = :d "
                 + "AND s.itemBatch.item = :amp ";
@@ -585,9 +586,6 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
-        getDeptAdjustmentPreBill().setDeptId(deptId);
-        getDeptAdjustmentPreBill().setInsId(deptId);
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentDepartmentStock);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -597,6 +595,53 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+
+        // Generate deptId and insId using configurable bill number generation strategy
+        Department dept = getSessionController().getDepartment();
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        String billId = "";
+
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+            if (getDeptAdjustmentPreBill().getDeptId() == null || getDeptAdjustmentPreBill().getDeptId().trim().equals("")) {
+                billId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                getDeptAdjustmentPreBill().setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            if (getDeptAdjustmentPreBill().getDeptId() == null || getDeptAdjustmentPreBill().getDeptId().trim().equals("")) {
+                billId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                getDeptAdjustmentPreBill().setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            if (getDeptAdjustmentPreBill().getDeptId() == null || getDeptAdjustmentPreBill().getDeptId().trim().equals("")) {
+                billId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                getDeptAdjustmentPreBill().setDeptId(billId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (getDeptAdjustmentPreBill().getDeptId() == null || getDeptAdjustmentPreBill().getDeptId().trim().equals("")) {
+                billId = getBillNumberBean().departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                getDeptAdjustmentPreBill().setDeptId(billId);
+            }
+        }
+
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            if (getDeptAdjustmentPreBill().getInsId() == null || getDeptAdjustmentPreBill().getInsId().trim().equals("")) {
+                String insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                getDeptAdjustmentPreBill().setInsId(insId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (getDeptAdjustmentPreBill().getInsId() == null || getDeptAdjustmentPreBill().getInsId().trim().equals("")) {
+                if (billId != null && !billId.trim().isEmpty()) {
+                    getDeptAdjustmentPreBill().setInsId(billId);
+                }
+            }
+        }
+
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {

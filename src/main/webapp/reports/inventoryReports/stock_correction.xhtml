@@ -254,7 +254,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Old Value (Cost/ Purchase/ Sale)">
-                                <h:outputText value="#{item.beforeAdjustment * item.quantity}" >
+                                <h:outputText value="#{item.preciseOldValue}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">

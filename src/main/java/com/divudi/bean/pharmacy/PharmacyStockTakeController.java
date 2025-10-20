@@ -1,5 +1,6 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.Privileges;
@@ -67,6 +68,8 @@ public class PharmacyStockTakeController implements Serializable {
     private SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     private StockFacade stockFacade;
@@ -91,6 +94,7 @@ public class PharmacyStockTakeController implements Serializable {
     private Bill physicalCountBill;
     private UploadedFile file;
     private Institution institution;
+    private Institution site;
     private Department department;
     private Date fromDate;
     private Date toDate;
@@ -103,6 +107,10 @@ public class PharmacyStockTakeController implements Serializable {
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
 
+    private String comments;
+    private boolean printPreview;
+    private Bill adjustmentBill; // stores the adjustment bill created during approval for printing
+
     /**
      * Generate stock count bill preview without persisting.
      */
@@ -111,22 +119,16 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
             return null;
         }
-        if (institution == null) {
-            JsfUtil.addErrorMessage("Please select an institution");
-            return null;
-        }
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return null;
         }
-        // Optional cross-check to prevent mismatch selections
-        if (department.getInstitution() != null && !department.getInstitution().equals(institution)) {
-            JsfUtil.addErrorMessage("Selected department does not belong to chosen institution");
-            return null;
-        }
-        // Site selection is not used on this page
         Department dept = department;
-        String jpql = "select s from Stock s where s.department=:d and s.stock>0";
+        String jpql = "select s from Stock s "
+                + "where s.department=:d and s.stock>0 "
+                + "order by coalesce(s.itemBatch.item.category.name, '') asc, "
+                + "coalesce(s.itemBatch.item.name, '') asc, "
+                + "coalesce(s.itemBatch.dateOfExpire, current_date) asc";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
         List<Stock> stocks = stockFacade.findByJpql(jpql, params);
@@ -145,6 +147,12 @@ public class PharmacyStockTakeController implements Serializable {
         for (Stock s : stocks) {
             BillItem bi = new BillItem();
             bi.setBill(snapshotBill);
+            if (s.getItemBatch() == null) {
+                continue;
+            }
+            if (s.getItemBatch().getItem() == null) {
+                continue;
+            }
             bi.setItem(s.getItemBatch().getItem());
             // Cache display fields to avoid lazy loading issues in preview pages
             if (s.getItemBatch() != null && s.getItemBatch().getItem() != null) {
@@ -418,9 +426,6 @@ public class PharmacyStockTakeController implements Serializable {
                 cLV.setCellStyle(numberLocked);
             }
 
-            // Protect sheet so that only the input column is editable
-            sheet.protectSheet("protect");
-
             // Autosize columns
             int totalCols = header.getLastCellNum();
             for (int i = 0; i < totalCols; i++) {
@@ -580,7 +585,9 @@ public class PharmacyStockTakeController implements Serializable {
         }
         // Persist items
         for (BillItem bi : physicalCountBill.getBillItems()) {
-            if (bi == null) continue;
+            if (bi == null) {
+                continue;
+            }
             bi.setBill(physicalCountBill);
             if (bi.getPharmaceuticalBillItem() != null) {
                 bi.getPharmaceuticalBillItem().setBillItem(bi);
@@ -605,15 +612,19 @@ public class PharmacyStockTakeController implements Serializable {
         params.put("bt", BillType.PharmacyPhysicalCountBill);
         j.append(" order by b.createdAt desc");
         @SuppressWarnings("unchecked")
-        List<com.divudi.core.light.common.PharmacyPhysicalCountLight> rows =
-                (List<com.divudi.core.light.common.PharmacyPhysicalCountLight>) billFacade.findLightsByJpql(j.toString(), params, javax.persistence.TemporalType.TIMESTAMP);
+        List<com.divudi.core.light.common.PharmacyPhysicalCountLight> rows
+                = (List<com.divudi.core.light.common.PharmacyPhysicalCountLight>) billFacade.findLightsByJpql(j.toString(), params, javax.persistence.TemporalType.TIMESTAMP);
         pendingPhysicalCounts = rows == null ? new java.util.ArrayList<>() : rows;
     }
 
     public String viewPhysicalCountById(Long billId) {
-        if (billId == null) return null;
+        if (billId == null) {
+            return null;
+        }
         Bill b = billFacade.find(billId);
-        if (b == null) return null;
+        if (b == null) {
+            return null;
+        }
         this.physicalCountBill = b;
         this.snapshotBill = b.getReferenceBill();
         this.institution = b.getInstitution();
@@ -740,6 +751,10 @@ public class PharmacyStockTakeController implements Serializable {
         if (institution != null) {
             jpql.append(" and b.institution=:ins");
             params.put("ins", institution);
+        }
+        if (site != null) {
+            jpql.append(" and b.department.site=:site");
+            params.put("site", site);
         }
         if (department != null) {
             jpql.append(" and b.department=:dep");
@@ -1023,9 +1038,10 @@ public class PharmacyStockTakeController implements Serializable {
             return;
         }
         Department dept = physicalCountBill.getDepartment();
-        Bill adjustmentBill = new Bill();
-        adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);
+        this.adjustmentBill = new Bill();
+        this.adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);
         adjustmentBill.setBillClassType(BillClassType.BilledBill);
+        adjustmentBill.setComments(comments);
         adjustmentBill.setDepartment(dept);
         adjustmentBill.setInstitution(dept.getInstitution());
         Date now = new Date();
@@ -1033,10 +1049,52 @@ public class PharmacyStockTakeController implements Serializable {
         adjustmentBill.setBillTime(now);
         adjustmentBill.setCreatedAt(now);
         adjustmentBill.setCreater(sessionController.getLoggedUser());
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
-        adjustmentBill.setDeptId(deptId);
-        adjustmentBill.setInsId(deptId);
         adjustmentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+
+        // Generate deptId and insId using configurable bill number generation strategy
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Stock Adjustments - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        String billId = "";
+
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (adjustmentBill.getDeptId() == null || adjustmentBill.getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setDeptId(billId);
+            }
+        }
+
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            if (adjustmentBill.getInsId() == null || adjustmentBill.getInsId().trim().equals("")) {
+                String insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                adjustmentBill.setInsId(insId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (adjustmentBill.getInsId() == null || adjustmentBill.getInsId().trim().equals("")) {
+                if (billId != null && !billId.trim().isEmpty()) {
+                    adjustmentBill.setInsId(billId);
+                }
+            }
+        }
         adjustmentBill.setFromDepartment(dept);
         adjustmentBill.setFromInstitution(dept.getInstitution());
         adjustmentBill.setToDepartment(null);
@@ -1092,6 +1150,10 @@ public class PharmacyStockTakeController implements Serializable {
         billFacade.edit(adjustmentBill);
         LOGGER.log(Level.INFO, "[StockTake] Approval completed. pcBillId={0}, adjBillId={1}, adjItems={2}",
                 new Object[]{physicalCountBill.getId(), adjustmentBill.getId(), adjustmentBill.getBillItems() != null ? adjustmentBill.getBillItems().size() : 0});
+
+        // Set printPreview to true to show the print section
+        this.printPreview = true;
+
         JsfUtil.addSuccessMessage("Physical count approved");
     }
 
@@ -1138,6 +1200,8 @@ public class PharmacyStockTakeController implements Serializable {
         this.snapshotBill = null;
         this.physicalCountBill = null;
         this.file = null;
+        this.printPreview = false;
+        this.adjustmentBill = null;
         JsfUtil.addSuccessMessage("Stock taking session reset");
     }
 
@@ -1147,6 +1211,14 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
     public Department getDepartment() {
@@ -1447,7 +1519,7 @@ public class PharmacyStockTakeController implements Serializable {
     public void startApprovePhysicalCountAsync() {
         LOGGER.log(Level.INFO, "[StockTake] startApprovePhysicalCountAsync() called. pcBillId={0}, items={1}",
                 new Object[]{physicalCountBill != null ? physicalCountBill.getId() : null,
-                        physicalCountBill != null && physicalCountBill.getBillItems() != null ? physicalCountBill.getBillItems().size() : 0});
+                    physicalCountBill != null && physicalCountBill.getBillItems() != null ? physicalCountBill.getBillItems().size() : 0});
         if (physicalCountBill == null || physicalCountBill.getBillItems() == null || physicalCountBill.getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No physical count available");
             LOGGER.log(Level.WARNING, "[StockTake] Async approval aborted. No physical count or items.");
@@ -1511,6 +1583,46 @@ public class PharmacyStockTakeController implements Serializable {
 
     public List<com.divudi.core.light.common.PharmacySnapshotBillLight> getSnapshotBillRows() {
         return snapshotBillRows;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public Bill getAdjustmentBill() {
+        return adjustmentBill;
+    }
+
+    public void setAdjustmentBill(Bill adjustmentBill) {
+        this.adjustmentBill = adjustmentBill;
+    }
+
+    /**
+     * Generate a sanitized filename for variance report Excel export.
+     * Includes the snapshot bill number, sanitized to remove invalid filename characters.
+     * @return sanitized filename with .xlsx extension
+     */
+    public String getVarianceExcelFilename() {
+        if (snapshotBill == null || snapshotBill.getDeptId() == null || snapshotBill.getDeptId().trim().isEmpty()) {
+            return "pharmacy_stock_take_variance.xlsx";
+        }
+        // Sanitize the bill number by replacing invalid filename characters with underscore
+        String sanitized = snapshotBill.getDeptId()
+                .replaceAll("[/\\\\:*?\"<>|,.-]", "_")
+                .trim();
+        return "pharmacy_stock_take_variance_" + sanitized ;
     }
 
     // DTO for variance report
