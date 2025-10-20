@@ -2212,37 +2212,6 @@ public class ChannelService {
         }
         return ps;
     }
-    public List<SessionInstance> getSessionsFromDoctor(Date fromDate, Date toDate, List<Staff> staff, Institution institution){
-        String sql = "Select s From SessionInstance s "
-                + " where s.retired=false "
-                + " and s.originatingSession.institution = :ins "
-                + " and s.originatingSession.staff in :staff"
-                + " and s.sessionDate between :fromDate and :toDate "
-                + " order by s.sessionWeekday,s.startingTime ";
-        
-        Map params = new HashMap();
-        params.put("ins", institution);
-        params.put("staff", staff);
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
-        
-        return sessionInstanceFacade.findByJpql(sql, params, TemporalType.TIMESTAMP);
-        
-    }
-    
-    @EJB
-    private DoctorFacade doctorFacade;
-    
-    public List<Doctor> findScanningDoctors(){ //still fetch all doctors. If only scanning need, identify the categories
-        String jpql = "select doc from Doctor doc "
-                + " where "
-                + " doc.retired = :ret";
-        
-        Map <String, Object> params = new HashMap();
-        params.put("ret", false);
-        
-        return doctorFacade.findByJpql(jpql, params);
-    }
 
     public List<Institution> findHospitals() {
         Map params = new HashMap();

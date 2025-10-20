@@ -147,25 +147,7 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
-    private List<Staff> doctorList;
-    private List<SessionInstance> sessionInstanceList;
 
-    public List<SessionInstance> getSessionInstanceList() {
-        return sessionInstanceList;
-    }
-
-    public void setSessionInstanceList(List<SessionInstance> sessionInstanceList) {
-        this.sessionInstanceList = sessionInstanceList;
-    }
-
-    public List<Staff> getDoctorList() {
-        return doctorList;
-    }
-
-    public void setDoctorList(List<Staff> doctorList) {
-        this.doctorList = doctorList;
-    }
-    
     private List<SessionInstance> sessionListFilterByDoctors;
 
     public List<SessionInstance> getSessionListFilterByDoctors() {
@@ -175,29 +157,6 @@ public class ChannelReportController implements Serializable {
     public void setSessionListFilterByDoctors(List<SessionInstance> sessionListFilterByDoctors) {
         this.sessionListFilterByDoctors = sessionListFilterByDoctors;
     }
-    
-    //private List<Doctor> doctorListForChannelings; //use for channel scanning report
-
-    public List<Doctor> getDoctorListForChannelings() {
-        
-            return channelService.findScanningDoctors();
-      
-        
-    }
-
-//    public void setDoctorListForChannelings(List<Doctor> doctorListForChannelings) {
-//        this.doctorListForChannelings = doctorListForChannelings;
-//    }
-    
-    public void getSessionInstanceFromDoctor(){
-        if(doctorList == null || doctorList.isEmpty()){
-            JsfUtil.addErrorMessage("Please Select Doctor to proceed. ");
-            return;
-        }
-        
-        sessionListFilterByDoctors = channelService.getSessionsFromDoctor(fromDate, toDate, doctorList, institution);
-    }
-    
 
     /////
     @EJB
@@ -432,7 +391,7 @@ public class ChannelReportController implements Serializable {
         makeNull();
         return "/channel/income_with_agent_bookings?faces-redirect=true";
     }
-    
+
     public String navigateToFutureIncomeForChanneling() {
         makeNull();
         return "/channel/income_with_summery_by_user?faces-redirect=true";
@@ -499,8 +458,8 @@ public class ChannelReportController implements Serializable {
                 }
                 return total;
             case "Card":
-                for(Payment p : payments){
-                    if(!p.getBill().isCancelled()){
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
                         total += p.getPaidValue();
                     }
                 }
@@ -521,8 +480,9 @@ public class ChannelReportController implements Serializable {
         dataBundle = bundle;
 
     }
-    
-    public static class ChannelIncomeDetailDto{
+
+    public static class ChannelIncomeDetailDto {
+
         private long bsId;
         private long billId;
         private Date appoinmentDate;
@@ -538,7 +498,7 @@ public class ChannelReportController implements Serializable {
         private boolean isCancelled;
         private boolean isRefunded;
 
-        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate,Date billedDate,String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
             this.bsId = bsId;
             this.billId = billId;
             this.appoinmentDate = appoinmentDate;
@@ -570,7 +530,6 @@ public class ChannelReportController implements Serializable {
         public void setIsRefunded(boolean isRefunded) {
             this.isRefunded = isRefunded;
         }
-        
 
         public String getBilledBy() {
             return billedBy;
@@ -579,7 +538,6 @@ public class ChannelReportController implements Serializable {
         public void setBilledBy(String billedBy) {
             this.billedBy = billedBy;
         }
-        
 
         public Date getAppoinmentDate() {
             return appoinmentDate;
@@ -669,8 +627,9 @@ public class ChannelReportController implements Serializable {
             this.billedDate = billedDate;
         }
     }
-    
-    public static class WrapperDtoForChannelFutureIncome{
+
+    public static class WrapperDtoForChannelFutureIncome {
+
         private List<ChannelIncomeDetailDto> incomeDtos;
         private List<ChannelIncomeSummeryDto> summeryDtos;
         private Institution hospital;
@@ -748,7 +707,6 @@ public class ChannelReportController implements Serializable {
         public void setAllRefundAppoinments(double allRefundAppoinments) {
             this.allRefundAppoinments = allRefundAppoinments;
         }
-        
 
         public List<ChannelIncomeDetailDto> getIncomeDtos() {
             return incomeDtos;
@@ -789,11 +747,11 @@ public class ChannelReportController implements Serializable {
         public void setProcessedBy(String processedBy) {
             this.processedBy = processedBy;
         }
-        
-        
+
     }
-    
-    public static class ChannelIncomeSummeryDto{
+
+    public static class ChannelIncomeSummeryDto {
+
         private Date appoimentDate;
         private double cashTotal;
         private double cardTotal;
@@ -872,7 +830,6 @@ public class ChannelReportController implements Serializable {
             this.refundTotal = refundTotal;
         }
 
-
         public double getTotalDocFee() {
             return totalDocFee;
         }
@@ -913,7 +870,7 @@ public class ChannelReportController implements Serializable {
             this.totalCancelAppoinments = totalCancelAppoinments;
         }
     }
-    
+
     private WrapperDtoForChannelFutureIncome wrapperDto;
 
     public WrapperDtoForChannelFutureIncome getWrapperDto() {
@@ -923,35 +880,33 @@ public class ChannelReportController implements Serializable {
     public void setWrapperDto(WrapperDtoForChannelFutureIncome wrapperDto) {
         this.wrapperDto = wrapperDto;
     }
-    
-    
-    
-    public void fetchChannelIncomeSummeryByUserWise(){
-        if(fromDate == null || toDate == null){
+
+    public void fetchChannelIncomeSummeryByUserWise() {
+        if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Date range is not selected.");
             return;
         }
-        
-        if(fromDate.after(toDate)){
+
+        if (fromDate.after(toDate)) {
             JsfUtil.addErrorMessage("From date should be before to toDate.");
             return;
         }
-        if(categoryList == null || categoryList.isEmpty()){
+        if (categoryList == null || categoryList.isEmpty()) {
             JsfUtil.addErrorMessage("Please select categories to proceed the report.");
             return;
         }
-        
-       wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
-       
-       if(wrapperDto == null){
-           return;
-       }
-       
-       wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
-       
-       if(institution != null){
-           wrapperDto.setHospital(institution);
-       }
+
+        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
+
+        if (wrapperDto == null) {
+            return;
+        }
+
+        wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+
+        if (institution != null) {
+            wrapperDto.setHospital(institution);
+        }
     }
 
     public void fetchAgentSessionIncome() {
