@@ -6,6 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
@@ -75,14 +76,28 @@
                                 <div class="col-3">
                                     <p:panel>
                                         <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Bill Priview" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                            <div class="d-flex justify-content-center">
+                                                <ui:repeat value="#{requestController.bills}" var="ffb" >
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true" billCount="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+                                <div class="col-5">
+                                    <p:panel>
+                                        <f:facet name="header">
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
                                         <common:patient patient="#{requestController.patient}" class="w-100"/>
                                     </p:panel>
-                                </div>
-                                <div class="col-5">
-                                    <p:panel class="mb-2" id="payment">
+                                    
+                                    <p:panel class="mt-2" id="payment">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                             <h:outputText value="Request Details" class="mx-4"></h:outputText>
@@ -128,15 +143,19 @@
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Bill Priview" class="mx-2"></h:outputLabel>
+                                            <h:outputLabel value="Request Priview" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
-                                            <div class="d-flex justify-content-center">
-                                                <ui:repeat value="#{requestController.bills}" var="ffb" >
-                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true" billCount="#{opdBillController.bills.size()}"/>                        
-                                                </ui:repeat>
-                                            </div>
-                                        </h:panelGroup>
+                                        
+                                        <div class="d-flex justify-content-center">
+                                <h:panelGroup id="printingView">
+                                    
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                        <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}" />                        
+                                    </h:panelGroup>
+                                    
+                                </h:panelGroup>
+
+                            </div>
                                     </p:panel>
                                 </div>
                             </div>
