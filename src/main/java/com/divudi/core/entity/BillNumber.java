@@ -9,6 +9,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.RequestType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -57,6 +58,8 @@ public class BillNumber implements Serializable {
     // Boolean fields for OPD and Inpatient service bill tracking
     private boolean opdAndInpatientServiceBills;
     private boolean opdAndInpatientServiceBatchBills;
+    @Enumerated(EnumType.STRING)
+    private RequestType requestType;
 
 
 
@@ -230,6 +233,14 @@ public class BillNumber implements Serializable {
      */
     public void setOpdAndInpatientServiceBatchBills(boolean opdAndInpatientServiceBatchBills) {
         this.opdAndInpatientServiceBatchBills = opdAndInpatientServiceBatchBills;
+    }
+
+    public RequestType getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(RequestType requestType) {
+        this.requestType = requestType;
     }
 
 }
