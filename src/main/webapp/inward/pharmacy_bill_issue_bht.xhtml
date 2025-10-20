@@ -21,8 +21,8 @@
                     </f:facet>
                     <h:outputLabel value="Type Patient Name or BHT : " style="margin-right: 10px"/>
                     <p:autoComplete
-                        widgetVar="aPt2"
-                        id="acPt2"
+                        widgetVar="aPt2" 
+                       id="acPt2"
                         forceSelection="true"
                         required="true"
                         requiredMessage="Please select a patient"
@@ -181,21 +181,17 @@
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-
-
                                                 <p:ajax
                                                     event="itemSelect"
                                                     process="acStockWithoutTotalStock"
                                                     listener="#{pharmacySaleBhtController.handleSelect}"
-                                                    update="txtRate focusQty txtValue txtQty" ></p:ajax>
+                                                    update="txtRate focusQty txtValue" ></p:ajax>
                                                 <p:ajax
                                                     event="blur"
                                                     listener="#{pharmacySaleBhtController.handleSelect}"
                                                     update="txtRate txtValue"
-                                                    process="acStockWithoutTotalStock txtQty"
+                                                    process="acStockWithoutTotalStock"
                                                     />
-
-
                                             </p:autoComplete>
                                         </h:panelGroup>
 
@@ -210,22 +206,14 @@
                                             value="Quantity"
                                             styleClass="form-label text-end"></p:outputLabel>
                                         <p:inputText
-                                            validator="^-?\\d+$"
-                                            validatorMessage="Can enter only integers"
                                             class="w-100 form-control text-end"
                                             autocomplete="off"
                                             accesskey="q"
                                             id="txtQty"
-                                            value="#{pharmacySaleBhtController.qty}" >
-                                            <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
-                                            <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
-                                            <p:ajax
-                                                event="keyup"
-                                                process="txtQty"
-                                                listener="#{pharmacySaleBhtController.handleSelect}"
-                                                update="txtRate txtValue" >
-                                            </p:ajax>
-                                            <f:convertNumber integerOnly="true" ></f:convertNumber>
+                                            onfocus="this.select()"
+                                            value="#{pharmacySaleBhtController.qty}">
+                                            <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtValue"></p:ajax>
+                                            <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtValue"></p:ajax>
                                         </p:inputText>
                                     </div>
                                     <div class="col-12 col-md-2 text-end">
@@ -278,7 +266,7 @@
                             </p:panel>
 
                             <p:panel header="Bill Items" id="pBis" class="my-1">
-                                <p:messages id="msgs" ></p:messages>
+                                
                                 <p:dataTable
                                     id="tblBillItem"
                                     value="#{pharmacySaleBhtController.preBill.billItems}"

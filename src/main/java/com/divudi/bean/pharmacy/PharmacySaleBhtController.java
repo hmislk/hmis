@@ -298,6 +298,16 @@ public class PharmacySaleBhtController implements Serializable {
             return true;
         }
 
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
+            if (tmp.getQty() % 1 != 0) {
+                setZeroToQty(tmp);
+                onEditCalculation(tmp);
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
+                return true;
+            }
+        }
+
         Stock fetchedStock = getStockFacade().find(tmp.getPharmaceuticalBillItem().getStock().getId());
 
         if (tmp.getQty() > fetchedStock.getStock()) {
@@ -741,9 +751,6 @@ public class PharmacySaleBhtController implements Serializable {
                 // This will be caught by the try-catch in settleBhtIssue(), preventing clearBill()
                 throw new RuntimeException(errorMsg);
             }
-
-            // Add saved item back to PreBill
-            getPreBill().getBillItems().add(tbi);
         }
 
         // Update PreBill with all items to ensure relationship is persisted
@@ -1244,6 +1251,14 @@ public class PharmacySaleBhtController implements Serializable {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Please enter a Quantity?");
             return;
+        }
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
+            if (getQty() % 1 != 0) {
+                errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed.";
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
+                return;
+            }
         }
         if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
