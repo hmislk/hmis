@@ -20,21 +20,53 @@ public class StockCorrectionRow {
     private double newRate;
     private double newValue;
     private double variance;
-    
+
     private double purchaseRate;
     private double costRate;
     private double retailRate;
     private double beforeAdjustment;
     private double afterAdjustment;
-    
 
-    
-    public StockCorrectionRow(){
-        
+    private BigDecimal preciseOldValue;
+    private BigDecimal preciseNewValue;
+
+    public BigDecimal getPreciseOldValue() {
+        return preciseOldValue;
     }
+
+    public void setPreciseOldValue(BigDecimal preciseOldValue) {
+        this.preciseOldValue = preciseOldValue;
+    }
+
+    public BigDecimal getPreciseNewValue() {
+        return preciseNewValue;
+    }
+
+    public void setPreciseNewValue(BigDecimal preciseNewValue) {
+        this.preciseNewValue = preciseNewValue;
+    }
+
+    public String getFormattedOldValue() {
+        if (preciseOldValue != null) {
+            return String.format("%,.2f", preciseOldValue.doubleValue());
+        }
+        return "0.00";
+    }
+
+    public String getFormattedNewValue() {
+        if (preciseNewValue != null) {
+            return String.format("%,.2f", preciseNewValue.doubleValue());
+        }
+        return "0.00";
+    }
+
+    public StockCorrectionRow() {
+
+    }
+
     public StockCorrectionRow(String itemName, BigDecimal quantity, double purchaseRate,
-                              double costRate, double retailRate,
-                              double beforeAdjustment, double afterAdjustment) {
+            double costRate, double retailRate,
+            double beforeAdjustment, double afterAdjustment) {
         this.itemName = itemName;
         this.quantity = quantity;
         this.purchaseRate = purchaseRate;
