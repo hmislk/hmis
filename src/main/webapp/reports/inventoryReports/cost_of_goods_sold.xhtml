@@ -42,8 +42,8 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
 
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
+                            <p:spacer />
+                            <p:spacer />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5" />
@@ -149,6 +149,7 @@
                             <p:autoComplete
                                 id="phmItem"
                                 class="w-100"
+                                inputStyleClass="w-100"
                                 value="#{pharmacyReportController.item}"
                                 completeMethod="#{itemController.completeItem}"
                                 var="itm"

@@ -228,7 +228,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Doc. No" sortBy="#{b.billDeptId}" width="8em">
+                            <p:column headerText="Bill Number" sortBy="#{b.billDeptId}" width="16em">
                                 <p:commandLink value="#{b.billDeptId}" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false" styleClass="ui-button-info">
                                     <f:setPropertyActionListener value="#{b.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
@@ -305,18 +305,18 @@
                                 </f:facet>
                             </p:column>
                             
-                            <p:column headerText="MRP" width="8em">
+                            <p:column headerText="MRP" width="8em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="MRP Value" width="8em">
+                            <p:column headerText="MRP Value" width="8em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
                             </p:column>
 
-                            <p:column headerText="Net Total" style="text-align: right;" width="6em">
+                            <p:column headerText="Net Total"  class="text-end" width="6em">
                                 <h:outputText value="#{b.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
