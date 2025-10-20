@@ -211,6 +211,15 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Comment is mandatory.");
             return;
         }
+             
+        System.out.println("Bill Department ID = " + batchBill.getDepartment().getId());
+        System.out.println("Dession Department ID = " + sessionController.getDepartment().getId());
+        
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to "+ batchBill.getDepartment().getName() +" to cancel this bill.");
+            return ;
+        }
+        
         Request req = requestService.findRequest(batchBill);
 
         if (req != null) {
