@@ -21,8 +21,8 @@
 
             <div class="headingBill">
                 <h:outputLabel value="Pharmacy Disposal Issue Receipt" style="text-decoration: underline;"/>
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true or cc.attrs.cancel eq true}" />
+                <h:outputLabel value="**Cancelled**" />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
 
             <div >
@@ -65,7 +65,7 @@
                     <tr style="line-height: 13px">
                         <td><h:outputLabel value="Comment"/></td>
                         <td><h:outputLabel value=":" /></td>
-                        <td><h:outputLabel value="#{cc.attrs.bill.comments}" /></td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.comments}" /></td>
                     </tr>
                 </table>
             </div>
@@ -135,14 +135,28 @@
                 </table>
             </div>
 
-            <div class="row mt-1">
+<!--            <div class="row mt-1">
                 <div class="col-5">
                     <h:outputLabel value="Created By : &nbsp;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.name}"/>
                 </div>
                 <div class="col-2"></div>
                 <div class="col-5" style="text-align: right;">
                     <h:outputLabel style="text-align: right" value="Created At : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>-->
+            
+            <div class="row mt-1">
+                <div class="col-5">
+                    <h:outputLabel value="Cancelled By : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;">
+                    <h:outputLabel style="text-align: right" value="Cancelled At : &nbsp;"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                         <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
                     </h:outputLabel>

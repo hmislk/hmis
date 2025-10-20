@@ -101,8 +101,9 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" rendered="#{pharmacyBillSearch.printPreview}" >
-                            <pharmacy:issue bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Show Search Disposal Bill in Default Format',true)}"/>
-                            <pharmacy:pharmacy_issue_receipt bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Show Search Disposal Bill in Custom Format',false)}" />
+                            <pharmacy:issue bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true"/>
+                            <pharmacy:pharmacy_issue_receipt bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" />
+                            <pharmacy:pharmacy_issue_cancel_receipt_custom_1 bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                         </h:panelGroup>
 
                     </p:panel>
