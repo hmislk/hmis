@@ -9,6 +9,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.RequestFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class RequestController implements Serializable {
     private RequestFacade requestFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -82,6 +85,17 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return "";
         }
+        
+        if (bill.getDepartment() == null || bill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return "";
+        }
+        
+        if (!bill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to "+ bill.getDepartment().getName() +" to cancel this bill.");
+            return "";
+        }
+        
         String navigation = "";
         Bill originalBill = billFacade.find(bill.getId());
 
@@ -199,6 +213,17 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Comment is mandatory.");
             return;
         }
+             
+        if (batchBill.getDepartment() == null || batchBill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return ;
+        }
+        
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to "+ batchBill.getDepartment().getName() +" to cancel this bill.");
+            return ;
+        }
+        
         Request req = requestService.findRequest(batchBill);
 
         if (req != null) {
@@ -213,7 +238,7 @@ public class RequestController implements Serializable {
             }
 
             Request newlyRequest = new Request();
-
+            
             newlyRequest.setBill(batchBill);
             newlyRequest.setRequester(sessionController.getLoggedUser());
             newlyRequest.setRequestAt(new Date());
@@ -223,7 +248,10 @@ public class RequestController implements Serializable {
 
             newlyRequest.setInstitution(sessionController.getInstitution());
             newlyRequest.setDepartment(sessionController.getDepartment());
-
+            
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+            
             requestService.save(newlyRequest, sessionController.getLoggedUser());
 
             //Update Batch Bill
@@ -235,7 +263,10 @@ public class RequestController implements Serializable {
                 b.setCurrentRequest(newlyRequest);
                 billFacade.edit(b);
             }
+            
+            setCurrentRequest(newlyRequest);
         }
+        
         printPreview = true;
     }
 
@@ -282,7 +313,7 @@ public class RequestController implements Serializable {
 
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
-        currentRequest.setStatus(RequestStatus.PENDING);
+        currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
         System.out.println("Successfully Cancel Approvel");
@@ -356,6 +387,16 @@ public class RequestController implements Serializable {
         currentRequest.setCancellationReason(comment);
         currentRequest.setStatus(RequestStatus.CANCELLED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
+        
+        //Update Batch Bill
+        currentRequest.getBill().setCurrentRequest(null);
+        billFacade.edit(currentRequest.getBill());
+
+        //Update Induvidual Bills of Batch Bil
+        for (Bill b : billController.billsOfBatchBill(currentRequest.getBill())) {
+            b.setCurrentRequest(null);
+            billFacade.edit(b);
+        }
 
         System.out.println("Successfully Reject = ");
         JsfUtil.addSuccessMessage("Cancelled successfully");
