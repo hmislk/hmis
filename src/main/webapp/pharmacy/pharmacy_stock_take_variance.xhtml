@@ -19,7 +19,7 @@
                                     <p:printer target="variancePanel" />
                                 </p:commandButton>
                                 <p:commandButton value="Download" icon="fa fa-download" ajax="false">
-                                    <p:dataExporter type="xlsx" target="tblVariance" fileName="pharmacy_stock_take_variance" />
+                                    <p:dataExporter type="xlsx" target="tblVariance" fileName="#{pharmacyStockTakeController.varianceExcelFilename}" />
                                 </p:commandButton>
 
                             </div>

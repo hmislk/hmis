@@ -1609,6 +1609,22 @@ public class PharmacyStockTakeController implements Serializable {
         this.adjustmentBill = adjustmentBill;
     }
 
+    /**
+     * Generate a sanitized filename for variance report Excel export.
+     * Includes the snapshot bill number, sanitized to remove invalid filename characters.
+     * @return sanitized filename with .xlsx extension
+     */
+    public String getVarianceExcelFilename() {
+        if (snapshotBill == null || snapshotBill.getDeptId() == null || snapshotBill.getDeptId().trim().isEmpty()) {
+            return "pharmacy_stock_take_variance.xlsx";
+        }
+        // Sanitize the bill number by replacing invalid filename characters with underscore
+        String sanitized = snapshotBill.getDeptId()
+                .replaceAll("[/\\\\:*?\"<>|,.-]", "_")
+                .trim();
+        return "pharmacy_stock_take_variance_" + sanitized + ".xlsx";
+    }
+
     // DTO for variance report
     public static class VarianceRow implements Serializable {
 
