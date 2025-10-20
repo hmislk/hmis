@@ -309,7 +309,7 @@ public class RequestController implements Serializable {
 
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
-        currentRequest.setStatus(RequestStatus.PENDING);
+        currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
         System.out.println("Successfully Cancel Approvel");
