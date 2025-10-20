@@ -187,12 +187,12 @@
                                                     event="itemSelect"
                                                     process="acStockWithoutTotalStock"
                                                     listener="#{pharmacySaleBhtController.handleSelect}"
-                                                    update="txtRate focusQty txtValue" ></p:ajax>
+                                                    update="txtRate focusQty txtValue txtQty" ></p:ajax>
                                                 <p:ajax
                                                     event="blur"
                                                     listener="#{pharmacySaleBhtController.handleSelect}"
                                                     update="txtRate txtValue"
-                                                    process="acStockWithoutTotalStock"
+                                                    process="acStockWithoutTotalStock txtQty"
                                                     />
 
 
@@ -210,6 +210,8 @@
                                             value="Quantity"
                                             styleClass="form-label text-end"></p:outputLabel>
                                         <p:inputText
+                                            validator="^-?\\d+$"
+                                            validatorMessage="Can enter only integers"
                                             class="w-100 form-control text-end"
                                             autocomplete="off"
                                             accesskey="q"
@@ -221,7 +223,9 @@
                                                 event="keyup"
                                                 process="txtQty"
                                                 listener="#{pharmacySaleBhtController.handleSelect}"
-                                                update="txtRate txtValue" ></p:ajax>
+                                                update="txtRate txtValue" >
+                                            </p:ajax>
+                                            <f:convertNumber integerOnly="true" ></f:convertNumber>
                                         </p:inputText>
                                     </div>
                                     <div class="col-12 col-md-2 text-end">
