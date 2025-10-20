@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 
     <cc:interface>
         <cc:attribute name="request" type="com.divudi.core.entity.Request" />
@@ -162,8 +163,32 @@
 
 
                 </table>
+                
+                <div class="justify-content-end" style="margin-top:40px;">
+                    <div class="d-flex justify-content-center">
+                        <h:panelGroup rendered="#{cc.attrs.request.approvedBy.staff.id ne null }" >
+                            
+                            <h:panelGroup rendered="#{cc.attrs.request.approvedBy.staff.signatureUrl eq null}">
+                                <p:graphicImage
+                                    cache="false"
+                                    value="#{staffImageController.getSignatureFromRequestAproval()}"
+                                    style="width: 3.5cm ;overflow: visible; display: block;">
+                                </p:graphicImage>
+                            </h:panelGroup>
 
-                <div class="justify-content-end" style="margin-top: 70px;">
+                            <h:panelGroup rendered="#{cc.attrs.request.approvedBy.staff.signatureUrl ne null}">
+                                <p:graphicImage
+                                    cache="false"
+                                    value="#{cc.attrs.request.approvedBy.staff.signatureUrl}"
+                                    style="width: 3cm ;overflow: visible; display: block;">
+                                </p:graphicImage>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                    </div>
+                </div>
+
+                <div class="justify-content-end" style="margin-top: -20px;">
                     <div class="d-flex justify-content-center">
                         <h:outputLabel value="------------------------------"/>
                     </div>

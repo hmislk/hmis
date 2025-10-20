@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.RequestController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.core.entity.Staff;
@@ -192,7 +193,7 @@ public class StaffImageController implements Serializable {
             }
         }
     }
-
+    
     public StreamedContent getSignatureFromPatientReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
@@ -219,6 +220,49 @@ public class StaffImageController implements Serializable {
                 }
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
                 StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
+                return str;
+            } else {
+                return new DefaultStreamedContent();
+            }
+        }
+    }
+    
+    @Inject
+    RequestController requestController;
+
+    public StreamedContent getSignatureFromRequestAproval() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getRenderResponse()) {
+            //System.err.println("Contex Response");
+            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
+            return new DefaultStreamedContent();
+        } else {
+            if (requestController == null) {
+                System.out.println("requestController null = ");
+            }
+            if (requestController.getCurrentRequest() == null) {
+                 System.out.println("requestController.getCurrentRequest() = ");
+            }
+            if (requestController.getCurrentRequest().getApprovedBy() == null) {
+                 System.out.println("requestController.getCurrentRequest().getApprovedBy() ");
+            }
+            if (requestController.getCurrentRequest().getApprovedBy().getStaff() == null) {
+                 System.out.println("requestController.getCurrentRequest().getApprovedBy().getStaff() ");
+            }
+            Staff temImg = requestController.getCurrentRequest().getApprovedBy().getStaff();
+            if (temImg != null) {
+                temImg = staffController.findStaffById(temImg.getId());
+                 System.out.println("requestController.getCurrentRequest().getApprovedBy().getStaff() ");
+                byte[] imgArr = null;
+                try {
+                    imgArr = temImg.getBaImage();
+                    System.out.println("imgArr = " + imgArr);
+                } catch (Exception e) {
+                    return new DefaultStreamedContent();
+                }
+                InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
+                StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
+                System.out.println("str = " + str);
                 return str;
             } else {
                 return new DefaultStreamedContent();
