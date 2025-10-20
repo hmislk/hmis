@@ -1892,6 +1892,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
                 billSettlingStarted.set(false);
 //                paymentMethod = getPreBill().getPaymentMethod();
+
+                // Initialize payment method data (including patient deposit balance) before page loads
+                checkAndUpdateBalance();
+
                 return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
             }
         } else {
