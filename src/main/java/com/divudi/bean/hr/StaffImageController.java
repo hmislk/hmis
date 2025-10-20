@@ -230,21 +230,17 @@ public class StaffImageController implements Serializable {
     @Inject
     RequestController requestController;
 
-    public StreamedContent getSignatureFromRequestAproval() {
+    public StreamedContent getSignatureFromRequestApproval() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
             //System.err.println("Contex Response");
             // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
             return new DefaultStreamedContent();
         } else {
-            if (requestController == null) {
+            if (requestController == null || requestController.getCurrentRequest() == null || requestController.getCurrentRequest().getApprovedBy() == null || requestController.getCurrentRequest().getApprovedBy().getStaff() == null) {
+                return new DefaultStreamedContent();
             }
-            if (requestController.getCurrentRequest() == null) {
-            }
-            if (requestController.getCurrentRequest().getApprovedBy() == null) {
-            }
-            if (requestController.getCurrentRequest().getApprovedBy().getStaff() == null) {
-            }
+            
             Staff temImg = requestController.getCurrentRequest().getApprovedBy().getStaff();
             if (temImg != null) {
                 temImg = staffController.findStaffById(temImg.getId());

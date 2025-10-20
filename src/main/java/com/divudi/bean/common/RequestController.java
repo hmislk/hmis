@@ -86,8 +86,10 @@ public class RequestController implements Serializable {
             return "";
         }
         
-        System.out.println("Bill Department ID = " + bill.getDepartment().getId());
-        System.out.println("Dession Department ID = " + sessionController.getDepartment().getId());
+        if (bill.getDepartment() == null || bill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return "";
+        }
         
         if (!bill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
             JsfUtil.addErrorMessage("You must log in to "+ bill.getDepartment().getName() +" to cancel this bill.");
@@ -212,8 +214,10 @@ public class RequestController implements Serializable {
             return;
         }
              
-        System.out.println("Bill Department ID = " + batchBill.getDepartment().getId());
-        System.out.println("Dession Department ID = " + sessionController.getDepartment().getId());
+        if (batchBill.getDepartment() == null || batchBill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return ;
+        }
         
         if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
             JsfUtil.addErrorMessage("You must log in to "+ batchBill.getDepartment().getName() +" to cancel this bill.");
