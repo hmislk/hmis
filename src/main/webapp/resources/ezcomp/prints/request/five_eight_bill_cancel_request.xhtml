@@ -1,0 +1,212 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <cc:interface>
+        <cc:attribute name="request" type="com.divudi.core.entity.Request" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
+        <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
+    </cc:interface>
+
+    <h:head>
+        <h:outputStylesheet library="css" name="five_eight_bill.css" />
+    </h:head>
+
+    <h:body>
+
+        <!-- Composite Component Implementation -->
+        <cc:implementation>
+            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header',false)}" >
+                <h:outputStylesheet library="css" name="five_eight_bill.css" />
+            </h:panelGroup>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header')}" >
+                <h:outputStylesheet library="css" name="five_eight_bill_without_header.css" />
+            </h:panelGroup>
+
+            <style>
+                .receipt-table {
+                    border-collapse: collapse;
+                }
+                .receipt-table thead {
+                    border-bottom: 1px solid black;
+                }
+
+                .receipt-table th {
+                    padding: 4px; /* top/bottom: 4px, */
+                }
+                .receipt-table th:last-child {
+                    text-align: right;
+                }
+            </style>
+
+            <div class="receipt-container" style="margin-left: 5mm;" >
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header')}">
+                    <div class="hospital-name" >
+                        <h:outputLabel value="#{cc.attrs.request.institution.name}" />
+                    </div>
+                    <div class="hospital-details" >
+                        <div>
+                            <h:outputLabel value="#{cc.attrs.request.department.address}"/>
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.request.department.telephone1} / #{cc.attrs.request.department.telephone2}"/>
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.request.department.email}" />
+                        </div>
+                    </div>
+                    <div class="separator"></div>
+                </h:panelGroup>
+                <!-- Header Section -->
+                <div class="hospital-name mt-2">
+                    <h:outputLabel value="Bill Cancelation Request"/>
+                    <br/>
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.request.cancelledBy ne null}" />
+                </div>
+
+                <!-- Patient and Bill Information Table -->
+                <table class="mx-4 mt-4">
+
+                    <tr>
+                        <td style="padding: 2px; font-size: 12px;font-weight: 700; width: 120px;">Request No</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px; font-size: 14px; font-weight: 700;">#{cc.attrs.request.requestNo}REQ/OP1/CAN/25/00120</td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 2px; font-size: 12px;font-weight: 700; width: 120px;">Request Reason</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px; font-size: 14px; font-weight: 700;">#{cc.attrs.request.requestReason}</td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 2px; width: 120px;">Request By </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;" colspan="4">
+                            <h:outputLabel value="#{cc.attrs.request.requester.webUserPerson.nameWithTitle}"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 2px; width: 120px;">Request From </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;" colspan="4">
+                            <h:outputLabel value="#{cc.attrs.request.department.name}"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td  style="padding: 2px; width: 120px;">Request At</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td  style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.request.createdAt}" >
+                                <f:convertDateTime pattern="yyyy-MM-dd hh:mm a" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td  colspan="3">
+                            <hr/> 
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 2px; font-size: 12px;font-weight: 700; width: 120px;">Bill No</td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
+                            <h:outputLabel value="#{cc.attrs.request.bill.deptId}"/>
+                        </td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.request.bill.patient ne null}" >
+                        <tr>
+                            <td style="padding: 2px; width: 120px;">Patient Name</td>
+                            <td style="padding: 2px;" class="spacer"></td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.request.bill.patient.person.nameWithTitle}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr>
+                        <h:panelGroup rendered="#{cc.attrs.request.bill.patientEncounter eq null}" >
+                            <td style="padding: 2px; width: 120px;">Payment </td>
+                            <td style="padding: 2px;" class="spacer"></td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.request.bill.paymentMethod}"/>
+                            </td>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{cc.attrs.request.bill.patientEncounter ne null}" >
+                            <td style="padding: 2px; width: 120px;">BHT No  </td>
+                            <td style="padding: 2px;" class="spacer"></td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel style="font-size: 14px;" value="#{cc.attrs.request.bill.patientEncounter.bhtNo}"/>
+                            </td>
+                        </h:panelGroup>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 2px; width: 120px;">Billed By </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;" colspan="4">
+                            <h:outputLabel style="font-size: 14px;" value="#{cc.attrs.request.bill.creater.webUserPerson.nameWithTitle}"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 2px; width: 120px;">To Department </td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;" colspan="4">
+                            <h:outputLabel style="font-size: 14px;" value="#{cc.attrs.request.bill.toDepartment.name}"/>
+                        </td>
+                    </tr>
+
+                </table>
+
+                <div class="justify-content-end" style="margin-top: 70px;">
+                    <div class="d-flex justify-content-center">
+                        <h:outputLabel value="------------------------------"/>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <h:outputLabel value="Approved By"/>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <h:outputLabel value="#{cc.attrs.request.approvedBy.webUserPerson.nameWithTitle}"/>
+                    </div>
+                </div>
+
+                <table  style="font-size: 8pt;">
+                    <h:panelGroup rendered="#{cc.attrs.duplicate}">
+                        <tr>
+                            <td style="vertical-align: top;" colspan="3">
+                                <div class="d-flex gap-2">
+                                    <h:outputLabel value="Printerd By "/>
+                                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                                    <h:outputLabel value=" - "/>
+                                    <h:outputLabel value="#{sessionController.currentDate}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd hh:mm a"/>
+                                    </h:outputLabel>
+                                </div>
+
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                </table>
+
+                <div class="d-flex justify-content-center mt-3" style="font-size: 10px;">
+                    <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
+                </div>
+
+            </div>
+
+        </cc:implementation>
+
+    </h:body>
+</html>
