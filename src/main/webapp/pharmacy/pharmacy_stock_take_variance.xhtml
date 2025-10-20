@@ -93,7 +93,7 @@
                                             </p:column>
                                             <p:column headerText="Sum of Variances at cost rate" style="width: 150px; text-align:right;">
                                                 <h:outputText value="#{r.sumVariance*r.snapshotItem.pharmaceuticalBillItem.itemBatch.costRate}">
-                                                    <f:convertNumber integerOnly="true"/>
+                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Last Physical Count" style="width: 160px; text-align:right;">

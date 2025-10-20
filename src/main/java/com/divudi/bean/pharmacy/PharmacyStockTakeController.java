@@ -1622,7 +1622,7 @@ public class PharmacyStockTakeController implements Serializable {
         String sanitized = snapshotBill.getDeptId()
                 .replaceAll("[/\\\\:*?\"<>|,.-]", "_")
                 .trim();
-        return "pharmacy_stock_take_variance_" + sanitized + ".xlsx";
+        return "pharmacy_stock_take_variance_" + sanitized ;
     }
 
     // DTO for variance report
