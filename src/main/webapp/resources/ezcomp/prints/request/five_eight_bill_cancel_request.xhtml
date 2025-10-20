@@ -63,7 +63,7 @@
                 </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name mt-2">
-                    <h:outputLabel value="Bill Cancelation Request"/>
+                    <h:outputLabel value="Bill Cancellation Request"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.request.cancelledBy ne null}" />
@@ -170,7 +170,7 @@
                             <h:panelGroup rendered="#{cc.attrs.request.approvedBy.staff.signatureUrl eq null}">
                                 <p:graphicImage
                                     cache="false"
-                                    value="#{staffImageController.getSignatureFromRequestAproval()}"
+                                    value="#{staffImageController.getSignatureFromRequestApproval()}"
                                     style="width: 3.5cm ;overflow: visible; display: block;">
                                 </p:graphicImage>
                             </h:panelGroup>
@@ -204,7 +204,7 @@
                         <tr>
                             <td style="vertical-align: top;" colspan="3">
                                 <div class="d-flex gap-2">
-                                    <h:outputLabel value="Printerd By "/>
+                                    <h:outputLabel value="Printed By "/>
                                     <h:outputLabel value="#{sessionController.loggedUser.name}"/>
                                     <h:outputLabel value=" - "/>
                                     <h:outputLabel value="#{sessionController.currentDate}">
