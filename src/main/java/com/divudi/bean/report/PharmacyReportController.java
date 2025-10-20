@@ -3718,6 +3718,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
+                billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             } else if ("rateAdjustmentDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
