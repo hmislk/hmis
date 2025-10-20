@@ -238,31 +238,24 @@ public class StaffImageController implements Serializable {
             return new DefaultStreamedContent();
         } else {
             if (requestController == null) {
-                System.out.println("requestController null = ");
             }
             if (requestController.getCurrentRequest() == null) {
-                 System.out.println("requestController.getCurrentRequest() = ");
             }
             if (requestController.getCurrentRequest().getApprovedBy() == null) {
-                 System.out.println("requestController.getCurrentRequest().getApprovedBy() ");
             }
             if (requestController.getCurrentRequest().getApprovedBy().getStaff() == null) {
-                 System.out.println("requestController.getCurrentRequest().getApprovedBy().getStaff() ");
             }
             Staff temImg = requestController.getCurrentRequest().getApprovedBy().getStaff();
             if (temImg != null) {
                 temImg = staffController.findStaffById(temImg.getId());
-                 System.out.println("requestController.getCurrentRequest().getApprovedBy().getStaff() ");
                 byte[] imgArr = null;
                 try {
                     imgArr = temImg.getBaImage();
-                    System.out.println("imgArr = " + imgArr);
                 } catch (Exception e) {
                     return new DefaultStreamedContent();
                 }
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
                 StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
-                System.out.println("str = " + str);
                 return str;
             } else {
                 return new DefaultStreamedContent();
