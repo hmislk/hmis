@@ -1122,7 +1122,7 @@ public class PharmacyIssueController implements Serializable {
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
         // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+        if (configOptionController.getBooleanValueByKey("Pharmacy Transfer - Quantity Must Be Integer", true)) {
             if (qty != null && qty % 1 != 0) {
                 qty = 0.0;
                 calculateBillItem();
@@ -1135,7 +1135,7 @@ public class PharmacyIssueController implements Serializable {
 
     public void calculateBillItemAtQtyChange(AjaxBehaviorEvent event) {
         // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+        if (configOptionController.getBooleanValueByKey("Pharmacy Transfer - Quantity Must Be Integer", true)) {
             if (qty != null && qty % 1 != 0) {
                 qty = 0.0;
                 performBillItemCalculation();
