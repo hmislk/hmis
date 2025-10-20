@@ -130,6 +130,8 @@ public class PharmacySaleBhtController implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -299,7 +301,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         // Validate integer-only quantity if configuration is enabled
-        if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
+        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
             if (tmp.getQty() % 1 != 0) {
                 setZeroToQty(tmp);
                 onEditCalculation(tmp);
@@ -1253,7 +1255,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         // Validate integer-only quantity if configuration is enabled
-        if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
+        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
             if (getQty() % 1 != 0) {
                 errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed.";
                 JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
