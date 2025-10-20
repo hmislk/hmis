@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"                
+                xmlns:p="http://primefaces.org/ui"
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
@@ -15,22 +15,22 @@
                 <p:panel rendered="#{!cashRecieveBillController.printPreview}" >
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between">
-                            <h:outputLabel value="PHARMACY CREDIT BIll PAYMENT" class="mt-2"/>
+                            <h:outputLabel value="CREDIT SETTLING FOR PHARMACY BILLS" class="mt-2"/>
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    id="btnSettle" 
-                                    value="Settle" 
+                                <p:commandButton
+                                    id="btnSettle"
+                                    value="Settle"
                                     action="#{cashRecieveBillController.settleBillPharmacy}"
-                                    ajax="false"  
+                                    ajax="false"
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
                                     class="ui-button-success"
                                     icon="fa fa-check">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton 
+                                <p:commandButton
                                     value="New Bill"
-                                    ajax="false" 
-                                    action="#{cashRecieveBillController.prepareNewBill()}"  
+                                    ajax="false"
+                                    action="#{cashRecieveBillController.prepareNewBill()}"
                                     icon="fa fa-plus"
                                     class="ui-button-warning">
                                 </p:commandButton>
@@ -45,49 +45,40 @@
                                     <div class="d-flex justify-content-between">
                                         <div class="d-flex align-items-center">
                                             <h:outputText styleClass="fa fa-money-bill-wave" />
-                                            <h:outputText value="Payment" class="mx-4"></h:outputText>
+                                            <h:outputText value="Select Pharmacy Credit Bill" class="mx-4"></h:outputText>
                                         </div>
-                                        <div>
-                                            <p:commandButton 
-                                                id="btnAddIx" 
-                                                value="Add" 
-                                                action="#{cashRecieveBillController.addToBillPharmacy()}" 
-                                                ajax="false" 
-                                                icon="fa fa-plus"
-                                                class=" ui-button-success"/>
-                                        </div>
+
+                                        <p:commandButton
+                                            id="btnAddIx"
+                                            value="Add"
+                                            action="#{cashRecieveBillController.addToBillPharmacy()}"
+                                            ajax="false"
+                                            icon="fa fa-plus"
+                                            class="ui-button-success gap-2"/>
                                     </div>
-
-
 
                                 </f:facet>
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Select Credit Bill" />      
+                                        <p:outputLabel value="Select Pharmacy Credit Bill" />
                                     </div>
                                     <div class="col-md-8">
-                                        <p:autoComplete widgetVar="aIx" id="acIx" 
-                                                        placeholder="Type here to get suggestions"
-                                                        forceSelection="true" 
-                                                        value="#{cashRecieveBillController.currentBillItem.referenceBill}" 
-                                                        completeMethod="#{billController.completePharmacyCreditBill}" 
-                                                        var="ix" itemLabel="#{ix.deptId}"
-                                                        itemValue="#{ix}" class="w-100"
-                                                        inputStyleClass="w-100"
-                                                        >
+                                        <p:autoComplete
+                                            widgetVar="aIx"
+                                            id="acIx"
+                                            placeholder="Type here to get suggestions"
+                                            forceSelection="true"
+                                            value="#{cashRecieveBillController.currentBillItem.referenceBill}"
+                                            completeMethod="#{billController.completePharmacyCreditBill}"
+                                            var="ix" itemLabel="#{ix.deptId}"
+                                            itemValue="#{ix}" class="w-100" inputStyleClass="w-100">
                                             <p:column>
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Bill No"/>
                                                 </f:facet>
                                                 <h:outputLabel value="#{ix.deptId}"/>
-                                            </p:column>                                  
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    <h:outputLabel value="Bill No"/>
-                                                </f:facet>
-                                                <h:outputLabel value="#{ix.deptId}"/>
-                                            </p:column>                                  
+                                            </p:column>
                                             <p:column>
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Credit Company"/>
@@ -104,9 +95,9 @@
                                             </p:column>
                                             <p:column>
                                                 <f:facet name="header">
-                                                    <h:outputLabel value="Due Amount"/>
+                                                    <h:outputLabel value="Due Amount*"/>
                                                 </f:facet>
-                                                <h:outputLabel value="#{ix.netTotal+ix.vat +ix.paidAmount}" style="color: red;">
+                                                <h:outputLabel value="#{ix.balance}" style="color: red;">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
@@ -126,64 +117,70 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render="val" listener="#{cashRecieveBillController.selectBillListener()}"/>
+                                            <f:ajax 
+                                                execute="@this" 
+                                                event="itemSelect" 
+                                                render="val" 
+                                                listener="#{cashRecieveBillController.selectBillListener()}"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
 
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Payment Method" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:selectOneMenu class="w-100"  id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
-                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
-                                        </p:selectOneMenu>
-                                    </div>
-                                </div>
-
-                                <div class="row my-2">
-
-                                    <div class="col-md-10">
-                                        <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--                                <div class="row my-2 d-flex align-items-center">
-                                                                    <div class="col-md-4">
-                                                                        <p:outputLabel value="Comment" />      
-                                                                    </div>
-                                                                    <div class="col-md-8">
-                                                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
-                                                                    </div>
-                                                                </div>-->
 
 
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Value" />      
+                                        <p:outputLabel value="Value" />
                                     </div>
                                     <div class="col-md-8">
-                                        <p:inputText class="w-100" autocomplete="off" id="val" value="#{cashRecieveBillController.currentBillItem.netValue}">
+                                        <p:inputText
+                                            autocomplete="off"
+                                            class="w-100"
+                                            id="val"
+                                            onfocus="this.select();"
+                                            value="#{cashRecieveBillController.currentBillItem.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
 
                                     </div>
                                 </div>
+
+
+                            </p:panel>
+                        </div>
+
+                        <div class="col-md-6">
+                            <p:panel>
+                                <f:facet name="header" >
+                                    <div class="d-flex justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <h:outputText styleClass="fa fa-money-bill-wave" />
+                                            <h:outputText value="Payment" class="mx-4"></h:outputText>
+                                        </div>
+
+
+                                    </div>
+
+                                </f:facet>
+
+
+                                <div class="row my-2 align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Payment Method" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbPs"
+                                            value="#{cashRecieveBillController.current.paymentMethod}">
+                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                            <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+
 
                                 <div class="row my-2">
                                     <div class="col-md-2"></div>
@@ -193,8 +190,8 @@
                                     <div class="col-md-4">
                                         <p:outputLabel value="Net Total" />
                                     </div>
-                                    <div class="col-md-8">
-                                        <p:outputLabel class="w-100" id="tot" value="#{cashRecieveBillController.current.netTotal}">
+                                    <div class="col-md-4">
+                                        <p:outputLabel id="tot" value="#{cashRecieveBillController.current.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </div>
@@ -208,40 +205,74 @@
                                         <p:inputTextarea value="#{cashRecieveBillController.comment}" class="w-100"/>
                                     </div>
                                 </div>
-                            </p:panel>
-                        </div>
+                                <div class="row my-2">
+                                    <div class="col-md-10">
+                                        <div>
+                                            <h:panelGroup id="gpPaymentDetails" >
+                                                <h:panelGroup
+                                                    id="creditCard"
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'Card'}">
+                                                    <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
 
-                        <div class="col-md-6">
+                                                <h:panelGroup
+                                                    id="cheque"
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'Cheque'}" >
+                                                    <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="slip"
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
+                                                    <pa:slipDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:panel>
+
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
                             <p:panel>
                                 <f:facet name="header">
                                     <h:outputLabel value="Items For Billing"/>
-                                </f:facet>   
-
-
+                                </f:facet>
                                 <p:dataTable value="#{cashRecieveBillController.billItems}" rowIndexVar="rowIndex"   var="b" id="items">
-
-                                    <p:column >  
+                                    <p:column >
                                         <f:facet name="header">
-                                            <h:outputLabel value="Bill No"/>                                    
-                                        </f:facet>                               
+                                            <h:outputLabel value="Bill No"/>
+                                        </f:facet>
                                         <p:outputLabel value="#{b.referenceBill.deptId}"/>
                                     </p:column>
-                                    <p:column >  
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Bill No"/>                                    
-                                        </f:facet>                               
-                                        <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                                    <p:column headerText="Credit Company">
+                                        <p:outputLabel value="#{b.referenceBill.toInstitution.name}" />
                                     </p:column>
-                                    <p:column headerText="Credit Company">     
-                                        <p:outputLabel value="#{b.referenceBill.toInstitution.name}" />                                
+                                    <p:column headerText="Bill Net Total">
+                                        <h:outputLabel value="#{b.referenceBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Net Total">
+                                    <p:column headerText="Refund Value">
+                                        <h:outputLabel value="#{cashRecieveBillController.getRefundAmountForBill(b.referenceBill)}" style="color: red;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Paying this time">
                                         <h:outputLabel value="#{b.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Total Paid Before">
+                                        <h:outputLabel value="#{b.referenceBill.paidAmount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Remove">
-                                        <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" >
+                                        <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" class="ui-button-danger">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
@@ -251,37 +282,40 @@
                 </p:panel>
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
-                    <div class="d-flex justify-content-end">
-                        <p:commandButton 
-                            value="New Bill" 
-                            ajax="false" 
-                            action="#{cashRecieveBillController.prepareNewBill()}"  
+                    <div class="d-flex">
+
+                        <p:commandButton
+                            value="New Bill"
+                            ajax="false"
+                            action="#{cashRecieveBillController.prepareNewBill()}"
                             icon="fa fa-plus"
-                            class="ui-button-warning mx-3 my-3">
+                            class="ui-button-success m-1">
                         </p:commandButton>
-                           <p:commandButton
-                               value="To Cancel Bill"
-                               disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
-                               icon="pi pi-times"
-                               ajax="false"
-                               action="credit_company_bill_pharmacy_cancel" 
-                               styleClass="ui-button-danger mx-3 my-3">
-                               <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
+
+                        <p:commandButton
+                            value="To Cancel Bill"
+                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
+                            icon="pi pi-times"
+                            ajax="false"
+                            action="credit_company_bill_pharmacy_cancel"
+                            styleClass="ui-button-danger m-1">
+                            <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
                         </p:commandButton>
-                        <p:commandButton value="Print"
-                                         icon="fa fa-print"
-                                         styleClass="ui-button-info"
-                                         ajax="false"
-                                         class="ui-button-info mx-3 my-3"
-                                         >
-                            <p:printer target="gpBillPreview"/>
+                        <p:commandButton
+                            value="Print"
+                            ajax="false"
+                            icon="fas fa-print"
+                            class="ui-button-info m-1">
+                            <p:printer target="prints" />
                         </p:commandButton>
+
                     </div>
-                    <h:panelGroup id="gpBillPreview" >
-                        <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>   
+                    <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Cancelled" rendered="#{cashRecieveBillController.current.cancelled eq true}" ></p:outputLabel>
+                    <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Refunded" rendered="#{cashRecieveBillController.current.refunded eq true}" ></p:outputLabel>
+
+                    <h:panelGroup id="prints" class="align-center">
+                        <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>
                     </h:panelGroup>
-
-
                 </p:panel>
 
 

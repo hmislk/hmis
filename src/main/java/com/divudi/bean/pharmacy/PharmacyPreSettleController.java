@@ -179,7 +179,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            if (arrSize == 0) {
+                return; // No payment methods added yet
+            }
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethodData() == null) {
+                return; // Payment method data not initialized
+            }
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
@@ -217,6 +223,33 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
 
         }
+    }
+
+    private void cleanupInvalidPaymentDetails() {
+        if (paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return;
+        }
+
+        // Remove ComponentDetails with null paymentMethodData or null paymentMethod
+        paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()
+            .removeIf(cd -> cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null);
+    }
+
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public void updateTotals() {
@@ -541,6 +574,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 return true;
             }
 
+            // Clean up invalid ComponentDetails before validation
+            cleanupInvalidPaymentDetails();
+
             double remain = Math.abs(calculatRemainForMultiplePaymentTotal());
             if (remain > 1.0) {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
@@ -605,21 +641,33 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void updateBalanceInBill(Bill preBill, Bill saleBill, PaymentMethod salePaymentMethod, PaymentMethodData paymentMethodDataForSaleBill) {
-        if (salePaymentMethod == PaymentMethod.Cash) {
+        // For credit methods (Credit and Staff Credit): paidAmount = 0, balance = netTotal
+        if (salePaymentMethod == PaymentMethod.Credit || salePaymentMethod == PaymentMethod.Staff) {
+            saleBill.setPaidAmount(0);
+            saleBill.setBalance(preBill.getNetTotal());
+        } else if (salePaymentMethod == PaymentMethod.Cash) {
             saleBill.setCashPaid(cashPaid);
+            saleBill.setPaidAmount(cashPaid);
             saleBill.setBalance(cashPaid - preBill.getNetTotal());
         } else if (salePaymentMethod == PaymentMethod.Card) {
-            saleBill.setBalance(paymentMethodDataForSaleBill.getCreditCard().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.Cheque) {
-            saleBill.setBalance(paymentMethodData.getCheque().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            saleBill.setBalance(calculatRemainForMultiplePaymentTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.Slip) {
-            saleBill.setBalance(paymentMethodData.getSlip().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else if (salePaymentMethod == PaymentMethod.ewallet) {
-            saleBill.setBalance(paymentMethodData.getEwallet().getTotalValue() - preBill.getNetTotal());
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         } else {
-            saleBill.setBalance(-preBill.getNetTotal());
+            // Default for other payment methods
+            saleBill.setPaidAmount(preBill.getNetTotal());
+            saleBill.setBalance(0);
         }
     }
 
@@ -797,6 +845,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
+                    continue;
+                }
                 Payment p = new Payment();
                 p.setBill(bill);
                 p.setInstitution(getSessionController().getInstitution());
@@ -826,9 +877,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     case PatientDeposit:
                         p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
+                        break;
                     case Agent:
                     case Credit:
-                    case Slip:
                     case OnCall:
                     case OnlineSettlement:
                     case Staff:
@@ -1073,21 +1129,23 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
             // Validate individual payment methods in multiple payments
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
-                    double creditLimitAbsolute = 0.0;
-                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
+                if (cd.getPaymentMethod() != null && cd.getPaymentMethodData() != null) {
+                    if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
+                        double creditLimitAbsolute = 0.0;
+                        PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPreBill().getPatient(), sessionController.getDepartment());
 
-                    if (pd == null) {
-                        JsfUtil.addErrorMessage("No Patient Deposit");
-                        return true;
-                    }
+                        if (pd == null) {
+                            JsfUtil.addErrorMessage("No Patient Deposit");
+                            return true;
+                        }
 
-                    double runningBalance = pd.getBalance();
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+                        double runningBalance = pd.getBalance();
+                        double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-                    if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
-                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
-                        return true;
+                        if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                            JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                            return true;
+                        }
                     }
                 }
             }
@@ -1109,18 +1167,50 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                // IMPORTANT: Staff uses getStaffCredit() - do NOT confuse with Staff_Welfare
-                // PaymentMethod.Staff -> PaymentMethodData.getStaffCredit()
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                // IMPORTANT: Staff_Welfare uses getStaffWelfare() - do NOT confuse with Staff
-                // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                if (cd == null) {
+                    continue;
+                }
+                if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    // Only add the value from the selected payment method for this ComponentDetail
+                    switch (cd.getPaymentMethod()) {
+                        case Cash:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            break;
+                        case Card:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            break;
+                        case Cheque:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            break;
+                        case ewallet:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            break;
+                        case PatientDeposit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            break;
+                        case Slip:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            break;
+                        case Staff:
+                            // IMPORTANT: Staff uses getStaffCredit() - do NOT confuse with Staff_Welfare
+                            // PaymentMethod.Staff -> PaymentMethodData.getStaffCredit()
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            break;
+                        case Staff_Welfare:
+                            // IMPORTANT: Staff_Welfare uses getStaffWelfare() - do NOT confuse with Staff
+                            // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        case Credit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         }
         return multiplePaymentMethodTotalValue;
@@ -1802,6 +1892,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
                 billSettlingStarted.set(false);
 //                paymentMethod = getPreBill().getPaymentMethod();
+
+                // Initialize payment method data (including patient deposit balance) before page loads
+                checkAndUpdateBalance();
+
                 return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
             }
         } else {
@@ -2049,7 +2143,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             if (pd != null && pd.getId() != null) {
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit && cd.getPaymentMethodData() != null) {
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
@@ -2196,6 +2290,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
             for (Payment originalPayment : originalPayments) {
                 ComponentDetail cd = new ComponentDetail();
+                cd.setPaymentMethodData(new PaymentMethodData());
                 cd.setPaymentMethod(originalPayment.getPaymentMethod());
 
                 // Set payment details based on method - use absolute value for refunds

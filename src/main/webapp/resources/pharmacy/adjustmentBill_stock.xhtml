@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -76,6 +76,18 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Comments"/>
+                        </td>
+                        <td style="width: 10px;"/>
+                        <td >:</td>
+                        <td style="width: 5px;"/>
+                        <td colspan="6">
+                            <h:outputLabel value="#{cc.attrs.bill.comments}">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
             </div>
 
@@ -90,11 +102,11 @@
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
 
-                    <p:column  style="width: 60px;text-align: right!important;" >
+                    <p:column  style="width: 6em;text-align: right!important;" >
                         <f:facet name="header">
                             <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
@@ -125,15 +137,19 @@
                             <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>
+                    
+                    <p:column class="text-start">
+                        <f:facet name="header">
+                            <h:outputLabel value="Comments" style="font-weight: bold!important;" />
+                        </f:facet>
+                         <h:outputLabel value="#{bip.descreption}">
+                        </h:outputLabel>
+                    </p:column>
 
                 </p:dataTable>
             </div>
 
-            <h:panelGrid columns="2" style="min-width: 100%;" class="billDetailsFiveFive">
-                <h:outputLabel value="Comment" />
-                <h:outputLabel value="#{cc.attrs.bill.comments}" >
-                </h:outputLabel>
-            </h:panelGrid>
+
         </div>
     </cc:implementation>
 </html>

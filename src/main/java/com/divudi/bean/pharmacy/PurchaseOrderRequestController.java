@@ -424,7 +424,8 @@ public class PurchaseOrderRequestController implements Serializable {
             configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "POR");
         }
 
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
 
@@ -433,6 +434,11 @@ public class PurchaseOrderRequestController implements Serializable {
         if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
             if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
                 billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
                 getCurrentBill().setDeptId(billId);
             }
         } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
@@ -470,9 +476,12 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
         getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
-        getBillFacade().edit(getCurrentBill());
+        if (currentBill.getId() == null) {
+            getBillFacade().create(getCurrentBill());
+        } else {
+            getBillFacade().edit(getCurrentBill());
+        }
         notificationController.createNotification(getCurrentBill());
-
     }
 
     public void generateBillComponentsForAllSupplierItems(List<Item> items) {
@@ -628,19 +637,38 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
             return;
         }
+        double recalculatedTotalBillItemsCount = calculateTotalBillItemsCount(billItems);
+        if (recalculatedTotalBillItemsCount == 0) {
+            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
+            return;
+        }
         if (currentBill.getId() == null) {
             saveRequestWithoutMessage();
         }
         finalizeBill();
         totalBillItemsCount = 0;
         finalizeBillComponent();
-        if (totalBillItemsCount == 0) {
-            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
-            return;
-        }
-
+        currentBill = billService.reloadBill(currentBill);
         JsfUtil.addSuccessMessage("Request successfully finalized.");
         printPreview = true;
+    }
+
+    private double calculateTotalBillItemsCount(List<BillItem> billItems) {
+        double total = 0d;
+        if (billItems == null) {
+            return total;
+        }
+        for (BillItem b : billItems) {
+            BigDecimal qUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal fqUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getFreeQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getFreeQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal totalUnits = qUnits.add(fqUnits);
+            if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
+                total += totalUnits.doubleValue();
+            }
+        }
+        return total;
     }
 
     public void prepareEmailDialog() {

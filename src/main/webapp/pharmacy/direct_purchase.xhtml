@@ -108,6 +108,7 @@
                                             autocomplete="off"
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
+                                            <f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />
                                             <p:ajax 
                                                 event="blur"
                                                 process="@this" 
@@ -128,6 +129,7 @@
                                             class="w-100 m-1 text-end"
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.freeQuantity}">
+                                            <f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />
                                             <p:ajax 
                                                 event="blur"
                                                 process="@this"
@@ -157,6 +159,8 @@
                                                 :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
 
                                         </p:inputText>
+                                        <p:keyFilter for="txtFreeQty" mask="#{pharmacyDirectPurchaseController.currentBillItem.item.allowFractions ? 'num' : 'int'}" />
+                                        <p:keyFilter for="txtQty" mask="#{pharmacyDirectPurchaseController.currentBillItem.item.allowFractions ? 'num' : 'int'}" />
 
                                     </div>
                                     <div class="col-1">

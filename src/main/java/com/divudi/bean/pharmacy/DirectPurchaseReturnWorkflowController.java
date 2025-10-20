@@ -24,6 +24,9 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -37,6 +40,7 @@ import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -987,6 +991,14 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 }
 
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
+
+                // DEBUG: Log the rate setting
+                System.out.println("=== Bill Preparation DEBUG ===");
+                System.out.println("Item: " + itemName);
+                System.out.println("lineGrossRateForAUnit (from config): " + lineGrossRateForAUnit);
+                System.out.println("unitsPerPack: " + unitsPerPack);
+                System.out.println("lineGrossRateAsEntered (rate × upp): " + lineGrossRateAsEntered);
+
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
                 calculateLineTotal(newBillItemInReturnBill);
                 getBillItems().add(newBillItemInReturnBill);
@@ -1310,22 +1322,45 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         calculateTotal();
     }
 
-    // Helper method to get return rate for units (following legacy pattern)
+    // Helper method to get return rate for units based on configuration
     private BigDecimal getReturnRateForUnits(BillItem originalBillItem) {
-        if (originalBillItem == null || originalBillItem.getBillItemFinanceDetails() == null) {
+        BillItemFinanceDetails fd = originalBillItem.getBillItemFinanceDetails();
+        if (fd == null) {
             return BigDecimal.ZERO;
         }
-
-        BillItemFinanceDetails originalFd = originalBillItem.getBillItemFinanceDetails();
-
-        // Return the purchase rate per unit
-        if (originalFd.getLineGrossRate() != null && originalFd.getUnitsPerPack() != null) {
-            return originalFd.getLineGrossRate().divide(originalFd.getUnitsPerPack(), 4, BigDecimal.ROUND_HALF_UP);
-        } else if (originalBillItem.getPharmaceuticalBillItem() != null) {
-            return BigDecimal.valueOf(originalBillItem.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+        BigDecimal rate = fd.getGrossRate();
+        if (rate == null) {
+            rate = BigDecimal.ZERO;
         }
 
-        return BigDecimal.ZERO;
+        // Check Direct Purchase Return specific configuration keys
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
+                && fd.getLineCostRate() != null) {
+            rate = fd.getLineCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
+                && fd.getTotalCostRate() != null) {
+            rate = fd.getTotalCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", false)
+                && fd.getLineGrossRate() != null) {
+            if (originalBillItem.getItem() instanceof Ampp) {
+                if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack(), 4, RoundingMode.HALF_UP);
+                } else {
+                    rate = fd.getLineGrossRate();
+                }
+            } else if (originalBillItem.getItem() instanceof Vmpp) {
+                if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack(), 4, RoundingMode.HALF_UP);
+                } else {
+                    rate = fd.getLineGrossRate();
+                }
+            } else if (originalBillItem.getItem() instanceof Amp) {
+                rate = fd.getLineGrossRate();
+            } else if (originalBillItem.getItem() instanceof Vmp) {
+                rate = fd.getLineGrossRate();
+            }
+        }
+        return rate != null ? rate : BigDecimal.ZERO;
     }
 
     private void generateBillItemsForUpdate() {
@@ -1625,21 +1660,14 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
         }
 
-        // Check if rate modification is allowed
-        boolean rateChangeAllowed = configOptionApplicationController.getBooleanValueByKey("Purchase Return - Changing Return Rate is allowed", false);
+        // CRITICAL: DO NOT reset the rate here!
+        // The rate was set at bill creation time based on configuration and should NEVER be changed
+        // during validation or quantity changes. The lineGrossRate contains the configuration-based
+        // return rate (cost rate, purchase rate, etc.) and must remain immutable after bill creation.
 
-        if (!rateChangeAllowed && billItem.getReferanceBillItem() != null) {
-            // For AMPP items, we need to get the original pack rate, not unit rate
-            if (billItem.getItem() instanceof Ampp) {
-                // For AMPP: Get original pack rate from the original bill item
-                BigDecimal originalPackRate = getOriginalPackRate(billItem.getReferanceBillItem());
-                fd.setLineGrossRate(originalPackRate);
-            } else {
-                // For AMP: Use unit rate as before
-                BigDecimal originalRate = BigDecimal.valueOf(getOriginalPurchaseRate(billItem.getItem()));
-                fd.setLineGrossRate(originalRate);
-            }
-        }
+        // Note: The "Purchase Return - Changing Return Rate is allowed" configuration only controls
+        // whether users can MANUALLY edit the rate in the UI, but has nothing to do with preserving
+        // the configuration-based rate during validation.
 
         return isValid;
     }
@@ -2080,6 +2108,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
 
         // CRITICAL: Store the current rate BEFORE any processing
+        // This rate is set based on configuration in getReturnRateForUnits() and must be preserved
         BigDecimal existingRate = fd.getLineGrossRate();
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
@@ -2098,17 +2127,11 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             fd.setQuantityByUnits(quantityByUnits);
             fd.setFreeQuantityByUnits(freeQuantityByUnits);
 
-            // Calculate unit rate from existing pack rate
-            BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
-                    ? existingRate.divide(unitsPerPack, 4, BigDecimal.ROUND_HALF_UP)
-                    : BigDecimal.ZERO;
-
             // Sync pharmaceutical bill item with calculated values
+            // NOTE: DO NOT set rate fields in PharmaceuticalBillItem here
+            // The rates should come from the original purchase item, not the return configuration
             phi.setQty(quantityByUnits.doubleValue());
             phi.setFreeQty(freeQuantityByUnits.doubleValue());
-            phi.setPurchaseRateInUnit(ratePerUnit.doubleValue());
-            phi.setPurchaseRatePack(existingRate.doubleValue());
-            phi.setPurchaseRate(existingRate.doubleValue()); // Pack rate for AMPP
 
         } else {
             // For AMP items: Rate is per unit
@@ -2120,13 +2143,14 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             fd.setFreeQuantityByUnits(freeQuantity);
 
             // Sync pharmaceutical bill item with values
+            // NOTE: DO NOT set rate fields in PharmaceuticalBillItem here
+            // The rates should come from the original purchase item, not the return configuration
             phi.setQty(quantity.doubleValue());
             phi.setFreeQty(freeQuantity.doubleValue());
-            phi.setPurchaseRateInUnit(existingRate.doubleValue());
-            phi.setPurchaseRate(existingRate.doubleValue());
         }
 
         // CRITICAL: Restore the original rate to prevent external service interference
+        // This ensures the configuration-based rate is maintained throughout the workflow
         fd.setLineGrossRate(existingRate);
     }
 
@@ -2158,9 +2182,20 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             rate = BigDecimal.ZERO;
         }
 
+        // CRITICAL: Use absolute values for calculation (quantities might already be negative from previous saves)
+        qty = qty.abs();
+        freeQty = freeQty.abs();
+
         // For Direct Purchase returns, line total = (quantity + free quantity) × rate
         BigDecimal totalQty = qty.add(freeQty);
         BigDecimal lineTotal = totalQty.multiply(rate);
+
+        // DEBUG: Log the calculation
+        System.out.println("=== calculateLineTotal DEBUG ===");
+        System.out.println("Item: " + itemName);
+        System.out.println("Qty: " + qty + ", FreeQty: " + freeQty + ", TotalQty: " + totalQty);
+        System.out.println("Rate (lineGrossRate): " + rate);
+        System.out.println("Calculated lineTotal: " + lineTotal);
 
         // Set total quantity (in packs for AMPP, in units for AMP) - make negative for returns (stock moving out)
         fd.setTotalQuantity(totalQty.abs().negate());
@@ -2170,11 +2205,14 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         fd.setLineNetTotal(lineTotal);
         bi.setNetValue(lineTotal.doubleValue());
 
-        // Set rates and values from original Direct Purchase item
+        System.out.println("After setting: lineGrossTotal=" + fd.getLineGrossTotal() + ", lineNetTotal=" + fd.getLineNetTotal());
+
+        // Calculate and set quantity-related fields only
+        // CRITICAL: DO NOT modify rates - they were set at bill creation time based on configuration
         if (bi.getReferanceBillItem() != null) {
             PharmaceuticalBillItem originalPhi = bi.getReferanceBillItem().getPharmaceuticalBillItem();
             if (originalPhi != null) {
-                // Get the original rates (ALWAYS per unit per HMIS standard)
+                // Get the original rates from original purchase (for reference value calculations only)
                 double purchaseRatePerUnit = originalPhi.getPurchaseRate();
                 double costRatePerUnit = originalPhi.getCostRate();
                 double retailRatePerUnit = originalPhi.getRetailRate();
@@ -2192,33 +2230,15 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 fd.setQuantity(qty.abs().negate());
                 fd.setTotalQuantityByUnits(totalReturningQtyByUnits.abs().negate());
 
-                // Calculate values (quantity in units × rate per unit) - make negative for returns (stock moving out)
+                // Calculate reference values (quantity in units × original rate per unit)
+                // These are for reporting/reference only - the actual return value uses lineGrossRate
                 fd.setValueAtPurchaseRate(BigDecimal.valueOf(totalReturningQtyInUnits * purchaseRatePerUnit).abs().negate());
                 fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit).abs().negate());
                 fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit).abs().negate());
 
-                // Set rates in BillItemFinanceDetails (in units for AMPs, in packs for AMPPs)
-                if (isAmpp) {
-                    // For AMPPs: Convert per-unit rates to per-pack rates
-                    BigDecimal purchaseRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
-                            ? BigDecimal.valueOf(purchaseRatePerUnit).multiply(unitsPerPack)
-                            : BigDecimal.ZERO;
-                    BigDecimal costRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
-                            ? BigDecimal.valueOf(costRatePerUnit).multiply(unitsPerPack)
-                            : BigDecimal.ZERO;
-                    BigDecimal retailRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
-                            ? BigDecimal.valueOf(retailRatePerUnit).multiply(unitsPerPack)
-                            : BigDecimal.ZERO;
-
-                    fd.setPurchaseRate(purchaseRatePerPack);
-                    fd.setCostRate(costRatePerPack);
-                    fd.setRetailSaleRate(retailRatePerPack);
-                } else {
-                    // For AMPs: Rates are already per unit
-                    fd.setPurchaseRate(BigDecimal.valueOf(purchaseRatePerUnit));
-                    fd.setCostRate(BigDecimal.valueOf(costRatePerUnit));
-                    fd.setRetailSaleRate(BigDecimal.valueOf(retailRatePerUnit));
-                }
+                // CRITICAL: DO NOT set purchaseRate, costRate, retailSaleRate, or lineGrossRate here
+                // These rates were set at bill creation time based on configuration and MUST NOT be changed
+                // The lineGrossRate contains the configuration-based return rate and is used for lineTotal calculation
             }
         }
 

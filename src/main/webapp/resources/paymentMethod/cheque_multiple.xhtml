@@ -11,6 +11,7 @@
         <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" required="true"/>
+        <cc:attribute name="componentDetail" type="com.divudi.core.data.dataStructure.ComponentDetail" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -23,7 +24,8 @@
                     value="#{cc.attrs.paymentMethodData.cheque.totalValue}"
                     styleClass="form-control"
                     style="width: 150px;"
-                    autocomplete="off">
+                    autocomplete="off"
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
                     <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
@@ -37,7 +39,8 @@
                     value="#{cc.attrs.paymentMethodData.cheque.no}"
                     styleClass="form-control"
                     style="width: 150px;"
-                    autocomplete="off">
+                    autocomplete="off"
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
                     <p:ajax process="@this"/>
                 </p:inputText>
             </div>

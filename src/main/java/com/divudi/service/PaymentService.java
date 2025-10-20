@@ -828,19 +828,36 @@ public class PaymentService {
                 JsfUtil.addErrorMessage("Patient information is required for Patient Deposit payments");
                 return true;
             }
-            if (!patient.getHasAnAccount()) {
-                JsfUtil.addErrorMessage("Patient has no account. Can't proceed with Patient Deposits");
-                return true;
-            }
-            double creditLimitAbsolute = Math.abs(patient.getCreditLimit());
-            double runningBalance = patient.getRunningBalance() != null ? patient.getRunningBalance() : 0.0;
-            double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-            double effectiveTotal = netTotal != null ? netTotal : 0.0;
+            // Check if patient deposit data is available in paymentMethodData
+            if (paymentMethodData != null && paymentMethodData.getPatient_deposit() != null) {
+                ComponentDetail patientDepositDetail = paymentMethodData.getPatient_deposit();
 
-            if (effectiveTotal > availableForPurchase) {
-                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
-                return true;
+                // Use the actual PatientDeposit entity from paymentMethodData if available
+                if (patientDepositDetail.getPatientDepost() != null) {
+                    double availableBalance = patientDepositDetail.getPatientDepost().getBalance();
+                    double effectiveTotal = netTotal != null ? netTotal : 0.0;
+
+                    if (effectiveTotal > availableBalance) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit. Available: " + availableBalance + ", Required: " + effectiveTotal);
+                        return true;
+                    }
+                } else {
+                    // Fallback: PatientDeposit not initialized in paymentMethodData
+                    // This can happen if checkAndUpdateBalance() wasn't called before validation
+                    if (!patient.getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has no account. Can't proceed with Patient Deposits");
+                        return true;
+                    }
+                    // Skip validation if PatientDeposit entity is not available
+                    // The specific controller validation will handle it
+                }
+            } else {
+                // Fallback for cases where paymentMethodData is not populated
+                if (!patient.getHasAnAccount()) {
+                    JsfUtil.addErrorMessage("Patient has no account. Can't proceed with Patient Deposits");
+                    return true;
+                }
             }
         }
 

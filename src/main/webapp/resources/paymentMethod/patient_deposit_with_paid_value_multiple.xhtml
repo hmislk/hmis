@@ -11,6 +11,7 @@
         <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" required="true"/>
+        <cc:attribute name="componentDetail" type="com.divudi.core.data.dataStructure.ComponentDetail" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -35,7 +36,8 @@
                         onfocus="this.select();"
                         value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
                         styleClass="form-control"
-                        style="width: 150px;">
+                        style="width: 150px;"
+                        disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
                         <f:convertNumber pattern="#,##0.00" />
                         <p:ajax event="keyup" process="txtMpPd" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     </p:inputText>

@@ -473,6 +473,9 @@ public class Bill implements Serializable, RetirableEntity {
 
     @Transient
     private Institution transientSupplier;
+    
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Request currentRequest;
 
     public Bill() {
         if (status == null) {
@@ -3054,6 +3057,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
     }
     
     
