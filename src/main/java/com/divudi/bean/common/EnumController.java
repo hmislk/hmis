@@ -549,6 +549,32 @@ public class EnumController implements Serializable {
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
         return btas;
     }
+    
+    public List<RequestType> getRequestTypes() {
+        List<RequestType> rt = new ArrayList<>();
+        rt.add(RequestType.BILL_CANCELLATION);
+        rt.add(RequestType.ITEM_REFUND);
+        rt.add(RequestType.FULL_REFUND);
+        rt.add(RequestType.PARTIAL_REFUND);
+        rt.add(RequestType.SERVICE_REFUND);
+        //rt.add(RequestType.EDIT_REQUEST);
+        //rt.add(RequestType.INFORMATION_UPDATE);
+        //rt.add(RequestType.QUANTITY_CHANGE);
+        //rt.add(RequestType.DATE_MODIFICATION);
+        return rt;
+    }
+    
+    public List<RequestStatus> getRequestStatus() {
+        List<RequestStatus> rs = new ArrayList<>();
+        rs.add(RequestStatus.PENDING);
+        rs.add(RequestStatus.UNDER_REVIEW);
+        rs.add(RequestStatus.APPROVED);
+        rs.add(RequestStatus.REJECTED);
+        rs.add(RequestStatus.COMPLETED);
+        rs.add(RequestStatus.CANCELLED);
+        rs.add(RequestStatus.EXPIRED);
+        return rs;
+    }
 
     public List<BillTypeAtomic> getBillTypesAtomic(String query) {
         return Arrays.stream(BillTypeAtomic.values())
