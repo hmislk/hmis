@@ -1424,6 +1424,12 @@ public class BillService {
 
         jpql += " order by b.createdAt desc";
 
+        // Debug logging
+        System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
+        System.out.println("JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+        System.out.println("========================================================");
+
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
