@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SearchController;
@@ -86,6 +87,8 @@ public class GrnReturnWorkflowController implements Serializable {
     private SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     @Inject
     EnumController enumController;
     @Inject
@@ -943,6 +946,38 @@ public class GrnReturnWorkflowController implements Serializable {
 
     // Event handlers (with comprehensive validation)
     public void onEdit(BillItem bi) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            // Guard against null billItemFinanceDetails
+            if (bi.getBillItemFinanceDetails() == null) {
+                validateReturnQuantities(bi);
+                calculateLineTotal(bi);
+                calculateTotal();
+                return;
+            }
+
+            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+
+            // Check quantity for decimal values
+            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+                calculateLineTotal(bi);
+                calculateTotal();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+
+            // Check free quantity for decimal values
+            if (freeQty != null && freeQty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setFreeQuantity(BigDecimal.ZERO);
+                calculateLineTotal(bi);
+                calculateTotal();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         validateReturnQuantities(bi);
         calculateLineTotal(bi);
         calculateTotal();
