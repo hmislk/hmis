@@ -79,6 +79,25 @@
                                             #{billController.output}
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Add Completed State</strong></td>
+                                        <td>
+                                            Searches for pharmacy bills of specified types where completed=false
+                                            and updates them to completed=true. Sets completedAt timestamp and
+                                            completedBy user. Uses the date range filter if provided.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.addCompletedStateToBills()}"
+                                                ajax="false"
+                                                value="Add Completed State"
+                                                styleClass="ui-button-success m-1"
+                                                icon="pi pi-check-circle" />
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </p:tab>
