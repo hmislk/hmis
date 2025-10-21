@@ -565,6 +565,12 @@ public class OpdReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+            
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            
 
             opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
                     fromDate, toDate, institution, site, department, webUser,
