@@ -10,8 +10,9 @@
     <h:body>
         <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
+                <!-- DTO-OPTIMIZED VERSION: Uses database aggregation for better performance -->
                 <h:form>
-                    <p:panel header="Itemized Sales Summary - DTO">
+                    <p:panel header="Itemized Sales Summary (Fast - DTO-Based)">
                         <div class="row">
                             <div class="col-md-12">
                                 <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -145,7 +146,7 @@
                                 <strong>Performance Optimized:</strong> Using DTO-based queries for improved memory usage and load times.
                             </div>
                         </h:panelGroup>
-                       
+
                                 <p:dataTable id="tbl"
                                              value="#{searchController.opdSaleSummaryDtos}"
                                              var="row"
@@ -153,21 +154,41 @@
                                              rows="10"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,20"
-                                             rowKey="#{row.itemName}">
+                                             rowKey="#{row.itemId}">
                                     <f:facet name="header" >
-                                        <h:outputText value="Itemized Sales Summary (DTO Method)" ></h:outputText>
+                                        <h:outputText value="Itemized Sales Summary (DTO - Optimized)" ></h:outputText>
+                                    </f:facet>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="Total" ></h:outputText>
+                                        <p:spacer width="50" ></p:spacer>
+                                        <h:outputText value="#{searchController.opdSaleSummaryTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </f:facet>
                                     <p:column>
                                         <f:facet name="header">
                                             <h:outputText value="Category" />
                                         </f:facet>
                                         <h:outputText value="#{row.categoryName}"  />
+                                        <p:commandLink
+                                            class="mx-2"
+                                            rendered="#{row.categoryId ne null}"
+                                            action="#{searchController.navigateToOpdBillItemListFromDto(row)}"
+                                            ajax="false">
+                                            <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
+                                        </p:commandLink>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
                                             <h:outputText value="Item / Service" />
                                         </f:facet>
                                         <h:outputText value="#{row.itemName}"  />
+                                        <p:commandLink
+                                            class="mx-2"
+                                            rendered="#{row.itemId ne null}"
+                                            action="#{searchController.navigateToOpdBillItemListFromDto(row)}">
+                                            <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                        </p:commandLink>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
