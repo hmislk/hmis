@@ -286,7 +286,7 @@ public class PurchaseOrderController implements Serializable {
             BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
 
             // Check quantity for decimal values
-            if (qty != null && qty.doubleValue() % 1 != 0) {
+            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
                 bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
                 calculateLineValues(bi);
                 calculateBillTotals();
@@ -295,7 +295,7 @@ public class PurchaseOrderController implements Serializable {
             }
 
             // Check free quantity for decimal values
-            if (freeQty != null && freeQty.doubleValue() % 1 != 0) {
+            if (freeQty != null && freeQty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
                 bi.getBillItemFinanceDetails().setFreeQuantity(BigDecimal.ZERO);
                 calculateLineValues(bi);
                 calculateBillTotals();

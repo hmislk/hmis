@@ -310,7 +310,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Validate integer-only quantity if configuration is enabled
         if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
             BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
-            if (qty != null && qty.doubleValue() % 1 != 0) {
+            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
                 bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
                 calculateItemTotals(bi);
                 JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
@@ -337,7 +337,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Validate integer-only free quantity if configuration is enabled
         if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
             BigDecimal freeQty = f.getFreeQuantity();
-            if (freeQty != null && freeQty.doubleValue() % 1 != 0) {
+            if (freeQty != null && freeQty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
                 f.setFreeQuantity(BigDecimal.ZERO);
                 calculateItemTotals(bi);
                 JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
