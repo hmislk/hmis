@@ -148,16 +148,6 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
 
-    private List<SessionInstance> sessionListFilterByDoctors;
-
-    public List<SessionInstance> getSessionListFilterByDoctors() {
-        return sessionListFilterByDoctors;
-    }
-
-    public void setSessionListFilterByDoctors(List<SessionInstance> sessionListFilterByDoctors) {
-        this.sessionListFilterByDoctors = sessionListFilterByDoctors;
-    }
-
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
