@@ -6,6 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
@@ -47,7 +48,7 @@
                                         class="ui-button-success" 
                                         action="#{requestController.approveRequest()}">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton
                                         ajax="false"
                                         value="Reject" 
@@ -57,7 +58,7 @@
                                         class="ui-button-danger" 
                                         action="#{requestController.rejectRequest()}">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton
                                         ajax="false"
                                         value="Cancel Approvel" 
@@ -75,20 +76,34 @@
                                 <div class="col-3">
                                     <p:panel>
                                         <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Bill Preview" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                            <div class="d-flex justify-content-center">
+                                                <ui:repeat value="#{requestController.bills}" var="ffb" >
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true" billCount="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+                                <div class="col-5">
+                                    <p:panel>
+                                        <f:facet name="header">
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
                                         <common:patient patient="#{requestController.patient}" class="w-100"/>
                                     </p:panel>
-                                </div>
-                                <div class="col-5">
-                                    <p:panel class="mb-2" id="payment">
+
+                                    <p:panel class="mt-2" id="payment">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                             <h:outputText value="Request Details" class="mx-4"></h:outputText>
                                         </f:facet>
 
-                                        <p:panelGrid columns="3">
+                                        <p:panelGrid columns="3" style="line-height: 0.5">
                                             <h:outputLabel value="Request No" ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 5em;" class="d-flex justify-content-center"></h:outputLabel>
                                             <h:outputLabel value="#{requestController.currentRequest.requestNo}" ></h:outputLabel>
@@ -127,16 +142,34 @@
                                 <div class="col-4">
                                     <p:panel>
                                         <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Bill Priview" class="mx-2"></h:outputLabel>
-                                        </f:facet>
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
-                                            <div class="d-flex justify-content-center">
-                                                <ui:repeat value="#{requestController.bills}" var="ffb" >
-                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true" billCount="#{opdBillController.bills.size()}"/>                        
-                                                </ui:repeat>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex gap-2 mt-2">
+                                                    <h:outputText styleClass="fas fa-list-alt mt-1"></h:outputText>
+                                                    <h:outputLabel value="Request Preview" class="mx-2"></h:outputLabel>
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        icon="fas fa-print"
+                                                        ajax="false"
+                                                        value="Print"
+                                                        disabled="#{!(requestController.currentRequest.status eq 'APPROVED' or requestController.currentRequest.status eq 'COMPLETED')}"
+                                                        class="ui-button-info">
+                                                        <p:printer target="printingView"/>
+                                                    </p:commandButton>
+                                                </div>
                                             </div>
-                                        </h:panelGroup>
+                                        </f:facet>
+
+                                        <div class="d-flex justify-content-center">
+                                            <h:panelGroup id="printingView">
+
+                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                                    <request:five_eight_bill_cancel_request request="#{requestController.currentRequest}" />                        
+                                                </h:panelGroup>
+
+                                            </h:panelGroup>
+
+                                        </div>
                                     </p:panel>
                                 </div>
                             </div>

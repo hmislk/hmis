@@ -501,6 +501,11 @@ public class OpdReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
             List<Bill> incomeBills = billService.fetchBillsWithToInstitution(
                     fromDate,
                     toDate,
@@ -553,12 +558,8 @@ public class OpdReportController implements Serializable {
     }
 
     public void generateOpdIncomeReportDto() {
+        processOpdIncomeReport();
         reportTimerController.trackReportExecution(() -> {
-            if (!configOptionApplicationController.getBooleanValueByKey("OPD Income Report - Optimized Method")) {
-                processOpdIncomeReport();
-                return;
-            }
-
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -566,9 +567,17 @@ public class OpdReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
             opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
                     fromDate, toDate, institution, site, department, webUser,
                     billTypeAtomics, admissionType, paymentScheme);
+
+            System.out.println("Results returned: " + (opdIncomeReportDtos != null ? opdIncomeReportDtos.size() : 0));
+            System.out.println("=================================");
 
             bundle = new IncomeBundle(opdIncomeReportDtos);
             bundle.generatePaymentDetailsForBillsAndBatchBills();

@@ -44,6 +44,80 @@ String jpql = "SELECT new com.divudi.core.data.dto.StockDTO("
 List<StockDTO> dtos = (List<StockDTO>) facade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 ```
 
+### 2a. Navigation Pattern: Use IDs and Names Instead of Entity References
+
+**🚨 CRITICAL PATTERN for Navigation Support:**
+
+When DTOs need to support navigation (e.g., clicking on a row to view details), use **IDs and String names** instead of full entity references.
+
+**❌ WRONG - Including entity objects in DTOs:**
+```java
+public class OpdSaleSummaryDTO {
+    private Category category;  // Don't do this - defeats DTO purpose
+    private Item item;          // Don't do this - loads entity graph
+    private String itemName;
+    private Double total;
+}
+```
+
+**✅ CORRECT - Use IDs and names for navigation:**
+```java
+public class OpdSaleSummaryDTO {
+    private Long categoryId;      // For navigation
+    private String categoryName;  // For display
+    private Long itemId;          // For navigation
+    private String itemName;      // For display
+    private Double total;
+
+    // Constructor for JPQL query
+    public OpdSaleSummaryDTO(Long categoryId, String categoryName,
+                              Long itemId, String itemName, Double total) {
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.total = total;
+    }
+}
+```
+
+**JPQL Query Pattern:**
+```java
+String jpql = "SELECT new com.divudi.core.data.dto.OpdSaleSummaryDTO("
+    + "bi.item.category.id, "           // Category ID for navigation
+    + "bi.item.category.name, "         // Category name for display
+    + "bi.item.id, "                    // Item ID for navigation
+    + "bi.item.name, "                  // Item name for display
+    + "sum(bi.netValue)) "              // Aggregated data
+    + "FROM BillItem bi "
+    + "WHERE ... "
+    + "GROUP BY bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name";
+
+List<OpdSaleSummaryDTO> dtos = (List<OpdSaleSummaryDTO>) facade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+```
+
+**Navigation Controller Pattern:**
+```java
+// In controller - load full entity only when navigating
+public String navigateToDetails(OpdSaleSummaryDTO dto) {
+    // Load full entities only when needed for detail page
+    if (dto.getCategoryId() != null) {
+        this.category = categoryFacade.find(dto.getCategoryId());
+    }
+    if (dto.getItemId() != null) {
+        this.item = itemFacade.find(dto.getItemId());
+    }
+    return "/detail_page?faces-redirect=true";
+}
+```
+
+**Benefits:**
+- ✅ DTOs remain lightweight (no entity graph loading)
+- ✅ Navigation still works (using IDs to load entities on demand)
+- ✅ Display names available without entity access
+- ✅ Database aggregation stays efficient
+- ✅ Memory footprint minimized
+
 ### 3. Safe Entity Property Changes
 When changing controller properties from entities to DTOs:
 

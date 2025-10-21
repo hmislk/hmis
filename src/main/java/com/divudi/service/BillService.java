@@ -1424,6 +1424,12 @@ public class BillService {
 
         jpql += " order by b.createdAt desc";
 
+        // Debug logging
+        System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
+        System.out.println("JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+        System.out.println("========================================================");
+
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -1759,10 +1765,13 @@ public class BillService {
 
         List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
 
+        // Updated to use new constructor with IDs for navigation support
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
-                + " coalesce(bi.item.category.name, 'No Category'),"
-                + " coalesce(bi.item.name, 'No Item'),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end),"
+                + " bi.item.category.id,"  // Category ID for navigation
+                + " coalesce(bi.item.category.name, 'No Category'),"  // Category name for display
+                + " bi.item.id,"  // Item ID for navigation
+                + " coalesce(bi.item.name, 'No Item'),"  // Item name for display
+                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end),"  // Count
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.hospitalFee else bi.hospitalFee end),"
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.staffFee else bi.staffFee end),"
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.grossValue else bi.grossValue end),"
@@ -1803,7 +1812,8 @@ public class BillService {
             params.put("itm", item);
         }
 
-        jpql += " group by bi.item.category.name, bi.item.name"
+        // Group by IDs and names for proper aggregation with navigation support
+        jpql += " group by bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name"
                 + " order by bi.item.category.name, bi.item.name";
 
         return (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
