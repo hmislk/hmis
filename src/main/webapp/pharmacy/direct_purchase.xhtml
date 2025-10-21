@@ -54,6 +54,12 @@
                             </h:panelGroup>
                         </div>
                     </div>
+                    
+                    <div class="row" >
+                        <div class="col-12" >
+                            <p:messages id="pageMessages" ></p:messages>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col-8">
@@ -108,15 +114,16 @@
                                             autocomplete="off"
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
-                                            <f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />
-                                            <p:ajax 
+                                            <!--<f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />-->
+                                            <p:ajax
                                                 event="blur"
-                                                process="@this" 
+                                                process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                                 txtRetailValue txtCostValue
-                                                txtPurchaseValue txtUnitsPerPack txtPackOrUnit
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                                txtPurchaseValue txtUnitsPerPack txtPackOrUnit @this
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
+                                                :#{p:resolveFirstComponentWithId('pageMessages', view).clientId}" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -129,12 +136,13 @@
                                             class="w-100 m-1 text-end"
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.freeQuantity}">
-                                            <f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />
-                                            <p:ajax 
+                                            <!--<f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />-->
+                                            <p:ajax
                                                 event="blur"
                                                 process="@this"
-                                                update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue
-                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                                update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue @this
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}
+                                                :#{p:resolveFirstComponentWithId('pageMessages', view).clientId}"
                                                 listener="#{pharmacyDirectPurchaseController.onFreeQuantityChange}" />
                                         </p:inputText>
                                     </div>
