@@ -183,7 +183,8 @@
                                     </p:selectOneMenu>
                                 </div>
 
-                                <h:panelGroup id="paymentDetails">
+                                <h:panelGroup 
+                                    id="paymentDetails">
                                     <h:panelGroup
                                         class="row"
                                         layout="block"
@@ -240,7 +241,11 @@
                                         layout="block"
                                         id="multiplePaymentMethods"  rendered="#{saleReturnController.returnPaymentMethod eq 'MultiplePaymentMethods'}"
                                         >
-                                        <pa:multiple_payment_methods class="w-100" controller="#{saleReturnController}" paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
+                                        <pa:multiple_payment_methods
+                                            id="panelMultiplePaymentDetails"
+                                            class="w-100" 
+                                            controller="#{saleReturnController}" 
+                                            paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
