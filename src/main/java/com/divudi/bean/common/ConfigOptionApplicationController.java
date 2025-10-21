@@ -164,6 +164,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
 
+        // Quantity Validation Configuration
+        getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
+
         // Bill Numbering Configuration Options - Added for improved bill numbering functionality
         // These options enable configurable bill numbering strategies across different bill types
         // Future development: Apply these patterns to additional bill types as needed

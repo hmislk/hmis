@@ -15,6 +15,7 @@
             </h:panelGroup>
             <h:panelGroup id="gpOrder" rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" >
                 <p:defaultCommand target="btnSave" ></p:defaultCommand>
+                <p:messages id="pageMessages" ></p:messages>
                 <h:panelGroup id="notPrintPreview"  rendered="#{not purchaseOrderRequestController.printPreview}" class="w-100 p-0 m-0">
 
                     <h:panelGroup rendered="#{not purchaseOrderRequestController.currentBill.checked}">
@@ -75,11 +76,11 @@
                                             class="text-end w-100"
                                             onfocus="this.select()">  
                                             <f:convertNumber pattern="0.#" ></f:convertNumber>
-                                            <f:ajax 
+                                            <p:ajax 
                                                 event="blur" 
-                                                render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  
-                                                execute="@this price" 
-                                                listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
+                                                update="total :#{p:resolveFirstComponentWithId('tot',view).clientId} @this :#{p:resolveFirstComponentWithId('pageMessages',view).clientId}"  
+                                                process="@this price" 
+                                                listener="#{purchaseOrderRequestController.onEdit(bi)}" ></p:ajax>
                                         </p:inputText>
                                     </p:column> 
 
@@ -99,7 +100,7 @@
                                             <f:convertNumber pattern="0.#" ></f:convertNumber>
                                             <f:ajax 
                                                 event="blur" 
-                                                render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} " 
+                                                render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}  @this :#{p:resolveFirstComponentWithId('pageMessages',view).clientId}" 
                                                 execute="@this price" 
                                                 listener="#{purchaseOrderRequestController.onEdit(bi)}" >
                                             </f:ajax>

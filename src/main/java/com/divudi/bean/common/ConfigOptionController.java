@@ -99,11 +99,7 @@ public class ConfigOptionController implements Serializable {
                 }
             }
         }
-
-        // Always remove disallowed entries from the visible OPD list
-        pms.remove(PaymentMethod.MultiplePaymentMethods);
-        pms.remove(PaymentMethod.Credit);
-        pms.remove(PaymentMethod.Staff);
+        // Remove disallowed entries from the visible OPD list are only restricted under Multiple Payment Methods
         return pms;
     }
 
