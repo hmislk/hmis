@@ -32,7 +32,13 @@
                             </p:commandButton>
                         </div>
                     </f:facet>
+
                     <p:panel class="mb-2" id="po">
+                        <div class="row">
+                            <div class="col-12" >
+                                <p:messages id="pageMessages" ></p:messages>
+                            </div>
+                        </div>
                         <div class="row">
 
                             <div class="col-10" >
@@ -76,33 +82,33 @@
                                             <h:outputText value="#{bi.item.code}" ></h:outputText>
                                         </p:column>  
 
-                                        <p:column 
-                                            headerText="Qty"  
-                                            class="text-end px-1" 
-                                            width="6em">                         
+                                        <p:column
+                                            headerText="Qty"
+                                            class="text-end px-1"
+                                            width="6em">
                                             <p:inputText
                                                 autocomplete="off"
                                                 id="qty"
-                                                value="#{bi.billItemFinanceDetails.quantity}" 
+                                                value="#{bi.billItemFinanceDetails.quantity}"
                                                 class="w-100 text-end"
                                                 label="Qty" onfocus="this.select()">
                                                 <f:convertNumber pattern="#,#00"/>
-                                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
+                                                <p:ajax event="blur" update="total :#{p:resolveFirstComponentWithId('tot',view).clientId} @this :#{p:resolveFirstComponentWithId('pageMessages',view).clientId}"  process="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></p:ajax>
                                                 <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                             </p:inputText>
                                         </p:column>  
-                                        <p:column 
+                                        <p:column
                                             width="6em"
                                             headerText="Free Qty"
-                                            class="text-end px-1"  >                         
-                                            <p:inputText 
+                                            class="text-end px-1"  >
+                                            <p:inputText
                                                 autocomplete="off"
-                                                id="freeQty" 
-                                                value="#{bi.billItemFinanceDetails.freeQuantity}" 
+                                                id="freeQty"
+                                                value="#{bi.billItemFinanceDetails.freeQuantity}"
                                                 class="w-100 text-end"
                                                 onfocus="this.select()">
                                                 <f:convertNumber pattern="#,#00"/>
-                                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
+                                                <p:ajax event="blur" update="total :#{p:resolveFirstComponentWithId('tot',view).clientId} @this :#{p:resolveFirstComponentWithId('pageMessages',view).clientId}"  process="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></p:ajax>
                                                 <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                             </p:inputText>
                                         </p:column> 
@@ -211,7 +217,7 @@
                                     <p:outputLabel 
                                         class="form-control"
                                         value="#{purchaseOrderController.requestedBill.comments}"/>
-                                    
+
                                     <p:outputLabel 
                                         value="Approve Comments"
                                         class="form-label mt-1"/>
