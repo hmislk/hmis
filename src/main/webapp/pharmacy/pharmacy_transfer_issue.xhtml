@@ -10,9 +10,9 @@
     <ui:define name="content">
         <h:form>
 
-            <p:panel rendered="#{!transferIssueController.printPreview}">
+            <p:panel rendered="#{!transferIssueForRequestsController.printPreview}">
 
-                <f:facet name="header" >  
+                <f:facet name="header" >
                     <h:outputLabel value="Pharmacy Issue" />
                 </f:facet>
 
@@ -28,33 +28,48 @@
                                 var="bItm" 
                                 scrollable="true" 
                                 scrollHeight="250" 
-                                value="#{transferIssueController.billItems}" 
+                                value="#{transferIssueForRequestsController.billItems}" 
                                 id="itemList" 
                                 sortBy="#{bItm.searialNo}"  
                                 editable="true"> 
 
-                                <p:ajax event="rowEdit" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}"  />  
-                                <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}" /> 
+                                <p:ajax event="rowEdit" listener="#{transferIssueForRequestsController.onEditDepartmentTransfer(bItm)}"  />  
+                                <p:ajax event="rowEditCancel" listener="#{transferIssueForRequestsController.onEditDepartmentTransfer(bItm)}" /> 
 
                                 <p:column headerText="Item Name" style="min-width: 10em;">
-                                    <h:outputText id="item" value="#{bItm.item.name}" />
-                                    <p:commandButton
-                                        icon="pi pi-search"
-                                        id="btnViewSelectedItemDetails"
-                                        title="View Item Details"
-                                        action="#{transferIssueController.displayItemDetails(bItm)}"
-                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
-                                        process="@this"
-                                        class="ui-button-icon-only mx-3"/>
-                                    <p:commandButton
-                                        icon="pi pi-info-circle"
-                                        id="btnViewBatchDetails"
-                                        title="View Batch Details"
-                                        actionListener="#{transferIssueController.prepareBatchDetails(bItm)}"
-                                        update=":#{p:resolveFirstComponentWithId('batchDetailsForm',view).clientId}"
-                                        oncomplete="PF('batchDetailsDialog').show();"
-                                        process="@this"
-                                        class="ui-button-info ui-button-icon-only mx-1"/>
+                                    <div style="min-width: 10em; display: flex; align-items: center;">
+
+                                        <h:outputText id="item" value="#{bItm.item.name}" />
+
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            id="btnSelectSubstitute"
+                                            title="Select a Substitute"
+                                            action="#{transferIssueForRequestsController.prepareSubstitute(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
+                                            oncomplete="PF('substituteDialog').show();"
+                                            process="@this"
+                                            class="ui-button-warning ui-button-icon-only mx-1" />
+
+                                        <p:commandButton
+                                            icon="pi pi-eye"
+                                            id="btnViewSelectedItemDetails"
+                                            title="View Item Details"
+                                            action="#{transferIssueForRequestsController.displayItemDetails(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                            process="@this"
+                                            class="ui-button-secondary ui-button-icon-only mx-1" />
+
+                                        <p:commandButton
+                                            icon="pi pi-tags"
+                                            id="btnViewBatchDetails"
+                                            title="View Batch Details"
+                                            actionListener="#{transferIssueForRequestsController.prepareBatchDetails(bItm)}"
+                                            update=":#{p:resolveFirstComponentWithId('batchDetailsForm',view).clientId}"
+                                            oncomplete="PF('batchDetailsDialog').show();"
+                                            process="@this"
+                                            class="ui-button-info ui-button-icon-only mx-1"/>
+                                    </div>
                                 </p:column>
 
                                 <p:column
@@ -90,43 +105,34 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <!--                                <p:column headerText="Purchase Rate" width="6em">  
-                                                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                                                </p:column>
-                                
-                                                                <p:column headerText="Cost Rate" width="6em;">  
-                                                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.costRate}" style="text-align: right;">                        
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                                                </p:column>  
-                                
-                                                                <p:column headerText="Sale Rate" width="8emm">  
-                                                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                                                </p:column>-->
-
                                 <p:column headerText="Qty" width="8em" class="text-end">
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.#" />
                                         <p:ajax event="keyup" process="@this"
                                                 update="netValue :#{p:resolveFirstComponentWithId('billDetails', view).clientId}"
-                                                listener="#{transferIssueController.onQuantityChangeForTransferIssue(bItm)}"/>
+                                                listener="#{transferIssueForRequestsController.onQuantityChangeForTransferIssue(bItm)}"/>
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column headerText="Rate" width="8em" class="text-end">
-                                    <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
+                                <p:column
+                                    headerText="Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                                    width="8em"
+                                    class="text-end">
+                                    <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end"
+                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax event="keyup" process="@this"
                                                 update="netValue :#{p:resolveFirstComponentWithId('billDetails', view).clientId}"
-                                                listener="#{transferIssueController.onLineGrossRateChangeForTransferIssue(bItm)}"/>
+                                                listener="#{transferIssueForRequestsController.onLineGrossRateChangeForTransferIssue(bItm)}"/>
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column headerText="Value" width="8em" class="text-end">                   
+                                <p:column
+                                    headerText="Value"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                                    width="8em"
+                                    class="text-end">
                                     <p:inputText autocomplete="off" id="netValue" 
                                                  value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -138,7 +144,7 @@
                                         icon="fas fa-trash-alt"
                                         ajax="false" 
                                         class="ui-button-danger justify-content-center"
-                                        action="#{transferIssueController.remove(bItm)}">
+                                        action="#{transferIssueForRequestsController.remove(bItm)}">
                                     </p:commandButton>
                                 </p:column>
 
@@ -150,41 +156,63 @@
                             <f:facet name="header" >                                  
                                 <h:outputText value="Issue Details" ></h:outputText>
                                 <p:commandButton  
+                                    id="btnSettleIssue"
                                     value="Issue" 
                                     icon="fas fa-check" 
-                                    action="#{transferIssueController.settle}" 
+                                    action="#{transferIssueForRequestsController.settle}" 
                                     style="float: right;" 
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
                                     ajax="false" 
                                     class="ui-button-success mx-2" >
                                 </p:commandButton>  
                             </f:facet>
-                            <h:panelGrid id="billDetails" columns="3">
+                            <p:panelGrid id="billDetails" columns="2" class="w-100">
                                 <h:outputLabel value="Items will be issued from &nbsp;" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete value="#{transferIssueController.issuedBill.fromDepartment}" disabled="true"
-                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"/>
+                                <h:outputLabel 
+                                    value="#{transferIssueForRequestsController.issuedBill.fromDepartment.name}"/>
 
                                 <h:outputLabel value="Items will be issued to"/>
-                                <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete value="#{transferIssueController.issuedBill.toDepartment}" class="mb-1"
-                                                var="to" itemLabel="#{to.name}" itemValue="#{to}"
-                                                disabled="#{transferIssueController.issuedBill.toDepartment ne null}"
-                                                completeMethod="#{departmentController.completeDept}"/>
+                                <h:outputLabel value="#{transferIssueForRequestsController.issuedBill.toDepartment.name}" />
 
-                                <h:outputLabel value="Value &nbsp;" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <h:outputLabel id="billNetTotal" value="#{transferIssueController.issuedBill.netTotal}" />
+                                <h:outputLabel value="Value &amp;nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
+                                <h:outputLabel id="billNetTotal" value="#{transferIssueForRequestsController.issuedBill.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
 
 
 
                                 <h:outputLabel value="Select Staff Name" />
-                                <h:outputLabel value=": &nbsp;"/>
-                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
-                                                 forceSelection="true" 
-                                                 var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
-                                                 value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
+                                <p:autoComplete 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                    forceSelection="true"
+                                    var="w" itemLabel="#{w.person.name}" 
+                                    itemValue="#{w}"
+                                    value="#{transferIssueForRequestsController.issuedBill.toStaff}" >
+                                    <p:column headerText="Name">
+                                        <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <h:outputText value="#{w.speciality.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputText value="#{w.code}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Staff Code">
+                                        <h:outputText value="#{w.staffCode}" ></h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
 
-                            </h:panelGrid>
+
+                                <h:outputLabel value="Comment" />
+                                <p:inputTextarea
+                                    class="w-100"
+                                    rows="3"
+                                    value="#{transferIssueForRequestsController.issuedBill.comments}"
+                                    required="true"
+                                    requiredMessage="Please enter a comment."/>
+
+                            </p:panelGrid>
                         </p:panel>
                     </div>
                 </div>
@@ -193,94 +221,328 @@
 
                 <ph:history/>
 
-                <p:dialog 
-                    widgetVar="batchDetailsDialog" 
-                    modal="true" 
+                <p:dialog
+                    id="substituteDlg"
+                    widgetVar="substituteDialog"
+
+                    position="top"
+                    fitViewport="true"
+
+                    modal="true"
+                    appendTo="@(body)"
+                    header="Select a Substitute Stock"
+                    width="60%"
+                    height="500px">
+
+                    <div class="mb-3 p-3 bg-light border rounded">
+                        <h:outputLabel value="Requested Item: " styleClass="fw-bold text-primary"/>
+                        <h:outputText value="#{transferIssueForRequestsController.itemForSubstitution.referanceBillItem.item.name}" 
+                                      styleClass="fw-bold text-dark"/>
+                    </div>
+
+                    <p:dataTable
+                        id="substituteTable"
+                        value="#{transferIssueForRequestsController.substituteStocks}"
+                        var="sStock"
+                        rowKey="#{sStock.id}"
+                        paginator="true"
+                        rows="10"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                        emptyMessage="No substitute stocks found"
+                        styleClass="table-striped">
+
+                        <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('btnReplace',view).clientId}"/>
+
+                        <p:column headerText="Item Name" width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Name Column width', '15em')}">
+                            <h:outputText value="#{sStock.itemBatch.item.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Batch No"  width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Batch Column width', '5em')}">
+                            <h:outputText value="#{sStock.itemBatch.batchNo}"/>
+                        </p:column>
+
+                        <p:column headerText="Expiry Date"  width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Expiary Column width', '5em')}">
+                            <h:outputText value="#{sStock.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="MM/yyyy"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Available Qty"  width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Quentity Column width', '6em')}">
+                            <h:outputText value="#{sStock.stock}">
+                                <f:convertNumber pattern="#,###.#"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column 
+                            width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Quentity Column width', '6em')}"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                            headerText="Purchase Rate">
+                            <h:outputText value="#{sStock.itemBatch.purcahseRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column 
+                            width="#{configOptionApplicationController.getShortTextValueByKey('Pharmaceutical Item Quentity Column width', '6em')}"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Transaction - Show Rate and Value', false) and webUserController.hasPrivilege('StockTransactionViewRates')}"
+                            headerText="Retail Rate">
+                            <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column
+                            width="10"
+                            headerText="Action">
+                            <p:commandButton
+                                id="btnReplace"
+                                value="Replace"
+                                action="#{transferIssueForRequestsController.replaceSelectedSubstitute}"
+                                update=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
+                                oncomplete="PF('substituteDialog').hide();"
+                                process="@this">
+                                <f:setPropertyActionListener value="#{sStock}" target="#{transferIssueForRequestsController.selectedSubstituteStock}" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </p:dialog>
+                <p:dialog
+                    widgetVar="batchDetailsDialog"
+                    modal="true"
                     position="top"
                     fitViewport="true"
                     appendTo="@(body)"
-                    header="Batch Details" 
+                    header="Batch Details"
                     width="40%">
-                    <p:panelGrid 
-                        id="batchDetailsForm" 
-                        layout="tabular"
-                        columns="2" class="table table-striped" >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Batch Details" styleClass="fw-bold"/>
-                        </f:facet>
-                        <h:outputLabel value="Item" styleClass="fw-bold"/>
-                        <h:outputText value="#{transferIssueController.selectedBillItem.item.name}"/>
-
-                        <h:outputLabel value="Batch No" styleClass="fw-bold"/>
-                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.batchNo}"/>
-
-                        <h:outputLabel value="Expiry Date" styleClass="fw-bold"/>
-                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputText>
-
-                        <h:outputLabel value="Purchase Price" styleClass="fw-bold"/>
-                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputText>
-
-                        <h:outputLabel value="Retail Rate" styleClass="fw-bold"/>
-                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputText>
-
-                        <h:outputLabel value="Cost" styleClass="fw-bold"/>
-                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.costRate}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputText>
-                    </p:panelGrid>
+                    <h:panelGroup id="batchDetailsForm">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="text-center fw-bold">Batch Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Item</td>
+                                    <td><h:outputText value="#{transferIssueForRequestsController.selectedBillItem.item.name}"/></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Batch No</td>
+                                    <td class="text-center"><h:outputText value="#{transferIssueForRequestsController.selectedBillItem.pharmaceuticalBillItem.itemBatch.batchNo}"/></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Expiry Date</td>
+                                    <td class="text-center">
+                                        <h:outputText value="#{transferIssueForRequestsController.selectedBillItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Purchase Price</td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{transferIssueForRequestsController.selectedBillItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Retail Rate</td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{transferIssueForRequestsController.selectedBillItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Cost</td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{transferIssueForRequestsController.selectedBillItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </h:panelGroup>
 
                 </p:dialog>
 
             </p:panel>
-            <p:panel rendered="#{transferIssueController.printPreview}">
-                <p:commandButton 
-                    ajax="false" 
-                    icon="fas fa-list"
-                    class="ui-button-warning"
-                    action="pharmacy_transfer_request_list" 
-                    actionListener="#{transferIssueController.makeNull()}" 
-                    value="Requested List"/>                    
-                <p:commandButton 
-                    value="Print" 
-                    icon="fas fa-print"
-                    class="ui-button-info mx-2 mb-2"
-                    ajax="false" 
-                    action="#"
-                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
+            <p:panel rendered="#{transferIssueForRequestsController.printPreview}">
+                <div class="d-flex justify-content-between mb-2">
+                    <p:commandButton
+                        ajax="false"
+                        icon="fas fa-list"
+                        class="ui-button-warning"
+                        action="#{searchController.navigateToRequestListAndRefresh()}"
+                        actionListener="#{transferIssueForRequestsController.makeNull()}"
+                        value="Requested List"/>
+
+                    <div class="d-flex">
+                        <p:commandButton
+                            value="Print"
+                            icon="fas fa-print"
+                            class="ui-button-info mx-2"
+                            ajax="false">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton
+                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                            value="Settings"
+                            icon="fas fa-cog"
+                            class="ui-button-secondary mx-1"
+                            type="button"
+                            onclick="PF('transferIssueConfigDialog').show();" />
+                    </div>
+                </div>
 
                 <h:panelGroup   id="gpBillPreview" >
-                    <h:panelGroup 
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper without details',false)}"
-                        class="noBorder">
-                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
-                    </h:panelGroup>
-                    <h:panelGroup 
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with details',false)}"
-                        class="noBorder">
-                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
-                    </h:panelGroup>
+
                     <h:panelGroup
-                        id="gpBillPreviewPosHeader" 
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with header',false)}"> 
-                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper', true)}"
+                        styleClass="noBorder">
+                        <ph:transferIssue bill="#{transferIssueForRequestsController.issuedBill}"/>
                     </h:panelGroup>
-                    <h:panelGroup 
-                        id="gpBillTemplate" 
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
-                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper Detailed', false)}"
+                        styleClass="noBorder">
+                        <ph:transferIssue_detailed bill="#{transferIssueForRequestsController.issuedBill}"/>
                     </h:panelGroup>
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Letter Paper Custom 1', false)}"
+                        styleClass="noBorder">
+                        <ph:transferIssue_custom_1_letter bill="#{transferIssueForRequestsController.issuedBill}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue POS Paper', false)}">
+                        <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueForRequestsController.issuedBill}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="gpBillPreviewPosHeader"
+                                  rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper', false)}">
+                        <ph:saleBill_Header_Transfer bill="#{transferIssueForRequestsController.issuedBill}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup
+                        id="gpBillTemplate"
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template', false)}">
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueForRequestsController.issuedBill}"/>
+                    </h:panelGroup>
+
                 </h:panelGroup>
             </p:panel>
 
+            <!-- Transfer Issue Configuration Dialog -->
+            <p:dialog id="transferIssueConfigDialog"
+                      header="Transfer Issue Receipt Printer Configuration"
+                      widgetVar="transferIssueConfigDialog"
+                      modal="true"
+                      width="600"
+                      height="500"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('transferIssueCheckboxes',view).clientId}" process="@this" />
+
+                <h:form id="transferIssueConfigForm">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-file-alt"></i> Transfer Issue Receipt Paper Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h:panelGroup id="transferIssueCheckboxes">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueA4Paper"
+                                                value="#{pharmacyConfigController.transferIssueA4Paper}" />
+                                            <p:outputLabel for="transferIssueA4Paper" value="A4 Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 size paper format (transferIssue component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueA4PaperDetailed"
+                                                value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
+                                            <p:outputLabel for="transferIssueA4PaperDetailed" value="A4 Paper Format (Detailed)" class="ms-2" />
+                                            <small class="form-text text-muted d-block">A4 format with detailed item information (transferIssue_detailed component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueCustom1"
+                                                value="#{pharmacyConfigController.transferIssueCustom1}" />
+                                            <p:outputLabel for="transferIssueCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
+                                        </div>    
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssuePosPaper"
+                                                value="#{pharmacyConfigController.transferIssuePosPaper}" />
+                                            <p:outputLabel for="transferIssuePosPaper" value="POS Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssuePosHeaderPaper"
+                                                value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
+                                            <p:outputLabel for="transferIssuePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                            <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="transferIssueTemplate"
+                                                value="#{pharmacyConfigController.transferIssueTemplate}" />
+                                            <p:outputLabel for="transferIssueTemplate" value="Template Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p:messages id="transferIssueConfigMessages" showDetail="true" closable="true" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Apply &amp; Close"
+                                                icon="fas fa-save"
+                                                class="ui-button-success"
+                                                ajax="false"
+                                                action="#{pharmacyConfigController.saveTransferIssueConfig}" />
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                class="ui-button-secondary"
+                                                onclick="PF('transferIssueConfigDialog').hide(); return false;"
+                                                type="button" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </p:dialog>
+
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

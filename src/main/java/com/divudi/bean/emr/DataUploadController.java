@@ -1,6 +1,8 @@
 package com.divudi.bean.emr;
 
 import com.divudi.bean.clinical.ClinicalEntityController;
+import com.divudi.bean.clinical.PhotoCamBean;
+import com.divudi.core.entity.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -52,20 +54,6 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.core.entity.Area;
-import com.divudi.core.entity.Category;
-import com.divudi.core.entity.Consultant;
-import com.divudi.core.entity.Department;
-import com.divudi.core.entity.DoctorSpeciality;
-import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.ItemFee;
-import com.divudi.core.entity.Patient;
-import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.Route;
-import com.divudi.core.entity.Service;
-import com.divudi.core.entity.Speciality;
-import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationTube;
@@ -90,10 +78,6 @@ import com.divudi.core.data.SymanticHyrachi;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.dataStructure.PharmacyImportCol;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.core.entity.Doctor;
-import com.divudi.core.entity.Family;
-import com.divudi.core.entity.FamilyMember;
-import com.divudi.core.entity.Relation;
 import com.divudi.core.entity.inward.InwardService;
 import com.divudi.core.entity.membership.MembershipScheme;
 import com.divudi.core.entity.pharmacy.Ampp;
@@ -124,11 +108,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -137,11 +117,6 @@ import javax.inject.Inject;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
-
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 @Named
 @ViewScoped
@@ -262,6 +237,9 @@ public class DataUploadController implements Serializable {
     private String outputString;
     private List<Item> items;
     private List<ItemFee> itemFees;
+    private Category selectedFeeList;
+    private List<String> uploadErrors;
+    private String uploadErrorDetails;
     private List<Institution> collectingCentres;
     private List<Institution> agencies;
     private List<Institution> suppliers;
@@ -367,6 +345,11 @@ public class DataUploadController implements Serializable {
     public String navigateToSupplierUpload() {
         uploadComplete = false;
         return "/admin/institutions/supplier_upload?faces-redirect=true";
+    }
+
+    public String navigateToSupplierUploadExtended() {
+        uploadComplete = false;
+        return "/admin/institutions/supplier_upload_extended?faces-redirect=true";
     }
 
     public String importToExcelWithStock() {
@@ -795,6 +778,7 @@ public class DataUploadController implements Serializable {
         }
     }
 
+    // Get String value
     private String getStringCellValue(Cell cell) {
         return (cell != null && cell.getCellType() == CellType.STRING) ? cell.getStringCellValue() : "";
     }
@@ -1300,6 +1284,7 @@ public class DataUploadController implements Serializable {
                 e.printStackTrace();
             }
         }
+        itemFeeManager.updateFeesForListFees();
     }
 
     public void uploadCollectingCentreItemsAndFees() {
@@ -2184,15 +2169,23 @@ public class DataUploadController implements Serializable {
     }
 
     public void uploadFeeListItemFees() {
+        if (selectedFeeList == null) {
+            JsfUtil.addErrorMessage("Please select a Fee List before uploading.");
+            return;
+        }
+        
         itemFees = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
-                itemFees = readFeeListItemFeesFromExcel(inputStream);
+                itemFees = readFeeListItemFeesFromExcel(inputStream, selectedFeeList);
+                // Success/error messages are handled in readFeeListItemFeesFromExcel method
             } catch (IOException e) {
+                JsfUtil.addErrorMessage("Error reading Excel file: " + e.getMessage());
                 e.printStackTrace();
             }
+        } else {
+            JsfUtil.addErrorMessage("Please select a file to upload.");
         }
-
     }
 
     public List<Category> readFeeListTypesFromExcel(InputStream inputStream) throws IOException {
@@ -2237,109 +2230,201 @@ public class DataUploadController implements Serializable {
         return feeListTypes;
     }
 
-    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream) throws IOException {
+    private List<ItemFee> readFeeListItemFeesFromExcel(InputStream inputStream, Category selectedFeeList) throws IOException {
         List<ItemFee> itemFees = new ArrayList<>();
+        List<ItemFee> validatedItemFees = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
+        
+        int totalRows = sheet.getLastRowNum();
+        List<String> validationErrors = new ArrayList<>();
+        StringBuilder errorDetailsBuilder = new StringBuilder();
+
+        // Clear previous errors
+        this.uploadErrors = null;
+        this.uploadErrorDetails = null;
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
 
+        // PHASE 1: VALIDATION ONLY - No database saves
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             String itemCode = null;
             String itemName = null;
-            String forCategoryName = null;
-            String institutionName = null;
             String discountAllowed = null;
-            String ffeeValue = null;
-            String fffeeValue = null;
 
-            boolean disAllowd;
+            boolean disAllowd = false;
             double fee = 0.0;
             double ffee = 0.0;
 
             Item item;
-            Category category;
-            Institution institution;
+            int rowNumber = row.getRowNum() + 1;
 
+            // Extract Item Code
             Cell itemCodeCell = row.getCell(0);
-            if (itemCodeCell != null && itemCodeCell.getCellType() == CellType.STRING) {
-                itemCode = itemCodeCell.getStringCellValue();
+            if (itemCodeCell != null) {
+                if (itemCodeCell.getCellType() == CellType.STRING) {
+                    itemCode = itemCodeCell.getStringCellValue();
+                } else if (itemCodeCell.getCellType() == CellType.NUMERIC) {
+                    itemCode = String.valueOf((long) itemCodeCell.getNumericCellValue());
+                }
             }
 
+            // Extract Item Name (for error reporting)
             Cell itemNameCell = row.getCell(1);
             if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
                 itemName = itemNameCell.getStringCellValue();
             }
 
-            Cell forCategoryCell = row.getCell(2);
-            if (forCategoryCell != null && forCategoryCell.getCellType() == CellType.STRING) {
-                forCategoryName = forCategoryCell.getStringCellValue();
+            // Validate Item Code
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                validationErrors.add("Row " + rowNumber + ": Empty item code");
+                continue;
             }
 
-            Cell feeCell = row.getCell(3);
-            if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
-                fee = feeCell.getNumericCellValue();
+            // Validate Item Exists
+            item = itemController.findItemByCode(itemCode);
+            if (item == null) {
+                String itemNameForError = (itemName != null && !itemName.trim().isEmpty()) ? itemName : "N/A";
+                validationErrors.add("Row " + rowNumber + ": Item not found - Code: '" + itemCode + "', Name: '" + itemNameForError + "'");
+                continue;
             }
 
-            Cell ffeeCell = row.getCell(4);
-            if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
-                ffee = ffeeCell.getNumericCellValue();
+            // Extract and Validate Fee Amount (Column C)
+            Cell feeCell = row.getCell(2);
+            if (feeCell != null) {
+                if (feeCell.getCellType() == CellType.NUMERIC) {
+                    fee = feeCell.getNumericCellValue();
+                } else if (feeCell.getCellType() == CellType.STRING) {
+                    String feeStr = feeCell.getStringCellValue().trim();
+                    if (!feeStr.isEmpty()) {
+                        try {
+                            fee = Double.parseDouble(feeStr);
+                        } catch (NumberFormatException e) {
+                            validationErrors.add("Row " + rowNumber + ": Invalid fee format '" + feeStr + "' for item " + itemCode);
+                            continue;
+                        }
+                    }
+                } else if (feeCell.getCellType() == CellType.FORMULA) {
+                    FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(feeCell);
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        fee = cellValue.getNumberValue();
+                    } else if (cellValue.getCellType() == CellType.STRING) {
+                        String feeStr = cellValue.getStringValue().trim();
+                        if (!feeStr.isEmpty()) {
+                            try {
+                                fee = Double.parseDouble(feeStr);
+                            } catch (NumberFormatException e) {
+                                validationErrors.add("Row " + rowNumber + ": Invalid fee formula result '" + feeStr + "' for item " + itemCode);
+                                continue;
+                            }
+                        }
+                    }
+                }
             }
 
-            Cell discountAllowedCell = row.getCell(5);
+            // Extract and Validate Foreign Fee (Column D) 
+            Cell ffeeCell = row.getCell(3);
+            if (ffeeCell != null) {
+                if (ffeeCell.getCellType() == CellType.NUMERIC) {
+                    ffee = ffeeCell.getNumericCellValue();
+                } else if (ffeeCell.getCellType() == CellType.STRING) {
+                    String ffeeStr = ffeeCell.getStringCellValue().trim();
+                    if (!ffeeStr.isEmpty()) {
+                        try {
+                            ffee = Double.parseDouble(ffeeStr);
+                        } catch (NumberFormatException e) {
+                            validationErrors.add("Row " + rowNumber + ": Invalid foreign fee format '" + ffeeStr + "' for item " + itemCode);
+                            continue;
+                        }
+                    }
+                } else if (ffeeCell.getCellType() == CellType.FORMULA) {
+                    FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(ffeeCell);
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        ffee = cellValue.getNumberValue();
+                    } else if (cellValue.getCellType() == CellType.STRING) {
+                        String ffeeStr = cellValue.getStringValue().trim();
+                        if (!ffeeStr.isEmpty()) {
+                            try {
+                                ffee = Double.parseDouble(ffeeStr);
+                            } catch (NumberFormatException e) {
+                                validationErrors.add("Row " + rowNumber + ": Invalid foreign fee formula result '" + ffeeStr + "' for item " + itemCode);
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Extract Discount Allowed (Column E)
+            Cell discountAllowedCell = row.getCell(4);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 discountAllowed = discountAllowedCell.getStringCellValue();
             }
-            if (discountAllowed != null || !discountAllowed.trim().equals("")) {
+            if (discountAllowed != null && !discountAllowed.trim().equals("") && 
+                (discountAllowed.equalsIgnoreCase("yes") || discountAllowed.equalsIgnoreCase("true") || discountAllowed.equals("1"))) {
                 disAllowd = true;
-            } else {
-                disAllowd = false;
             }
 
-            if (itemName == null || itemCode == null) {
-                JsfUtil.addErrorMessage("Item Name and Item Code cannot be null.");
-                return itemFees;
-            }
-
-            if (forCategoryName == null || forCategoryName.trim().equals("")) {
-                JsfUtil.addErrorMessage("Fee List types cannot be null.");
-                return itemFees;
-            }
-
-            category = categoryController.findCategoryByName(forCategoryName);
-            if (category == null) {
-                JsfUtil.addErrorMessage("Fee List type Not found.");
-                return itemFees;
-            }
-
-            item = itemController.findItemByCode(itemCode);
-            if (item == null) {
-                JsfUtil.addErrorMessage("Item cannot be null.");
-                return itemFees;
-            }
-            ItemFee Itemfee = new ItemFee();
-            Itemfee.setCreatedAt(new Date());
-            Itemfee.setName(forCategoryName);
-            Itemfee.setCreater(sessionController.getLoggedUser());
-            Itemfee.setForInstitution(null);
-            Itemfee.setForCategory(category);
-            Itemfee.setItem(item);
-            Itemfee.setFeeType(FeeType.OwnInstitution);
-            Itemfee.setInstitution(item.getInstitution());
-            Itemfee.setFee(fee);
-            Itemfee.setFfee(ffee);
-            Itemfee.setDiscountAllowed(disAllowd);
-            itemFeeFacade.create(Itemfee);
-
+            // If we reach here, validation passed - create ItemFee object but don't save yet
+            ItemFee itemFee = new ItemFee();
+            itemFee.setCreatedAt(new Date());
+            itemFee.setName(selectedFeeList.getName());
+            itemFee.setCreater(sessionController.getLoggedUser());
+            itemFee.setForInstitution(null);
+            itemFee.setForCategory(selectedFeeList);
+            itemFee.setItem(item);
+            itemFee.setFeeType(FeeType.OwnInstitution);
+            itemFee.setInstitution(item.getInstitution());
+            itemFee.setFee(fee);
+            itemFee.setFfee(ffee);
+            itemFee.setDiscountAllowed(disAllowd);
+            validatedItemFees.add(itemFee);
         }
-        JsfUtil.addSuccessMessage("Upload Success");
-        return itemFees;
 
+        // PHASE 2: HANDLE RESULTS
+        if (!validationErrors.isEmpty()) {
+            // Set errors for display
+            this.uploadErrors = validationErrors;
+            
+            // Build detailed error message
+            errorDetailsBuilder.append("=== UPLOAD VALIDATION FAILED ===\n");
+            errorDetailsBuilder.append("Fee List: ").append(selectedFeeList.getName()).append("\n");
+            errorDetailsBuilder.append("Total Rows: ").append(totalRows).append("\n");
+            errorDetailsBuilder.append("Valid Items: ").append(validatedItemFees.size()).append("\n");
+            errorDetailsBuilder.append("Errors Found: ").append(validationErrors.size()).append("\n\n");
+            
+            errorDetailsBuilder.append("=== ERROR DETAILS ===\n");
+            for (int i = 0; i < validationErrors.size(); i++) {
+                errorDetailsBuilder.append((i + 1)).append(". ").append(validationErrors.get(i)).append("\n");
+            }
+            
+            errorDetailsBuilder.append("\n=== INSTRUCTIONS ===\n");
+            errorDetailsBuilder.append("1. Fix the errors listed above in your Excel file\n");
+            errorDetailsBuilder.append("2. Ensure all item codes exist in the system\n");
+            errorDetailsBuilder.append("3. Check that fee amounts are valid numbers\n");
+            errorDetailsBuilder.append("4. Re-upload the corrected file\n");
+            
+            this.uploadErrorDetails = errorDetailsBuilder.toString();
+            
+            JsfUtil.addErrorMessage(validationErrors.size() + " validation errors found. No data was saved. See error details below.");
+            return new ArrayList<>(); // Return empty list - no data saved
+        } else {
+            // No errors - proceed with saving all validated items
+            for (ItemFee itemFee : validatedItemFees) {
+                itemFeeFacade.create(itemFee);
+                itemFees.add(itemFee);
+            }
+            
+            JsfUtil.addSuccessMessage("✓ SUCCESS: " + validatedItemFees.size() + " item fees uploaded to " + selectedFeeList.getName());
+            return itemFees;
+        }
     }
 
 //    public void uploadFeeListItemFees() {
@@ -2952,20 +3037,23 @@ public class DataUploadController implements Serializable {
             String address = row.getCell(7).getStringCellValue();
             String membershipName = row.getCell(8).getStringCellValue();
             String relationName = row.getCell(9).getStringCellValue();
-            Integer ageInt = row.getCell(10) != null ? (int) row.getCell(10).getNumericCellValue() : null;
+//            Integer ageInt = row.getCell(10) != null ? (int) row.getCell(10).getNumericCellValue() : null;
+            Date dateOfBirth = getDateFromCell(row.getCell(10));
+
+            String phoneNumberString = phoneNumberLong != null ? phoneNumberLong.toString() : null;
 
             MembershipScheme ms = membershipSchemeController.fetchMembershipByName(membershipName);
-            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms, phoneNumberLong.toString());
+            Family family = patientController.fetchFamilyFromMembershipNumber(membershipNumberLong, ms, phoneNumberString);
             Relation relation = relationController.fetchRelationByName(relationName);
             Title title = Title.getTitleEnum(titleString);
             Sex sex = Sex.getByLabelOrShortLabel(sexString);
-            Date dateOfBirth = CommonFunctions.fetchDateOfBirthFromAge(ageInt);
+//            Date dateOfBirth = CommonFunctions.fetchDateOfBirthFromAge(ageInt);
 
             Patient pt = new Patient();
             pt.getPerson().setName(name);
             pt.getPerson().setAddress(address);
-            pt.getPerson().setPhone(phoneNumberLong.toString());
-            pt.getPerson().setMobile(phoneNumberLong.toString());
+            pt.getPerson().setPhone(phoneNumberString);
+            pt.getPerson().setMobile(phoneNumberString);
             pt.getPerson().setTitle(title);
             pt.getPerson().setSex(sex);
             pt.getPerson().setDob(dateOfBirth);
@@ -2991,6 +3079,83 @@ public class DataUploadController implements Serializable {
 
         workbook.close();
         return patients;
+    }
+
+    private Date getDateFromCell(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+
+        try {
+            if (cell.getCellType() == CellType.STRING) {
+                String dateString = cell.getStringCellValue().trim();
+                return parseDateString(dateString);
+            }
+
+            if (cell.getCellType() == CellType.NUMERIC) {
+                DataFormatter formatter = new DataFormatter();
+                String formattedValue = formatter.formatCellValue(cell);
+
+                if (formattedValue.matches("\\d{1,2}/\\d{1,2}/\\d{2,4}")) {
+                    return parseDateString(formattedValue);
+                }
+
+                return null;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(DataUploadController.class.getName()).log(
+                    Level.SEVERE, null, "Error parsing date from cell: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    private Date parseDateString(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            return null;
+        }
+
+        dateString = dateString.trim();
+
+        String[] dateFormats = {
+                "dd/MM/yyyy",  // Handles 02/05/2000 as May 2nd, 2000
+                "d/M/yyyy",    // Handles 2/5/2000 as May 2nd, 2000
+                "dd/MM/yy",    // Handles 02/05/00 as May 2nd, 2000
+                "d/M/yy"       // Handles 2/5/00 as May 2nd, 2000
+        };
+
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.setLenient(false); //  stricter parsing to avoid ambiguity
+
+        for (String format : dateFormats) {
+            try {
+                sdf.applyPattern(format);
+                Date date = sdf.parse(dateString);
+
+                // Handle 2-digit year conversion for yy formats
+                if (format.endsWith("/yy")) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(date);
+                    int year = cal.get(Calendar.YEAR);
+
+                    // Adjust 2-digit year logic:
+                    // Years 00-30 -> 2000-2030
+                    // Years 31-99 -> 1931-1999
+                    if (year <= 30) {
+                        cal.set(Calendar.YEAR, 2000 + year);
+                    } else if (year >= 31 && year <= 99) {
+                        cal.set(Calendar.YEAR, 1900 + year);
+                    }
+                    date = cal.getTime();
+                }
+
+                return date;
+            } catch (ParseException e) {
+                continue;
+            }
+        }
+
+        return null;
     }
 
     private static Long getNumericCellAsLong(Cell cell) {
@@ -4888,6 +5053,21 @@ public class DataUploadController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
 
+    public void uploadSuppliersExtended() {
+        suppliers = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                suppliers = readSuppliersExtendedFromExcel(inputStream);
+            } catch (IOException e) {
+                Logger.getLogger(DataUploadController.class.getName()).log(Level.SEVERE, "Error uploading suppliers", e);
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
+
     public void uploadDepartments() {
         departments = new ArrayList<>();
         if (file != null) {
@@ -5365,6 +5545,226 @@ public class DataUploadController implements Serializable {
             suppliersList.add(supplier);
         }
 
+        return suppliersList;
+    }
+
+    private List<Institution> readSuppliersExtendedFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Institution> suppliersList = new ArrayList<>();
+        Institution supplier;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            if (isRowEmpty(row)) {
+                continue;
+            }
+
+            supplier = null;
+            String code = null;
+            String supplierName = null;
+            String qbSupplierName = null;
+            Boolean active = null;
+            String contactPersonName = null;
+            String address = null;
+            String phone = null;
+            String fax = null;
+            String email = null;
+            String web = null;
+            String mobilenumber = null;
+            String paymentCompanyName = null;
+            String bankName = null;
+            String branchName = null;
+            String accountNo = null;
+            String legalCompany = null;
+//            String supplierPrintingName = null;
+//            String ownerName = null;
+
+
+            Cell faxCell = row.getCell(7);
+            if (faxCell != null) {
+                if (faxCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    fax = decimalFormat.format(faxCell.getNumericCellValue());
+
+                } else if (faxCell.getCellType() == CellType.STRING) {
+                    fax = faxCell.getStringCellValue();
+                }
+            }
+            if (fax == null || fax.trim().isEmpty()) {
+                fax = null;
+            }
+
+            Cell emailCell = row.getCell(8);
+            if (emailCell != null && emailCell.getCellType() == CellType.STRING) {
+                email = emailCell.getStringCellValue();
+            }
+
+            Cell webCell = row.getCell(9);
+            if (webCell != null && webCell.getCellType() == CellType.STRING) {
+                web = webCell.getStringCellValue();
+            }
+
+            Cell mobCell = row.getCell(10);
+            if (mobCell != null) {
+                if (mobCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    mobilenumber = decimalFormat.format(mobCell.getNumericCellValue());
+
+                } else if (mobCell.getCellType() == CellType.STRING) {
+                    mobilenumber = mobCell.getStringCellValue();
+                }
+            }
+            if (mobilenumber == null || mobilenumber.trim().isEmpty()) {
+                mobilenumber = null;
+            }
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null) {
+                if (codeCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    code = decimalFormat.format(codeCell.getNumericCellValue());
+
+                } else if (codeCell.getCellType() == CellType.STRING) {
+                    code = codeCell.getStringCellValue();
+                }
+            }
+            if (code == null || code.trim().isEmpty()) {
+                code = null;
+            }
+
+            //    Item masterItem = itemController.findMasterItemByName(code);
+            Cell agentNameCell = row.getCell(1);
+            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
+                supplierName = agentNameCell.getStringCellValue();
+            }
+
+            Cell activeCell = row.getCell(3);
+            if (activeCell != null && activeCell.getCellType() == CellType.STRING) {
+                String cellValue = activeCell.getStringCellValue();
+                active = cellValue.equalsIgnoreCase("Active");
+            }
+            if (active == null) {
+                active = false;
+            }
+
+            Cell contactNumberCell = row.getCell(6);
+            if (contactNumberCell != null) {
+                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    phone = decimalFormat.format(contactNumberCell.getNumericCellValue());
+
+                } else if (contactNumberCell.getCellType() == CellType.STRING) {
+                    phone = contactNumberCell.getStringCellValue();
+                }
+            }
+            if (phone == null || phone.trim().isEmpty()) {
+                phone = null;
+            }
+
+            Cell addressCell = row.getCell(5);
+            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
+                address = addressCell.getStringCellValue();
+            }
+            if (address == null || address.trim().isEmpty()) {
+                address = null;
+            }
+
+            Cell contactPersonNameCell = row.getCell(4);
+            if (contactPersonNameCell != null && contactPersonNameCell.getCellType() == CellType.STRING) {
+                contactPersonName = contactPersonNameCell.getStringCellValue();
+            }
+            if (contactPersonName == null || contactPersonName.trim().isEmpty()) {
+                contactPersonName = null;
+            }
+
+            Cell qbSupplierNameCell = row.getCell(2);
+            if (qbSupplierNameCell != null && qbSupplierNameCell.getCellType() == CellType.STRING) {
+                qbSupplierName = qbSupplierNameCell.getStringCellValue();
+            }
+            if (qbSupplierName == null || qbSupplierName.trim().isEmpty()) {
+                qbSupplierName = null;
+            }
+
+            Cell paymentCompanyNameCell = row.getCell(11);
+            if (paymentCompanyNameCell != null && paymentCompanyNameCell.getCellType() == CellType.STRING) {
+                paymentCompanyName = paymentCompanyNameCell.getStringCellValue();
+            }
+            if (paymentCompanyName == null || paymentCompanyName.trim().isEmpty()) {
+                paymentCompanyName = null;
+            }
+
+            Cell bankNameCell = row.getCell(12);
+            if (bankNameCell != null && bankNameCell.getCellType() == CellType.STRING) {
+                bankName = bankNameCell.getStringCellValue();
+            }
+            if (bankName == null || bankName.trim().isEmpty()) {
+                bankName = null;
+            }
+
+            Cell branchNameCell = row.getCell(13);
+            if (branchNameCell != null && branchNameCell.getCellType() == CellType.STRING) {
+                branchName = branchNameCell.getStringCellValue();
+            }
+            if (branchName == null || branchName.trim().isEmpty()) {
+                branchName = null;
+            }
+
+            Cell accountNoCell = row.getCell(14);
+            if (accountNoCell != null && accountNoCell.getCellType() == CellType.STRING) {
+                accountNo = accountNoCell.getStringCellValue();
+            }
+            if (accountNo == null || accountNo.trim().isEmpty()) {
+                accountNo = null;
+            }
+
+            Cell legalCompanyCell = row.getCell(15);
+            if (legalCompanyCell != null && legalCompanyCell.getCellType() == CellType.STRING) {
+                legalCompany = legalCompanyCell.getStringCellValue();
+            }
+            if (legalCompany == null || legalCompany.trim().isEmpty()) {
+                legalCompany = null;
+            }
+
+            supplier = institutionController.findAndSaveInstitutionByCode(code);
+
+            if (supplier == null) {
+                supplier = new Institution();
+            }
+
+            supplier.setCode(code);
+            supplier.setInstitutionCode(code);
+            supplier.setName(supplierName);
+            supplier.setInactive(!active);
+            supplier.setMobile(mobilenumber);
+            supplier.setFax(fax);
+            supplier.setPhone(phone);
+            supplier.setEmail(email);
+//            supplier.setChequePrintingName(supplierPrintingName);
+//            supplier.setOwnerName(ownerName);
+            supplier.setAddress(address);
+            supplier.setWeb(web);
+            supplier.setAccountNo(accountNo);
+            supplier.setQbSupplierName(qbSupplierName);
+            supplier.setContactPersonName(contactPersonName);
+            supplier.setPaymentCompanyName(paymentCompanyName);
+            supplier.setBankName(bankName);
+            supplier.setBranchName(branchName);
+            supplier.setLegalCompany(legalCompany);
+
+            supplier.setInstitutionType(InstitutionType.Dealer);
+            institutionController.save(supplier);
+            suppliersList.add(supplier);
+        }
+
+        suppliers = new ArrayList<>(suppliersList);
         return suppliersList;
     }
 
@@ -7847,6 +8247,16 @@ public class DataUploadController implements Serializable {
         return templateForsupplierUpload;
     }
 
+    public StreamedContent getTemplateForSupplierExtendedUpload() {
+        try {
+            createTemplateForSupplierExtendedUpload();
+        } catch (IOException e) {
+            Logger.getLogger(DataUploadController.class.getName()).log(Level.SEVERE, "Error creating supplier template", e);
+            JsfUtil.addErrorMessage("Error creating template: " + e.getMessage());
+        }
+        return templateForsupplierUpload;
+    }
+
     public void createTemplateForCollectingCentreUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -7910,6 +8320,41 @@ public class DataUploadController implements Serializable {
         // Set the downloading file
         templateForsupplierUpload = DefaultStreamedContent.builder()
                 .name("template_for_supplier_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForSupplierExtendedUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Suppliers");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Code", "Supplier Name", "QB Supplier Name", "Active", "Contact Person Name", "Address",
+                "Telephone", "Fax", "E Mail", "Web", "Mobile No.", "Payment Company Name", "Bank Name", "Branch Name", "Acc No", "Legal Company"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForsupplierUpload = DefaultStreamedContent.builder()
+                .name("template_for_supplier_upload_extended.xlsx")
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
@@ -8209,6 +8654,35 @@ public class DataUploadController implements Serializable {
 
     public void setDefaultDepartmentType(DepartmentType defaultDepartmentType) {
         this.defaultDepartmentType = defaultDepartmentType;
+    }
+
+    public Category getSelectedFeeList() {
+        return selectedFeeList;
+    }
+
+    public void setSelectedFeeList(Category selectedFeeList) {
+        this.selectedFeeList = selectedFeeList;
+    }
+
+    public List<String> getUploadErrors() {
+        return uploadErrors;
+    }
+
+    public void setUploadErrors(List<String> uploadErrors) {
+        this.uploadErrors = uploadErrors;
+    }
+
+    public String getUploadErrorDetails() {
+        return uploadErrorDetails;
+    }
+
+    public void setUploadErrorDetails(String uploadErrorDetails) {
+        this.uploadErrorDetails = uploadErrorDetails;
+    }
+
+    public void clearUploadErrors() {
+        this.uploadErrors = null;
+        this.uploadErrorDetails = null;
     }
 
 }

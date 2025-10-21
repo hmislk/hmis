@@ -1,329 +1,122 @@
 # Claude Code Configuration for HMIS Project
 
-## Persistence.xml Database Configuration Workflow
+## Repository Information
+- **GitHub Repository**: https://github.com/hmislk/hmis
+- **Issues URL**: https://github.com/hmislk/hmis/issues
+- **Main Repository**: hmislk/hmis (not buddhika75/hmis)
 
-### IMPORTANT: Automatic Git Push Behavior
+## Core Workflows
 
-When asked to push changes to GitHub, Claude should AUTOMATICALLY:
+### Persistence Configuration
+- **File**: `src/main/resources/META-INF/persistence.xml`
+- **🚨 CRITICAL QA DEPLOYMENT RULE**: Before any push to GitHub, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables, NOT hardcoded JNDI names like `jdbc/coop`
+- **⚠️ DDL GENERATION BLOCKER**: Remove hardcoded `eclipselink.application-location` paths like `c:/tmp/` from persistence.xml
+- **Manual Process**: Always check `git status` before pushing to see if persistence.xml has been modified
+- **Pre-Push Checklist**: 
+  1. Check if persistence.xml is in staged changes: `git status`
+  2. If modified, verify it contains `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}`
+  3. If it has hardcoded JNDI names, manually replace them before push
+  4. Never push with hardcoded local JNDI names like `jdbc/coop` or `jdbc/ruhunuAudit`
 
-1. **Before pushing:**
-   - Change current JNDI names → `${JDBC_DATASOURCE}` in persistence.xml
-   - Change current audit JNDI names → `${JDBC_AUDIT_DATASOURCE}` in persistence.xml
+### Git & GitHub Integration
+- **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
+- **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
+- **Wiki Publishing**: [Guide](developer_docs/github/wiki-publishing.md)
+- **QA Deployment**: [Bot-Friendly QA Deployment Guide](developer_docs/deployment/qa-deployment-guide.md)
+- **VM Management**: [VM Restart Guide](developer_docs/deployment/vm-restart-guide.md)
+- **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
+- **QA Testing Path**: Issue should be tested via GitHub Issues → Projects → HMIS Development Board
+- **PR Review Path**: Pull Requests → Files Changed → Review Required Files → Approve/Request Changes
 
-2. **Push changes** to GitHub
+### Testing & Build
+- **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
+- **Preferred**: Use `./detect-maven.sh test` auto-detection script
+- **Fallback**: Machine-specific Maven paths
+- **JSF-Only Changes**: When modifying only XHTML/JSF files (no Java changes), compilation/testing is not required
+- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user
 
-3. **After pushing:**
-   - Revert `${JDBC_DATASOURCE}` → back to the original JNDI name that was there before
-   - Revert `${JDBC_AUDIT_DATASOURCE}` → back to the original audit JNDI name that was there before
+### DTO Implementation
+- **Guidelines**: [Complete Reference](developer_docs/dto/implementation-guidelines.md)
+- **CRITICAL**: Never modify existing constructors - only add new ones
+- **Use direct DTO queries** - avoid entity-to-DTO conversion loops
 
-### File Location
-`src/main/resources/META-INF/persistence.xml`
+### UI Development Guidelines
+- **🚨 UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
+- **NO BACKEND MODIFICATIONS**: Do NOT add new controller properties, methods, or backend dependencies unless explicitly requested
+- **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
+- **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
+- **UI Development Handbook**: [Complete Reference](developer_docs/ui/comprehensive-ui-guidelines.md)
+- **Icon Management**: [Standard Actions & Sizing](developer_docs/ui/icon-management.md)
 
-### Variable JNDI Names
-The JNDI names change based on environment and will be manually updated:
-- Examples: `jdbc/asiri`, `jdbc/ruhunu`, `jdbc/coop`, etc.
-- Always preserve whatever the current local configuration is
+### JSF Development Guidelines
+- **JSF AJAX Updates**: [Critical Guidelines](developer_docs/jsf/ajax-update-guidelines.md)
+- **🚨 AJAX UPDATE RULE**: NEVER use plain HTML elements (div, span, etc.) with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead
 
-### Security Note
-**NEVER commit actual JNDI names to the repository - always use environment variables in pushed commits**
+### Database Development
+- **MySQL Guide**: [Complete Reference](developer_docs/database/mysql-developer-guide.md)
+- **🚨 CREDENTIALS SECURITY**: MySQL credentials MUST be stored in separate folder (NOT in git)
+- **Location**: `C:\Credentials\credentials.txt` (Windows) or `~/.config/hmis/credentials.txt` (Linux/Mac)
+- **Never commit database credentials** to version control
+- **Database debugging techniques** and performance optimization guidelines in MySQL guide
 
-### Key Principle
-Use the **last choice in history** - whatever JNDI names are currently in the file should be restored after pushing.
+## Essential Rules
+1. **MANUAL PERSISTENCE.XML VERIFICATION**: Before any GitHub push, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` - NEVER commit hardcoded JNDI datasources
+2. **Include issue closing keywords** in commit messages
+3. **Update project board status** automatically  
+4. **Run tests before committing** using detect-maven script (only for Java changes, only when user requests)
+5. **🚨 MAVEN COMPILE RULE**: NEVER run Maven compile commands unless explicitly requested by user
+6. **Follow DTO patterns** to avoid breaking changes
+7. **JSF-only changes** do not require compilation or testing
+8. **🚨 CRITICAL QA RULE**: Before any QA deployment, verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables
+9. **🚨 DDL GENERATION RULE**: Never commit persistence.xml with hardcoded DDL generation paths (`eclipselink.application-location`)
+10. **🚨 BACKWARD COMPATIBILITY RULE**: NEVER "fix" intentional typos in entity/controller properties (e.g., `purcahseRate` instead of `purchaseRate`) - these exist for database backward compatibility
+11. **🚨 COMPONENT NAMING RULE**: NEVER rename composite components (e.g., `transfeRecieve_detailed`) without checking ALL usage across the entire codebase - these are referenced in multiple pages
+12. **🚨 DATABASE CREDENTIALS RULE**: NEVER commit database credentials to git - store them in environment-specific folders outside the project directory (see MySQL guide)
+13. **🚨 ERP UI RULE**: Use h:outputText instead of HTML heading tags (h1-h6) - this is an ERP system, not a website
+14. **🚨 XHTML STRUCTURE RULE**: Use HTML DOCTYPE with ui:composition and template inside h:body for all XHTML pages
+15. **🚨 PRIMEFACES CSS RULE**: Use PrimeFaces button classes (ui-button-success, ui-button-warning, etc.) instead of Bootstrap button classes
+16. **🚨 XML ENTITY RULE**: Always escape ampersands as &amp; in XHTML attribute values to prevent XML parsing errors
+17. **🚨 JSF AJAX UPDATE RULE**: NEVER use plain HTML elements with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead (see JSF AJAX Guidelines)
 
-## Git Commit Message Conventions
+## Wiki Writing Guidelines {#wiki-writing-guidelines}
 
-### Issue Closing Keywords
-When pushing commits that resolve GitHub issues, include one of these keywords in the commit message:
-- `Closes #issueNumber` - for general issue resolution
-- `Fixes #issueNumber` - for bug fixes
-- `Resolves #issueNumber` - alternative to closes
+### Purpose and Audience
+- **Wiki is for end users**, not developers
+- Focus on **how to use features**, not how they were implemented
+- Write for pharmacy staff, nurses, doctors, administrators - not programmers
 
-### Example Commit Messages
-```
-Add flexible persistence.xml configuration workflow
+### Writing Style
+- **User-centric language**: "How to substitute items" not "Implementation of substitute functionality"
+- **Step-by-step instructions**: Clear, numbered procedures
+- **Practical examples**: Real scenarios users encounter
+- **Actionable guidance**: What to do when problems occur
 
-Closes #14011
+### Content Structure
+1. **Overview**: What the feature does and why users need it
+2. **When to Use**: Specific scenarios and use cases
+3. **How to Use**: Step-by-step procedures with screenshots if possible
+4. **Understanding Messages**: What system messages mean and how to respond
+5. **Best Practices**: Tips for effective use
+6. **Troubleshooting**: Common problems and solutions
+7. **Configuration**: Admin settings that affect the feature (user impact only)
+8. **FAQ**: Common user questions
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
+### What NOT to Include
+- ❌ Code snippets, file paths, line numbers
+- ❌ Technical implementation details
+- ❌ Database schema information
+- ❌ Developer debugging information
+- ❌ Backend process descriptions
 
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
+### What TO Include
+- ✅ User interface elements and navigation
+- ✅ Error messages and their meanings
+- ✅ Business process workflows
+- ✅ Configuration options (from user perspective)
+- ✅ Integration with other modules
 
-### Auto-Close Behavior
-When Claude pushes commits that complete an issue, automatically include the appropriate closing keyword in the commit message.
-
-## GitHub Project Board Integration
-
-### Project Information
-- **Project**: "CareCode: HMIS Board" (Project #11)
-- **Organization**: hmislk
-- **URL**: https://github.com/orgs/hmislk/projects/11
-
-### Required Authentication
-Ensure GitHub CLI has project scope:
-```bash
-gh auth refresh --hostname github.com -s project
-```
-
-### Project Status Workflow
-When working on issues, update their status in the project board:
-
-#### 1. Starting Development
-When beginning work on an issue:
-```bash
-# Add issue to project (if not already added)
-gh project item-add 11 --owner hmislk --url https://github.com/hmislk/hmis/issues/ISSUE_NUMBER
-
-# Move to "In Progress" status
-gh project item-edit --project-id PVT_kwDOAHw-zs4ApMln --id PROJECT_ITEM_ID --field-id PVTSSF_lADOAHw-zs4ApMlnzggpN3k --single-select-option-id 47fc9ee4
-```
-
-#### 2. After Creating PR
-When a pull request is created:
-```bash
-# Move to "Reviewing & Merging" status
-gh project item-edit --project-id PVT_kwDOAHw-zs4ApMln --id PROJECT_ITEM_ID --field-id PVTSSF_lADOAHw-zs4ApMlnzggpN3k --single-select-option-id a087e083
-```
-
-#### 3. After Merge/Completion
-When the issue is fully resolved:
-```bash
-# Move to "Done" status
-gh project item-edit --project-id PVT_kwDOAHw-zs4ApMln --id PROJECT_ITEM_ID --field-id PVTSSF_lADOAHw-zs4ApMlnzggpN3k --single-select-option-id 1bab9178
-```
-
-### Status Option IDs
-- **Backlog**: `8a5edcf1`
-- **Current Sprint**: `1cbc1930`
-- **To Do**: `fbaa9d0f`
-- **In Progress**: `47fc9ee4`
-- **Reviewing & Merging**: `a087e083`
-- **Dev Completed**: `85d4d4c9`
-- **Ready For Testing**: `f9564514`
-- **Testing In Progress**: `63aa4183`
-- **Done**: `1bab9178`
-
-### Project Constants
-- **Project ID**: `PVT_kwDOAHw-zs4ApMln`
-- **Status Field ID**: `PVTSSF_lADOAHw-zs4ApMlnzggpN3k`
-
-### Finding Project Item ID
-To get the project item ID for an issue:
-```bash
-gh api graphql -f query='
-{
-  search(query: "repo:hmislk/hmis is:issue ISSUE_NUMBER", type: ISSUE, first: 1) {
-    nodes {
-      ... on Issue {
-        number
-        projectItems(first: 10) {
-          nodes {
-            id
-            project {
-              number
-            }
-          }
-        }
-      }
-    }
-  }
-}'
-```
-
-### Automatic Workflow
-Claude should automatically:
-1. Add issues to the project when starting development
-2. Move issues to "In Progress" when development begins
-3. Move issues to "Reviewing & Merging" when PRs are created
-4. Include comprehensive test plans in PR descriptions for QA team
-
-## Maven Testing Commands
-
-### Environment-Specific Maven Locations
-Different development machines have Maven installed in different locations.
-
-**Machine Detection**: Use `hostname` and `whoami` commands to identify the current machine.
-
-#### Known Configurations:
-- **cclap** (Computer: `<HOSTNAME>`, User: `<USERNAME>`):
-  - Maven: `<NB_MAVEN_PATH>`
-  - Payara Server: `<PAYARA_SERVER_PATH>` (Domain 1)
-- **hiulap** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_
-- **hiud** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_ 
-- **ccd** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_
-
-### Testing Commands to Try (in order of preference)
-When running tests, try these commands in order until one works:
-
-1. **Standard Maven** (if in PATH):
-   ```bash
-   mvn test
-   ```
-
-2. **NetBeans Bundled Maven** (cclap):
-   ```bash
-   "<NB_MAVEN_PATH>" test
-   ```
-
-3. **Maven Wrapper** (if available):
-   ```bash
-   ./mvnw test        # Linux/Mac
-   ./mvnw.cmd test    # Windows
-   ```
-
-4. **Specific Test Classes**:
-   ```shell
-   mvn test -Dtest="*BigDecimal*Test"
-   ```
-
-### Note for Claude
-**PREFERRED APPROACH**: Use the auto-detection script:
-1. **First try**: `./detect-maven.sh test` (automatically detects machine and uses correct Maven)
-2. **If script fails**: Fall back to manual detection:
-   - Run `hostname` and `whoami` to identify machine
-   - Try standard `mvn test`
-   - If Maven not found, use machine-specific path based on hostname
-   - For `<HOSTNAME>` (cclap): Use `"<NB_MAVEN_PATH>" test`
-
-**The detect-maven.sh script handles all this automatically and should be the first choice.**
-
-## DTO Implementation Guidelines
-
-### CRITICAL RULES: Avoid Breaking Changes
-
-When implementing DTOs to replace entity objects in UI/display components, follow these strict rules to prevent compilation errors and maintain backward compatibility:
-
-#### 1. NEVER Modify Existing Constructors or Attributes
-- **❌ DO NOT** change parameters of existing constructors
-- **❌ DO NOT** remove existing constructors  
-- **❌ DO NOT** modify existing class attributes/fields
-- **❌ DO NOT** change method signatures that other code depends on
-- **✅ ONLY ADD** new constructors, new attributes, new methods
-
-#### 2. Use Direct DTO Queries - No Entity Conversion
-When replacing entities with DTOs in controllers:
-
-**❌ WRONG APPROACH:**
-```java
-// DON'T DO THIS - Inefficient and resource-intensive
-List<Stock> stocks = stockFacade.findByJpql(sql, params);
-List<StockDTO> dtos = new ArrayList<>();
-for (Stock stock : stocks) {
-    StockDTO dto = new StockDTO(stock.getField1(), stock.getField2(), ...);
-    dtos.add(dto);
-}
-```
-
-**✅ CORRECT APPROACH:**
-```java
-// DO THIS - Direct DTO query from database
-String sql = "SELECT new com.divudi.core.data.dto.StockDTO("
-    + "s.id, "
-    + "s.itemBatch.item.name, "
-    + "s.itemBatch.item.code, "
-    + "s.itemBatch.retailsaleRate, "
-    + "s.stock, "
-    + "s.itemBatch.dateOfExpire, "
-    + "s.itemBatch.batchNo, "
-    + "s.itemBatch.purcahseRate, "
-    + "s.itemBatch.wholesaleRate) "
-    + "FROM Stock s WHERE ...";
-List<StockDTO> dtos = (List<StockDTO>) facade.findLightsByJpql(sql, params);
-```
-
-#### 3. Safe Entity Property Changes
-When changing controller properties from entities to DTOs:
-
-**❌ WRONG - Breaking existing functionality:**
-```java
-// This breaks other code that depends on the Stock entity
-Stock stock; // Changed to StockDTO - BREAKS OTHER CODE!
-```
-
-**✅ CORRECT - Add new property, keep existing:**
-```java
-Stock stock;              // Keep existing for business logic
-StockDTO selectedStockDto; // Add new for UI display
-```
-
-#### 4. XHTML Selection Binding Pattern
-When updating XHTML to use DTOs:
-
-**For dataTable with DTO data source:**
-```xhtml
-<p:dataTable value="#{controller.stockDtoList}" var="i" 
-             selection="#{controller.selectedStockDto}">
-    <p:column headerText="Name">
-        <h:outputText value="#{i.itemName}" />
-    </p:column>
-</p:dataTable>
-```
-
-**Sync DTO selection with entity if needed:**
-```java
-public void setSelectedStockDto(StockDTO dto) {
-    this.selectedStockDto = dto;
-    // Load full entity only if needed for business operations
-    if (dto != null) {
-        this.stock = stockFacade.find(dto.getId());
-    }
-}
-```
-
-#### 5. Constructor Addition Guidelines
-
-**When adding new DTO constructors:**
-
-```java
-// ✅ KEEP existing constructor intact
-public StockDTO(Long id, String itemName, String code, String genericName,
-                Double retailRate, Double stockQty, Date dateOfExpire) {
-    // Original constructor - NEVER CHANGE
-}
-
-// ✅ ADD new constructors for additional use cases
-public StockDTO(Long id, String itemName, String code, Double retailRate, 
-                Double stockQty, Date dateOfExpire, String batchNo, 
-                Double purchaseRate, Double wholesaleRate) {
-    // New constructor with additional fields
-}
-```
-
-#### 6. Reference Implementation Pattern
-
-**Follow this pattern for efficient DTO implementation:**
-
-1. **Identify the display use case** - what data does the UI actually need?
-2. **Add new fields to DTO** (never remove existing ones)
-3. **Add new constructor** with required fields for the use case
-4. **Create direct JPQL query** using the new constructor
-5. **Add new controller properties** for DTO selection (keep existing entity properties)
-6. **Update XHTML** to use DTO properties for display
-7. **Maintain entity properties** for business logic operations
-
-#### 7. Performance Benefits
-Direct DTO queries provide:
-- **Memory efficiency**: Only loads required display fields
-- **Database efficiency**: Single optimized query instead of entity + conversion
-- **Network efficiency**: Reduced data transfer
-- **Compilation safety**: No breaking changes to existing code
-
-#### 8. Example: StockSearchService Reference
-See `StockSearchService.findStockDtos()` method for the correct pattern of direct DTO querying.
-
-### Common Pitfalls to Avoid
-1. **Changing existing constructor signatures** → Compilation errors in dependent code
-2. **Converting entities to DTOs in loops** → Performance degradation
-3. **Removing entity properties used by business logic** → Runtime failures  
-4. **Not using `findLightsByJpql()`** → Missing DTO optimization
-5. **Forgetting to handle null entity relationships** → NullPointerExceptions in queries
-
-### Testing DTO Changes
-Before committing DTO changes:
-1. **Compile the entire project** to check for breaking changes
-2. **Test the specific feature** that uses the new DTOs
-3. **Verify existing functionality** still works (entities for business logic)
-4. **Check performance improvements** compared to entity approach
+### Exception
+Only include technical details when specifically requested for developer documentation or when writing for the developer_docs/ directory.
 
 ---
 This behavior should persist across all Claude Code sessions for this project.

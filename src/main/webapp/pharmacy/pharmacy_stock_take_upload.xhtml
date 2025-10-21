@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <style>
+            .border-dashed {
+                border-style: dashed !important;
+            }
+            
+            .upload-area:hover {
+                background-color: #e9ecef !important;
+                transition: background-color 0.3s ease;
+            }
+            
+            .download-option {
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
+                padding: 1rem;
+                background-color: #fff;
+            }
+            
+            .info-item {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            
+            .font-weight-medium {
+                font-weight: 500;
+            }
+            
+            .opacity-75 {
+                opacity: 0.75;
+            }
+            
+            @media (max-width: 768px) {
+                .download-option {
+                    margin-bottom: 1rem;
+                }
+                
+                .info-item {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                
+                .info-item span {
+                    margin-left: 0 !important;
+                    margin-top: 0.25rem;
+                }
+            }
+        </style>
+    </h:head>
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <div class="container-fluid">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-upload fa-lg" style="margin-right: 12px;"></i>
+                                <div>
+                                    <h:outputText value="Upload Stock Adjustments" styleClass="h4 mb-0"/>
+                                    <small class="d-block opacity-75">Import physical stock count data from Excel sheets</small>
+                                </div>
+                            </div>
+                            <h:form>
+                                <p:commandButton value="Pending Approvals" icon="fa fa-clock" ajax="false"
+                                                 action="/pharmacy/pharmacy_physical_count_pending?faces-redirect=true"/>
+                            </h:form>
+                        </div>
+                        <div class="card-body">
+                            <p:messages id="msgs" showDetail="true" closable="true" autoUpdate="true"/>
+                            <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
+                                <div class="alert alert-warning d-flex align-items-center">
+                                    <i class="fa fa-exclamation-triangle fa-lg" style="margin-right: 12px;"></i>
+                                    <div>
+                                        <strong>No Snapshot Bill Selected</strong>
+                                        <p class="mb-0">Please go back to the stock take list and choose a snapshot bill to proceed with the upload.</p>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBill}">
+                                <div class="card bg-light mb-4">
+                                    <div class="card-body">
+                                        <h:outputText value="Snapshot Bill Information" styleClass="h5 mb-3 text-primary"/>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="info-item mb-2">
+                                                    <i class="fa fa-building text-muted" style="margin-right: 8px;"></i>
+                                                    <strong>Institution:</strong>
+                                                    <span style="margin-left: 8px;">#{pharmacyStockTakeController.snapshotBill.institution.name}</span>
+                                                </div>
+                                                <div class="info-item mb-2">
+                                                    <i class="fa fa-sitemap text-muted" style="margin-right: 8px;"></i>
+                                                    <strong>Department:</strong>
+                                                    <span style="margin-left: 8px;">#{pharmacyStockTakeController.snapshotBill.department.name}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="info-item mb-2">
+                                                    <i class="fa fa-file-alt text-muted" style="margin-right: 8px;"></i>
+                                                    <strong>Bill No:</strong>
+                                                    <span class="badge badge-secondary" style="font-family: monospace; margin-left: 8px;">#{pharmacyStockTakeController.snapshotBill.deptId}</span>
+                                                </div>
+                                                <div class="info-item mb-2">
+                                                    <i class="fa fa-calendar text-muted" style="margin-right: 8px;"></i>
+                                                    <strong>Created:</strong>
+                                                    <span class="ml-2">
+                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.createdAt}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                      
+
+                                <h:form id="frmUpload" enctype="multipart/form-data">
+                                    <div class="card">
+                                        <div class="card-header bg-secondary text-white">
+                                            <i class="fa fa-upload" style="margin-right: 8px;"></i>
+                                            <strong>Upload Completed Physical Count Sheet</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="upload-instructions mb-4">
+                                                <div class="alert alert-info">
+                                                    <i class="fa fa-info-circle" style="margin-right: 8px;"></i>
+                                                    <strong>Instructions:</strong>
+                                                    <ul class="mb-0 mt-2">
+                                                        <li>Upload the Excel file with completed physical counts</li>
+                                                        <li>Ensure all quantities are filled in the "Physical Count" column</li>
+                                                        <li>File must be in Excel format (.xlsx or .xls)</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="upload-area p-4 border-dashed border-2 border-secondary rounded text-center mb-3" 
+                                                 style="background-color: #f8f9fa;">
+                                                <i class="fa fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                                <div class="mb-3">
+                                                    <p:fileUpload value="#{pharmacyStockTakeController.file}" 
+                                                                mode="simple" 
+                                                                label="Choose Excel File"
+                                                                styleClass="ui-button-lg ui-button-outlined"/>
+                                                </div>
+                                                <p class="text-muted mb-0">Select your completed stock count Excel file</p>
+                                            </div>
+                                            
+                                            <div class="text-center">
+                                                <p:commandButton value="Process Upload &amp; Review" 
+                                                               icon="fa fa-upload" 
+                                                               styleClass="ui-button-success ui-button-lg"
+                                                               action="#{pharmacyStockTakeController.parseAndPersistNavigate}"
+                                                               ajax="false"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:form>
+
+                                <!-- Preview is now on the review page -->
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

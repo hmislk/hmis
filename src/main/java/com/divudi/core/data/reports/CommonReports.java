@@ -4,7 +4,8 @@ package com.divudi.core.data.reports;
  * Generic report type used for miscellaneous report logging.
  */
 public enum CommonReports implements IReportType {
-    LAB_DASHBOARD("Lab Dashboard");
+    LAB_DASHBOARD("Lab Dashboard"),
+    LAB_REPORTS("Lab Reports");
 
     private final String displayName;
 

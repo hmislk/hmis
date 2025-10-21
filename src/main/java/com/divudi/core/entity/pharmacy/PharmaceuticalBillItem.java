@@ -61,15 +61,24 @@ public class PharmaceuticalBillItem implements Serializable {
 
     private double retailRate;
     private double retailRatePack;
-
-    private double purchaseValue;
-    private double purchaseRatePackValue;
-
-    private double retailValue;
-    private double retailPackValue;
+    
+    private double completedQty;
+    private double completedFreeQty;
 
     private double wholesaleRate;
     private double wholesaleRatePack;
+
+    private double costRate;
+    private double costRatePack;
+
+    private double purchaseValue;
+    @Deprecated // Not different from purchase value
+    private double purchaseRatePackValue;
+
+    private double retailValue;
+    @Deprecated // Not different from retail value
+    private double retailPackValue;
+    private double costValue;
 
     private double lastPurchaseRate;
     private double lastPurchaseRatePack;
@@ -285,6 +294,8 @@ public class PharmaceuticalBillItem implements Serializable {
         remainingFreeQtyPack = ph.remainingFreeQtyPack;
         remainingQty = ph.remainingQty;
         remainingQtyPack = ph.remainingQtyPack;
+        completedQty = ph.completedQty;
+        completedFreeQty = ph.completedFreeQty;
 
         wholesaleRate = ph.wholesaleRate;
         wholesaleRatePack = ph.wholesaleRatePack;
@@ -296,7 +307,6 @@ public class PharmaceuticalBillItem implements Serializable {
         stock = ph.getStock();
         staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
-
 
         make = ph.getMake();
         model = ph.getModel();
@@ -320,17 +330,48 @@ public class PharmaceuticalBillItem implements Serializable {
         if (ph == null) {
             return;
         }
+        // Invert quantities (stock goes out)
         qty = 0 - ph.qty;
         qtyPacks = 0 - ph.qtyPacks;
         freeQty = 0 - ph.freeQty;
         freeQtyPacks = 0 - ph.freeQtyPacks;
+        completedQty = 0 - ph.completedQty;
+        completedFreeQty = 0 - ph.completedFreeQty;
+
+        // Invert values (stock valuation reduces)
+        purchaseValue = 0 - ph.purchaseValue;
+        retailValue = 0 - ph.retailValue;
+        costValue = 0 - ph.costValue;
+
+        // Rates remain the same (they are unit prices, not values)
+        purchaseRate = ph.purchaseRate;
+        retailRate = ph.retailRate;
+        costRate = ph.costRate;
+        purchaseRatePack = ph.purchaseRatePack;
+        retailRatePack = ph.retailRatePack;
+        costRatePack = ph.costRatePack;
+        wholesaleRate = ph.wholesaleRate;
+        wholesaleRatePack = ph.wholesaleRatePack;
+        lastPurchaseRate = ph.lastPurchaseRate;
+        lastPurchaseRatePack = ph.lastPurchaseRatePack;
     }
-    
+
     public void invertValue() {
+        // Invert quantities (stock goes out)
         qty = 0 - qty;
         qtyPacks = 0 - qtyPacks;
         freeQty = 0 - freeQty;
         freeQtyPacks = 0 - freeQtyPacks;
+        completedQty = 0 - completedQty;
+        completedFreeQty = 0 - completedFreeQty;
+
+        // Invert values (stock valuation reduces)
+        purchaseValue = 0 - purchaseValue;
+        retailValue = 0 - retailValue;
+        costValue = 0 - costValue;
+
+        // Rates remain the same (they are unit prices, not values)
+        // Do not invert: purchaseRate, retailRate, costRate, etc.
     }
 
     public Stock getStock() {
@@ -475,12 +516,10 @@ public class PharmaceuticalBillItem implements Serializable {
         this.purchaseRate = purchaseRate;
     }
 
-    
     public double getRetailRateInUnit() {
         return retailRate;
     }
 
-    
     public void setRetailRateInUnit(double retailRate) {
         this.retailRate = retailRate;
     }
@@ -809,6 +848,47 @@ public class PharmaceuticalBillItem implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
 
+    public double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(double costRate) {
+        this.costRate = costRate;
+    }
+
+    public double getCostRatePack() {
+        return costRatePack;
+    }
+
+    public void setCostRatePack(double costRatePack) {
+        this.costRatePack = costRatePack;
+    }
+
+    public double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(double costValue) {
+        this.costValue = costValue;
+    }
+
+    public double getCompletedQty() {
+        return completedQty;
+    }
+
+    public void setCompletedQty(double completedQty) {
+        this.completedQty = completedQty;
+    }
+
+    public double getCompletedFreeQty() {
+        return completedFreeQty;
+    }
+
+    public void setCompletedFreeQty(double completedFreeQty) {
+        this.completedFreeQty = completedFreeQty;
+    }
+
+    
+    
 }

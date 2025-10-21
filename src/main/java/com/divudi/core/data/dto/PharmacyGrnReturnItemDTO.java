@@ -20,6 +20,7 @@ public class PharmacyGrnReturnItemDTO implements Serializable {
     public PharmacyGrnReturnItemDTO() {
     }
 
+    // Original constructor for backward compatibility
     public PharmacyGrnReturnItemDTO(String grnReturnNo,
                                     String departmentName,
                                     Date createdAt,
@@ -42,6 +43,56 @@ public class PharmacyGrnReturnItemDTO implements Serializable {
         this.saleRate = saleRate;
         this.returnedRate = returnedRate;
         this.returnValue = returnValue;
+    }
+
+    // New constructor using BillItem netRate and netValue
+    public PharmacyGrnReturnItemDTO(String grnReturnNo,
+                                    String departmentName,
+                                    Date createdAt,
+                                    String supplierName,
+                                    String itemName,
+                                    BigDecimal quantityReturned,
+                                    BigDecimal freeQuantityReturned,
+                                    Double purchaseRate,
+                                    BigDecimal saleRate,
+                                    Double billItemNetRate,
+                                    Double billItemNetValue) {
+        this.grnReturnNo = grnReturnNo;
+        this.departmentName = departmentName;
+        this.createdAt = createdAt;
+        this.supplierName = supplierName;
+        this.itemName = itemName;
+        this.quantityReturned = quantityReturned;
+        this.freeQuantityReturned = freeQuantityReturned;
+        this.purchaseRate = purchaseRate;
+        this.saleRate = saleRate;
+        this.returnedRate = billItemNetRate != null ? BigDecimal.valueOf(billItemNetRate) : null;
+        this.returnValue = billItemNetValue != null ? BigDecimal.valueOf(billItemNetValue) : null;
+    }
+
+    // Constructor for JPQL queries using PharmaceuticalBillItem and BillItem fields directly (all double types)
+    public PharmacyGrnReturnItemDTO(String grnReturnNo,
+                                    String departmentName,
+                                    Date createdAt,
+                                    String supplierName,
+                                    String itemName,
+                                    Double qty,
+                                    Double freeQty,
+                                    Double purchaseRate,
+                                    Double retailRate,
+                                    Double netRate,
+                                    Double netValue) {
+        this.grnReturnNo = grnReturnNo;
+        this.departmentName = departmentName;
+        this.createdAt = createdAt;
+        this.supplierName = supplierName;
+        this.itemName = itemName;
+        this.quantityReturned = qty != null ? BigDecimal.valueOf(qty) : null;
+        this.freeQuantityReturned = freeQty != null ? BigDecimal.valueOf(freeQty) : null;
+        this.purchaseRate = purchaseRate;
+        this.saleRate = retailRate != null ? BigDecimal.valueOf(retailRate) : null;
+        this.returnedRate = netRate != null ? BigDecimal.valueOf(netRate) : null;
+        this.returnValue = netValue != null ? BigDecimal.valueOf(netValue) : null;
     }
 
     public String getGrnReturnNo() {

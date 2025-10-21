@@ -47,15 +47,16 @@ This document lists all pages reachable from the **Lab** menu. Each entry shows 
 | **Lab → Lab Analytics → Income → Investigation Summary Fee Type With Credit** | `/faces/reportLab/report_investigation_summery_by_feetype_with_credit.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Investigation Summary Regent Fee With Credit** | `/faces/reportLab/report_investigation_summery_by_regent_fee_with_credit.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Investigation Summary Regent Fee By Payment Method** | `/faces/reportLab/report_investigation_summery_by_regent_fee_by_pay_method.xhtml` | `LabSummeries` | |
-| **Lab → Lab Analytics → Income → Daily Lab Summary By Department** | `/faces/reportLab/lab_daily_summary_by_department.xhtml` | `LabSummeries` | |
-| **Lab → Lab Analytics → Income → Laboratary Card Income Report** | `/faces/reportLab/laboratary_card_income_report.xhtml` | `LabSummeries` | |
+| **Lab → Lab Analytics → Income → Daily Lab Summary By Department** | `/faces/reportLab/lab_daily_summary_by_department.xhtml` | `LabSummeries` | Visible when `Lab Daily Summary Report - Legacy Method` is true |
+| **Lab → Lab Analytics → Income → Daily Lab Summary By Department (DTO)** | `/faces/reportLab/lab_daily_summary_by_department_dto.xhtml` | `LabSummeries` | Visible when `Lab Daily Summary Report - Optimized Method` is true |
+| **Lab → Lab Analytics → Income → Laboratory Card Income Report** | `/faces/reportLab/laboratary_card_income_report.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Daily OPD Fee Summary** | `/faces/reportLab/report_lab_by_date_summery_cash_credit.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Daily OPD Fee Summary with Counts** | `/faces/reportLab/report_lab_by_date_summery_cash_credit_counts.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Daily Inward Fee Summary** | `/faces/reportLab/daily_inward_fee_summery.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Daily Inward Fee Summary with Counts** | `/faces/reportLab/daily_inward_fee_summery_counts.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Report Summary by Month With Cash and Credit** | `/faces/reportLab/report_lab_by_date_summery_cash_credit_only_total.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Lab Summary → Test Wise Count Report** | `/faces/reportLab/test_wise_count.xhtml` | `LabSummeries` | |
-| **Lab → Lab Analytics → Lab Summary → Laboratary Income Report** | `/faces/reportLab/laboratary_income_report.xhtml` | `LabSummeries` | |
+| **Lab → Lab Analytics → Lab Summary → Laboratory Income Report** | `/faces/reportLab/laboratary_income_report.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Lab Summary → Laboratory Order Report** | `/faces/reportLab/lab_inward_order_report.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Lab Summary → Laboratory Summary** | `/faces/reportLab/laboratary_summary.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Lab Summary → Daily Summary By Bill Types** | `/faces/reportLab/report_opd_service_summery_by_bill_types.xhtml` | `LabSummeries` | |

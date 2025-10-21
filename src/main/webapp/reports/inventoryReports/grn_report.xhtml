@@ -298,8 +298,8 @@
                                 <h:outputLabel
                                         rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                and (b.referenceBill.paymentMethod eq 'Cash')}"
-                                        value="#{(b.referenceBill.netTotal gt 0 ? -1 * b.referenceBill.netTotal : b.referenceBill.netTotal)}">
+                                                and (b.paymentMethod eq 'Cash')}"
+                                        value="#{(b.billFinanceDetails.lineNetTotal gt 0 ? -1 * b.billFinanceDetails.lineNetTotal : b.billFinanceDetails.lineNetTotal)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel
@@ -311,7 +311,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                and (b.referenceBill.paymentMethod ne 'Cash')}" value="0.00"/>
+                                                and (b.paymentMethod ne 'Cash')}" value="0.00"/>
                                 <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
                                                 and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
                                                 and (b.paymentMethod ne 'Cash')}" value="0.00"/>
@@ -336,8 +336,8 @@
                                 <h:outputLabel
                                         rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                and (b.referenceBill.paymentMethod eq 'Credit')}"
-                                        value="#{(b.referenceBill.netTotal gt 0 ? -1 * b.referenceBill.netTotal : b.referenceBill.netTotal)}">
+                                                and (b.paymentMethod eq 'Credit')}"
+                                        value="#{(b.billFinanceDetails.lineNetTotal gt 0 ? -1 * b.billFinanceDetails.lineNetTotal : b.billFinanceDetails.lineNetTotal)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel
@@ -369,13 +369,73 @@
                                 </f:facet>
                             </p:column>
 
+                            <!-- Cost Value Cash -->
+                            <p:column headerText="Cost Value Cash" width="6em" style="text-align: right;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Cash')}"
+                                        value="#{(b.billFinanceDetails.totalCostValue gt 0 ? -1 * b.billFinanceDetails.totalCostValue : b.billFinanceDetails.totalCostValue)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Cash')}"
+                                        value="#{b.billFinanceDetails.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.referenceBill.paymentMethod ne 'Cash')}" value="0.00"/>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod ne 'Cash')}" value="0.00"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyController.totalCashCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- Cost Value Credit -->
+                            <p:column headerText="Cost Value Credit" width="6em" style="text-align: right;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Credit')}"
+                                        value="#{(b.billFinanceDetails.totalCostValue gt 0 ? -1 * b.billFinanceDetails.totalCostValue : b.billFinanceDetails.totalCostValue)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Credit')}"
+                                        value="#{b.billFinanceDetails.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod ne 'Credit')}" value="0.00"/>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod ne 'Credit')}" value="0.00"/>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyController.totalCreditCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
                             <!-- Sale Value Cash -->
                             <p:column headerText="Sale Value Cash" width="6em" style="text-align: right;">
                                 <h:outputLabel
                                         rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                and (b.referenceBill.paymentMethod eq 'Cash')}"
-                                        value="#{(b.referenceBill.saleValue gt 0 ? -1 * b.referenceBill.saleValue : b.referenceBill.saleValue)}">
+                                                and (b.paymentMethod eq 'Cash')}"
+                                        value="#{(b.billFinanceDetails.totalRetailSaleValue gt 0 ? -1 * b.billFinanceDetails.totalRetailSaleValue : b.billFinanceDetails.totalRetailSaleValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel
@@ -387,7 +447,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                and (b.referenceBill.paymentMethod ne 'Cash')}" value="0.00"/>
+                                                and (b.paymentMethod ne 'Cash')}" value="0.00"/>
                                 <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
                                                 and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
                                                 and (b.paymentMethod ne 'Cash')}" value="0.00"/>
@@ -412,8 +472,8 @@
                                 <h:outputLabel
                                         rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                and (b.referenceBill.paymentMethod eq 'Credit')}"
-                                        value="#{(b.referenceBill.saleValue gt 0 ? -1 * b.referenceBill.saleValue : b.referenceBill.saleValue)}">
+                                                and (b.paymentMethod eq 'Credit')}"
+                                        value="#{(b.billFinanceDetails.totalRetailSaleValue gt 0 ? -1 * b.billFinanceDetails.totalRetailSaleValue : b.billFinanceDetails.totalRetailSaleValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <h:outputLabel
@@ -425,7 +485,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                and (b.referenceBill.paymentMethod ne 'Credit')}" value="0.00"/>
+                                                and (b.paymentMethod ne 'Credit')}" value="0.00"/>
                                 <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
                                                 and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
                                                 and (b.paymentMethod ne 'Credit')}" value="0.00"/>
@@ -466,6 +526,18 @@
                                         </p:column>
                                         <p:column headerText="Purchase Rate" style="text-align: left;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Cost Rate" style="text-align: left;"
+                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineCostRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Discount Rate" style="text-align: left;">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineDiscountRate ne null ?
+                                            bi.billItemFinanceDetails.lineDiscountRate : bi.referanceBillItem.billItemFinanceDetails.lineDiscountRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
@@ -549,7 +621,7 @@
                             </p:column>
                             <p:column headerText="Purchase Value" width="6em" style="text-align: right;">
                                 <h:outputText
-                                        value="#{r.referenceBill.netTotal gt 0 ? -1 * r.referenceBill.netTotal : r.referenceBill.netTotal}">
+                                        value="#{r.billFinanceDetails.lineNetTotal gt 0 ? -1 * r.billFinanceDetails.lineNetTotal : r.billFinanceDetails.lineNetTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
 
@@ -559,9 +631,23 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Sale Value" width="6em" style="text-align: right;">
+                            <p:column headerText="Cost Value" width="6em" style="text-align: right;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
                                 <h:outputText
-                                        value="#{r.referenceBill.saleValue gt 0 ? -1 * r.referenceBill.saleValue : r.referenceBill.saleValue}">
+                                        value="#{r.billFinanceDetails.totalCostValue gt 0 ? -1 * r.billFinanceDetails.totalCostValue : r.billFinanceDetails.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Sale Value***" width="6em" style="text-align: right;">
+                                #{r.billFinanceDetails.id}
+                                <h:outputText
+                                        value="#{r.billFinanceDetails.totalRetailSaleValue gt 0 ? -1 * r.billFinanceDetails.totalRetailSaleValue : r.billFinanceDetails.totalRetailSaleValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -586,6 +672,18 @@
                                         </p:column>
                                         <p:column headerText="Purchase Rate" style="text-align: left;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Cost Rate" style="text-align: left;"
+                                                  rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineCostRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Discount Rate" style="text-align: left;">
+                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineDiscountRate ne null ?
+                                            bi.billItemFinanceDetails.lineDiscountRate : bi.referanceBillItem.billItemFinanceDetails.lineDiscountRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
@@ -668,7 +766,7 @@
                             </p:column>
                             <p:column headerText="Purchase Value" width="6em" style="text-align: right;">
                                 <h:outputText
-                                        value="#{cb.referenceBill.netTotal gt 0 ? -1 * cb.referenceBill.netTotal : cb.referenceBill.netTotal}">
+                                        value="#{(cb.billFinanceDetails.lineNetTotal gt 0 ? -1 * cb.billFinanceDetails.lineNetTotal : cb.billFinanceDetails.lineNetTotal)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
 
@@ -678,9 +776,22 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Cost Value" width="6em" style="text-align: right;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                                <h:outputText
+                                        value="#{cb.billFinanceDetails.totalCostValue gt 0 ? -1 * cb.billFinanceDetails.totalCostValue : cb.billFinanceDetails.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
                             <p:column headerText="Sale Value" width="6em" style="text-align: right;">
                                 <h:outputText
-                                        value="#{cb.referenceBill.saleValue gt 0 ? -1 * cb.referenceBill.saleValue : cb.referenceBill.saleValue}">
+                                        value="#{cb.billFinanceDetails.totalRetailSaleValue gt 0 ? -1 * cb.billFinanceDetails.totalRetailSaleValue : cb.billFinanceDetails.totalRetailSaleValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -707,6 +818,18 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
+                                    <p:column headerText="Cost Rate" style="text-align: left;"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                                        <h:outputLabel value="#{cbi.billItemFinanceDetails.lineCostRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Discount Rate" style="text-align: left;">
+                                        <h:outputLabel value="#{cbi.billItemFinanceDetails.lineDiscountRate ne null ?
+                                            cbi.billItemFinanceDetails.lineDiscountRate : cbi.referanceBillItem.billItemFinanceDetails.lineDiscountRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Item MRP" style="text-align: left;">
                                         <h:outputText value="#{cbi.pharmaceuticalBillItem.retailRate}"/>
                                     </p:column>
@@ -729,6 +852,7 @@
                                      var="s"
                                      rowIndexVar="n"
                                      paginator="true"
+                                     paginatorPosition="bottom"
                                      rows="10"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
@@ -754,6 +878,15 @@
                                     <h:outputLabel value="Sale Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{s.value2}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="font-weight: bold;text-align:right;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Cost Value"/>
+                                </f:facet>
+                                <h:outputLabel value="#{s.value3}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>

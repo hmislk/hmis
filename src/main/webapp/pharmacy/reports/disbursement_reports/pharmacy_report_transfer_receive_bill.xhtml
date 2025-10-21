@@ -11,258 +11,422 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Pharmacy Transfer Received Bills" >
-                        <p:panelGrid columns="4" class="w-100">
-                            <h:outputLabel value="From" />
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            <h:outputLabel value="To"/>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            <h:outputLabel value="Transfer From" />
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}"  >
-                            </p:autoComplete>
-                            <h:outputLabel value="Transfer To" />
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}"  >
-                            </p:autoComplete>
-                        </p:panelGrid>
+                    <p:panel header="Pharmacy Transfer Received Bills"
+                             styleClass="card shadow-sm" >
+                        <div id="filters" class="row g-2">
+                            <div class="col-2">
+                                <h:outputLabel for="fromDate" value="From" />
+                            </div>
+                            <div class="col-3">
+                                <p:calendar id="fromDate" class="w-100" inputStyleClass="w-100"
+                                            value="#{reportsTransfer.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <h:outputLabel for="toDate" value="To" />
+                            </div>
+                            <div class="col-3">
+                                <p:calendar id="toDate" class="w-100" inputStyleClass="w-100"
+                                            value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                            <div class="col-2">
+                                <h:outputLabel for="fromDept" value="Transfer From" />
+                            </div>
+                            <div class="col-3">
+                                <p:autoComplete id="fromDept" class="w-100" inputStyleClass="w-100"
+                                                completeMethod="#{departmentController.completeDept}" var="dept"
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true"
+                                                value="#{reportsTransfer.fromDepartment}"  >
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <h:outputLabel for="toDept" value="Transfer To" />
+                            </div>
+                            <div class="col-3">
+                                <p:autoComplete id="toDept" class="w-100" inputStyleClass="w-100"
+                                                completeMethod="#{departmentController.completeDept}" var="dept"
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true"
+                                                value="#{reportsTransfer.toDepartment}"  >
+                                </p:autoComplete>
+                            </div>
 
-                        <h:panelGrid columns="3" class="my-2">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Fill" 
-                                icon="fas fa-fill"
-                                class="ui-button-warning"
-                                action="#{reportsTransfer.fillDepartmentTransfersRecieveByBill()}" >
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Excel" 
-                                icon="fas fa-file-excel"
-                                class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Transfer_Receive_by_Bill"  />
-                            </p:commandButton>
-                            <p:commandButton 
-                                value="Print" 
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 my-3">
+                            <p:commandButton
                                 ajax="false"
-                                icon="fas fa-print"
+                                value="Process"
+                                icon="pi pi-play"
+                                class="ui-button-warning"
+                                title="Generate transfer report with current filters"
+                                action="#{reportsTransfer.fillDepartmentTransfersReceiveByBillDto}" >
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                value="Export to Excel"
+                                icon="pi pi-file-excel"
+                                class="ui-button-success"
+                                title="Export current data to Excel file">
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Receive_Listing_DTO" exportFooter="true" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print Report"
+                                ajax="false"
+                                icon="pi pi-print"
                                 class="ui-button-info"
+                                title="Open print-friendly version"
                                 action="pharmacy_report_transfer_receive_bill_print?faces-redirect=true" >
                             </p:commandButton>
 
 
-                        </h:panelGrid>
+                        </div>
 
 
                         <h:panelGroup id="gpBillPreviewScreen" styleClass="noBorder summeryBorder screenOnly">
                             <p:dataTable 
                                 id="tblScreen" 
-                                style="padding: 0px!important; margin: 0px!important;" 
-                                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                                value="#{reportsTransfer.transferBills}" 
-                                var="i" 
-                                >
-
+                                styleClass="noBorder normalFont table-responsive"
+                                scrollable="true"
+                                scrollWidth="100%"
+                                value="#{reportsTransfer.transferReceiveDtos}"
+                                var="i" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer List "/>
-                                    <br/>
-                                    <h:outputLabel value="From &nbsp;"  />
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}"/> 
-                                    <h:outputLabel value="To &nbsp;"/>
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}"/>
-                                    <br/>
-                                    <h:outputLabel value="From &nbsp;"/>
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="To &nbsp;"/>
-                                    <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
+                                    <div class="table-header-info p-2 bg-light border-bottom">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="mb-1 text-primary">
+                                                    <i class="fas fa-exchange-alt mr-2"></i>Transfer Receive Details
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <strong>From:</strong>
+                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}</span>
+                                                    <strong>To:</strong>
+                                                    <span class="badge badge-secondary">#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}</span>
+                                                </small>
+                                                <br/>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <strong>Period:</strong>
+                                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                                    </h:outputLabel>
+                                                    <span class="mx-1">to</span>
+                                                    <h:outputLabel value="#{reportsTransfer.toDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                                    </h:outputLabel>
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <div class="table-record-count">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-list-ul mr-1"></i>
+                                                        <strong>Total Records:</strong>
+                                                        <span class="badge badge-info">#{reportsTransfer.transferReceiveDtos.size()}</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </f:facet>
 
-                                <!-- Serial -->
-<!--                                <p:column headerText="Serial" width="3em">
-                                    <h:outputLabel 
-                                        value="#{n+1}">
-                                    </h:outputLabel>  
-                                </p:column>-->
-
-                                <!-- Bill No Column -->
-                                <p:column headerText="Bill No" style="padding: 0px!important; margin: 0px!important;" sortBy="#{i.deptId}" filterBy="#{i.deptId}" filterMatchMode="contains">
-                                    <h:outputLabel 
-                                        style="padding: 0px!important; margin: 0px!important;"
-                                        value="#{i.deptId}" >
-                                    </h:outputLabel>  
+                                <p:column headerText="Bill No" sortBy="#{i.deptId}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.deptId}"/>
                                 </p:column>
 
-                                <!-- Received Date Time Column -->
-                                <p:column headerText="Received Date Time" style="padding: 0px!important; margin: 0px!important;">
+                                <p:column headerText="Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date &amp; Time" />
+                                    </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <!-- Received Department Column -->
-                                <p:column headerText="Received By Department" style="padding: 0px!important; margin: 0px!important;">
-                                     <h:outputLabel value="#{i.department != null ? i.department.name : 'Not Assigned'}" style="padding: 0px!important; margin: 0px!important;"/>
-                                </p:column>
-
-                                <!-- Sent Department Column -->
-                                <p:column headerText="Sent From Department" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputLabel value="#{i.fromDepartment != null ? i.fromDepartment.name : 'Not Assigned'}" style="padding: 0px!important; margin: 0px!important;"/>             
-                                </p:column>
-                                
-                                <!-- Transporter Column -->
-                                <p:column style="padding: 0px!important; margin: 0px!important;">
+                                <p:column headerText="Received by">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Transporter" style="padding: 0px!important; margin: 0px!important;"/>
+                                        <h:outputLabel value="Received by" />
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.fromStaff.person.name}" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{i.department.name}">
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sent from"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fromDepartment.name}">
+                                    </h:outputLabel>
+                                </p:column>
 
-                                <!-- Purchase Total Column -->
-                                <p:column headerText="Purchase Value" style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputLabel value="#{i.netTotal}" style="padding: 0px!important; margin: 0px!important;">
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transporter" />
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fromStaff.person.nameWithTitle}">
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Remarks" />
+                                    </f:facet>
+                                    <h:panelGroup rendered="#{i.cancelled}">
+                                        <span class="badge bg-danger">Cancelled</span>                                   
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{i.refunded}">
+                                        <span class="badge bg-warning">Returned</span>
+                                    </h:panelGroup>
+                                </p:column>
+
+
+                                <p:column headerText="Purchase Value" styleClass="text-end" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{empty i.purchaseValue ? null : commonFunctionsProxy.abs(i.purchaseValue)}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel> 
+                                    </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{reportsTransfer.netTotalValues}" style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Sale Value" styleClass="text-end" footerText="#{empty reportsTransfer.saleValue ? null : commonFunctionsProxy.abs(reportsTransfer.saleValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{empty i.saleValue ? null : commonFunctionsProxy.abs(i.saleValue)}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{empty reportsTransfer.saleValue ? null : commonFunctionsProxy.abs(reportsTransfer.saleValue)}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Cost Value" styleClass="text-end" footerText="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{empty i.costValueDouble ? null : commonFunctionsProxy.abs(i.costValueDouble)}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Transfer Value" styleClass="text-end" footerText="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transfer Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{empty i.transferValueDouble ? null : commonFunctionsProxy.abs(i.transferValueDouble)}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 
-                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;">
+                                <p:column>
                                     <f:facet name="header">
-                                        <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;"/>
+                                        <h:outputLabel value="Comment" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.saleValue}" style="padding: 0px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>   
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{reportsTransfer.totalsValue}" style="padding: 0px!important; margin: 0px!important;">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
+                                    <h:outputLabel
+                                        value="#{i.comments}" />
                                 </p:column>
 
                                 
                                 <!-- Actions -->
-                                <p:column rendered="true" 
+                                <p:column 
+                                    rendered="true" 
                                     exportable="false"
-                                    headerText="Actions" width="5em" style="padding: 0px!important; margin: 0px!important;">
+                                    headerText="Actions" width="7em">
                                     <p:commandButton
-                                        ajax="false" 
-                                        value="View" 
+                                        ajax="false"
+                                        value="View"
+                                        icon="pi pi-eye"
                                         styleClass="ui-button-secondary"
-                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferReceive}">
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{i}" />
-                                    </p:commandButton>  
+                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferReceiveById()}">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{i.billId}" />
+                                    </p:commandButton>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGroup>
                         
                         <h:panelGroup id="gpBillPreviewPrinting" styleClass="noBorder summeryBorder" class="printingOnly">
-                            <p:dataTable 
-                                id="tblPrinting" 
-                                style="padding: 0px!important; margin: 0px!important;" 
-                                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                                value="#{reportsTransfer.transferBills}" 
-                                var="i"
-                                >
-
+                            <p:dataTable
+                                id="tblPrinting"
+                                styleClass="noBorder normalFont table-responsive"
+                                value="#{reportsTransfer.transferReceiveDtos}"
+                                var="i" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer List "/><br/>
-                                    <h:outputLabel value="From &nbsp;" />
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}"/> 
-                                    <h:outputLabel value="To &nbsp;"/>
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}"/>
-                                    <br/>
-                                    <h:outputLabel value="From &nbsp;"/>
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="To &nbsp;"/>
-                                    <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
+                                    <div class="table-header-info p-2 bg-light border-bottom">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="mb-1 text-primary">
+                                                    <i class="fas fa-exchange-alt mr-2"></i>Transfer Receive Details
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <strong>From:</strong>
+                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}</span>
+                                                    <strong>To:</strong>
+                                                    <span class="badge badge-secondary">#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}</span>
+                                                </small>
+                                                <br/>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <strong>Period:</strong>
+                                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                    <span class="mx-1">to</span>
+                                                    <h:outputLabel value="#{reportsTransfer.toDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <div class="table-record-count">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-list-ul mr-1"></i>
+                                                        <strong>Total Records:</strong>
+                                                        <span class="badge badge-info">#{reportsTransfer.transferReceiveDtos.size()}</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </f:facet>
 
-                                <!-- Serial -->
-<!--                                <p:column headerText="Serial" width="3em">
-                                    <h:outputLabel 
-                                        value="#{n+1}">
-                                    </h:outputLabel>  
-                                </p:column>-->
-
-                                <!-- Bill No Column -->
-                                <p:column headerText="Bill No" style="padding: 0px!important; margin: 0px!important;" sortBy="#{i.deptId}" filterBy="#{i.deptId}" filterMatchMode="contains">
-                                    <h:outputLabel 
-                                        style="padding: 0px!important; margin: 0px!important;"
-                                        value="#{i.deptId}" >
-                                    </h:outputLabel>  
-                                </p:column>
-
-                                <!-- Received Date Time Column -->
-                                <p:column headerText="Received Date Time" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputLabel value="#{i.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <!-- Received Department Column -->
-                                <p:column headerText="Received By Department" style="padding: 0px!important; margin: 0px!important;">
-                                     <h:outputLabel value="#{i.department != null ? i.department.name : 'Not Assigned'}" style="padding: 0px!important; margin: 0px!important;"/>
-                                </p:column>
-
-                                <!-- Sent Department Column -->
-                                <p:column headerText="Sent From Department" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputLabel value="#{i.fromDepartment != null ? i.fromDepartment.name : 'Not Assigned'}" style="padding: 0px!important; margin: 0px!important;"/>             
-                                </p:column>
-                                
-                                <!-- Transporter Column -->
-                                <p:column style="padding: 0px!important; margin: 0px!important;">
+                                <p:column headerText="Bill No" sortBy="#{i.deptId}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Transporter" style="padding: 0px!important; margin: 0px!important;"/>
+                                        <h:outputLabel value="Bill No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.deptId}"></h:outputLabel>                                    
+                                </p:column>
+
+                                <p:column headerText="Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date &amp; Time" />
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.fromStaff.person.name}" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{i.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
-
-                                <!-- Purchase Total Column -->
-                                <p:column headerText="Purchase Value" style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputLabel value="#{i.netTotal}" style="padding: 0px!important; margin: 0px!important;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel> 
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{reportsTransfer.netTotalValues}" style="padding: 0px!important; margin: 0px!important;" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                
-                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;">
+                                <p:column headerText="Received by">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;"/>
+                                        <h:outputLabel value="Received by" />
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.department.name}">
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sent from"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fromDepartment.name}">
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transporter" />
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fromStaff.person.nameWithTitle}">
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Remarks" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.saleValue}" style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:panelGroup rendered="#{i.cancelled}">
+                                        <span class="badge bg-danger">Cancelled</span>                                   
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{i.refunded}">
+                                        <span class="badge bg-warning">Returned</span>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Purchase Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.purchaseValue}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{reportsTransfer.totalsValue}" style="padding: 0px!important; margin: 0px!important;">
+                                        <h:outputLabel value="#{reportsTransfer.purchaseValue}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Sale Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.saleValue}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.saleValue}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                
-                                
+                                <p:column headerText="Cost Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costValueDouble}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.costValue}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Transfer Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transfer Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.transferValueDouble}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.transferValue}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comment" style="padding: 5px!important; margin: 0px!important;" />
+                                    </f:facet>
+
+                                    <h:outputLabel
+                                        style="display: block; max-height: 60px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; padding: 0px!important; margin: 0px!important;"
+                                        value="#{i.comments}" />
+                                </p:column>
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

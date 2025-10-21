@@ -15,6 +15,7 @@
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
         <cc:attribute name="focus" type="java.lang.Boolean"  />
         <cc:attribute name="ageListener" method-signature="void action()"/>
+        <cc:attribute name="additionalUpdateTargets" type="java.lang.String" default="" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -77,13 +78,13 @@
                                 class="form-control-sm mx-1"
                                 onfocus="this.select()" 
                                 />
-                            <p:commandButton 
+                            <p:commandButton
                                 id="btnSearchbyPhoneNo"
-                                icon="fa fa-search" 
+                                icon="fa fa-search"
                                 title="Quick Search from Phone Number"
-                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}"
                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                update="ptImp selectPatient editPatient viewPatient"
+                                update="ptImp selectPatient editPatient viewPatient #{cc.attrs.additionalUpdateTargets}"
                                 styleClass="btn-sm mx-1">
                             </p:commandButton>
                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -113,11 +114,11 @@
                             #{ps.person.mobile}
                         </p:column>
                         <p:column>
-                            <p:commandButton 
-                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
+                            <p:commandButton
+                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}"
                                 id="btnSelectPt"
                                 process="btnSelectPt tblPatients"
-                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} #{cc.attrs.additionalUpdateTargets}"
                                 value="select">
                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                             </p:commandButton>
@@ -185,7 +186,8 @@
                                                     onfocus="this.select();"
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{cc.attrs.ageListener}" />
+                                                    <f:ajax event="keyup" execute="@this" render="dpDob" />
+<!--                                                    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{cc.attrs.ageListener}" />-->
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -194,7 +196,7 @@
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{cc.attrs.ageListener}" />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
@@ -203,7 +205,7 @@
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
                                                     class="form-control">
-                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{cc.attrs.ageListener}" />
+                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">

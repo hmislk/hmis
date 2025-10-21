@@ -20,10 +20,15 @@
                         value="#{staffController.staff}" var="s" rowKey="#{s.id}" rows="10" paginator="true" 
                         sortBy="#{s.person.name}" filterBy="#{s.person.name}" 
                         widgetVar="staffTable">
-                        
+
                         <!-- Code Column with Filter and Sort -->
                         <p:column headerText="Staff Code" sortBy="#{s.staffCode}" filterBy="#{s.staffCode}" filterMatchMode="contains" style="width: 100px">
                             <h:outputText value="#{s.staffCode}" />
+                        </p:column>
+
+                        <!-- Code Column with Filter and Sort -->
+                        <p:column headerText="Staff Code" sortBy="#{s.staffCode}" filterBy="#{s.staffCode}" filterMatchMode="contains" style="width: 100px">
+                            <h:outputText value="#{s.code}" />
                         </p:column>
 
                         <!-- Name Column with Filter and Sort -->

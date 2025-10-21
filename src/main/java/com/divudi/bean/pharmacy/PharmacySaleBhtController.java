@@ -28,6 +28,7 @@ import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
@@ -44,6 +45,8 @@ import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -64,17 +67,25 @@ import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Named
 @SessionScoped
 public class PharmacySaleBhtController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(PharmacySaleBhtController.class.getName());
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -114,9 +125,11 @@ public class PharmacySaleBhtController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     BillService billService;
+    @EJB
+    private PharmacyService pharmacyService;
 
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;            
+    ConfigOptionApplicationController configOptionApplicationController;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -130,6 +143,7 @@ public class PharmacySaleBhtController implements Serializable {
     BillItem editingBillItem;
     Double qty;
     Stock stock;
+    StockDTO stockDto;
     private Item item;
     private PatientEncounter patientEncounter;
     int activeIndex;
@@ -143,6 +157,7 @@ public class PharmacySaleBhtController implements Serializable {
     List<BillItem> billItems;
     /////////////////////////
     private UserStockContainer userStockContainer;
+    private List<ClinicalFindingValue> allergyListOfPatient;
 
     private Bill batchBill;
     @Inject
@@ -167,6 +182,9 @@ public class PharmacySaleBhtController implements Serializable {
         }
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+            return;
+        }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
             return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE;
@@ -200,12 +218,14 @@ public class PharmacySaleBhtController implements Serializable {
         editingBillItem = null;
         qty = null;
         stock = null;
+        stockDto = null;
         activeIndex = 0;
         billPreview = false;
         replaceableStocks = null;
         itemsWithoutStocks = null;
         patientEncounter = null;
         batchBill = null;
+        allergyListOfPatient = null;
     }
 
     public void makeNullWithFill() {
@@ -227,7 +247,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        
+
         return "/inward/bht_bill_cancel?faces-redirect=true";
     }
 
@@ -327,8 +347,8 @@ public class PharmacySaleBhtController implements Serializable {
 //        calculateBillItemForEditing(tmp);
         calTotal();
     }
-    
-    public void changeBillItem(BillItem bi, Stock tempStock){
+
+    public void changeBillItem(BillItem bi, Stock tempStock) {
         if (bi == null) {
             JsfUtil.addErrorMessage("Bill item is required");
             return;
@@ -610,9 +630,6 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
-        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-        getPreBill().setCreater(getSessionController().getLoggedUser());
-
         getPreBill().setPatient(pt);
         getPreBill().setPatientEncounter(getPatientEncounter());
 
@@ -628,7 +645,11 @@ public class PharmacySaleBhtController implements Serializable {
         getBillBean().setSurgeryData(getPreBill(), getBatchBill(), SurgeryBillType.PharmacyItem);
 
         if (getPreBill().getId() == null) {
+            getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+            getPreBill().setCreater(getSessionController().getLoggedUser());
             getBillFacade().create(getPreBill());
+        } else {
+            getBillFacade().edit(getPreBill());
         }
 
     }
@@ -664,6 +685,17 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private void savePreBillItemsFinally(List<BillItem> list) {
+        // Initialize bill items list if null
+        if (getPreBill().getBillItems() == null) {
+            getPreBill().setBillItems(new ArrayList<>());
+        }
+
+        // Note: PharmacyBean.deductFromStock() is a @Singleton EJB method with container-managed transactions.
+        // Each call to deductFromStock runs in its own transaction boundary, so a failure here
+        // will roll back individual stock deductions. However, the bill item saves above have already
+        // been committed. This is acceptable as the RuntimeException will prevent the overall bill
+        // from being finalized (caught in settleBhtIssue's try-catch), and the UI will show the error.
+
         for (BillItem tbi : list) {
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -674,25 +706,50 @@ public class PharmacySaleBhtController implements Serializable {
             } else {
                 getBillItemFacade().edit(tbi);
             }
-
             double qtyL = tbi.getPharmaceuticalBillItem().getQty() + tbi.getPharmaceuticalBillItem().getFreeQty();
 
-            //Deduct Stock
+            // Deduct Stock - runs in CMT (Container Managed Transaction) via @Singleton EJB
             boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
                     Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
+
             if (!returnFlag) {
-                tbi.setTmpQty(0);
-                getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
-                getBillItemFacade().edit(tbi);
+                // Stock deduction failed - log with proper logger and throw exception
+                String itemName = tbi.getItem() != null ? tbi.getItem().getName() : "Unknown Item";
+                Long itemId = tbi.getItem() != null ? tbi.getItem().getId() : null;
+                Long stockId = tbi.getPharmaceuticalBillItem().getStock() != null
+                        ? tbi.getPharmaceuticalBillItem().getStock().getId() : null;
+
+                String errorMsg = String.format(
+                    "Failed to deduct stock for item: %s (ID: %s, Stock ID: %s, Qty: %.2f). " +
+                    "Stock may be insufficient or locked by another user.",
+                    itemName, itemId, stockId, qtyL);
+
+                // Log with proper severity and context for audit trail
+                LOGGER.log(Level.SEVERE, "Stock deduction failure during BHT settlement: {0}", errorMsg);
+                LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
+                        new Object[]{
+                            getPreBill().getId(),
+                            getPreBill().getDepartment() != null ? getPreBill().getDepartment().getName() : "unknown",
+                            getSessionController().getLoggedUser() != null
+                                ? getSessionController().getLoggedUser().getName() : "unknown"
+                        });
+
+                // Show user-friendly error message
+                JsfUtil.addErrorMessage(errorMsg);
+
+                // Throw exception to trigger rollback and prevent partial save
+                // This will be caught by the try-catch in settleBhtIssue(), preventing clearBill()
+                throw new RuntimeException(errorMsg);
             }
 
+            // Add saved item back to PreBill
             getPreBill().getBillItems().add(tbi);
         }
 
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-
-//        calculateAllRates();
+        // Update PreBill with all items to ensure relationship is persisted
         getBillFacade().edit(getPreBill());
+
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
     }
 
     private void savePreBillItemsFinallyRequest(List<BillItem> list) {
@@ -770,6 +827,9 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
+        }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
         Department matrixDept = null;
@@ -800,14 +860,14 @@ public class PharmacySaleBhtController implements Serializable {
         settleBhtIssue(bt, bta, matrixDept);
 
     }
-    
+
     private Department determineMatrixDepartment() {
         Department matrixDept = null;
         boolean matrixByAdmissionDepartment;
         boolean matrixByIssuingDepartment;
         matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
         matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
-        
+
         if (matrixByAdmissionDepartment) {
             if (getPatientEncounter() == null) {
                 matrixDept = getSessionController().getDepartment();
@@ -834,11 +894,14 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
+        if (hasAllergyConflicts(getBillItems())) {
+            return;
+        }
         BillTypeAtomic bta = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
         BillType bt = BillType.PharmacyBhtPre;
-        
+
         Department matrixDept = determineMatrixDepartment();
-        
+
         settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
         userNotificationController.userNotificationRequestComplete();
 
@@ -848,12 +911,18 @@ public class PharmacySaleBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
+            return;
+        }
         settleBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
 
     }
 
     public void settleStoreBhtIssue() {
         if (errorCheck()) {
+            return;
+        }
+        if (hasAllergyConflicts(getPreBill().getBillItems())) {
             return;
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD;
@@ -917,27 +986,71 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
+    private boolean hasAllergyConflicts(List<BillItem> items) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            return false;
+        }
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        PatientEncounter encounter = getPatientEncounter();
+        Patient patient = encounter != null ? encounter.getPatient() : null;
+        if (patient == null) {
+            return false;
+        }
+        if (pharmacyService == null) {
+            return false;
+        }
+        if (allergyListOfPatient == null) {
+            allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+        }
+        String allergyMsg = pharmacyService.isAllergyForPatient(patient, items, allergyListOfPatient);
+        if (!allergyMsg.isEmpty()) {
+            JsfUtil.addErrorMessage(allergyMsg);
+            return true;
+        }
+        return false;
+    }
+
     private void settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
 
+        List<BillItem> itemsToIssue = getPreBill().getBillItems();
+        if (hasAllergyConflicts(itemsToIssue)) {
+            return;
+        }
+
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
+        // Create a proper copy of the list to avoid reference issues
+        List<BillItem> tmpBillItems = new ArrayList<>(itemsToIssue);
 
-        savePreBillFinally(pt, matrixDepartment, btp, bta);
-        savePreBillItemsFinally(tmpBillItems);
+        try {
+            savePreBillFinally(pt, matrixDepartment, btp, bta);
+            savePreBillItemsFinally(tmpBillItems);
 
 //        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
+            setPrintBill(getBillFacade().find(getPreBill().getId()));
 
-        clearBill();
-        clearBillItem();
-        billPreview = true;
+            // Only clear if settlement was successful
+            clearBill();
+            clearBillItem();
+            billPreview = true;
+        } catch (Exception e) {
+            // Log the error for debugging and audit trail
+            LOGGER.log(Level.SEVERE, "Error during BHT settlement for patient encounter: {0}",
+                    new Object[]{getPatientEncounter() != null ? getPatientEncounter().getId() : "unknown"});
+            LOGGER.log(Level.SEVERE, "Settlement failure details", e);
+
+            // Show error message to user
+            JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
+
+            // DO NOT clear the bill - keep items visible so user doesn't lose their work
+        }
 
     }
 
@@ -948,11 +1061,16 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        List<BillItem> itemsToIssue = getPreBill().getBillItems();
+        if (hasAllergyConflicts(itemsToIssue)) {
+            return;
+        }
+
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
+        // Create a proper copy of the list to avoid reference issues
+        List<BillItem> tmpBillItems = new ArrayList<>(itemsToIssue);
 
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
@@ -983,6 +1101,10 @@ public class PharmacySaleBhtController implements Serializable {
         }
         List<BillItem> tmpBillItems = getBillItems();
 
+        if (hasAllergyConflicts(tmpBillItems)) {
+            return;
+        }
+
         if (!getBillItems().isEmpty()) {
             getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
         }
@@ -1001,7 +1123,7 @@ public class PharmacySaleBhtController implements Serializable {
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
 
-        getPreBill().setBillItems(null);
+        // No need to clear billItems - let savePreBillItemsFinally handle it properly
 
         savePreBillFinally(pt, matrixDepartment, btp, bta);
         savePreBillItemsFinally(tmpBillItems);
@@ -1266,9 +1388,9 @@ public class PharmacySaleBhtController implements Serializable {
         errorMessage = null;
 
         billItem = new BillItem();
-        if (billItem.getPharmaceuticalBillItem() == null) {
-            return;
-        }
+        PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
+        pharmaceuticalBillItem.setBillItem(billItem);
+        billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
         if (getTmpStock() == null) {
             errorMessage = "Item?";
             JsfUtil.addErrorMessage("Item?");
@@ -1324,7 +1446,7 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setSearialNo(getBillItems().size() + 1);
         calculateRates(billItem);
         getBillItems().add(billItem);
-        
+
         calCurrentBillItemTotal(getBillItems());
 
         qty = null;
@@ -1675,7 +1797,7 @@ public class PharmacySaleBhtController implements Serializable {
             }
 
         }
-        
+
         calCurrentBillItemTotal(billItems);
         getPreBill().setBillItems(billItems);
 
@@ -1693,10 +1815,10 @@ public class PharmacySaleBhtController implements Serializable {
 //            JsfUtil.addErrorMessage("There is Some Item in request that are added Multiple Time in Transfer request!!! please check request you can't issue errornus transfer request");
 //        }
     }
-    
-    public void calCurrentBillItemTotal(List<BillItem> billItems){
+
+    public void calCurrentBillItemTotal(List<BillItem> billItems) {
         billItemTotal = 0.0;
-        for(BillItem bi : billItems){
+        for (BillItem bi : billItems) {
             billItemTotal += bi.getNetValue();
         }
     }
@@ -1740,6 +1862,17 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private void clearBill() {
+        // Properly clear all PreBill data including items and totals
+        if (preBill != null) {
+            if (preBill.getBillItems() != null) {
+                preBill.getBillItems().clear();
+            }
+            preBill.setTotal(0);
+            preBill.setNetTotal(0);
+            preBill.setGrantTotal(0);
+            preBill.setDiscount(0);
+            preBill.setMargin(0);
+        }
         preBill = null;
         userStockContainer = null;
     }
@@ -1929,6 +2062,7 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+        this.allergyListOfPatient = null;
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -2033,6 +2167,109 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillItemTotal(Double billItemTotal) {
         this.billItemTotal = billItemTotal;
+    }
+
+    // DTO-based properties and methods for improved performance
+    public StockDTO getStockDto() {
+        return stockDto;
+    }
+
+    public void setStockDto(StockDTO stockDto) {
+        this.stockDto = stockDto;
+        if (stockDto != null) {
+            this.stock = convertStockDtoToEntity(stockDto);
+        }
+    }
+
+    public Stock convertStockDtoToEntity(StockDTO stockDto) {
+        if (stockDto == null || stockDto.getId() == null) {
+            return null;
+        }
+        return stockFacade.find(stockDto.getId());
+    }
+
+    public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            parameters.put("barcodeQuery", qry);
+            sql.append("OR i.itemBatch.item.barcode = :barcodeQuery ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+    }
+
+    // Getter method for JSF to access the converter
+    public StockDtoConverter getStockDtoConverter() {
+        return new StockDtoConverter();
+    }
+
+    // StockDTO Converter for JSF
+    public static class StockDtoConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
+            try {
+                StockDTO dto = new StockDTO();
+                dto.setId(Long.valueOf(value));
+                return dto;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
+            if (value == null) {
+                return "";
+            }
+            if (value instanceof StockDTO) {
+                StockDTO stockDto = (StockDTO) value;
+                return stockDto.getId() != null ? stockDto.getId().toString() : "";
+            }
+            return value.toString();
+        }
     }
 
 }

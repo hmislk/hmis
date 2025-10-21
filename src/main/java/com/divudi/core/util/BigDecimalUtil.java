@@ -66,37 +66,43 @@ public class BigDecimalUtil {
     /**
      * Null-safe addition of two BigDecimal values.
      * Treats null values as BigDecimal.ZERO.
-     * 
+     *
      * @param a the first BigDecimal value (may be null)
      * @param b the second BigDecimal value (may be null)
      * @return the sum of the two values, treating null as zero
      */
     public static BigDecimal add(BigDecimal a, BigDecimal b) {
-        return valueOrZero(a).add(valueOrZero(b));
+        BigDecimal nonNullA = a == null ? BigDecimal.ZERO : a;
+        BigDecimal nonNullB = b == null ? BigDecimal.ZERO : b;
+        return nonNullA.add(nonNullB);
     }
     
     /**
      * Null-safe subtraction of two BigDecimal values.
      * Treats null values as BigDecimal.ZERO.
-     * 
+     *
      * @param a the minuend BigDecimal value (may be null)
-     * @param b the subtrahend BigDecimal value (may be null)  
+     * @param b the subtrahend BigDecimal value (may be null)
      * @return the difference of the two values, treating null as zero
      */
     public static BigDecimal subtract(BigDecimal a, BigDecimal b) {
-        return valueOrZero(a).subtract(valueOrZero(b));
+        BigDecimal nonNullA = a == null ? BigDecimal.ZERO : a;
+        BigDecimal nonNullB = b == null ? BigDecimal.ZERO : b;
+        return nonNullA.subtract(nonNullB);
     }
     
     /**
      * Null-safe multiplication of two BigDecimal values.
      * Treats null values as BigDecimal.ZERO.
-     * 
+     *
      * @param a the first BigDecimal value (may be null)
      * @param b the second BigDecimal value (may be null)
      * @return the product of the two values, treating null as zero
      */
     public static BigDecimal multiply(BigDecimal a, BigDecimal b) {
-        return valueOrZero(a).multiply(valueOrZero(b));
+        BigDecimal nonNullA = a == null ? BigDecimal.ZERO : a;
+        BigDecimal nonNullB = b == null ? BigDecimal.ZERO : b;
+        return nonNullA.multiply(nonNullB);
     }
     
     /**
@@ -119,5 +125,16 @@ public class BigDecimalUtil {
      */
     public static boolean isNegative(BigDecimal value) {
         return value != null && value.compareTo(BigDecimal.ZERO) < 0;
+    }
+    
+    /**
+     * Checks if a BigDecimal value is zero or negative (less than or equal to zero).
+     * Returns true for null values (treated as zero).
+     * 
+     * @param value the BigDecimal value to check
+     * @return true if value is null or less than or equal to zero, false otherwise
+     */
+    public static boolean isZeroOrNegative(BigDecimal value) {
+        return value == null || value.compareTo(BigDecimal.ZERO) <= 0;
     }
 }

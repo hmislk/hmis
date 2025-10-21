@@ -10,6 +10,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="reprint"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -19,8 +20,6 @@
             value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Receipt CSS')}"/>
         </style>
 
-        <h:outputText escape="false"
-                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Receipt Header')}"/>
 
 
         <div class="receipt-container">
@@ -32,54 +31,63 @@
 
         <div class="receipt-title">
             <h:outputLabel value="Pharmacy Transfer Request" />
+            <br/>
+            <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
         </div>
 
         <div class="receipt-separator"><hr /></div>
 
         <div class="receipt-bill-details">
-            <table class="receipt-details-table">
-                <tr>
-                    <td><h:outputLabel value="Request From" /></td>
-                    <td><h:outputLabel value=":" /></td>
-                    <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.fromDepartment.name}  (#{cc.attrs.bill.fromDepartment.institution.name})" /></td>
-                </tr>
-                <tr>
-                    <td><h:outputLabel value="Request To" /></td>
-                    <td><h:outputLabel value=":" /></td>
-                    <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.toDepartment.name}  (#{cc.attrs.bill.toDepartment.institution.name})" /></td>
-                </tr>
-                <tr>
-                    <td><h:outputLabel value="Req No" /></td>
-                    <td><h:outputLabel value=":" /></td>
-                    <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
-                </tr>
-                <tr>
-                    <td><h:outputLabel value="Req By" /></td>
-                    <td><h:outputLabel value=":" /></td>
-                    <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" /></td>
-                </tr>
-                <tr>
-                    <td><h:outputLabel value="Req Date/Time" /></td>
-                    <td><h:outputLabel value=":" /></td>
-                    <td colspan="4">
-                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                        </h:outputLabel>
-                    </td>
-                </tr>
-                <tr>
-                    <td><h:outputLabel value="Document Status" /></td>
-                    <td><h:outputLabel value=":" /></td>
-                    <td colspan="4">
-                        <h:outputLabel value="#{cc.attrs.bill.status}">
-                        </h:outputLabel>
-                    </td>
-                </tr>
-            </table>
+            <h:outputText
+                    value="#{transferRequestController.fillHeaderDataOfTransferRequest(configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Receipt Header'), cc.attrs.bill)}"
+                    escape="false"
+                    rendered="#{not empty transferRequestController.fillHeaderDataOfTransferRequest(configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Receipt Header'), cc.attrs.bill)}"/>
         </div>
         </div>
 
         <div class="receipt-separator"><hr /></div>
+
+        <ui:fragment rendered="#{empty transferRequestController.fillHeaderDataOfTransferRequest(configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Receipt Header'), cc.attrs.bill)}">
+            <div class="receipt-transfer-details">
+                <table class="receipt-details-table">
+                    <tr>
+                        <td>Request From</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputText value="#{cc.attrs.bill.fromDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.fromDepartment.institution.name}" />)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Request To</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputText value="#{cc.attrs.bill.toDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.toDepartment.institution.name}" />)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Req No</td>
+                        <td>:</td>
+                        <td><h:outputText value="#{cc.attrs.bill.deptId}" /></td>
+                    </tr>
+                    <tr>
+                        <td>Req By</td>
+                        <td>:</td>
+                        <td><h:outputText value="#{cc.attrs.bill.creater.webUserPerson.name}" /></td>
+                    </tr>
+                    <tr>
+                        <td>Req Date/Time</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputText value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="receipt-separator"><hr /></div>
+        </ui:fragment>
 
         <div class="receipt-items-section">
             <table class="receipt-items-table">
@@ -124,17 +132,19 @@
 
         <div class="receipt-separator"><hr /></div>
         <div>
-            <h:outputLabel style="margin-right: 30%; margin-bottom: 2%" value="Approved By:" />
-            <p:outputLabel value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}"/>
+            <h:outputLabel style="margin-bottom: 1%" value="Approved By: " />
+            <p:outputLabel style="margin-right: 15%;" value="#{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}"/>
 
             <h:outputLabel value="Approved Date/Time:" />
-            <p:outputLabel value="#{patientReportController.currentPatientReport.approveAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+            <p:outputLabel value="#{cc.attrs.bill.approveAt}" >
+                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+            </p:outputLabel>  
             <br/>
-            <h:outputLabel style="margin-right: 30%" value="Generated By:" />
-            <p:outputLabel value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}"/>
+            <h:outputLabel value="Generated By:" />
+            <p:outputLabel style="margin-right: 20%;" value=""/>
 
             <h:outputLabel  value="Generated On:" />
-            <p:outputLabel value="#{patientReportController.currentPatientReport.approveAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+            <p:outputLabel value=""/>
         </div>
         <div style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Bill Footer CSS')}">
             <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Request Bill Footer Text')}" escape="false" />

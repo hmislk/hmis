@@ -14,3 +14,19 @@ nb-configuration.xml
 
 # Temporary files
 /tmp/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Wiki sync temporary directories
+wiki/
+wiki-temp/
+wiki-backup/
+
+# Windows reserved filename
+nul
+
+# Log files
+*.log
+logs/
+hs_err_pid*.log

@@ -33,7 +33,7 @@
                                 <p:outputLabel value="Select Supplier"/>
                                 <p:autoComplete class=" w-100" inputStyleClass="w-100" converter="deal" value="#{storePurchaseController.bill.fromInstitution}"
                                                 forceSelection="true"
-                                                completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                                                completeMethod="#{dealerController.completeActiveDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                                 <h:outputLabel value="Purchasing Institution"/>
                                 <p:autoComplete class=" w-100" inputStyleClass="w-100" value="#{storePurchaseController.bill.referenceInstitution}"
                                                 completeMethod="#{institutionController.completeCompany}"

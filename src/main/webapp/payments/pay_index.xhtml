@@ -6,192 +6,163 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html">
 
 
+    <h:head>
+        <title>Payment Management</title>
+    </h:head>
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <div class="row" >
-                    <div class="col-md-3" >
-                        <h:form>
-                            <p:accordionPanel activeIndex="#{searchController.managePaymentIndex}" class="m-1 w-100">
-                                <p:ajax process="@this"></p:ajax>
-                                <p:tab title="Professional Payments - OPD">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            class="w-100"
-                                            ajax="false" 
-                                            value="Initiate Professional Payments"
-                                            action="#{staffPaymentBillController.navigateToViewOpdPayProfessionalPayments()}" 
-                                            icon="fa fa-money-bill-wave"
-                                            rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
-                                        <p:commandButton  
-                                            class="w-100"
-                                            ajax="false" 
-                                            action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}" 
-                                            actionListener="#{searchController.makeListNull}" 
-                                            value="Search Outstanding Professinal Payments" 
-                                            icon="fa fa-search-dollar"
-                                            rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
-                                        <p:commandButton  
-                                            class="w-100" 
-                                            ajax="false" 
-                                            value="List Completed Professional Payments" 
-                                            action="#{billSearch.navigateToViewOpdProfessionalPaymentsDoneByUser()}" 
-                                            actionListener="#{searchController.makeListNull}"
-                                            icon="fa fa-check-circle"
-                                            rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
-                                    </div>
-                                </p:tab>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <h:panelGroup layout="block" styleClass="px-2">
+                            <h:outputText value="Payment Management" styleClass="h5 text-primary d-block mb-2"/>
+                            <h:outputText value="Select an action from the tabs to manage payments." styleClass="text-muted small d-block mb-3"/>
+                            <h:form id="paymentMenuForm">
+                                <p:accordionPanel activeIndex="#{searchController.managePaymentIndex}" styleClass="m-1 w-100">
+                                    <p:ajax process="@this"/>
+                                    <p:tab title="Professional Payments - OPD">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false" 
+                                                value="Initiate Professional Payments" title="Initiate Professional Payments"
+                                                action="#{staffPaymentBillController.navigateToViewOpdPayProfessionalPayments()}" 
+                                                icon="fa fa-money-bill-wave"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false" 
+                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}" 
+                                                actionListener="#{searchController.makeListNull}" 
+                                                value="Search Outstanding Professinal Payments" title="Search Outstanding Professinal Payments" 
+                                                icon="fa fa-search-dollar"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" 
+                                                value="List Completed Professional Payments" title="List Completed Professional Payments" 
+                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDoneByUser()}" 
+                                                actionListener="#{searchController.makeListNull}"
+                                                icon="fa fa-check-circle"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
+                                        </div>
+                                    </p:tab>
 
 
-                                <p:tab title="Professional Payments - Inward" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            class="w-100" 
-                                            ajax="false" 
-                                            icon="fa fa-money-bill-wave"
-                                            value="Initiate Professional Payments" 
-                                            action="/inward/inward_bill_staff_payment?faces-redirect=true" 
-                                            rendered="#{webUserController.hasPrivilege('PaymentBilling') and false}" />
-                                        
-                                        <p:commandButton  
-                                            class="w-100"
-                                            ajax="false" 
-                                            value="Initiate Professional Payments"
-                                            action="#{inwardStaffPaymentBillController.navigateToViewInwardPayProfessionalPayments()}" 
-                                            icon="fa fa-money-bill-wave"
-                                            rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
-                                        
-                                        <p:commandButton  
-                                            class="w-100" 
-                                            ajax="false" 
-                                            icon="fa fa-search-dollar"
-                                            action="/inward/inward_search_professional_payment_due?faces-redirect=true" 
-                                            actionListener="#{searchController.makeListNull}"  
-                                            value="Search Outstanding Professinal Payments" 
-                                            rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
-                                        <p:commandButton  
-                                            class="w-100" 
-                                            ajax="false" 
-                                            icon="fa fa-check-circle"
-                                            value="List Completed Professional Payments" 
-                                            action="/inward/inward_search_professional_payment_done?faces-redirect=true" 
-                                            actionListener="#{searchController.makeListNull}" 
-                                            rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
-                                    </div>
-                                </p:tab>
-                                <p:tab title="Professional Payments - Channelling">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  class="w-100" ajax="false" value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
-                                        <p:commandButton  class="w-100" ajax="false" value="Payment Due Search"  action="/channel/channel_payments_due_search?faces-redirect=trueh" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Payment Done Search"  action="/channel/channel_payment_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" />
-                                    </div>
-                                </p:tab>
+                                    <p:tab title="Professional Payments - Inward" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" 
+                                                icon="fa fa-money-bill-wave"
+                                                value="Initiate Professional Payments" title="Initiate Professional Payments" 
+                                                action="/inward/inward_bill_staff_payment?faces-redirect=true" 
+                                                rendered="#{webUserController.hasPrivilege('PaymentBilling') and false}" />
+
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false" 
+                                                value="Initiate Professional Payments" title="Initiate Professional Payments"
+                                                action="#{inwardStaffPaymentBillController.navigateToViewInwardPayProfessionalPayments()}" 
+                                                icon="fa fa-money-bill-wave"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" 
+                                                icon="fa fa-search-dollar"
+                                                action="/inward/inward_search_professional_payment_due?faces-redirect=true" 
+                                                actionListener="#{searchController.makeListNull}"  
+                                                value="Search Outstanding Professinal Payments" title="Search Outstanding Professinal Payments" 
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" 
+                                                icon="fa fa-check-circle"
+                                                value="List Completed Professional Payments" title="List Completed Professional Payments" 
+                                                action="/inward/inward_search_professional_payment_done?faces-redirect=true" 
+                                                actionListener="#{searchController.makeListNull}" 
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Professional Payments - Channelling">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Pay Doctor" title="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
+                                            <p:commandButton  styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Payment Due Search" title="Payment Due Search"  action="/channel/channel_payments_due_search?faces-redirect=trueh" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"/>
+                                            <p:commandButton  styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Payment Done Search" title="Payment Done Search"  action="/channel/channel_payment_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" />
+                                        </div>
+                                    </p:tab>
 
 
-                                <p:tab title="Inward Deposit">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton class="w-100" ajax="false" value="Payment" action="/inward/inward_bill_payment?faces-redirect=true" actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" />
-                                        <p:commandButton class="w-100" ajax="false" value="Payment Search" action="/inward/inward_search_payment?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" />
-                                        <p:commandButton class="w-100" ajax="false" value="Refund" action="/inward/inward_bill_refund?faces-redirect=true" actionListener="#{inwardRefundController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" />
-                                        <p:commandButton class="w-100" ajax="false" value="Refund Search" action="/inward/inward_search_refund?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" />
-                                    </div>
-                                </p:tab>
+                                    <p:tab title="Inward Deposit">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Payment" title="Payment" action="/inward/inward_bill_payment?faces-redirect=true" actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" />
+                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Payment Search" title="Payment Search" action="/inward/inward_search_payment?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" />
+                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Refund" title="Refund" action="/inward/inward_bill_refund?faces-redirect=true" actionListener="#{inwardRefundController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" />
+                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Refund Search" title="Refund Search" action="/inward/inward_search_refund?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" />
+                                        </div>
+                                    </p:tab>
 
-                                <p:tab title="Credit Company">
-                                    <div class="d-grid gap-2">
-                                        <!-- Credit Company Payment -->
-                                        <p:commandButton class="w-100" ajax="false" value="Credit Company  Payment Voucher" action="/credit/credit_compnay_bill_opd_all_voucher?faces-redirect=true" actionListener="#{cashRecieveBillController.prepareNewBill()}" />
-                                        <p:commandButton class="w-100" ajax="false" value="Credit Company Payment Voucher Search" action="/credit/credit_compnay_bill_opd_all_voucher_approve?faces-redirect=true" actionListener="#{searchController.createCreditCompanyPaymentToApproveTable()}" />
-                                        <p:commandButton class="w-100" ajax="false" value="Credit Company Payment By Voucher" action="/credit/credit_compnay_bill_opd_all_by_voucher?faces-redirect=true" actionListener="#{cashRecieveBillController.prepareNewBill()}" />
-                                        <p:separator></p:separator>
-                                        <!-- OPD -->
-                                        <p:commandButton class="w-100" ajax="false" value="OPD Due Search" action="/credit/credit_company_opd_due?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="OPD Due Age" action="/credit/credit_company_opd_due_age?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Settle Credit for OPD Batch Bills" action="/credit/credit_compnay_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}" icon="fa fa-th-large"/>
-                                        <p:commandButton 
-                                            class="w-100" 
-                                            ajax="false" 
-                                            value="Settle Credit for OPD Package Bills" 
-                                            action="/credit/credit_compnay_package_bill_opd?faces-redirect=true" 
-                                            actionListener="#{cashRecieveBillController.makeNull()}" 
-                                            icon="fa fa-suitcase"/>
-                                        <p:commandButton class="w-100" ajax="false" value="OPD Done Search" action="/credit/company_opd_credit_settle_bills?faces-redirect=true" />
-                                        <p:separator></p:separator>
-                                        <!-- Inward -->
-                                        <p:commandButton class="w-100" ajax="false" value="Inward Due Search" action="/credit/inward_due_search_credit_company?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Inward Due Age" action="/credit/inward_due_age_credit_company?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Inward Payment by BHT" action="/credit/credit_compnay_bill_inward?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Inward Payment by Company" action="/credit/credit_compnay_bill_payment_inward?faces-redirect=true" />
-                                        <!-- Pharmacy -->
-                                        <p:commandButton class="w-100" ajax="false" value="Pharmacy Due Search" action="/credit/credit_company_pharmacy_due?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Pharmacy Due Age" action="/credit/credit_company_pharmacy_due_age?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Pharmacy Payment by Bill" action="/credit/credit_compnay_bill_pharmacy?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Pharmacy Payment by Company" action="/credit/credit_compnay_bill_pharmacy_all?faces-redirect=true" />
-                                        <!-- Additional Links -->
-                                        <p:commandButton class="w-100" ajax="false" value="Credit Reports" action="/credit/credit_reports?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="Payment Done Search" action="/credit/credit_company_bill_search?faces-redirect=true" actionListener="#{searchController.makeListNull}" />
-                                    </div>
-                                </p:tab>
+                                    <p:tab title="Cheques">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                styleClass="w-100 ui-button-success" 
+                                                icon="pi pi-money-bill" 
+                                                ajax="false" 
+                                                action="#{paymentController.navigateToPayCheques()}" 
+                                                value="Pay Cheques"
+                                                title="Pay outstanding cheques" />
+                                            <p:commandButton 
+                                                styleClass="w-100 ui-button-info" 
+                                                icon="pi pi-check-circle" 
+                                                ajax="false" 
+                                                action="#{paymentController.navigateToMarkChequesAsCleared()}" 
+                                                value="Mark Cheques as Cleared"
+                                                title="Mark cheques as cleared"/>
+                                        </div>
+                                    </p:tab>
 
-                                <p:tab title="Cheques">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton 
-                                            class="w-100 btn btn-success" 
-                                            icon="pi pi-money-bill" 
-                                            styleClass="ui-button-success m-1" 
-                                            ajax="false" 
-                                            action="#{paymentController.navigateToPayCheques()}" 
-                                            value="Pay Cheques" />
-                                        <p:commandButton 
-                                            class="w-100 btn btn-info" 
-                                            icon="pi pi-check-circle" 
-                                            styleClass="ui-button-info m-1" 
-                                            ajax="false" 
-                                            action="#{paymentController.navigateToMarkChequesAsCleared()}" 
-                                            value="Mark Cheques as Cleared"/>
-                                    </div>
-                                </p:tab>
-
-                                <p:tab title="Petty Cash" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  class="w-100" ajax="false" action="/petty_cash_bill?faces-redirect=true" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}" />
-                                        <p:commandButton  class="w-100" ajax="false" action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Search"/>
-                                        <p:commandButton  class="w-100" ajax="false" action="#{searchController.navigateToPettyCashBillApprove}" value="Petty Cash Bill Approve"/>
-                                        <p:commandButton  class="w-100" ajax="false" action="#{searchController.navigateToPettyCashCancelBillApprove}" value="Petty Cash Cancel Bill Approve"/>
-                                    </div>
-                                </p:tab>
-                                <p:tab title="IOU">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            class="w-100 btn-primary" 
-                                            ajax="false" 
-                                            action="#{iouBillController.navigateToCreateIou()}"
-                                            value="Create IOU"
-                                            icon="pi pi-plus" /> 
-                                        <p:commandButton  
-                                            class="w-100 btn-info" 
-                                            ajax="false" 
-                                            action="#{iouBillController.navigateToTrackIous()}"
-                                            value="Track IOUs"
-                                            icon="pi pi-search" /> 
-                                        <p:commandButton 
-                                            class="w-100 btn-success"
-                                            ajax="false"
-                                            action="#{iouBillController.navigateToSettleIous}" 
-                                            value="Settle IOUs"
-                                            icon="fa fa-dollar-sign" /> 
-                                    </div>
-                                </p:tab>
-                            </p:accordionPanel>
-                        </h:form>
+                                    <p:tab title="Petty Cash" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" action="/petty_cash_bill?faces-redirect=true" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}" title="Create a new petty cash payment"/>
+                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Search" title="Search your petty cash bills"/>
+                                            <p:commandButton styleClass="w-100 ui-button-success ui-button-outlined" ajax="false" action="#{searchController.navigateToPettyCashBillApprove}" value="Petty Cash Bill Approve" title="Approve submitted petty cash bills"/>
+                                            <p:commandButton styleClass="w-100 ui-button-warning ui-button-outlined" ajax="false" action="#{searchController.navigateToPettyCashCancelBillApprove}" value="Petty Cash Cancel Bill Approve" title="Approve requests to cancel petty cash bills"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="IOU">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-success" 
+                                                ajax="false" 
+                                                action="#{iouBillController.navigateToCreateIou()}"
+                                                value="Create IOU"
+                                                icon="pi pi-plus"
+                                                title="Create a new IOU" /> 
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info" 
+                                                ajax="false" 
+                                                action="#{iouBillController.navigateToTrackIous()}"
+                                                value="Track IOUs"
+                                                icon="pi pi-search"
+                                                title="Track outstanding IOUs" /> 
+                                            <p:commandButton 
+                                                styleClass="w-100 ui-button-success ui-button-outlined"
+                                                ajax="false"
+                                                action="#{iouBillController.navigateToSettleIous}" 
+                                                value="Settle IOUs"
+                                                icon="pi pi-check"
+                                                title="Settle IOUs" /> 
+                                        </div>
+                                    </p:tab>
+                                </p:accordionPanel>
+                            </h:form>
+                        </h:panelGroup>
                     </div>
-                    <div class="col-md-9" >
-                        <ui:insert name="admin" >
-
-                        </ui:insert>
-
+                    <div class="col-md-9">
+                        <ui:insert name="admin"/>
                     </div>
                 </div>
 

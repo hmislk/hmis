@@ -216,3 +216,21 @@ root {
 .transfer-footer .ui-outputlabel {
     font-size: 16pt;
 }
+
+/* Compact table row spacing */
+.compact-table td,
+.compact-table th {
+    padding: 1px 2px !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+    vertical-align: middle !important;
+}
+
+.compact-table .ui-datatable-data tr {
+    line-height: 1.1 !important;
+}
+
+.compact-table .ui-datatable-data > tr > td {
+    padding: 1px 2px !important;
+    line-height: 1.1 !important;
+}

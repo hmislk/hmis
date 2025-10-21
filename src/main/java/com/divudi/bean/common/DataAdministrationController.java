@@ -6,7 +6,9 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
+import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -86,7 +88,9 @@ import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.LogFileService;
+import com.divudi.service.BillService;
 import java.sql.SQLSyntaxErrorException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,6 +121,7 @@ import java.io.Serializable;
 import java.nio.file.*;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import org.primefaces.model.StreamedContent;
@@ -214,6 +219,8 @@ public class DataAdministrationController implements Serializable {
     InstitutionController institutionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.service.CacheAdminService cacheAdminService;
 
     @EJB
     ItemFacade itemFacade;
@@ -255,6 +262,8 @@ public class DataAdministrationController implements Serializable {
 
     @EJB
     private LogFileService logService;
+    @EJB
+    private BillService billService;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -417,25 +426,512 @@ public class DataAdministrationController implements Serializable {
 
     public void assignPharmacyDepartmentTypeToPharmaceuticalItems() {
         billController.setOutput(""); // Reset output
-        
+
         try {
             Map<String, Object> params = new HashMap<>();
             String jpql = "SELECT p FROM PharmaceuticalItem p WHERE p.departmentType IS NULL AND p.retired = false";
             List<PharmaceuticalItem> items = pharmaceuticalItemFacade.findByJpql(jpql, params);
-            
+
             billController.setOutput("Found " + items.size() + " PharmaceuticalItem(s) without department type.\n");
-            
+
             int updatedCount = 0;
             for (PharmaceuticalItem item : items) {
                 item.setDepartmentType(DepartmentType.Pharmacy);
                 pharmaceuticalItemFacade.edit(item);
                 updatedCount++;
             }
-            
+
             billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
         } catch (Exception e) {
             billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
-            System.err.println("Error in assignPharmacyDepartmentTypeToPharmaceuticalItems: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void correctCancellationAndRefundPaymentValues() {
+        billController.setOutput("");
+
+        StringBuilder output = new StringBuilder();
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("types", Arrays.asList(BillClassType.CancelledBill, BillClassType.RefundBill));
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billClassType IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                billController.setOutput("No cancellation or refund bills found for payment correction.");
+                return;
+            }
+
+            int billsUpdated = 0;
+            int paymentsCorrected = 0;
+
+            for (Bill candidate : billsToProcess) {
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                List<Payment> payments = billService.fetchBillPayments(bill);
+                if (payments == null || payments.isEmpty()) {
+                    continue;
+                }
+
+                boolean billHadCorrections = false;
+                for (Payment payment : payments) {
+                    if (payment == null || payment.isRetired()) {
+                        continue;
+                    }
+
+                    double paidValue = payment.getPaidValue();
+                    if (paidValue > 0d) {
+                        payment.setPaidValue(-Math.abs(paidValue));
+                        paymentFacade.edit(payment);
+                        paymentsCorrected++;
+                        billHadCorrections = true;
+                    }
+                }
+
+                if (billHadCorrections) {
+                    billsUpdated++;
+                }
+            }
+
+            output.append("Processed ").append(billsToProcess.size()).append(" cancellation/refund bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Filtered by createdAt ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Updated ").append(billsUpdated).append(" bills and corrected ")
+                    .append(paymentsCorrected).append(" payment value(s).");
+            billController.setOutput(output.toString());
+        } catch (Exception e) {
+            billController.setOutput("Error correcting payment values: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void correctPharmacyDisbursementSigns() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_ISSUE,
+                    BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_RECEIVE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_PRE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> billsToFix = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            int updatedBills = 0;
+            int updatedItems = 0;
+
+            for (Bill b : billsToFix) {
+                Bill bill = billService.reloadBill(b);
+                if (bill == null) {
+                    continue;
+                }
+                BillTypeAtomic bta = bill.getBillTypeAtomic();
+                if (bta == null) {
+                    continue;
+                }
+
+                // Fix BillFinanceDetails totals for purchase/retail/wholesale values
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+                if (bfd != null) {
+                    boolean financeValueShouldBeNegative = isFinanceValueNegative(bta);
+                    // Purchase values
+                    bfd.setTotalPurchaseValue(applySign(bfd.getTotalPurchaseValue(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueFree(applySign(bfd.getTotalPurchaseValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueNonFree(applySign(bfd.getTotalPurchaseValueNonFree(), financeValueShouldBeNegative));
+                    // Free item values
+                    bfd.setTotalOfFreeItemValues(applySign(bfd.getTotalOfFreeItemValues(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesFree(applySign(bfd.getTotalOfFreeItemValuesFree(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesNonFree(applySign(bfd.getTotalOfFreeItemValuesNonFree(), financeValueShouldBeNegative));
+                    // Retail values
+                    bfd.setTotalRetailSaleValue(applySign(bfd.getTotalRetailSaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueFree(applySign(bfd.getTotalRetailSaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueNonFree(applySign(bfd.getTotalRetailSaleValueNonFree(), financeValueShouldBeNegative));
+                    // Wholesale values
+                    bfd.setTotalWholesaleValue(applySign(bfd.getTotalWholesaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueFree(applySign(bfd.getTotalWholesaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueNonFree(applySign(bfd.getTotalWholesaleValueNonFree(), financeValueShouldBeNegative));
+
+                    // Keep all gross/net totals positive
+                    bfd.setLineGrossTotal(applySign(bfd.getLineGrossTotal(), false));
+                    bfd.setBillGrossTotal(applySign(bfd.getBillGrossTotal(), false));
+                    bfd.setGrossTotal(applySign(bfd.getGrossTotal(), false));
+                    bfd.setLineNetTotal(applySign(bfd.getLineNetTotal(), false));
+                    bfd.setBillNetTotal(applySign(bfd.getBillNetTotal(), false));
+                    bfd.setNetTotal(applySign(bfd.getNetTotal(), false));
+                }
+
+                // Fix Bill totals
+                boolean billTotalsPositive = isBillAndItemTotalsPositive(bta);
+                bill.setTotal(applySign(bill.getTotal(), !billTotalsPositive));
+                bill.setNetTotal(applySign(bill.getNetTotal(), !billTotalsPositive));
+                bill.setBillTotal(applySign(bill.getBillTotal(), !billTotalsPositive));
+                bill.setGrantTotal(applySign(bill.getGrantTotal(), !billTotalsPositive));
+                bill.setGrnNetTotal(applySign(bill.getGrnNetTotal(), !billTotalsPositive));
+
+                // Fix items and related finance details/pharmaceutical values
+                List<BillItem> items = billService.fetchBillItems(bill);
+                if (items != null) {
+                    for (BillItem bi : items) {
+                        // BillItem values
+                        boolean itemTotalsPositive = isBillAndItemTotalsPositive(bta);
+                        bi.setNetRate(applySign(bi.getNetRate(), !itemTotalsPositive));
+                        bi.setGrossValue(applySign(bi.getGrossValue(), !itemTotalsPositive));
+                        bi.setNetValue(applySign(bi.getNetValue(), !itemTotalsPositive));
+
+                        // BillItemFinanceDetails totals
+                        BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                        if (bifd != null) {
+                            bifd.setLineGrossTotal(applySign(bifd.getLineGrossTotal(), !itemTotalsPositive));
+                            bifd.setBillGrossTotal(applySign(bifd.getBillGrossTotal(), !itemTotalsPositive));
+                            bifd.setGrossTotal(applySign(bifd.getGrossTotal(), !itemTotalsPositive));
+                            bifd.setLineNetTotal(applySign(bifd.getLineNetTotal(), !itemTotalsPositive));
+                            bifd.setBillNetTotal(applySign(bifd.getBillNetTotal(), !itemTotalsPositive));
+                            bifd.setNetTotal(applySign(bifd.getNetTotal(), !itemTotalsPositive));
+                        }
+
+                        // Pharmaceutical Bill Item values
+                        com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                        if (pbi != null) {
+                            boolean financeValueNegative = isFinanceValueNegative(bta);
+                            pbi.setPurchaseValue(applySign(pbi.getPurchaseValue(), financeValueNegative));
+                            pbi.setRetailValue(applySign(pbi.getRetailValue(), financeValueNegative));
+                            pbi.setCostValue(applySign(pbi.getCostValue(), financeValueNegative));
+                            pharmaceuticalBillItemFacade.edit(pbi);
+                        }
+
+                        billItemFacade.edit(bi);
+                        updatedItems++;
+                    }
+                }
+
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("Processed Bills: ").append(billsToFix.size()).append("\n");
+            out.append("Updated Bills: ").append(updatedBills).append("\n");
+            out.append("Updated Bill Items: ").append(updatedItems).append("\n");
+        } catch (Exception e) {
+            out.append("Error: ").append(e.getMessage());
+        }
+        executionFeedback = out.toString();
+    }
+
+    private boolean isFinanceValueNegative(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Stock out flows negative for finance values
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Positive
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Cancel receive => negative
+            default:
+                return false;
+        }
+    }
+
+    private boolean isBillAndItemTotalsPositive(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Positive totals on issues
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Negative for returns/receives
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Positive on cancel receive
+            default:
+                return true;
+        }
+    }
+
+    private BigDecimal applySign(BigDecimal v, boolean negative) {
+        if (v == null) {
+            return null;
+        }
+        BigDecimal abs = v.abs();
+        return negative ? abs.negate() : abs;
+    }
+
+    private double applySign(double v, boolean negative) {
+        double abs = Math.abs(v);
+        return negative ? -abs : abs;
+    }
+
+    /**
+     * Migrates existing pharmacy transfer bills to populate
+     * BillItemFinanceDetails.lineNetTotal from BillItem.netValue for proper
+     * reporting when transfer rate configurations are used.
+     *
+     * This addresses issue #13419 where disbursement reports show incorrect
+     * purchase rates when "Pharmacy Transfer is by Retail Rate" option is
+     * enabled.
+     */
+    public void migrateTransferBillItemFinanceDetails() {
+        executionFeedback = ""; // Reset output
+
+        try {
+            StringBuilder result = new StringBuilder();
+            int processedCount = 0;
+            int updatedCount = 0;
+
+            // Process PharmacyTransferIssue and PharmacyTransferReceive bills
+            Map<String, Object> params = new HashMap<>();
+            List<BillType> billTypes = Arrays.asList(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+            params.put("billTypes", billTypes);
+
+            StringBuilder jpqlBuilder = new StringBuilder();
+            jpqlBuilder.append("SELECT DISTINCT bi.bill FROM BillItem bi WHERE ");
+            jpqlBuilder.append("bi.bill.billType IN :billTypes AND bi.retired = false ");
+
+            // Add date filtering if fromDate and toDate are provided
+            if (fromDate != null && toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate AND bi.bill.createdAt <= :toDate");
+                params.put("fromDate", fromDate);
+                params.put("toDate", toDate);
+                result.append("Filtering by date range: ").append(fromDate).append(" to ").append(toDate).append("\n\n");
+            } else if (fromDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+                result.append("Filtering from date: ").append(fromDate).append("\n\n");
+            } else if (toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt <= :toDate");
+                params.put("toDate", toDate);
+                result.append("Filtering to date: ").append(toDate).append("\n\n");
+            }
+
+            String jpql = jpqlBuilder.toString();
+
+            List<Bill> fixingBills = billItemFacade.findObjects(jpql, params, TemporalType.TIMESTAMP)
+                    .stream()
+                    .map(o -> (Bill) o)
+                    .collect(Collectors.toList());
+
+            result.append("Found ").append(fixingBills.size()).append(" transfer bills to migrate.\n\n");
+
+            // Process in batches of 100 to avoid memory issues
+            int batchSize = 100;
+            for (int i = 0; i < fixingBills.size(); i += batchSize) {
+                int endIndex = Math.min(i + batchSize, fixingBills.size());
+                List<Bill> fixingBillBatch = fixingBills.subList(i, endIndex);
+
+                for (Bill fixingBill : fixingBillBatch) {
+                    try {
+
+                        // A new BillFinanceDetails is created if it is null
+                        BigDecimal totalNetValue = BigDecimal.ZERO;
+                        BigDecimal totalGrossValue = BigDecimal.ZERO;
+                        BigDecimal totalCostValue = BigDecimal.ZERO;
+                        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+                        BigDecimal totalRetailValue = BigDecimal.ZERO;
+
+                        for (BillItem bi : fixingBill.getBillItems()) {
+                            processedCount++;
+                            if (bi.getBillItemFinanceDetails() == null) {
+                                bi.setBillItemFinanceDetails(new BillItemFinanceDetails());
+                                bi.getBillItemFinanceDetails().setBillItem(bi);
+                            }
+
+                            
+
+                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
+                                    && bi.getPharmaceuticalBillItem() != null
+                                    && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+
+                                ItemBatch itemBatch = bi.getPharmaceuticalBillItem().getItemBatch();
+                                double qty = bi.getPharmaceuticalBillItem().getQty();
+                                BigDecimal qtyBD = BigDecimal.valueOf(qty);
+
+                                BigDecimal purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+                                BigDecimal retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+                                BigDecimal costRate = BigDecimal.valueOf(itemBatch.getCostRate());
+                                BigDecimal transferValue = BigDecimal.valueOf(bi.getNetValue());
+                                BigDecimal grossValue = BigDecimal.valueOf(bi.getGrossValue());
+                                
+                                if(bi.getPharmaceuticalBillItem().getRetailValue()==0.0){
+                                    bi.getPharmaceuticalBillItem().setRetailValue(bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty() * bi.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+                                }
+
+                                if(bi.getNetRate()==0.0){
+                                    bi.setNetRate(bi.getRate());
+                                }
+                                if(bi.getGrossValue()==0.0){
+                                    bi.setGrossValue(bi.getNetValue());
+                                }
+                                
+                                // Populate BillItemFinanceDetails
+                                if (bi.getBillItemFinanceDetails().getQuantity() == null || bi.getBillItemFinanceDetails().getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantity(qtyBD);
+                                }
+                                if (bi.getBillItemFinanceDetails().getQuantityByUnits() == null || bi.getBillItemFinanceDetails().getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantityByUnits(qtyBD); // if no pack-unit conversion available
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetRate() == null || bi.getBillItemFinanceDetails().getLineNetRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetRate(BigDecimal.valueOf(bi.getNetRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossRate() == null || bi.getBillItemFinanceDetails().getLineGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossRate() == null || bi.getBillItemFinanceDetails().getGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getNetTotal() == null || bi.getBillItemFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossTotal() == null || bi.getBillItemFinanceDetails().getLineGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossTotal() == null || bi.getBillItemFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCostRate() == null || bi.getBillItemFinanceDetails().getLineCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCostRate(costRate);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCost() == null || bi.getBillItemFinanceDetails().getLineCost().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCost(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtCostRate() == null || bi.getBillItemFinanceDetails().getValueAtCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtCostRate(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtPurchaseRate() == null || bi.getBillItemFinanceDetails().getValueAtPurchaseRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtRetailRate() == null || bi.getBillItemFinanceDetails().getValueAtRetailRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getRetailSaleRate() == null || bi.getBillItemFinanceDetails().getRetailSaleRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setRetailSaleRate(retailRate);
+                                }
+
+                                billItemFacade.edit(bi);
+
+                                // Aggregate totals for BillFinanceDetails
+                                totalNetValue = totalNetValue.add(transferValue);
+                                totalGrossValue = totalGrossValue.add(grossValue);
+                                totalCostValue = totalCostValue.add(costRate.multiply(qtyBD));
+                                totalPurchaseValue = totalPurchaseValue.add(purchaseRate.multiply(qtyBD));
+                                totalRetailValue = totalRetailValue.add(retailRate.multiply(qtyBD));
+
+                                updatedCount++;
+
+                                if (updatedCount % 50 == 0) {
+                                    result.append("Updated ").append(updatedCount).append(" items so far...\n");
+                                }
+                            }
+                        }
+
+                        if (fixingBill.getBillFinanceDetails().getNetTotal() == null || fixingBill.getBillFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setNetTotal(totalNetValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getGrossTotal() == null || fixingBill.getBillFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setGrossTotal(totalGrossValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalCostValue() == null || fixingBill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalPurchaseValue() == null || fixingBill.getBillFinanceDetails().getTotalPurchaseValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalRetailSaleValue() == null || fixingBill.getBillFinanceDetails().getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
+                        }
+
+                        billFacade.edit(fixingBill);
+
+                    } catch (Exception itemEx) {
+                        result.append("Error processing bill ID ").append(fixingBill.getId())
+                                .append(": ").append(itemEx.getMessage()).append("\n");
+                    }
+                }
+
+                // Log batch progress
+                result.append("Processed batch ").append((i / batchSize) + 1)
+                        .append(" of ").append((fixingBills.size() + batchSize - 1) / batchSize).append("\n");
+            }
+
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Total bills processed: ").append(processedCount).append("\n");
+            result.append("Items updated: ").append(updatedCount).append("\n");
+            result.append("Items skipped (already had valid data): ").append(processedCount - updatedCount).append("\n");
+
+            if (updatedCount > 0) {
+                result.append("\nMigration completed successfully! ")
+                        .append("Transfer disbursement reports should now show correct rates.\n");
+            } else {
+                result.append("\nNo items needed migration. All transfer bill items already have proper financial details.\n");
+            }
+
+            executionFeedback = result.toString();
+
+        } catch (Exception e) {
+            String errorMsg = "Error during transfer bill finance details migration: " + e.getMessage();
+            executionFeedback = errorMsg;
             e.printStackTrace();
         }
     }
@@ -2411,6 +2907,17 @@ public class DataAdministrationController implements Serializable {
 
     public String navigateToAdminDataAdministration() {
         return "/dataAdmin/admin_data_administration?faces-redirect=true";
+    }
+
+    public void clearAllJpaCaches() {
+        try {
+            if (cacheAdminService != null) {
+                cacheAdminService.clearAll();
+            }
+            JsfUtil.addSuccessMessage("Cleared JPA shared caches.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to clear caches: " + e.getMessage());
+        }
     }
 
     public String getErrors() {

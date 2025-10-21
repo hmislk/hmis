@@ -395,6 +395,22 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         }
     }
 
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
+    }
+
     public double getOldQty(BillItem bItem) {
         String sql = "Select b.qty From BillItem b where b.retired=false and b.bill=:b and b=:itm";
         HashMap hm = new HashMap();
@@ -767,7 +783,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 + "s.itemBatch.dateOfExpire, "
                 + "s.itemBatch.batchNo, "
                 + "s.itemBatch.purcahseRate, "
-                + "s.itemBatch.wholesaleRate) "
+                + "s.itemBatch.wholesaleRate, "
+                + "s.itemBatch.item.allowFractions) "
                 + "FROM Stock s WHERE s.itemBatch.item = :amp "
                 + "AND s.stock > 0 "
                 + "AND (s.itemBatch.dateOfExpire IS NULL OR s.itemBatch.dateOfExpire > :currentDate) "
@@ -1000,20 +1017,19 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return addedQty;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             if (patient != null && getBillItem() != null) {
                 // Performance optimization: Lazy load allergy list only when patient is valid
                 if (allergyListOfPatient == null && patient.getId() != null) {
                     allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
                 }
-                boolean allergyStatus = false;
+                String allergyMsg = "";
                 if (allergyListOfPatient != null) {
-                    allergyStatus = pharmacyService.isAllergyForPatient(patient, billItem, allergyListOfPatient);
+                    allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
                 }
-                //boolean allergyStatus = checkAllergyForPatient(patient, billItem);
 
-                if (allergyStatus) {
-                    JsfUtil.addErrorMessage(getBillItem().getPharmaceuticalBillItem().getItemBatch().getItem().getName() + " should be allergy to this patient according to EMR data.");
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
                     return addedQty;
                 }
             }
@@ -1593,14 +1609,18 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             // Performance optimization: Only check allergies if patient is valid and has bill items
             if (patient != null && patient.getId() != null && !getPreBill().getBillItems().isEmpty()) {
                 if (allergyListOfPatient == null) {
                     allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
                 }
-                if (allergyListOfPatient != null && !pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
-                    JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
+                String allergyMsg = null;
+                if (allergyListOfPatient != null) {
+                    allergyMsg = pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient);
+                }
+                if (allergyMsg != null && !allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
                     billSettlingStarted = false;
                     return;
                 }

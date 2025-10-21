@@ -14,6 +14,7 @@ import javax.persistence.OneToOne;
  * @author Dr Buddhika Ariyaratne
  */
 @Entity
+@Deprecated // Use BillFinanceDetails
 public class StockBill implements Serializable {
 
     private static final long serialVersionUID = 1L;

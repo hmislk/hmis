@@ -47,6 +47,7 @@ public enum Privileges {
     OpdBillItemSearch("OPD Bill Item Search"),
     OpdReprint("OPD Reprint"),
     OpdCancel("OPD Cancel"),
+    OpdIndividualCancel("OPD Individual Cancel"),
     OpdReturn("OPD Return"),
     OpdReactivate("OPD Reactivate"),
     OpdBillSearchEdit("OPD Bill Search Edit"),
@@ -139,6 +140,8 @@ public enum Privileges {
     OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
+    LabSampleSeparate("Lab Sample Separate"),
+    LabSampleRetrieving("Receiving the Sent Sample"),
     LabReportFormatEditing("Lab Report Format Editing"),
     LabDataentry("Lab Data Entry"),
     LabAutherizing("Lab Authorizing"),
@@ -190,6 +193,10 @@ public enum Privileges {
     DashBoardReportSearch("DashBoard Report Search"),
     DashBoardPatientReportSearch("DashBoard Patient Report Search"),
     AccessLabTestHistory("Access Lab Test History"),
+    
+    DoctorDashBoardMenu("Doctor DashBoard Menu"),
+    
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -211,6 +218,7 @@ public enum Privileges {
     PharmacyOrderCancellation("Pharmacy Order Cancellation"),
     PharmacySaleWithoutStock("Pharmacy Sale Without Stock"),
     PharmacySaleReprint("Pharmacy Sale Reprint"),
+    PrintOriginalPharmacyBillFromReprint("Print Original Pharmacy Bill From Reprint"),
     PharmacySaleCancel("Pharmacy Sale Cancel"),
     PharmacySaleReturn("Pharmacy Sale Return"),
     // Wholesale
@@ -233,6 +241,7 @@ public enum Privileges {
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
     PharmacyTokenManagement("Pharmacy Token Management"),
+    PharmacyDonation("Pharmacy Donation"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Theatre">
@@ -459,6 +468,7 @@ public enum Privileges {
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
+    PharmacyDisbursementFinalizeRequest("Pharmacy Disbursement Finalize Request"),
     PharmacyDisbursementIssurForRequest("Pharmacy Disbursement Issue for Request"),
     PharmacyDisbursementDirectIssue("Pharmacy Disbursement Direct Issue"),
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
@@ -477,8 +487,9 @@ public enum Privileges {
     PharmacyRetailTransactionMenue("Pharmacy Retail Transaction Menu"),
     PharmacyRetailTransaction("Pharmacy Retail Transaction"),
     PharmacySale("Pharmacy Sale"),
-    PharmacySaleQuick("Pharmacy Sale Quick"),
+    PharmacySaleQuick("Pharmacy Sale - Quick"),
     PharmacySaleForCashier("Pharmacy Sale for Cashier"),
+    PharmacySaleForCashierQuick("Pharmacy Sale for Cashier - Quick"),
     PharmacySaleWithOutStock("Pharmacy Sale without Stock"),
     PharmacySearchSaleBill("Pharmacy Search Sale Bill"),
     PharmacySearchSalePreBill("Pharmacy Search Sale Pre-Bill"),
@@ -518,6 +529,8 @@ public enum Privileges {
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
+    PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
+    PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     // Pharmacy Dealer Payments
     PharmacyDealerPaymentMenue("Pharmacy Dealer Payment Menu"),
     PharmacyDealerDueSearch("Pharmacy Dealer Due Search"),
@@ -539,6 +552,13 @@ public enum Privileges {
     PharmacySearch("Pharmacy Search"),
     PharmacyReports("Pharmacy Reports"),
     PharmacyTransfer("Pharmacy Transfer"),
+    PharmacyTransferViewRates("Pharmacy Transfer View Rates"),
+    NursingIPBillingViewRates("Nursing IP Billing View Rates"),
+    IPRequestViewRates("IP Request View Rates"),
+    StockRequestViewRates("Stock Request View Rates"),
+    ConsumptionViewRates("Consumption View Rates"),
+    StockTransactionViewRates("Stock Transaction View Rates"),
+    DiscardViewRates("Discard View Rates"),
     PharmacySummery("Pharmacy Summary"),
     PharmacyAdministration("Pharmacy Administration"),
     PharmacySetReorderLevel("Pharmacy Set Reorder Level"),
@@ -554,7 +574,21 @@ public enum Privileges {
     TransferReciveApproval("Transfer Receive Approval"),
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
+    CreateGrnReturn("Create GRN Return"),
+    FinalizeGrnReturn("Finalize GRN Return"),
+    ApproveGrnReturn("Approve GRN Return"),
+    CreateDisposalReturn("Create Disposal Return"),
+    FinalizeDisposalReturn("Finalize Disposal Return"),
+    ApproveDisposalReturn("Approve Disposal Return"),
+    ViewDisposalReturn("View Disposal Return"),
+    CreateDirectPurchaseReturn("Create Direct Purchase Return"),
+    FinalizeDirectPurchaseReturn("Finalize Direct Purchase Return"),
+    ApproveDirectPurchaseReturn("Approve Direct Purchase Return"),
     ReturnWithoutRecipt("Return without Receipt"),
+    PharmacyReturnWithoutReceiptBill("Pharmacy Return Without Receipt Bill"),
+    PharmacyGrnSave("Pharmacy GRN Save"),
+    PharmacyGrnFinalize("Pharmacy GRN Finalize"),
+    PharmacyGrnApprove("Pharmacy GRN Approve"),
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
@@ -618,6 +652,7 @@ public enum Privileges {
     ChangeMyTheme("Change My Theme"),
     ChangePreferece("Change My Preference"),
     ChangeMyApiKeys("Change My Api Keys"),
+    ChangeReceiptPrintingPaperTypes("Change Receipt Printing Paper Types"),
     MyFinanacialTransactionManager("My Finanacial Transaction Manager"),
     //</editor-fold>
 
@@ -751,6 +786,7 @@ public enum Privileges {
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
             case AccessLabTestHistory:
+            case DoctorDashBoardMenu:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:
@@ -759,6 +795,13 @@ public enum Privileges {
             case PharmacySummery:
             case PharmacyPurchase:
             case PharmacyTransfer:
+            case PharmacyTransferViewRates:
+            case NursingIPBillingViewRates:
+            case IPRequestViewRates:
+            case StockRequestViewRates:
+            case ConsumptionViewRates:
+            case StockTransactionViewRates:
+            case DiscardViewRates:
             case PharmacyPurchaseWh:
             case PharmacySaleCancel:
             case PharmacySaleReturn:
@@ -808,7 +851,18 @@ public enum Privileges {
             case PurchaseOrdersApprovel:
             case GoodsRecipt:
             case ReturnReceviedGoods:
+            case CreateGrnReturn:
+            case FinalizeGrnReturn:
+            case ApproveGrnReturn:
+            case CreateDisposalReturn:
+            case FinalizeDisposalReturn:
+            case ApproveDisposalReturn:
+            case ViewDisposalReturn:
+            case CreateDirectPurchaseReturn:
+            case FinalizeDirectPurchaseReturn:
+            case ApproveDirectPurchaseReturn:
             case ReturnWithoutRecipt:
+            case PharmacyReturnWithoutReceiptBill:
             // Disbursement
             case PharmacyDisburesementMenu:
             case PharmacyDisbursementRequest:
@@ -821,6 +875,7 @@ public enum Privileges {
             case PharmacyRetailTransaction:
             case PharmacySale:
             case PharmacySaleQuick:
+            case PharmacySaleForCashierQuick:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
             case PharmacySearchSaleBill:
@@ -830,6 +885,7 @@ public enum Privileges {
             case PharmacyReturnItemsAndPayments:
             case PharmacySearchReturnBill:
             case PharmacyAddToStock:
+            case PharmacyDonation:
 
             // Wholesale Transaction
             case PharmacyWholeSaleTransaction:
@@ -860,6 +916,8 @@ public enum Privileges {
             case PharmacyAdjustmentExpiryDate:
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
+            case PharmacyPhysicalCountApprove:
+            case PharmacyStockTakeApprove:
 
             // Pharmacy Dealer Payments
             case PharmacyDealerDueSearch:
@@ -872,6 +930,9 @@ public enum Privileges {
             case PharmacyItemSearch:
             case PharmacyGenarateReports:
             case PharmacySummaryViews:
+            case PharmacyGrnSave:
+            case PharmacyGrnFinalize:
+            case PharmacyGrnApprove:
 
                 return "Pharmacy";
 

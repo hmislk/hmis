@@ -37,7 +37,7 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class PreReturnController implements Serializable {
-    
+
     private Bill bill;
     private Bill returnBill;
     private boolean printPreview;
@@ -62,52 +62,56 @@ public class PreReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
-    
+
+    public String navigateToReturnRetailSaleItemsOnly() {
+        Bill tmpBill = bill;
+        makeNull();
+        bill=tmpBill;
+        if (bill.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Programming Error. Contact System Administrator");
+            return null;
+        }
+        if (!getSessionController().getDepartment().equals(bill.getDepartment())) {
+            JsfUtil.addErrorMessage("You can't return another department's Issue. Please log to the billed department");
+            return null;
+        }
+        generateBillComponent(BillType.PharmacyPre);
+        return "/pharmacy/pharmacy_bill_return_pre?faces-redirect=true";
+    }
+
     public Bill getBill() {
         return bill;
     }
-    
+
     public void setBill(Bill bill) {
-        makeNull();
-        
-        if (bill.getDepartment() == null) {
-            return;
-        }
-        
-        if (!getSessionController().getDepartment().equals(bill.getDepartment())) {
-            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
-            return;
-        }
-        
         this.bill = bill;
-        generateBillComponent(BillType.PharmacyPre);
     }
-    
+
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new RefundBill();
 //            returnBill.setBillType(BillType.PharmacyPre);
 
         }
-        
+
         return returnBill;
     }
-    
+
     public void setReturnBill(Bill returnBill) {
         this.returnBill = returnBill;
     }
-    
+
     public boolean isPrintPreview() {
         return printPreview;
     }
-    
+
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
-    
+
     @Inject
     private PharmacyCalculation pharmacyRecieveBean;
-    
+
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
@@ -115,21 +119,21 @@ public class PreReturnController implements Serializable {
             tmp.setQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
-        
+
         calTotal();
         //   getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
-    
+
     public void makeNull() {
         bill = null;
         returnBill = null;
         printPreview = false;
         billItems = null;
-        
+
     }
-    
+
     private void saveReturnBill() {
-        
+
         getReturnBill().copy(getBill());
         getReturnBill().setBilledBill(getBill());
         double total = 0 - getReturnBill().getTotal();
@@ -144,10 +148,10 @@ public class PreReturnController implements Serializable {
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
-        
+
         getReturnBill().setDepartment(getSessionController().getDepartment());
         getReturnBill().setInstitution(getSessionController().getInstitution());
-        
+
         getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyPre, BillClassType.RefundBill, BillNumberSuffix.PHRET));
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyPre, BillClassType.RefundBill, BillNumberSuffix.PHRET));
 
@@ -155,37 +159,37 @@ public class PreReturnController implements Serializable {
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());
         }
-        
+
     }
-    
+
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
-            
+
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
-            
+
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setQty(i.getPharmaceuticalBillItem().getQty());
-            
+
             double value = i.getNetRate() * i.getQty();
             i.setGrossValue(0 - value);
             i.setNetValue(0 - value);
-            
+
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
-            
+
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
-            
+
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
             }
-            
+
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
 
@@ -198,14 +202,14 @@ public class PreReturnController implements Serializable {
             //      updateRemainingQty(i);
             getReturnBill().getBillItems().add(i);
         }
-        
+
     }
-    
+
     @EJB
     StaffService staffBean;
-    
+
     public void settle() {
-        
+
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
@@ -214,7 +218,15 @@ public class PreReturnController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
-        
+
+        // Check if any items with quantity > 0 have refundsAllowed set to false
+        for (BillItem bi : getBillItems()) {
+            if (bi.getQty() > 0 && bi.getItem() != null && !bi.getItem().isRefundsAllowed()) {
+                JsfUtil.addErrorMessage("Item '" + bi.getItem().getName() + "' is not allowed to be returned. Refunds are not permitted for this item.");
+                return;
+            }
+        }
+
         saveReturnBill();
         saveComponent();
         getBill().getReturnPreBills().add(getReturnBill());
@@ -238,9 +250,9 @@ public class PreReturnController implements Serializable {
         /// setOnlyReturnValue();
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
-        
+
     }
-    
+
     public void fillReturningQty() {
         if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("Please add bill items");
@@ -251,26 +263,25 @@ public class PreReturnController implements Serializable {
             onEdit(bi);
         }
     }
-    
+
     private void calTotal() {
         double grossTotal = 0.0;
         double discountTotal = 0.0;
         double netTotal = 0.0;
 
-        
         for (BillItem p : getBillItems()) {
             grossTotal += p.getNetRate() * p.getQty() + (p.getDiscountRate() * p.getQty());
             discountTotal += p.getDiscountRate() * p.getQty();
             netTotal += p.getNetRate() * p.getQty();
         }
-        
+
         getReturnBill().setTotal(grossTotal);
         getReturnBill().setNetTotal(netTotal);
         getReturnBill().setDiscount(discountTotal);
 
         //  return grossTotal;
     }
-    
+
     public void generateBillComponent(BillType billType) {
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
             BillItem bi = new BillItem();
@@ -279,26 +290,30 @@ public class PreReturnController implements Serializable {
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
             bi.setQty(0.0);
-            
+
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
             tmp.copy(i);
+
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
             
-            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), billType);
-            
+            double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), btas);
+
             double tmpQty = (Math.abs(i.getQtyInUnit())) - Math.abs(rFund);
-            
+
             if (tmpQty <= 0) {
                 continue;
             }
-            
+
             tmp.setQtyInUnit(tmpQty);
-            
+
             bi.setPharmaceuticalBillItem(tmp);
-            
+
             getBillItems().add(bi);
         }
-        
+
     }
 
 //    private double calRemainingQty(PharmaceuticalBillItem i) {
@@ -317,93 +332,93 @@ public class PreReturnController implements Serializable {
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
         return pharmaceuticalBillItemFacade;
     }
-    
+
     public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
-    
+
     public PharmaceuticalItemController getPharmaceuticalItemController() {
         return pharmaceuticalItemController;
     }
-    
+
     public void setPharmaceuticalItemController(PharmaceuticalItemController pharmaceuticalItemController) {
         this.pharmaceuticalItemController = pharmaceuticalItemController;
     }
-    
+
     public PharmacyController getPharmacyController() {
         return pharmacyController;
     }
-    
+
     public void setPharmacyController(PharmacyController pharmacyController) {
         this.pharmacyController = pharmacyController;
     }
-    
+
     public SessionController getSessionController() {
         return sessionController;
     }
-    
+
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
-    
+
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
-    
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
-    
+
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-    
+
     public PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
-    
+
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
     }
-    
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
-    
+
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
     }
-    
+
     public PharmacyCalculation getPharmacyRecieveBean() {
         return pharmacyRecieveBean;
     }
-    
+
     public void setPharmacyRecieveBean(PharmacyCalculation pharmacyRecieveBean) {
         this.pharmacyRecieveBean = pharmacyRecieveBean;
     }
-    
+
     public List<BillItem> getBillItems() {
         if (billItems == null) {
-            
+
             billItems = new ArrayList<>();
         }
         return billItems;
     }
-    
+
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
     }
-    
+
     public String getComment() {
         return comment;
     }
-    
+
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
+
 }

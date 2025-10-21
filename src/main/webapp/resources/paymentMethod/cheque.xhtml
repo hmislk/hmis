@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -20,7 +21,7 @@
                 <p:inputText id="txtVal" value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off">
                     <p:tooltip value="Enter the total value of the cheque."/>
                     <f:convertNumber pattern="#,##0.00" />
-                    <p:ajax process="@this"/>
+                    <p:ajax event="keyup" process="@this" />
                 </p:inputText>
             </div>
 

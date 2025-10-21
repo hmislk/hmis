@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.ItemLight;
@@ -56,6 +58,7 @@ import com.divudi.service.StaffService;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
@@ -146,6 +149,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ApplicationController applicationController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Item> malePackaes;
@@ -519,7 +526,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        
+
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
 
@@ -661,6 +668,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
+                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error = " + e);
+        }
+
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBill, pd);
@@ -722,7 +739,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        
+
         if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
 
@@ -781,6 +798,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingPackageBatchBill(originalBill, cancellationBatchBill);
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
+                        labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
+            }
+
         }
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
@@ -1360,6 +1387,22 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         System.out.println("this = " + this);
         listnerForPaymentMethodChange();
 
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     @Deprecated //Instead use checkPaymentDetails

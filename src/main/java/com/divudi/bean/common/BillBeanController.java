@@ -18,6 +18,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -77,6 +78,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.DepartmentResolver;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -144,7 +146,7 @@ public class BillBeanController implements Serializable {
     BillService billService;
     @EJB
     DepartmentResolver departmentResolver;
-    
+
     @Inject
     DepartmentController departmentController;
     @Inject
@@ -157,7 +159,7 @@ public class BillBeanController implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
                 + " where s.retired=false "
@@ -1958,6 +1960,131 @@ public class BillBeanController implements Serializable {
 
     }
 
+    /**
+     * Fetch department-wise financial data using BillFinanceDetails (matching
+     * DTO approach) Returns [toDepartment/fromDepartment, netTotal,
+     * totalRetailSaleValue, totalCostValue]
+     */
+    public List<Object[]> fetchBilledDepartmentFinanceDetails(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select ";
+        if (toDep) {
+            sql += " b.toDepartment";
+        } else {
+            sql += " b.fromDepartment";
+        }
+        sql += ",sum(COALESCE(bfd.lineNetTotal, 0.0)), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where ";
+        if (toDep) {
+            sql += " b.department=:dept ";
+        } else {
+            sql += " b.fromDepartment=:dept ";
+        }
+        sql += " and  b.billType= :bTp  "
+                + " and  b.createdAt between :fromDate and :toDate ";
+        if (toDep) {
+            sql += " group by b.toDepartment "
+                    + " order by b.toDepartment.name ";
+        } else {
+            sql += " group by b.fromDepartment"
+                    + " order by b.fromDepartment.name";
+        }
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("dept", department);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Enhanced method to fetch department-wise financial data with flexible
+     * filtering Returns [toDepartment, netTotal, totalPurchaseValue,
+     * totalRetailSaleValue, totalCostValue] Supports filtering by
+     * fromDepartment, toDepartment, both, or none
+     */
+    public List<Object[]> fetchBilledDepartmentFinanceDetailsEnhanced(Date fromDate, Date toDate,
+            Department fromDepartment, Department toDepartment, BillType bt) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b.toDepartment, "
+                + "sum(COALESCE(bfd.lineNetTotal, 0.0)), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where b.billType = :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (fromDepartment != null) {
+            sql += " and b.department = :fromDept ";
+            temMap.put("fromDept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment = :toDept ";
+            temMap.put("toDept", toDepartment);
+        }
+
+        sql += " group by b.toDepartment "
+                + " order by b.toDepartment.name ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Method to fetch transfer data with both from and to department
+     * information Returns [fromDepartment, toDepartment, netTotal,
+     * totalPurchaseValue, totalRetailSaleValue, totalCostValue]
+     */
+    public List<Object[]> fetchBilledDepartmentFinanceDetailsWithFromAndTo(Date fromDate, Date toDate,
+            Department fromDepartment, Department toDepartment, BillType bt) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b.fromDepartment, b.toDepartment, "
+                + "sum(COALESCE(bfd.lineNetTotal, 0.0)), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where b.billType = :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment = :fromDept ";
+            temMap.put("fromDept", fromDepartment);
+        }
+
+        if (toDepartment != null) {
+            sql += " and b.toDepartment = :toDept ";
+            temMap.put("toDept", toDepartment);
+        }
+
+        sql += " group by b.fromDepartment, b.toDepartment "
+                + " order by b.fromDepartment.name, b.toDepartment.name ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
     public List<Object[]> fetchBilledDepartmentItemStore(Date fromDate, Date toDate, Department department) {
         String sql;
         Map temMap = new HashMap();
@@ -2704,15 +2831,21 @@ public class BillBeanController implements Serializable {
         Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 
         if (obj == null) {
-            Double[] dbl = new Double[3];
+            Double[] dbl = new Double[4];
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
-//            dbl[3] = 0.0;
+            dbl[3] = 0.0;
             return dbl;
         }
 
-        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+        Double[] dbl = Arrays.copyOf(obj, Math.max(4, obj.length), Double[].class);
+
+        for (int i = 0; i < 4; i++) {
+            if (dbl[i] == null) {
+                dbl[i] = 0.0;
+            }
+        }
 
         return dbl;
     }
@@ -3559,6 +3692,18 @@ public class BillBeanController implements Serializable {
         m.put("b", b);
         return billItemFacade.findByJpql(j, m);
     }
+    
+    public List<BillItemDTO> fillBillItemDTOs(Long billId) {
+        String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.bill.id, bi.item.id, bi.bill.paymentMethod, bi.item.clazz, bi.netValue, bi.discount, bi.marginValue ) "
+                + " from BillItem bi "
+                + " where bi.bill.id=:billId "
+                + " and bi.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("billId", billId);
+        List<BillItemDTO> dtos = billItemFacade.findLightsByJpql(j, m);
+        return dtos;
+    }
 
     public List<BillFee> fillBillItemFees(BillItem bi) {
         String j = "Select bf "
@@ -4235,9 +4380,13 @@ public class BillBeanController implements Serializable {
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
         }
-        
-        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addBillingHistory(ptIx,prformingDept);
+
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
+            }
+        } catch (Exception e) {
+            System.out.println("Error = " + e);
         }
 
     }
@@ -5058,10 +5207,11 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Generate bill fees for the given bill item limited to the specified institution.
+     * Generate bill fees for the given bill item limited to the specified
+     * institution.
      *
      * @param billItem the bill item to process
-     * @param forIns   the institution for which fees should be calculated
+     * @param forIns the institution for which fees should be calculated
      * @return calculated bill fees
      * @throws IllegalArgumentException if {@code forIns} is {@code null}
      */
@@ -5073,10 +5223,11 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Generate bill fees for the given bill item limited to the specified department.
+     * Generate bill fees for the given bill item limited to the specified
+     * department.
      *
      * @param billItem the bill item to process
-     * @param forDep   the department for which fees should be calculated
+     * @param forDep the department for which fees should be calculated
      * @return calculated bill fees
      * @throws IllegalArgumentException if {@code forDep} is {@code null}
      */
@@ -5088,11 +5239,12 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Core fee calculation logic used by the institution/department specific helpers.
+     * Core fee calculation logic used by the institution/department specific
+     * helpers.
      *
      * @param billItem the bill item to process
-     * @param forIns   institution to limit fees, or {@code null}
-     * @param forDep   department to limit fees, or {@code null}
+     * @param forIns institution to limit fees, or {@code null}
+     * @param forDep department to limit fees, or {@code null}
      * @return list of calculated bill fees
      */
     private List<BillFee> calculateBillFees(BillItem billItem, Institution forIns, Department forDep) {
@@ -5225,6 +5377,98 @@ public class BillBeanController implements Serializable {
 
                 f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
 
+                t.add(f);
+            }
+        }
+        return t;
+    }
+
+    public List<BillFee> forDepartmentBillFeefromBillItem(BillItem billItem, Department forDep) {
+        if (forDep == null) {
+            throw new IllegalArgumentException("forDep must be specified");
+        }
+        List<BillFee> t = new ArrayList<>();
+        BillFee f;
+        String jpql;
+        Map params = new HashMap();
+        if (billItem.getItem() instanceof Packege) {
+            jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
+            List<Item> packageItems = getItemFacade().findByJpql(jpql);
+            for (Item pi : packageItems) {
+                jpql = "Select f "
+                        + " from PackageFee f "
+                        + " where f.retired=:ret"
+                        + " and f.packege=:packege"
+                        + " and f.item=:item "
+                        + " and f.forCategory is null "
+                        + " and f.forDepartment=:dept ";
+                params.put("ret", false);
+                params.put("packege", billItem.getItem());
+                params.put("item", pi);
+                params.put("dept", forDep);
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(jpql, params);
+                for (Fee i : packFee) {
+                    f = new BillFee();
+                    f.setFee(i);
+                    double qty = (billItem.getQty() == null || billItem.getQty() <= 0) ? 1.0 : billItem.getQty();
+                    f.setFeeValue(i.getFee() * qty);
+                    f.setFeeGrossValue(i.getFee() * qty);
+                    f.setBillItem(billItem);
+                    f.setCreatedAt(new Date());
+                    if (pi.getDepartment() != null) {
+                        f.setDepartment(pi.getDepartment());
+                    }
+                    if (pi.getInstitution() != null) {
+                        f.setInstitution(pi.getInstitution());
+                    }
+                    if (i.getStaff() != null) {
+                        f.setStaff(i.getStaff());
+                    } else {
+                        f.setStaff(null);
+                    }
+                    f.setSpeciality(i.getSpeciality());
+                    f.setStaff(i.getStaff());
+                    if (f.getBillItem().getItem().isVatable()) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
+                    f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+                    t.add(f);
+                }
+            }
+        } else {
+            jpql = "Select f "
+                    + " from ItemFee f "
+                    + " where f.retired=:ret "
+                    + " and f.item=:item "
+                    + " and f.forCategory is null "
+                    + " and f.forDepartment=:dept";
+            params.put("ret", false);
+            params.put("item", billItem.getItem());
+            params.put("dept", forDep);
+            List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
+            for (Fee i : itemFees) {
+                f = new BillFee();
+                f.setFee(i);
+                f.setFeeValue(i.getFee());
+                f.setFeeGrossValue(i.getFee());
+                f.setBillItem(billItem);
+                f.setCreatedAt(new Date());
+                if (billItem.getItem().getDepartment() != null) {
+                    f.setDepartment(billItem.getItem().getDepartment());
+                }
+                if (billItem.getItem().getInstitution() != null) {
+                    f.setInstitution(billItem.getItem().getInstitution());
+                }
+                if (i.getStaff() != null) {
+                    f.setStaff(i.getStaff());
+                } else {
+                    f.setStaff(null);
+                }
+                f.setSpeciality(i.getSpeciality());
+                if (f.getBillItem().getItem().isVatable()) {
+                    f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                }
+                f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
                 t.add(f);
             }
         }

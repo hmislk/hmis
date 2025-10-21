@@ -52,16 +52,17 @@
                         </p:commandButton>
 
                         <p:outputLabel value="Icon to add" ></p:outputLabel>
-                        <p:autoComplete 
+                        <p:autoComplete
                             id="iconAutoComplete"
                             inputStyleClass="w-100"
-                            value="#{userIconController.icon}" 
+                            value="#{userIconController.icon}"
                             completeMethod="#{userIconController.getFilteredIcons}"
                             var="i"
                             itemLabel="#{i.label}"
                             itemValue="#{i}"
                             forceSelection="true"
                             minQueryLength="2"
+                            placeholder="Search Icon"
                             class="w-100"/>
 
 

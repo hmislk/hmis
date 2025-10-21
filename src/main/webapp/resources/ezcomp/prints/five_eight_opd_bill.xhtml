@@ -296,6 +296,15 @@
 
                         </td>
                     </tr>
+                    <tr>
+                        <td style="width: 4cm; vertical-align: top;" colspan="3">
+                            <div class="d-flex gap-2">
+                                <h:outputLabel value="Batch Bill : "/>
+                            <h:outputLabel value=" #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
+                            </div>
+                            
+                        </td>
+                    </tr>
                     <h:panelGroup rendered="#{cc.attrs.duplicate}">
                         <tr>
                             <td style="vertical-align: top;" colspan="3">
@@ -319,7 +328,7 @@
                     </div>
                 </h:panelGroup>
                 <div class="d-flex justify-content-center mt-3" style="font-size: 10px;">
-                    <h:outputLabel value="Softwere by Carecode Solutions"/>
+                    <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
                 </div>
 
 

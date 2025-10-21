@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacypos.css" />
+        <div style="font-family: sans-serif!important;
+             font-size: 11px!important;
+             position: relative!important;
+             margin: 0px auto!important;
+             width: 95%;
+             height: 95%;
+             padding: 0px;
+             font-size: 100%;
+             page-break-after: always;" >
+
+            <div style=" margin-top: 10px; text-align: center;font-weight: bold;font-size: 13pt">
+                <h:outputLabel value="Stock Adjustment Bill" style="text-decoration: underline;"/>
+            </div>
+
+            <div class="billDetailsFiveFive" style="margin-top: 20px;">
+                <table style="width: 99%!important;" >
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Bill No "/>
+                        </td>
+                        <td style="width: 10px;"/>
+                        <td >:</td>
+                        <td style="width: 5px;"/>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                        </td>
+                        <td style="width: 50px;"/>
+                        <td>
+                            <h:outputLabel value="Adjusted At  "/>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" />
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel >
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Adjusted By  "/>
+                        </td>
+                        <td style="width: 10px;"/>
+                        <td >:</td>
+                        <td style="width: 5px;"/>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}">
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 50px;"/>
+                        <td>
+                            <h:outputLabel value="Department "/>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" />
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.department.name}">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Comments"/>
+                        </td>
+                        <td style="width: 10px;"/>
+                        <td >:</td>
+                        <td style="width: 5px;"/>
+                        <td colspan="6">
+                            <h:outputLabel value="#{cc.attrs.bill.comments}">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div >
+                <p:spacer height="15px"/>
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont"
+                             value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" style=" text-align: center;">
+                    <p:column style="text-align: left!important;"  >
+                        <f:facet name="header">
+                            <h:outputLabel value="Item" style="font-weight: bold!important; " />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.item.name}"/>
+                    </p:column>
+
+                    <p:column  style="width: 6em;text-align: right!important;" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column style="text-align: right!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue eq 0 ? bip.pharmaceuticalBillItem.stock.stock : bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                            <f:convertNumber pattern="#,###"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column style="text-align: right!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Changed Qty" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber pattern="#,###.##"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column style="text-align: right!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
+                            <f:convertNumber pattern="#,###.##"/>
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column class="text-start">
+                        <f:facet name="header">
+                            <h:outputLabel value="Comments" style="font-weight: bold!important;" />
+                        </f:facet>
+                         <h:outputLabel value="#{bip.descreption}">
+                        </h:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+
+
+        </div>
+    </cc:implementation>
+</html>

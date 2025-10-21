@@ -41,6 +41,7 @@ This document lists all pages reachable from the **Reports** menu.
 | **Reports → Collection Center Reports → 12. Collction Centre Investigation List** | `/reports/collectionCenterReports/cc_investigation_list?faces-redirect=true` | `Reports` | |
 | **Reports → Collection Center Reports → 12. Collction Centre Bill Item List** | `/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → Daily return** | `/reports/financialReports/daily_return?faces-redirect=true` | `Reports` | |
+| **Reports → Financial Reports → Daily return (DTO – fast)** | `/reports/financialReports/daily_return_dto.xhtml?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → Income Breakdown by Category** | `/reports/financialReports/income_breakdown_by_category?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → Bills by Category** | `/reports/financialReports/bills_by_item_category?faces-redirect=true` | `Reports` | |
 | **Reports → Financial Reports → 4. Service Category Wise Bill Details** | `/reports/financialReports/service_category_wise_bill_detail?faces-redirect=true` | `Reports` | |
@@ -149,22 +150,22 @@ This document lists all pages reachable from the **Reports** menu.
 | **Reports → Inventory Reports → 11. After Stock Taking** | `/reports/inventoryReports/after_stock_taking?faces-redirect=true` | `Reports` | |
 | **Reports → Inventory Reports → 12. Stock Leger** | `/reports/inventoryReports/stock_ledger?faces-redirect=true` | `Reports` | |
 | **Reports → Inventory Reports → 13. Expiry Item Report** | `/reports/inventoryReports/expiry_item?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Test Count Report** | `/reports/lab/test_count?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Test Wise Count** | `/reports/lab/test_wise_count_report?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Lab Bill Item List** | `#{patientInvestigationController.navigateToLabBillItemList()}` | `Reports` | |
-| **Reports → Laboratary Reports → Turn Around Time Details** | `/reports/lab/turn_around_time_details?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Turn Around Time(Hourly)** | `/reports/lab/turn_around_time_hourly?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Peak Hour Statistics** | `/reports/lab/peak_hour_statistics?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Sample Carrier** | `/reports/lab/sample_carrier?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Organism Antibiotic Sensitivity** | `/reports/lab/organism_antibiotic_sensitivity?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Investigation Wise Research** | `/reports/lab/investigation_wise_report?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Annual Test Statistics** | `/reports/lab/annual_test_statistics?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → External Laboratory Workload** | `/reports/lab/external_laboratory_workload?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Laboratory Workload** | `/reports/lab/laboratory_workload?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Investigation Month End Summary** | `/reports/lab/investigation_month_end_summery?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Investigation Month End Details** | `/reports/lab/investigation_month_end_detailed?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Lab Register** | `/reports/lab/lab_register?faces-redirect=true` | `Reports` | |
-| **Reports → Laboratary Reports → Collection center statement** | `/reports/lab/collection_center_statement?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Test Count Report** | `/reports/lab/test_count?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Test Wise Count** | `/reports/lab/test_wise_count_report?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Lab Bill Item List** | `#{patientInvestigationController.navigateToLabBillItemList()}` | `Reports` | |
+| **Reports → Laboratory Reports → Turn Around Time Details** | `/reports/lab/turn_around_time_details?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Turn Around Time(Hourly)** | `/reports/lab/turn_around_time_hourly?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Peak Hour Statistics** | `/reports/lab/peak_hour_statistics?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Sample Carrier** | `/reports/lab/sample_carrier?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Organism Antibiotic Sensitivity** | `/reports/lab/organism_antibiotic_sensitivity?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Investigation Wise Research** | `/reports/lab/investigation_wise_report?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Annual Test Statistics** | `/reports/lab/annual_test_statistics?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → External Laboratory Workload** | `/reports/lab/external_laboratory_workload?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Laboratory Workload** | `/reports/lab/laboratory_workload?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Investigation Month End Summary** | `/reports/lab/investigation_month_end_summery?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Investigation Month End Details** | `/reports/lab/investigation_month_end_detailed?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Lab Register** | `/reports/lab/lab_register?faces-redirect=true` | `Reports` | |
+| **Reports → Laboratory Reports → Collection center statement** | `/reports/lab/collection_center_statement?faces-redirect=true` | `Reports` | |
 | **Reports → Management Reports → 1. Room Occupancy** | `/reports/managementReports/room_occupency` | `Reports` | |
 | **Reports → Management Reports → 2. Surgery Survey** | `/reports/managementReports/surgery_survey` | `Reports` | |
 | **Reports → Management Reports → 3. Surgery Status** | `/reports/managementReports/surgery_status` | `Reports` | |

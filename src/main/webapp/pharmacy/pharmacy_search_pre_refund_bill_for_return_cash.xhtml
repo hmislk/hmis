@@ -9,7 +9,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
+                <h:form id="formSearchBillsForReturnPayments">
                     <p:panel header="Search Purchase Orders" style="height: 100vh">
                         <f:facet name="header" >
                             <h:outputLabel value="Search Bills For Refund"/>
@@ -17,13 +17,13 @@
                         </f:facet>
 
                         <div class="row">
-                            <div class="col-2">
-                                <h:panelGrid columns="1" >
+                            <div class="col-2" >
+                                <h:panelGrid columns="1" class="w-100" >
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar
                                         styleClass="dateTimePicker"
                                         id="fromDate"
-                                        value="#{searchController.fromDate}"
+                                        value="#{pharmacyRefundForItemReturnsController.fromDate}"
                                         navigator="false"
                                         class="w-100"
                                         inputStyleClass="w-100"
@@ -35,21 +35,27 @@
                                         id="toDate"
                                         class="w-100"
                                         inputStyleClass="w-100"
-                                        value="#{searchController.toDate}"
+                                        value="#{pharmacyRefundForItemReturnsController.toDate}"
                                         navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         maxdate="#{commonFunctionsProxy.endOfDay}">
                                     </p:calendar>
                                     <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                    <p:inputText class="w-100" autocomplete="off"  value="#{pharmacyRefundForItemReturnsController.searchKeyword.billNo}" />
                                     <h:outputLabel value="Patient Name"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <p:inputText class="w-100" autocomplete="off" value="#{pharmacyRefundForItemReturnsController.searchKeyword.patientName}" />
                                     <h:outputLabel value="Total"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                                    <p:inputText class="w-100" autocomplete="off"  value="#{pharmacyRefundForItemReturnsController.searchKeyword.total}" />
                                     <h:outputLabel value="Net Total"/>
 
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                    <p:commandButton class="w-100 my-1 ui-button-warning" icon="fas fa-search" id="btnSearch" ajax="false" value="Search" action="#{searchController.createPreRefundTable}"/>
+                                    <p:inputText class="w-100" autocomplete="off" value="#{pharmacyRefundForItemReturnsController.searchKeyword.netTotal}"/>
+                                    <p:commandButton 
+                                        class="w-100 my-1 ui-button-warning" 
+                                        icon="fas fa-search"
+                                        id="btnSearch"
+                                        ajax="false"
+                                        value="Search"
+                                        action="#{pharmacyRefundForItemReturnsController.fillAllItemReturnBills}"/>
 
                                 </h:panelGrid>
                             </div>
@@ -60,12 +66,13 @@
                                 </h:panelGrid>
 
                                 <p:dataTable id="tblBills"
-                                             value="#{searchController.bills}"
+                                             value="#{pharmacyRefundForItemReturnsController.bills}"
                                              var="bill"
                                              paginator="true"
                                              rowKey="#{bill.id}"
                                              paginatorPosition="bottom"
                                              class="my-4"
+                                             rows="10"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,15"
                                              >
@@ -106,13 +113,17 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="Return Payment"
-                                            action="#{pharmacyPreSettleController.toSettleReturn(bill)}"
+                                            action="#{pharmacyRefundForItemReturnsController.toSettleReturn(bill)}"
                                             disabled="#{bill.cancelled eq true}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <p:column width="45%">
-                                        <p:dataTable value="#{bill.returnCashBills}" var="rb">
+                                        <p:dataTable 
+                                            id="tblPaidBills"
+                                            paginator="false"
+                                            value="#{bill.returnCashBills}" 
+                                            var="rb">
                                             <p:column  headerText="Bill No">
                                                 <h:outputLabel  value="#{rb.deptId}" rendered="#{rb.refundedBill eq null}"/>
                                             </p:column>
@@ -148,7 +159,7 @@
                                             </p:column>
                                             <p:column>
                                                 <p:commandButton ajax="false" value="View Returned Bill"  rendered="#{rb.refundedBill eq null}"
-                                                                 action="pharmacy_reprint_bill_return_cash"  >
+                                                                 action="pharmacy_reprint_bill_return_cash?faces-redirect=true"  >
                                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>
                                             </p:column>

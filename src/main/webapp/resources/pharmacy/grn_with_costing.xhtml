@@ -9,6 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="duplicate" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -40,6 +41,7 @@
 
             <div class="headingBill">
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
+                <h:outputLabel value="**Reprint**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
 
             <div style="min-width: 90%; margin-left: 5%; margin-right: 5%; font-size: 15px;" class="row justify-content-center" >
@@ -75,7 +77,7 @@
 
                 <div class="row">
                     <h:outputLabel value="P.O.Approve By " class="col-3"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.staff.code}" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.staff.person.name}" class="col-3"/>
                     <h:outputLabel value="Invoice No" class="col-2"/>
                     <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="col-4"/>
                 </div>
@@ -90,8 +92,12 @@
                 <div class="row">
                     <h:outputLabel value="Payment Method" class="col-3"/>
                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="col-3"/>
-                    <h:outputLabel value="Crd. Duration" class="col-2" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" class="col-2" style="text-align: left;" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="Consignment" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" class="col-4"/>
+                </div>
+                <div class="row">
+                    <h:outputLabel value="Crd. Duration" class="col-3" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" class="col-3" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
                 </div>
 
             </div>
@@ -157,7 +163,7 @@
                                 </td>
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.qty}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
@@ -196,7 +202,7 @@
 
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRate * bip.billItemFinanceDetails.totalQuantity}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRatePerUnit * bip.billItemFinanceDetails.totalQuantityByUnits}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
@@ -227,6 +233,24 @@
                         <td colspan="9" style="text-align: left; ">Expenses</td>
                         <td colspan="2" style="text-align: right;">
                             <h:outputText value="#{cc.attrs.bill.expenseTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr style="font-size: 12px; background-color: #f0f8ff;">
+                        <td colspan="9" style="text-align: left; padding-left: 20px;">Expenses Considered for Costing</td>
+                        <td colspan="2" style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.expensesTotalConsideredForCosting}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr style="font-size: 12px; background-color: #fff8dc;">
+                        <td colspan="9" style="text-align: left; padding-left: 20px;">Expenses Not Considered for Costing</td>
+                        <td colspan="2" style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.expensesTotalNotConsideredForCosting}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -292,9 +316,10 @@
                     <table  style="text-align: center; width: 100%; border: 1px!important;" >
                         <thead style="font-size: 10px;">
                             <tr >
-                                <th style="text-align: left!important;min-width: 60%; font-weight: bold!important;">Expense</th>
-                                <th style="width: 20%; font-weight: bold!important;">Description</th>
-                                <th style="width: 20%; text-align: right!important; font-weight: bold!important;">Value</th>
+                                <th style="text-align: left!important;min-width: 40%; font-weight: bold!important;">Expense</th>
+                                <th style="width: 15%; font-weight: bold!important;">Description</th>
+                                <th style="width: 15%; text-align: right!important; font-weight: bold!important;">Value</th>
+                                <th style="width: 15%; text-align: center!important; font-weight: bold!important;">Considered for Costing</th>
                             </tr>
                         </thead>
                         <h:panelGroup rendered="#{cc.attrs.bill.billExpenses ne null}">
@@ -308,6 +333,9 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </td>
+                                        <td style="text-align: center">
+                                            <h:outputText value="#{be.consideredForCosting ? 'Yes' : 'No'}" />
+                                        </td>
                                     </tr>
                                 </ui:repeat>
                             </tbody>
@@ -315,7 +343,7 @@
                         <h:panelGroup rendered="#{cc.attrs.bill.billExpenses eq null}">
 
                             <tr>
-                                <td colspan="3" style="text-align: left;" class="empty-message">No Bill Expenses</td>
+                                <td colspan="4" style="text-align: left;" class="empty-message">No Bill Expenses</td>
                             </tr>
 
                         </h:panelGroup>
@@ -327,11 +355,12 @@
             </div>
 
             <div class="preparedBy mt-3">
-                <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;"/>
+                <h:outputLabel 
+                    value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"
+                    style="text-align: right!important;"/>
             </div>
 
             <div class="mb-4">
-                <h:outputLabel value="Approved By : #{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}" style="text-align: right!important;" rendered="#{!empty cc.attrs.bill.approveAt}"/>
                 <h:outputLabel value="Printed At : &nbsp;" style="text-align: right!important;"/>
                 <h:outputLabel value="#{sessionController.currentDate}" style="text-align: right!important;">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>

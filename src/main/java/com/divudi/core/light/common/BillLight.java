@@ -29,21 +29,24 @@ public class BillLight {
     private BillTypeAtomic billTypeAtomic;
     private Long count;
     private Department toDpartment;
+    private Double ccTotal;
+    private Double hospitalTotal;
+    private String referenceNumber;
 
     public BillLight() {
     }
-    
-    public BillLight(BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public BillLight(BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.count = count;
     }
-    
-    public BillLight(Department  toDpartment, Long count) {
+
+    public BillLight(Department toDpartment, Long count) {
         this.toDpartment = toDpartment;
         this.count = count;
     }
-    
-    public BillLight(Department  toDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public BillLight(Department toDpartment, BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.toDpartment = toDpartment;
         this.count = count;
@@ -101,6 +104,23 @@ public class BillLight {
         this.discount = discount;
         this.netValue = netValue;
         this.patientId = patientId;
+    }
+
+    public BillLight(Long id, String billNo, String referenceNumber, Date billDate, String patientName, Double ccTotal, Double hospitalTotal) {
+        this.id = id;
+        this.billNo = billNo;
+        this.referenceNumber = referenceNumber;
+        this.billDate = billDate;
+        this.patientName = patientName;
+        this.ccTotal = ccTotal;
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    //Use 9B Report
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double netValue) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        this.netValue = netValue;
     }
 
     public Long getId() {
@@ -245,11 +265,11 @@ public class BillLight {
         this.canterName = canterName;
     }
 
-    public BillTypeAtomic  getBillTypeAtomic() {
+    public BillTypeAtomic getBillTypeAtomic() {
         return billTypeAtomic;
     }
 
-    public void setBillTypeAtomic(BillTypeAtomic  billTypeAtomic) {
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
     }
 
@@ -267,6 +287,30 @@ public class BillLight {
 
     public void setTodDpartment(Department toDpartment) {
         this.toDpartment = toDpartment;
+    }
+
+    public Double getCcTotal() {
+        return ccTotal;
+    }
+
+    public void setCcTotal(Double ccTotal) {
+        this.ccTotal = ccTotal;
+    }
+
+    public Double getHospitalTotal() {
+        return hospitalTotal;
+    }
+
+    public void setHospitalTotal(Double hospitalTotal) {
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
 }

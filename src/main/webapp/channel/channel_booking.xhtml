@@ -393,7 +393,7 @@
                             value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
-
+                            
                             <f:selectItems 
                                 value="#{bookingController.sessionInstances}" 
                                 var="ses" 
@@ -459,7 +459,7 @@
                                 process="@this"
                                 update="pnlArrived acBookings acSessions btnAddBooking manageBookingId moreInfo"
                                 listener="#{bookingController.fillBillSessions}" />
-                            
+
                         </p:selectOneListbox>
                     </div>
 
@@ -489,11 +489,10 @@
                                     <h:outputText value="#{bookingController.selectedSessionInstance.endingTime}">
                                         <f:convertDateTime pattern="hh:mm a"/>
                                     </h:outputText>
-                                    
+
                                     <h:outputText value="Booked Patient Count " />
                                     <h:outputText value=":" />
                                     <h:outputText value="#{bookingController.selectedSessionInstance.bookedPatientCount != null ? bookingController.selectedSessionInstance.bookedPatientCount : ' '}" />
-                                    
 
                                     <h:outputText value="Note " rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" />
                                     <h:outputText value=":" rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}"/>
@@ -589,8 +588,8 @@
                                 const wsUrl = protocol + "//" + window.location.host + "/" + contextPath + "/ws/notify";
 
                                 let socket = new WebSocket(wsUrl);
-
                                 return socket;
+
                             }
 
                             const socket = initializeWebSocket();
@@ -613,6 +612,9 @@
                                         if (sendMessage === "Online Booking Completed") {
                                             const notify = document.getElementById('global-notification');
                                             notify.style.display = 'block';
+
+//                                            playAudio();
+
                                             setTimeout(() => {
                                                 notify.style.display = 'none';
                                                 notify.style.transition = 'all 0.6s ease';

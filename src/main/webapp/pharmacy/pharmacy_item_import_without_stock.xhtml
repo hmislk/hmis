@@ -8,52 +8,130 @@
 
     <ui:define name="subcontent">
         <h:form enctype="multipart/form-data">
-            <p:panel>
-                <p:fileUpload value="#{dataUploadController.file}" mode="simple"/>
-                <p:commandButton ajax="false" value="Submit"
-                                 action="#{dataUploadController.importFromExcelWithoutStock}"/>
+            <p:panel >
+                <f:facet name="header" >
+                    <p:outputLabel value="Import Items from Excel" ></p:outputLabel>
+                </f:facet>
 
-                <p:panel header="Import Items from Excel (No Stock)" >
-                    <h:outputLabel value="Instructions" ></h:outputLabel>
-                    <p:panel >
-                        <h1>Import Stock by Sale</h1>
-                        <p>Please make sure the following order of Columns in the uploading Excel File.</p>
-                        <p>Leave First Row for Row Headings.</p>
+                <p:panel header="Upload Excel File" styleClass="p-3">
+                    <div class="row" >
+                        <div class="col-6" >
+                            <h:panelGrid columns="4" cellpadding="10" styleClass="w-100">
+                                <p:outputLabel value="Select File:" for="fileUpload" styleClass="font-weight-bold"/>
+                                <p:fileUpload id="fileUpload" value="#{dataUploadController.file}" 
+                                              mode="simple" 
+                                              label="Choose File"
+                                              skinSimple="true"
+                                              styleClass="m-1"/>
+                                <p:commandButton value="Submit" 
+                                                 icon="fa fa-upload"
+                                                 styleClass="ui-button-success m-1"
+                                                 ajax="false"
+                                                 action="#{dataUploadController.importFromExcelWithoutStock}"/>
+                            </h:panelGrid>
+                        </div>
+                        <div class="col-6" >
+                            <h2>General Instructions</h2>
+                            <p>Please ensure your Excel file follows the format below. 
+                                Leave the first row for column headings.</p>
+                            <p>Use only <b>*.xlsx</b> files. <i>Do not use *.xls files.</i></p>
+                        </div>
+                    </div>
 
-                        <p>Please make sure all the names and categories are NOT empty.</p>
-                        <p >Use only *.xlsx files. <b><i>NOT</i> xls files.</b></p>
-                    </p:panel>
 
                 </p:panel>
 
 
 
-                <p:panelGrid columns="1" style="border: 1px solid blue;" >
-                    <h:outputLabel value ="0. Serial No " ></h:outputLabel>
-                    <h:outputLabel value ="1. Category" ></h:outputLabel>
-                    <h:outputLabel value ="2. Product " ></h:outputLabel>
-                    <h:outputLabel value ="3. Code" ></h:outputLabel>
-                    <h:outputLabel value ="4. Bar Code" ></h:outputLabel>
-                    <h:outputLabel value ="5. Generic Name" ></h:outputLabel>
-                    <h:outputLabel value ="6. Strength" ></h:outputLabel>
-                    <h:outputLabel value ="7. Strength Unit" ></h:outputLabel>
-                    <h:outputLabel value ="8. Pack Size" ></h:outputLabel>
-                    <h:outputLabel value ="9. Issue Unit" ></h:outputLabel>
-                    <h:outputLabel value ="10. Pack Unit" ></h:outputLabel>
-                    <h:outputLabel value ="11. Distributor" ></h:outputLabel>
-                    <h:outputLabel value ="12. Manufacturer" ></h:outputLabel>
-                    <h:outputLabel value ="13. Importer" ></h:outputLabel>
-                    <h:outputLabel value ="14. Department Type (Optional)" ></h:outputLabel>
+                <table class="table table-striped table-bordered table-hover mt-3">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Excel Column</th>
+                            <th>Field</th>
+                            <th>Instructions</th>
+                        </tr>
+                    </thead>
 
-
-                </p:panelGrid>
+                    <tbody>
+                        <tr>
+                            <td>A</td>
+                            <td>Serial No</td>
+                            <td>Provide a unique serial number for each item.</td>
+                        </tr>
+                        <tr>
+                            <td>B</td>
+                            <td>Category</td>
+                            <td>Enter the category. If not found, it will be created automatically.</td>
+                        </tr>
+                        <tr>
+                            <td>C</td>
+                            <td>Product</td>
+                            <td>Enter the full product name.</td>
+                        </tr>
+                        <tr>
+                            <td>D</td>
+                            <td>Code</td>
+                            <td>Enter the system or catalogue code for the product.</td>
+                        </tr>
+                        <tr>
+                            <td>E</td>
+                            <td>Bar Code</td>
+                            <td>Enter the barcode if available. Leave blank if not applicable.</td>
+                        </tr>
+                        <tr>
+                            <td>F</td>
+                            <td>Generic Name</td>
+                            <td>Recommended to fill. Can be left blank if not known.</td>
+                        </tr>
+                        <tr>
+                            <td>G</td>
+                            <td>Strength</td>
+                            <td>Enter a numeric value (e.g., 500, 1, 0.5). Must not be blank. Decimal values are allowed.</td>
+                        </tr>
+                        <tr>
+                            <td>H</td>
+                            <td>Strength Unit</td>
+                            <td>Enter the unit of strength (e.g., mg, ml, g, %, IU, #, /Unit). Must not be blank. Use standard abbreviations.</td>
+                        </tr>
+                        <tr>
+                            <td>I</td>
+                            <td>Pack Size</td>
+                            <td>Enter a numeric value (e.g., 1, 10, 20). Do not enter text like “Pack”.</td>
+                        </tr>
+                        <tr>
+                            <td>J</td>
+                            <td>Issue Unit</td>
+                            <td>Enter the unit in which the item is issued (e.g., Tablet, Bottle, Unit).</td>
+                        </tr>
+                        <tr>
+                            <td>K</td>
+                            <td>Pack Unit</td>
+                            <td>Enter the unit for the pack (e.g., Pack, Box, Strip).</td>
+                        </tr>
+                        <tr>
+                            <td>L</td>
+                            <td>Distributor</td>
+                            <td>Enter the distributor name if available.</td>
+                        </tr>
+                        <tr>
+                            <td>M</td>
+                            <td>Manufacturer</td>
+                            <td>Enter the manufacturer name if available. Can be left blank.</td>
+                        </tr>
+                        <tr>
+                            <td>N</td>
+                            <td>Importer</td>
+                            <td>Enter the importer name if available. Can be left blank.</td>
+                        </tr>
+                        <tr>
+                            <td>O</td>
+                            <td>Department Type (Optional)</td>
+                            <td>Must be one of the following: Clinical, NonClinical, Pharmacy, Lab, Channelling, Opd, Inward, Theatre, Etu, CollectingCentre, Ict, Other.</td>
+                        </tr>
+                    </tbody>
+                </table>
 
             </p:panel>
         </h:form>
-
-
-
     </ui:define>
-
-
 </ui:composition>
