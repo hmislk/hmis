@@ -948,6 +948,14 @@ public class GrnReturnWorkflowController implements Serializable {
     public void onEdit(BillItem bi) {
         // Validate integer-only quantity if configuration is enabled
         if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            // Guard against null billItemFinanceDetails
+            if (bi.getBillItemFinanceDetails() == null) {
+                validateReturnQuantities(bi);
+                calculateLineTotal(bi);
+                calculateTotal();
+                return;
+            }
+
             BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
             BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
 
