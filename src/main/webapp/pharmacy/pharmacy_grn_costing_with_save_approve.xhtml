@@ -155,7 +155,6 @@
                                         autocomplete="off"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.quantity}" >
-                                        <f:convertNumber pattern="#" ></f:convertNumber>
                                         <p:ajax
                                             event="blur"
                                             process="txtQty"
@@ -176,7 +175,6 @@
                                         onfocus="this.select();"
                                         value="#{bi.billItemFinanceDetails.freeQuantity}"
                                         id="freeQty" >
-                                        <f:convertNumber pattern="#" ></f:convertNumber>
                                         <p:ajax
                                             event="blur"
                                             process="freeQty"
