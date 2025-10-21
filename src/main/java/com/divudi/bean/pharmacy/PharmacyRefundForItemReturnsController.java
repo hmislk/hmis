@@ -2508,8 +2508,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     break;
                 case Slip:
                     getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
-                    getPaymentMethodData().getSlip().setDate(originalPayment.getSlipDate());
-                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getSlipRefNo());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     break;
@@ -2607,8 +2607,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         break;
                     case Slip:
                         cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
-                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getSlipDate());
-                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getSlipRefNo());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;

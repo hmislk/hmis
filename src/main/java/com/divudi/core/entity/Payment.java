@@ -683,7 +683,9 @@ public class Payment implements Serializable, RetirableEntity {
 
     public Date getPaymentDate() {
         if (paymentDate == null) {
-            if (this.getBill() != null) {
+            if (chequeDate != null) {
+                paymentDate = chequeDate;
+            } else if (this.getBill() != null) {
                 paymentDate = this.getBill().getCreatedAt();
             }
         }
