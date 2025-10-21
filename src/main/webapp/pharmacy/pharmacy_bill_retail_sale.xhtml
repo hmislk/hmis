@@ -921,7 +921,9 @@
                                                     </div>
                                                     <div class="row" >
                                                         <div class="my-1">
-                                                            <h:panelGroup id="panelPaymentDetails" class="row">
+                                                            <h:panelGroup 
+                                                                id="panelPaymentDetails" 
+                                                                class="row">
                                                                 <div class="col" >
                                                                     <h:panelGroup
                                                                         class="row"
@@ -1106,7 +1108,11 @@
                                                                         layout="block"
                                                                         id="multiplePaymentMethods"  rendered="#{pharmacySaleController.paymentMethod eq 'MultiplePaymentMethods'}"
                                                                         >
-                                                                        <pa:multiple_payment_methods class="w-100" controller="#{pharmacySaleController}" paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
+                                                                        <pa:multiple_payment_methods 
+                                                                            id="panelMultiplePaymentDetails"
+                                                                            class="w-100" 
+                                                                            controller="#{pharmacySaleController}" 
+                                                                            paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
                                                                     </h:panelGroup>
 
                                                                 </div>

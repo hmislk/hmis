@@ -16,7 +16,7 @@
     <cc:implementation>
         <div class="row">
             <div class="col-md-4">
-                <h:outputText value="Bank:" style="font-weight: 500;"/>
+                <p:outputLabel for="bank" value="Bank:" style="font-weight: 500;"/>
                 <p:selectOneMenu
                     id="bank"
                     value="#{cc.attrs.paymentMethodData.slip.institution}"
@@ -28,7 +28,7 @@
             </div>
 
             <div class="col-md-6">
-                <h:outputText value="Date:" style="font-weight: 500;"/>
+                <p:outputLabel for="date" value="Date:" style="font-weight: 500;"/>
                 <p:calendar
                     id="date"
                     styleClass="w-100"
@@ -42,7 +42,7 @@
             </div>
 
             <div class="col-md-4">
-                <h:outputText value="Ref No:" style="font-weight: 500;"/>
+                <p:outputLabel for="refNo" value="Ref No:" style="font-weight: 500;"/>
                 <p:inputText
                     id="refNo"
                     value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
@@ -53,7 +53,7 @@
             </div>
 
             <div class="col-md-8">
-                <h:outputText value="Comment:" style="font-weight: 500;"/>
+                <p:outputLabel for="comment" value="Comment:" style="font-weight: 500;"/>
                 <p:inputText
                     id="comment"
                     value="#{cc.attrs.paymentMethodData.slip.comment}"
