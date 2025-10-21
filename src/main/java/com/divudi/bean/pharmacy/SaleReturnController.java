@@ -763,14 +763,21 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 case Card:
                     getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
                     getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                     getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
                     break;
                 case Cheque:
+                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
                     getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
                     getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                    getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
                     getPaymentMethodData().getCheque().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
                     break;
                 case Slip:
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getSlipDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getSlipRefNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
                     break;
                 case ewallet:
@@ -846,14 +853,21 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                     case Card:
                         cd.getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
                         cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                        cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
                         break;
                     case Cheque:
+                        cd.getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
                         cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
                         cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                        cd.getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
                         break;
                     case Slip:
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getSlipDate());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getSlipRefNo());
+                        cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
