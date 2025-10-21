@@ -2665,80 +2665,107 @@ public class PharmacyController implements Serializable {
         totalCostValue = 0.0;
         qty = 0.0;
 
-        Map<String, Object> parameters = new HashMap<>();
-        // Use CASE to negate values for returns and cancellations
-        String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
-                + "bi.bill.department, "
-                + "bi.bill.toDepartment, "
-                + "bi.item, "
-                + "bi.item.category, "
-                + "SUM(CASE WHEN bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN "
-                + "          OR bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED "
-                + "     THEN -1.0 * ABS(bi.qty * bi.pharmaceuticalBillItem.purchaseRate) "
-                + "     ELSE ABS(bi.qty * bi.pharmaceuticalBillItem.purchaseRate) END), "
-                + "COALESCE(ib.costRate, 0.0), "
-                + "bi.pharmaceuticalBillItem.purchaseRate, "
-                + "SUM(CASE WHEN bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN "
-                + "          OR bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED "
-                + "     THEN -1.0 * ABS(bi.qty) "
-                + "     ELSE ABS(bi.qty) END)) "
-                + "FROM BillItem bi "
-                + "JOIN ItemBatch ib ON ib.item = bi.item "
-                + "WHERE (bi.retired = false OR bi.retired IS NULL) "
-                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)  "
-                + "AND bi.bill.completed = true  "
-                + "AND ib.id = (SELECT MAX(ib2.id) FROM ItemBatch ib2 WHERE ib2.item = bi.item) "
-                + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
-                + "AND bi.bill.billTypeAtomic in :billTypeAtomics ";
+        // Process each bill type separately with appropriate sign
+        List<DepartmentCategoryWiseItems> combinedResults = new ArrayList<>();
 
-        // Mandatory parameters
-        parameters.put("fromDate", fromDate);
-        parameters.put("toDate", toDate);
-        parameters.put("billTypeAtomics", billTypeAtomics);
+        for (BillTypeAtomic billType : billTypeAtomics) {
+            List<BillTypeAtomic> singleType = new ArrayList<>();
+            singleType.add(billType);
 
-        // Dynamic filters
-        if (institution != null) {
-            jpql += "AND bi.bill.institution = :institution ";
-            parameters.put("institution", institution);
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
+                    + "bi.bill.department, "
+                    + "bi.bill.toDepartment, "
+                    + "bi.item, "
+                    + "bi.item.category, "
+                    + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                    + "COALESCE(ib.costRate, 0.0), "
+                    + "bi.pharmaceuticalBillItem.purchaseRate, "
+                    + "SUM(bi.qty)) "
+                    + "FROM BillItem bi "
+                    + "JOIN ItemBatch ib ON ib.item = bi.item "
+                    + "WHERE (bi.retired = false OR bi.retired IS NULL) "
+                    + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)  "
+                    + "AND bi.bill.completed = true  "
+                    + "AND ib.id = (SELECT MAX(ib2.id) FROM ItemBatch ib2 WHERE ib2.item = bi.item) "
+                    + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
+                    + "AND bi.bill.billTypeAtomic = :billTypeAtomic ";
+
+            // Mandatory parameters
+            parameters.put("fromDate", fromDate);
+            parameters.put("toDate", toDate);
+            parameters.put("billTypeAtomic", billType);
+
+            // Dynamic filters
+            if (institution != null) {
+                jpql += "AND bi.bill.institution = :institution ";
+                parameters.put("institution", institution);
+            }
+
+            if (site != null) {
+                jpql += "AND bi.bill.department.site = :site ";
+                parameters.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql += "AND bi.bill.department = :department ";
+                parameters.put("department", dept);
+            }
+
+            if (category != null) {
+                jpql += "AND bi.item.category = :category ";
+                parameters.put("category", category);
+            }
+
+            if (item != null) {
+                jpql += "AND bi.item = :item ";
+                parameters.put("item", item);
+            }
+
+            if (toDepartment != null) {
+                jpql += "AND bi.bill.toDepartment = :toDepartment ";
+                parameters.put("toDepartment", toDepartment);
+            }
+
+            // Group by clause
+            jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, COALESCE(ib.costRate, 0.0), bi.pharmaceuticalBillItem.purchaseRate "
+                    + "ORDER BY bi.bill.toDepartment, bi.item.category";
+
+            try {
+                List<DepartmentCategoryWiseItems> batchResults = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+                // Determine multiplier: returns and cancellations should be negative
+                double multiplier = 1.0;
+                if (billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                    || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                    multiplier = -1.0;
+                }
+
+                // Apply multiplier to the results
+                for (DepartmentCategoryWiseItems item : batchResults) {
+                    if (multiplier != 1.0) {
+                        // Take absolute value and apply negative multiplier
+                        item.setNetTotal(Math.abs(item.getNetTotal()) * multiplier);
+                        item.setQty(Math.abs(item.getQty()) * multiplier);
+                    }
+                    combinedResults.add(item);
+                }
+
+            } catch (Exception e) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption report by department and category for " + billType, e);
+            }
         }
 
-        if (site != null) {
-            jpql += "AND bi.bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-
-        if (dept != null) {
-            jpql += "AND bi.bill.department = :department ";
-            parameters.put("department", dept);
-        }
-
-        if (category != null) {
-            jpql += "AND bi.item.category = :category ";
-            parameters.put("category", category);
-        }
-
-        if (item != null) {
-            jpql += "AND bi.item = :item ";
-            parameters.put("item", item);
-        }
-
-        if (toDepartment != null) {
-            jpql += "AND bi.bill.toDepartment = :toDepartment ";
-            parameters.put("toDepartment", toDepartment);
-        }
-
-        // Group by clause
-        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, COALESCE(ib.costRate, 0.0), bi.pharmaceuticalBillItem.purchaseRate "
-                + "ORDER BY bi.bill.toDepartment, bi.item.category";
-
+        // Process combined results
         try {
-            resultsList = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-            if (resultsList.isEmpty()) {
+            if (combinedResults.isEmpty()) {
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_WARN, "No Data", "No records found for the selected criteria."));
                 return Collections.emptyList();
             }
+
+            // Aggregate results by department, consumption dept, item, and category
+            resultsList = aggregateDepartmentCategoryWiseItems(combinedResults);
 
             totalPurchase = 0.0;
             grantIssueQty = 0.0;
@@ -2758,6 +2785,32 @@ public class PharmacyController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
             return Collections.emptyList();
         }
+    }
+
+    private List<DepartmentCategoryWiseItems> aggregateDepartmentCategoryWiseItems(List<DepartmentCategoryWiseItems> items) {
+        // Group by key: department + consumption dept + item + category + purchase rate + cost rate
+        Map<String, DepartmentCategoryWiseItems> aggregatedMap = new HashMap<>();
+
+        for (DepartmentCategoryWiseItems item : items) {
+            String key = item.getMainDepartment().getId() + "_"
+                    + item.getConsumptionDepartment().getId() + "_"
+                    + item.getItem().getId() + "_"
+                    + item.getCategory().getId() + "_"
+                    + item.getPurchaseRate() + "_"
+                    + item.getCostRate();
+
+            DepartmentCategoryWiseItems existing = aggregatedMap.get(key);
+            if (existing != null) {
+                // Aggregate values
+                existing.setNetTotal(existing.getNetTotal() + item.getNetTotal());
+                existing.setQty(existing.getQty() + item.getQty());
+            } else {
+                // Create new entry
+                aggregatedMap.put(key, item);
+            }
+        }
+
+        return new ArrayList<>(aggregatedMap.values());
     }
 
     public void generateConsumptionReportTableAsCategoryWise(final List<DepartmentCategoryWiseItems> list) {
