@@ -194,6 +194,13 @@
                                     offLabel="No"
                                     class="w-100" />
 
+                                <h:outputText  value="Allow Fractions" class="w-100"></h:outputText>
+                                <p:selectBooleanButton
+                                    value="#{ampController.current.allowFractions}"
+                                    onLabel="Yes"
+                                    offLabel="No"
+                                    class="w-100" />
+
                                 <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
                                 <h:inputTextarea 
                                     id="txtIns" 

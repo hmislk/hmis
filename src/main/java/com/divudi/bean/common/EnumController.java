@@ -256,11 +256,17 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
+
     public void fillPaymentMethodsUnderMultipleForPharmacyBilling() {
         paymentMethodsUnderMultipleForPharmacyBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
-            if(pm==PaymentMethod.MultiplePaymentMethods){
+            if (pm == PaymentMethod.MultiplePaymentMethods) {
+                continue;
+            }
+            if (pm == PaymentMethod.Credit) {
+                continue;
+            }
+            if (pm == PaymentMethod.Staff) {
                 continue;
             }
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
@@ -269,7 +275,6 @@ public class EnumController implements Serializable {
             }
         }
     }
-    
 
     public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
         paymentTypeOfPaymentMethods = new ArrayList<>();
@@ -752,9 +757,7 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypesForMovementReports() {
         BillType[] b = {
             BillType.PharmacySale,
-            BillType.PharmacyAdjustment,
-            BillType.PharmacyTransferIssue,
-            BillType.PharmacyIssue,
+            BillType.PharmacyDisposalIssue,
             BillType.PharmacyBhtPre};
         return b;
     }
@@ -1034,8 +1037,8 @@ public class EnumController implements Serializable {
             } catch (IllegalArgumentException e) {
                 // Log the error and return false for invalid enum values
                 java.util.logging.Logger.getLogger(getClass().getName()).log(
-                    java.util.logging.Level.WARNING,
-                    "Invalid PaymentMethod string: " + paymentMethodStr, e);
+                        java.util.logging.Level.WARNING,
+                        "Invalid PaymentMethod string: " + paymentMethodStr, e);
                 return false;
             }
         }
@@ -1057,7 +1060,6 @@ public class EnumController implements Serializable {
     }
 
     // PaymentScheme getters/setters removed - use local variables or session-scoped beans for user-specific state
-
     public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
         paymentMethodsForPatientDeposit = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -1300,7 +1302,5 @@ public class EnumController implements Serializable {
     public void setPaymentMethodsUnderMultipleForPharmacyBilling(List<PaymentMethod> paymentMethodsUnderMultipleForPharmacyBilling) {
         this.paymentMethodsUnderMultipleForPharmacyBilling = paymentMethodsUnderMultipleForPharmacyBilling;
     }
-    
-    
 
 }

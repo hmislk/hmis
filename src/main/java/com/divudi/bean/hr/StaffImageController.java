@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.RequestController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.core.entity.Staff;
@@ -192,7 +193,7 @@ public class StaffImageController implements Serializable {
             }
         }
     }
-
+    
     public StreamedContent getSignatureFromPatientReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
@@ -209,6 +210,38 @@ public class StaffImageController implements Serializable {
             if (patientReportController.getCurrentPatientReport().getApproveUser().getStaff() == null) {
             }
             Staff temImg = patientReportController.getCurrentPatientReport().getApproveUser().getStaff();
+            if (temImg != null) {
+                temImg = staffController.findStaffById(temImg.getId());
+                byte[] imgArr = null;
+                try {
+                    imgArr = temImg.getBaImage();
+                } catch (Exception e) {
+                    return new DefaultStreamedContent();
+                }
+                InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
+                StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
+                return str;
+            } else {
+                return new DefaultStreamedContent();
+            }
+        }
+    }
+    
+    @Inject
+    RequestController requestController;
+
+    public StreamedContent getSignatureFromRequestApproval() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getRenderResponse()) {
+            //System.err.println("Contex Response");
+            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
+            return new DefaultStreamedContent();
+        } else {
+            if (requestController == null || requestController.getCurrentRequest() == null || requestController.getCurrentRequest().getApprovedBy() == null || requestController.getCurrentRequest().getApprovedBy().getStaff() == null) {
+                return new DefaultStreamedContent();
+            }
+            
+            Staff temImg = requestController.getCurrentRequest().getApprovedBy().getStaff();
             if (temImg != null) {
                 temImg = staffController.findStaffById(temImg.getId());
                 byte[] imgArr = null;

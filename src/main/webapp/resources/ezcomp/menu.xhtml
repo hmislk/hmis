@@ -1030,9 +1030,8 @@
 
                     <p:submenu label="Disbursement" icon="fas fa-share-square" rendered="#{webUserController.hasPrivilege('PharmacyDisburesementMenu')}">
                         <p:menuitem ajax="false" 
-                                    action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  
+                                    action="#{transferRequestController.navigateToCreateANewTransferRequest()}"  
                                     value="Request" 
-                                    actionListener="#{transferRequestController.recreate()}" 
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" 
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
                         <p:menuitem ajax="false"
@@ -1055,7 +1054,7 @@
                                     icon="fas fa-prescription-bottle-alt"></p:menuitem>
 
                         <p:menuitem ajax="false" 
-                                    action="#{transferIssueController.navigateToDirectPharmacyIssue}"  
+                                    action="#{transferIssueDirectController.navigateToDirectPharmacyIssue}"  
                                     value="Direct Issue" 
                                     actionListener="#{transferIssueController.makeNull()}" 
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" 
@@ -1503,6 +1502,15 @@
                         value="Financial Transaction Manager" 
                         icon="pi pi-wallet"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+                    
+                    <p:menuitem  
+                        ajax="false"
+                        value="Request Manager"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
+                        action="#{requestController.navigateToSearchRequest()}"
+                        icon="fa-solid fa-envelope" 
+                        >
                     </p:menuitem>
 
                     <p:menuitem  
