@@ -2110,6 +2110,8 @@ public class PharmacyController implements Serializable {
 
             String jpql = "SELECT b FROM Bill b WHERE b.retired = false"
                     + " and b.billTypeAtomic in :btpAtomics"
+                    + " and (b.retired = false OR b.retired IS NULL)  "
+                    + " and b.completed=true "
                     + " and b.createdAt between :fromDate and :toDate";
 
             Map<String, Object> tmp = new HashMap<>();
@@ -2162,9 +2164,21 @@ public class PharmacyController implements Serializable {
                 PharmacyRow row = new PharmacyRow();
                 row.setBill(b);
 
-                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-                totalCostValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
-                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+                // Determine multiplier: returns and cancellations should be negative
+                double multiplier = 1.0;
+                if (b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                    || b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                    multiplier = -1.0;
+                }
+
+                // Take absolute values and apply multiplier to ensure correct sign
+                double purchaseValue = Math.abs(b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue()) * multiplier;
+                double costValue = Math.abs(b.getBillFinanceDetails().getTotalCostValue().doubleValue()) * multiplier;
+                double retailValue = Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()) * multiplier;
+
+                totalPurchase += purchaseValue;
+                totalCostValue += costValue;
+                totalRetailValue += retailValue;
 
                 pharmacyRows.add(row);
 
@@ -2266,6 +2280,7 @@ public class PharmacyController implements Serializable {
 
             jpql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ");
             jpql.append("AND bi.bill.retired = false ");
+            jpql.append("AND bi.bill.completed = true ");
             jpql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
             jpql.append("AND bi.bill.billTypeAtomic IN :billTypeAtomics ");
 
@@ -2356,6 +2371,21 @@ public class PharmacyController implements Serializable {
                     purchaseValue = row.getBillItem().getPharmaceuticalBillItem().getPurchaseRate() * row.getBillItem().getQty();
                     costValue = row.getItemBatch().getCostRate() * row.getBillItem().getQty();
                 }
+
+                // Determine multiplier: returns and cancellations should be negative
+                double multiplier = 1.0;
+                if (row.getBillItem().getBill() != null) {
+                    BillTypeAtomic billType = row.getBillItem().getBill().getBillTypeAtomic();
+                    if (billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                        || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                        multiplier = -1.0;
+                    }
+                }
+
+                // Take absolute values and apply multiplier to ensure correct sign
+                purchaseValue = Math.abs(purchaseValue) * multiplier;
+                costValue = Math.abs(costValue) * multiplier;
+                retailValue = Math.abs(retailValue) * multiplier;
 
                 totalPurchase += purchaseValue;
                 totalCostValue += costValue;
@@ -2636,18 +2666,27 @@ public class PharmacyController implements Serializable {
         qty = 0.0;
 
         Map<String, Object> parameters = new HashMap<>();
+        // Use CASE to negate values for returns and cancellations
         String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
                 + "bi.bill.department, "
                 + "bi.bill.toDepartment, "
                 + "bi.item, "
                 + "bi.item.category, "
-                + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                + "SUM(CASE WHEN bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN "
+                + "          OR bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED "
+                + "     THEN -1.0 * ABS(bi.qty * bi.pharmaceuticalBillItem.purchaseRate) "
+                + "     ELSE ABS(bi.qty * bi.pharmaceuticalBillItem.purchaseRate) END), "
                 + "COALESCE(ib.costRate, 0.0), "
                 + "bi.pharmaceuticalBillItem.purchaseRate, "
-                + "SUM(bi.qty)) "
+                + "SUM(CASE WHEN bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN "
+                + "          OR bi.bill.billTypeAtomic = com.divudi.core.data.BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED "
+                + "     THEN -1.0 * ABS(bi.qty) "
+                + "     ELSE ABS(bi.qty) END)) "
                 + "FROM BillItem bi "
                 + "JOIN ItemBatch ib ON ib.item = bi.item "
-                + "WHERE bi.retired = false AND bi.bill.retired = false "
+                + "WHERE (bi.retired = false OR bi.retired IS NULL) "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)  "
+                + "AND bi.bill.completed = true  "
                 + "AND ib.id = (SELECT MAX(ib2.id) FROM ItemBatch ib2 WHERE ib2.item = bi.item) "
                 + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND bi.bill.billTypeAtomic in :billTypeAtomics ";
