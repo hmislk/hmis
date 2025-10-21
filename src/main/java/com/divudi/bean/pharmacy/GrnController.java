@@ -1303,8 +1303,15 @@ public class GrnController implements Serializable {
     public void onEdit(BillItem tmp) {
         // Validate integer-only quantity if configuration is enabled
         if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            // Normalize null to 0.0 for tmpQty to prevent NPE during modulus operation
+            Double tmpQtyValue = tmp.getTmpQty();
+            if (tmpQtyValue == null) {
+                tmp.setTmpQty(0.0);
+                tmpQtyValue = 0.0;
+            }
+
             // Check quantity for decimal values
-            if (tmp.getTmpQty() % 1 != 0) {
+            if (tmpQtyValue % 1 != 0) {
                 tmp.setTmpQty(0.0);
                 calGrossTotal();
                 calDifference();
@@ -1312,8 +1319,15 @@ public class GrnController implements Serializable {
                 return;
             }
 
+            // Normalize null to 0.0 for tmpFreeQty to prevent NPE during modulus operation
+            Double tmpFreeQtyValue = tmp.getTmpFreeQty();
+            if (tmpFreeQtyValue == null) {
+                tmp.setTmpFreeQty(0.0);
+                tmpFreeQtyValue = 0.0;
+            }
+
             // Check free quantity for decimal values
-            if (tmp.getTmpFreeQty() % 1 != 0) {
+            if (tmpFreeQtyValue % 1 != 0) {
                 tmp.setTmpFreeQty(0.0);
                 calGrossTotal();
                 calDifference();
