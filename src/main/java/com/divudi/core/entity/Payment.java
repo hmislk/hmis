@@ -607,6 +607,11 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setReferenceNo(String referenceNo) {
         this.referenceNo = referenceNo;
+        // Sync deprecated fields during migration period for backward compatibility
+        if (referenceNo != null && !referenceNo.trim().isEmpty()) {
+            setChequeRefNo(referenceNo);
+            setCreditCardRefNo(referenceNo);
+        }
     }
 
     public boolean getCashbookEntryCompleted() {
