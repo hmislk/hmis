@@ -143,10 +143,10 @@
                                             <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
-                                         <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
                                         <h:outputText value="Processed By - "/>
                                         <h:outputText value="#{sessionController.loggedUser.name}">
-                                           
+
                                         </h:outputText>
                                     </div>
                                 </div>
@@ -158,8 +158,10 @@
                                                 <th style="text-align: center;">Serial</th>
                                                 <th style="text-align: center;">Date / Time</th>
                                                 <th style="text-align: center;">Bill No</th>
-                                                <th style="text-align: center;">Bill Type</th>
+                                                <!--                                                <th style="text-align: center;">Bill Type</th>-->
                                                 <th style="text-align: center;">Patient</th>
+                                                <th style="text-align: center;">Doctor</th>
+                                                <th style="text-align: center;">Session</th>
                                                 <th style="text-align: center;">Cashier</th>
                                                 <th style="text-align: center;">Hospital Fee</th>
                                                 <th style="text-align: center;">Staff Fee</th>
@@ -234,13 +236,30 @@
                                                             <span style="color: red; font-weight: bold;"> [Cancel Bill]</span>
                                                         </h:panelGroup>
                                                     </td>
-                                                    <td>
-                                                        <h:outputText value="#{row.bill.billTypeAtomic}"/>
-                                                    </td>
+                                                    <!--                                                    <td>
+                                                                                                            <h:outputText value="#{row.bill.billTypeAtomic}"/>
+                                                                                                        </td>-->
                                                     <td>
                                                         <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}"/>
                                                         <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}"/>
                                                         <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}"/>
+                                                    </td>
+
+                                                    <td>
+                                                        <h:outputText value="#{row.bill.singleBillItem.item.staff.person.nameWithTitle}"></h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{row.bill.singleBillSession.sessionInstance.name} / ">
+
+                                                        </h:outputText>
+                                                        <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionDate}">
+                                                            <f:convertDateTime
+                                                                pattern="#{sessionController.applicationPreference.shortDateFormat} - "/>
+                                                        </h:outputText>
+                                                        <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionTime}">
+                                                            <f:convertDateTime
+                                                                pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                                        </h:outputText>
                                                     </td>
                                                     <td>
                                                         <h:outputText value="#{row.bill.creater.name}">
@@ -390,7 +409,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="6" style="text-align: center; font-weight: 700;">
+                                                <td colspan="7" style="text-align: center; font-weight: 700;">
                                                     <h:outputText value="Total"/>
                                                 </td>
                                                 <td style="text-align: right; font-weight: 700;">

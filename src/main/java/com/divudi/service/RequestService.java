@@ -30,69 +30,93 @@ public class RequestService {
             return;
         }
         if (req.getId() == null) {
-                req.setCreator(user);
-                req.setCreatedAt(new Date());
-            
+            req.setCreator(user);
+            req.setCreatedAt(new Date());
+
             requestFacade.create(req);
         } else {
             requestFacade.edit(req);
         }
     }
-    
+
     public Request findRequest(Bill bill) {
-        if(bill == null){
+        if (bill == null) {
             return null;
         }
-        
+
         List<RequestStatus> availableStatus = new ArrayList<>();
         availableStatus.add(RequestStatus.PENDING);
         availableStatus.add(RequestStatus.UNDER_REVIEW);
         availableStatus.add(RequestStatus.APPROVED);
-        
+
         String jpql = "Select q from Request q "
                 + " where q.retired =:ret "
                 + " and q.bill =:bill "
                 + " and q.status in :status ";
-        
+
         HashMap params = new HashMap();
-        params.put("ret",false);
-        params.put("bill",bill);
-        params.put("status",availableStatus);
-        
+        params.put("ret", false);
+        params.put("bill", bill);
+        params.put("status", availableStatus);
+
         Request req = requestFacade.findFirstByJpql(jpql, params);
 
         return req;
     }
-    
-    public List<Request> fillAllRequest(Date fromDate, Date toDate, RequestType requestType, RequestStatus requestStatus, DepartmentType departmentType){
+
+    public List<Request> fillAllRequest(
+            Date fromDate,
+            Date toDate,
+            String billNo,
+            String bhtNo,
+            String requestNo,
+            RequestType requestType,
+            RequestStatus requestStatus,
+            DepartmentType departmentType) {
         
         HashMap params = new HashMap();
-        
+
         String jpql = "Select q from Request q "
                 + " where q.retired =:ret "
                 + " and q.createdAt between :frm and :to"
                 + " and q.department.departmentType =:deptType";
-                
-        if(requestStatus != null){
+
+        if (requestNo != null && !requestNo.trim().equals("")) {
+            jpql += " and q.requestNo like :reqNo ";
+            params.put("reqNo", "%" + requestNo.trim() + "%");
+        }
+
+        if (billNo != null && !billNo.trim().equals("")) {
+            jpql += " and  q.bill.deptId like :billNo ";
+            params.put("billNo", "%" + billNo.trim() + "%");
+        }
+
+        if (bhtNo != null && !bhtNo.trim().equals("")) {
+            jpql += " and  q.bill.patientEncounter.bhtNo like :bht ";
+            params.put("bht", "%" + bhtNo.trim() + "%");
+        }
+
+        if (requestStatus != null) {
             jpql += " and q.status = :status ";
-            params.put("status",requestStatus);
+            params.put("status", requestStatus);
         }
-        if(requestType != null){
+
+        if (requestType != null) {
             jpql += " and q.requestType = :type ";
-            params.put("type",requestType);
+            params.put("type", requestType);
         }
-        
+
         jpql += " order by q.id desc ";
-        
-        params.put("deptType",departmentType);
-        params.put("ret",false);
-        params.put("frm",fromDate);
-        params.put("to",toDate);
-        
+
+        params.put("deptType", departmentType);
+        params.put("ret", false);
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+
         List<Request> req = requestFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         System.out.println("req = " + req);
-        
+
         return req;
     }
 
