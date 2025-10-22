@@ -88,7 +88,7 @@
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
                                                 <div class="d-flex justify-content-center">
                                                     <ui:repeat value="#{requestController.bills}" var="ffb" >
-                                                        <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true" billCount="#{opdBillController.bills.size()}"/>                        
+                                                        <prints:five_eight_opd_bill bill="#{ffb}" duplicate="true" billCount="#{requestController.bills.size()}"/>                        
                                                     </ui:repeat>
                                                 </div>
                                             </h:panelGroup>
