@@ -19,7 +19,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{webUserController.hasPrivilege('BillCancelRequestApproval')}">
-                        <h:panelGroup rendered="#{!billController.printPreview}" styleClass="alignTop">
+                        <h:panelGroup rendered="#{!requestController.printPreview}" styleClass="alignTop">
                             <p:panel>
                                 <f:facet name="header">
                                     <h:outputText value="Bill Cancellation Request Approval" class="mt-5"/>
