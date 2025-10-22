@@ -48,7 +48,7 @@
                                         <p:commandButton 
                                             ajax="false"
                                             value="Approve" 
-                                            icon="fa fa-cancel"
+                                            icon="fa fa-check"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
                                             disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
                                             class="ui-button-success" 
@@ -58,7 +58,7 @@
                                         <p:commandButton
                                             ajax="false"
                                             value="Reject" 
-                                            icon="fa fa-cancel"
+                                            icon="fa fa-times"
                                             rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
                                             disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
                                             class="ui-button-danger" 
@@ -67,8 +67,8 @@
 
                                         <p:commandButton
                                             ajax="false"
-                                            value="Cancel Approvel" 
-                                            icon="fa fa-cancel"
+                                            value="Cancel Approval" 
+                                            icon="fa fa-undo"
                                             class="ui-button-danger" 
                                             rendered="#{(requestController.currentRequest.status eq 'APPROVED')}"
                                             disabled="#{(requestController.currentRequest.status eq 'REJECTED')}"
