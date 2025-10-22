@@ -90,6 +90,8 @@ import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.TokenFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.BillSummaryRow;
@@ -182,6 +184,10 @@ public class SearchController implements Serializable {
     private ReportTimerController reportTimerController;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    private CategoryFacade categoryFacade;
+    @EJB
+    private ItemFacade itemFacade;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -1197,6 +1203,29 @@ public class SearchController implements Serializable {
         category = row.getCategory();
         item = row.getItem();
         backLink = "/reports/financialReports/daily_return?faces-redirect=true";
+        generateOpdServicesByBillItem();
+        return navigateToOpdBillItemList();
+    }
+
+    /**
+     * Navigate to OPD Bill Item List from DTO - loads entities on demand
+     * Following DTO pattern: use IDs from DTO to load full entities only when needed
+     */
+    public String navigateToOpdBillItemListFromDto(OpdSaleSummaryDTO dto) {
+        // Load full entities only when navigating (on-demand loading)
+        if (dto.getCategoryId() != null) {
+            this.category = categoryFacade.find(dto.getCategoryId());
+        } else {
+            this.category = null;
+        }
+        if (dto.getItemId() != null) {
+            this.item = itemFacade.find(dto.getItemId());
+        } else {
+            this.item = null;
+        }
+        // Preserve other filter context from search
+        // institution, department, site, fromDate, toDate already set
+        backLink = "/opd/analytics/itemized_sale_summary_dto?faces-redirect=true";
         generateOpdServicesByBillItem();
         return navigateToOpdBillItemList();
     }
@@ -2503,6 +2532,20 @@ public class SearchController implements Serializable {
 
     public void setOpdSaleSummaryDtos(List<OpdSaleSummaryDTO> opdSaleSummaryDtos) {
         this.opdSaleSummaryDtos = opdSaleSummaryDtos;
+    }
+
+    /**
+     * Calculate total net amount from DTO list
+     * @return Total of all netTotal values in opdSaleSummaryDtos
+     */
+    public double getOpdSaleSummaryTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getNetTotal() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getNetTotal)
+                .sum();
     }
 
     public int getOpdAnalyticsIndex() {

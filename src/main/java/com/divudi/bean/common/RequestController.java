@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Request;
@@ -27,6 +28,7 @@ import javax.inject.Named;
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
+
 @Named
 @SessionScoped
 public class RequestController implements Serializable {
@@ -64,9 +66,14 @@ public class RequestController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private List<Request> requests;
+    private Request currentRequest;
+
+    private String billNo;
+    private String bhtNo;
+    private String requestNo;
     private RequestType requestType;
     private RequestStatus status;
-    private Request currentRequest;
+    
 
     // </editor-fold>
     
@@ -85,17 +92,17 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return "";
         }
-        
+
         if (bill.getDepartment() == null || bill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
             JsfUtil.addErrorMessage("Department information missing.");
             return "";
         }
-        
+
         if (!bill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-            JsfUtil.addErrorMessage("You must log in to "+ bill.getDepartment().getName() +" to cancel this bill.");
+            JsfUtil.addErrorMessage("You must log in to " + bill.getDepartment().getName() + " to cancel this bill.");
             return "";
         }
-        
+
         String navigation = "";
         Bill originalBill = billFacade.find(bill.getId());
 
@@ -202,6 +209,16 @@ public class RequestController implements Serializable {
         bills = null;
         comment = null;
         printPreview = false;
+
+        fromDate = null;
+        toDate = null;
+        requests = null;
+        
+        billNo = null;
+        bhtNo = null;
+        requestNo = null;
+        requestType = null;
+        status = null;
     }
 
     public void createRequestforOPDBatchBill() {
@@ -213,17 +230,17 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Comment is mandatory.");
             return;
         }
-             
+
         if (batchBill.getDepartment() == null || batchBill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
             JsfUtil.addErrorMessage("Department information missing.");
-            return ;
+            return;
         }
-        
+
         if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-            JsfUtil.addErrorMessage("You must log in to "+ batchBill.getDepartment().getName() +" to cancel this bill.");
-            return ;
+            JsfUtil.addErrorMessage("You must log in to " + batchBill.getDepartment().getName() + " to cancel this bill.");
+            return;
         }
-        
+
         Request req = requestService.findRequest(batchBill);
 
         if (req != null) {
@@ -238,7 +255,7 @@ public class RequestController implements Serializable {
             }
 
             Request newlyRequest = new Request();
-            
+
             newlyRequest.setBill(batchBill);
             newlyRequest.setRequester(sessionController.getLoggedUser());
             newlyRequest.setRequestAt(new Date());
@@ -248,10 +265,10 @@ public class RequestController implements Serializable {
 
             newlyRequest.setInstitution(sessionController.getInstitution());
             newlyRequest.setDepartment(sessionController.getDepartment());
-            
+
             String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
             newlyRequest.setRequestNo(reqNo);
-            
+
             requestService.save(newlyRequest, sessionController.getLoggedUser());
 
             //Update Batch Bill
@@ -263,16 +280,16 @@ public class RequestController implements Serializable {
                 b.setCurrentRequest(newlyRequest);
                 billFacade.edit(b);
             }
-            
+
             setCurrentRequest(newlyRequest);
         }
-        
+
         printPreview = true;
     }
 
     public void searchRequest() {
         requests = new ArrayList<>();
-        requests = requestService.fillAllRequest(fromDate, toDate, requestType, status, sessionController.getDepartment().getDepartmentType());
+        requests = requestService.fillAllRequest(fromDate, toDate,billNo, bhtNo, requestNo, requestType, status, sessionController.getDepartment().getDepartmentType());
     }
 
     public void approveRequest() {
@@ -371,7 +388,7 @@ public class RequestController implements Serializable {
 
         JsfUtil.addSuccessMessage("Successfully Reject");
     }
-    
+
     public void cancelRequestbyUser() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Not found for a request for Approvel");
@@ -387,7 +404,7 @@ public class RequestController implements Serializable {
         currentRequest.setCancellationReason(comment);
         currentRequest.setStatus(RequestStatus.CANCELLED);
         requestService.save(currentRequest, sessionController.getLoggedUser());
-        
+
         //Update Batch Bill
         currentRequest.getBill().setCurrentRequest(null);
         billFacade.edit(currentRequest.getBill());
@@ -401,7 +418,30 @@ public class RequestController implements Serializable {
         System.out.println("Successfully Reject = ");
         JsfUtil.addSuccessMessage("Cancelled successfully");
     }
-    
+
+    public String getBillNo() {
+        return billNo;
+    }
+
+    public void setBillNo(String billNo) {
+        this.billNo = billNo;
+    }
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public String getRequestNo() {
+        return requestNo;
+    }
+
+    public void setRequestNo(String requestNo) {
+        this.requestNo = requestNo;
+    }
 
     @FacesConverter(forClass = Request.class)
     public static class AreaConverter implements Converter {
@@ -521,6 +561,9 @@ public class RequestController implements Serializable {
     }
 
     public List<Request> getRequests() {
+        if (requests == null) {
+            requests = new ArrayList<>();
+        }
         return requests;
     }
 

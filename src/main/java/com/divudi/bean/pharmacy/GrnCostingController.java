@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -113,6 +114,8 @@ public class GrnCostingController implements Serializable {
 //    PharmacyCostingService pharmacyCostingService;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
 
     public boolean isShowProfitInGrnBill() {
         return configOptionApplicationController.getBooleanValueByKey("Show Profit Percentage in GRN", true);
@@ -1745,6 +1748,23 @@ public class GrnCostingController implements Serializable {
         if (f == null) {
             return;
         }
+
+        // Validate integer-only free quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            BigDecimal freeQty = f.getFreeQuantity();
+            if (freeQty != null && freeQty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                f.setFreeQuantity(BigDecimal.ZERO);
+                recalculateFinancialsBeforeAddingBillItem(f);
+                ensureBillDiscountSynchronization();
+                calculateBillTotalsFromItems();
+                distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+                calDifference();
+                recalculateProfitMarginsForAllItems();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         recalculateFinancialsBeforeAddingBillItem(f);
 
         // Ensure discount synchronization after free quantity changes
@@ -1761,6 +1781,22 @@ public class GrnCostingController implements Serializable {
         if (f == null) {
             return;
         }
+
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            BigDecimal qty = f.getQuantity();
+            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                f.setQuantity(BigDecimal.ZERO);
+                recalculateFinancialsBeforeAddingBillItem(f);
+                ensureBillDiscountSynchronization();
+                calculateBillTotalsFromItems();
+                distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+                calDifference();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         recalculateFinancialsBeforeAddingBillItem(f);
 
         // Redistribute bill discount after quantity changes (even if discount is 0 to clear previous distributions)

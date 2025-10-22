@@ -1,5 +1,25 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+    DEPRECATED: Entity-based version of Itemized Sales Summary
+
+    This page uses entity-based queries which load full entity graphs into memory.
+    Performance issues:
+    - Loads thousands of BillItem entities with full relationships
+    - Memory intensive (50+ MB for large datasets)
+    - Slow query execution (5-8 seconds)
+    - Aggregation happens in Java application layer
+
+    REPLACEMENT: /opd/analytics/itemized_sale_summary_dto.xhtml
+    - Uses DTO-based database aggregation
+    - 99% reduction in memory usage
+    - 80-90% faster query execution
+    - Aggregation happens in database layer
+
+    STATUS: Will be removed after QA approval
+    ISSUE: https://github.com/hmislk/hmis/issues/15871
+    DATE: 2025-01-XX
+-->
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
@@ -10,8 +30,16 @@
     <h:body>
         <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
+                <!-- DEPRECATED: This is the entity-based version - use itemized_sale_summary_dto.xhtml instead -->
                 <h:form>
-                    <p:panel  header="Itemized Sales Summary">
+                    <p:panel  header="Itemized Sales Summary (Deprecated - Entity-Based)">
+                        <!-- DEPRECATION NOTICE -->
+                        <div class="alert alert-warning" role="alert">
+                            <h:outputText value="&#xf071;" styleClass="fa fa-2x mr-2"/>
+                            <strong>DEPRECATED:</strong> This is the legacy entity-based version.
+                            Please use <h:link outcome="/opd/analytics/itemized_sale_summary_dto.xhtml" value="Itemized Sales Summary (Fast - DTO-Based)" styleClass="alert-link"/>
+                            for better performance. This version will be removed after QA testing.
+                        </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
