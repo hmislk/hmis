@@ -109,9 +109,9 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" rendered="#{pharmacyBillSearch.printPreview}" >
-                            <pharmacy:issue bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy DIsposal Cancel Receipt is A4 Paper',true)}"/>
-                            <pharmacy:pharmacy_issue_cancel_receipt_custom_1 bill="#{pharmacyBillSearch.bill.cancelledBill}" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy DIsposal Cancel Receipt is Custom 1',false)}"/>
-                            <pharmacy:pharmacy_issue_receipt bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy DIsposal Cancel Receipt is Custom 2',false)}"/>
+                            <pharmacy:issue bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Disposal Cancel Receipt is A4 Paper',true)}"/>
+                            <pharmacy:pharmacy_issue_cancel_receipt_custom_1 bill="#{pharmacyBillSearch.bill.cancelledBill}" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Disposal Cancel Receipt is Custom 1',false)}"/>
+                            <pharmacy:pharmacy_issue_receipt bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Disposal Cancel Receipt is Custom 2',false)}"/>
                         </h:panelGroup>
 
                     </p:panel>
