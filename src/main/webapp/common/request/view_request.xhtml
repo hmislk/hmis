@@ -4,7 +4,6 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -60,35 +59,69 @@
                                         </p:commandButton>
 
                                         <p:commandButton
-                                            id="btnExcel"
                                             icon="fa-solid fa-file-excel"
                                             ajax="false"
-                                            value="Download"
-                                            class="w-100 mt-1">
-                                            <p:dataExporter fileName="OPD Bills" type="xlsx" target="tblBills" ></p:dataExporter>
+                                            class="ui-button-warning w-100 mt-2"
+                                            value="Download">
+                                            <p:dataExporter fileName="Request List" type="xlsx" target="tblBills" ></p:dataExporter>
                                         </p:commandButton>
 
                                         <hr/>
                                         
-<!--                                        <p:inputText
+                                        <p:inputText
+                                            placeholder="Request No"
+                                            autocomplete="off"
+                                            class="w-100"
+                                            value="#{requestController.requestNo}" >
+                                        </p:inputText>
+
+                                        <p:inputText
                                             placeholder="Bill No"
+                                            class="form-control mt-2"
                                             autocomplete="off"
-                                            class="w-100 my-1"
-                                            value="#{searchController.searchKeyword.billNo}" />
-
+                                            value="#{requestController.billNo}" >
+                                        </p:inputText>
+                                        
                                         <p:inputText
-                                            placeholder="MRN No"
-                                            class="form-control my-1"
+                                            placeholder="BHT No"
+                                            class="form-control mt-2"
                                             autocomplete="off"
-                                            value="#{searchController.searchKeyword.code}" />
+                                            value="#{requestController.bhtNo}" >
+                                        </p:inputText>
+                                        
+                                        <p:selectOneMenu
+                                            value="#{requestController.requestType}"
+                                            filter="true"
+                                            placeholder="Request type"
+                                            autoWidth="false"
+                                            class="col-12 mt-2"
+                                            >
+                                            <f:selectItem itemLabel="Any Type" ></f:selectItem>
+                                            <f:selectItems
+                                                value="#{enumController.getRequestTypes()}"
+                                                var="rt"
+                                                itemLabel="#{rt.displayName}"
+                                                itemValue="#{rt}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
 
-                                        <p:inputText
-                                            placeholder="Name"
-                                            class="form-control my-1"
-                                            autocomplete="off"
-                                            value="#{searchController.searchKeyword.patientName}" />
-
-                                        <hr/>-->
+                                        <p:selectOneMenu
+                                            value="#{requestController.status}"
+                                            filter="true"
+                                            placeholder="Request Status"
+                                            class="col-12 mt-2"
+                                            autoWidth="false"
+                                            >
+                                            <f:selectItem itemLabel="Any Status" ></f:selectItem>
+                                            <f:selectItems
+                                                value="#{enumController.getRequestStatus()}"
+                                                var="rs"
+                                                itemLabel="#{rs.label}"
+                                                itemValue="#{rs}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
+                                        
+                                        <hr/>
                                     </h:panelGroup>
                                 </div>
                             </div>
@@ -105,11 +138,11 @@
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,25,50"
+                                    rowsPerPageTemplate="10,25,50"
                                     >
 
-                                    <p:column headerText="Bill No*">
-                                        <h:outputLabel value="#{r.bill.deptId}" />
+                                    <p:column headerText="Request No" width="16em;">
+                                        <h:outputLabel value="#{r.requestNo}" />
                                     </p:column>
 
                                     <p:column headerText="Request From">
@@ -125,10 +158,14 @@
                                     <p:column headerText="Request by">
                                         <h:outputLabel value="#{r.creator.webUserPerson.name}" />
                                     </p:column>
+                                    
+                                    <p:column headerText="Bill No">
+                                        <h:outputLabel value="#{r.bill.deptId}" />
+                                    </p:column>
 
                                     <p:column headerText="Request Type" style="width: 12em;" >
                                         <h:panelGroup id="remark">
-                                            <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" size="large" severity="danger" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'ITEM_REFUND'}" value="#{r.requestType.displayName}"  severity="warning" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{r.requestType eq 'EDIT_REQUEST'}" value="#{r.requestType.displayName}"></p:badge>
                                         </h:panelGroup>
@@ -136,12 +173,11 @@
 
                                     <p:column headerText="Status" style="width: 8em;">
                                         <p:badge 
-                                            size="large"
                                             value="#{r.status.label}">
                                         </p:badge>
                                     </p:column>
 
-                                    <p:column headerText="Actions" >
+                                    <p:column headerText="Actions" style="width: 260px;" >
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 icon="fa fa-check-circle"

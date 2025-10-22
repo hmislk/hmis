@@ -8,6 +8,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.RequestType;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillNumber;
@@ -97,7 +98,7 @@ public class BillNumberGenerator {
         }
         return institutionId + "-" + departmentId + "-" + billTypeKey;
     }
-
+    
     private String getLockKey(Department toDepartment, List<BillTypeAtomic> billTypes) {
         String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
         String billTypeKey = "null";
@@ -109,6 +110,13 @@ public class BillNumberGenerator {
                     .collect(Collectors.joining(","));
         }
         return departmentId + "-" + billTypeKey;
+    }
+
+    private String getLockKey(Institution institution, Department department, RequestType requestType) {
+        String institutionId = institution != null ? institution.getId().toString() : "null";
+        String departmentId = department != null ? department.getId().toString() : "null";
+        String typeLabel = requestType != null ? requestType.getCode() : "null";
+        return institutionId + "-" + departmentId + "-" + typeLabel;
     }
 
     private String getLockKey(Institution institution, Department fromDepartment, Department toDepartment, BillTypeAtomic billType) {
@@ -220,6 +228,20 @@ public class BillNumberGenerator {
         lock.lock();
         try {
             return fetchLastBillNumberSynchronized(institution, toDepartment, billType, paymentMethod);
+        } finally {
+            lock.unlock();
+            // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
+        }
+    }
+    
+    public BillNumber fetchLastRequestNumberForYear(Institution institution, Department department, RequestType requestType) {
+        String lockKey = getLockKey(institution, department, requestType);
+        
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        
+        try {
+            return fetchLastRequestNumberSynchronized(institution, department, requestType);
         } finally {
             lock.unlock();
             // Optionally keep the lock in the map or use an appropriate strategy to remove it if necessary
@@ -595,6 +617,71 @@ public class BillNumberGenerator {
             if (newBillNumberLong == null) {
                 newBillNumberLong = 0L;
             } else {
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
+        }
+
+        return billNumber;
+    }
+    
+    private BillNumber fetchLastRequestNumberSynchronized(Institution institution, Department department, RequestType requestType) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.institution=:ins "
+                + " AND b.department =:dept "
+                + " AND b.requestType =:type "
+                + " AND b.billYear=:yr";
+
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("ins", institution);
+        hm.put("dept", department);
+        hm.put("type", requestType);
+        hm.put("yr", currentYear);
+        
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            
+            billNumber.setInstitution(institution);
+            billNumber.setDepartment(department);
+            billNumber.setRequestType(requestType);
+            billNumber.setBillYear(currentYear);  // Set the current year
+
+            sql = "SELECT count(q) FROM Request q "
+                    + " where q.retired=false "
+                    + " and q.institution=:ins "
+                    + " and q.department=:dept "
+                    + " and q.requestType=:rType "
+                    + " AND q.createdAt BETWEEN :startOfYear AND :endOfYear";
+
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            Calendar endOfYear = Calendar.getInstance();
+            endOfYear.set(Calendar.MONTH, 11);  // December
+            endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+
+            hm = new HashMap<>();
+            hm.put("ins", institution);
+            hm.put("dept", department);
+            hm.put("rType", requestType);
+            hm.put("startOfYear", startOfYear.getTime());
+            hm.put("endOfYear", endOfYear.getTime());
+
+            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+            if (dd == null) {
+                dd = 0L;
+            }
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
             }
             billNumber.setLastBillNumber(newBillNumberLong);
             billNumberFacade.editAndFlush(billNumber);
@@ -2065,6 +2152,67 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+
+        // Return the formatted bill number
+        return result.toString();
+    }
+    
+    public String departmentRequestNumberGeneratorYearly(Department dep, RequestType requestType ) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        if (requestType == null) {
+            return "";
+        }
+        
+        BillNumber billNumber;
+        
+        billNumber = fetchLastRequestNumberForYear(dep.getInstitution(), dep, requestType);
+        
+        System.out.println("billNumber = " + billNumber);
+        
+        // Get the last bill number
+        Long dd = billNumber.getLastBillNumber();
+        // Increment the bill number
+        dd = dd + 1;
+
+        // Set the updated bill number in the BillNumber entity
+        billNumber.setLastBillNumber(dd);
+
+        // Update the BillNumber entity in the database
+        billNumberFacade.edit(billNumber);
+
+        // Generate the Request number string
+        StringBuilder result = new StringBuilder();
+        
+        
+        result.append("REQ");
+        result.append(getBillNumberDelimiter());
+
+        // Append institution code
+        if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Request Number Generator", true)) {
+            result.append(dep.getInstitution().getInstitutionCode());
+            result.append(getBillNumberDelimiter());
+        }
+
+        // Append department code
+        result.append(dep.getDepartmentCode());
+        result.append(getBillNumberDelimiter());
+        
+        // Append RequestType code
+        result.append(requestType.getCode());
+        result.append(getBillNumberDelimiter());
+        
+        // Append current year (last two digits)
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+        result.append(String.format("%02d", year)); // Ensure year is always two digits
+        result.append(getBillNumberDelimiter());
+        
+        // Append formatted 6-digit bill number
         result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
