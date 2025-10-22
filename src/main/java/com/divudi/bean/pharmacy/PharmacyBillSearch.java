@@ -646,7 +646,7 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
 
-        if (getBill().getComments() == null || getBill().getComments().trim().isEmpty()) {
+        if (getComment() == null ||getComment().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Comments");
             return;
         }
