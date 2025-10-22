@@ -29,7 +29,7 @@
                                 class="mx-2"
                                 placeholder="Comment"
                                 style="float: right; width: 400px;"
-                                value="#{pharmacyBillSearch.bill.comments}" >
+                                value="#{pharmacyBillSearch.comment}" >
                             </p:inputText>
                         </f:facet>
 
@@ -98,14 +98,98 @@
                             <p:commandButton value="Print" ajax="false" style="float:right;" class="ui-button-info" icon="fas fa-print">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                style="float:right;"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary mx-1"
+                                type="button"
+                                onclick="PF('disposalCancelConfigDialog').show();" />
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" rendered="#{pharmacyBillSearch.printPreview}" >
-                            <pharmacy:issue bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Show Search Disposal Bill in Default Format',true)}"/>
-                            <pharmacy:pharmacy_issue_receipt bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Show Search Disposal Bill in Custom Format',false)}" />
+                            <pharmacy:issue bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy DIsposal Cancel Receipt is A4 Paper',true)}"/>
+                            <pharmacy:pharmacy_issue_cancel_receipt_custom_1 bill="#{pharmacyBillSearch.bill.cancelledBill}" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy DIsposal Cancel Receipt is Custom 1',false)}"/>
+                            <pharmacy:pharmacy_issue_receipt bill="#{pharmacyBillSearch.bill.cancelledBill}" cancel="true" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy DIsposal Cancel Receipt is Custom 2',false)}"/>
                         </h:panelGroup>
 
                     </p:panel>
+
+                    <!-- Disposal Issue Configuration Dialog -->
+                    <p:dialog id="disposalCancelConfigDialog"
+                              header="Disposal Cancel Printer Configuration"
+                              widgetVar="disposalCancelConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="400"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="disposalCancelConfigForm" />
+
+                        <h:form id="disposalCancelConfigForm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> Disposal Cancel Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="disposalCancelA4Paper"
+                                                    value="#{pharmacyConfigController.disposalCancelA4Paper}" />
+                                                <p:outputLabel for="disposalCancelA4Paper" value="A4 Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Standard A4 paper format for disposal cancel receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="disposalCancelCustom1"
+                                                    value="#{pharmacyConfigController.disposalCancelCustom1}" />
+                                                <p:outputLabel for="disposalCancelCustom1" value="Custom Format 1" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 1 for disposal issue receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="disposalCancelCustom2"
+                                                    value="#{pharmacyConfigController.disposalCancelCustom2}" />
+                                                <p:outputLabel for="disposalCancelCustom2" value="Custom Format 2" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 2 for disposal issue receipts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="disposalCancelConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyConfigController.saveConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('disposalCancelConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
 
                 </h:form>                
             </ui:define>

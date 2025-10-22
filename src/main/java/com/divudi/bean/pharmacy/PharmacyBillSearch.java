@@ -745,7 +745,7 @@ public class PharmacyBillSearch implements Serializable {
         c.setDepartment(sessionController.getLoggedUser().getDepartment());
         c.setCreatedAt(new Date());
         c.setCreater(sessionController.getLoggedUser());
-        c.setComments("Re Add To Stock");
+        c.setComments(comment);
         c.setBackwardReferenceBill(b);
         c.setReferenceBill(b);
         c.setBillClassType(BillClassType.CancelledBill);
