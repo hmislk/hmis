@@ -20,24 +20,13 @@
         <div style="width: 212mm; height: 275mm; padding-left: 0px">
 
             <div class="headingBill">
-                <h:outputLabel value="Pharmacy Disposal Issue Receipt" style="text-decoration: underline;"/>
-                <h:outputLabel value="**Cancelled**" />
+                <h:outputLabel value="Pharmacy Disposal Issue Cancellation Receipt" style="text-decoration: underline;"/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
 
             <div >
                 <table class="table table-borderless">
                     <!-- Table rows for bill metadata -->
-                    <tr style="line-height: 13px">
-                        <td><h:outputLabel value="Date" /></td>
-                        <td><h:outputLabel value=":" /></td>
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
                     <tr style="line-height: 13px">
                         <td><h:outputLabel value="Receipt No" /></td>
                         <td><h:outputLabel value=":" /></td>
@@ -48,6 +37,16 @@
                         <td><h:outputLabel value="Issue No" /></td>
                         <td><h:outputLabel value=":" /></td>
                         <td><h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" /></td>
+                    </tr>
+                    
+                    <tr style="line-height: 13px">
+                        <td><h:outputLabel value="Issued Date" /></td>
+                        <td><h:outputLabel value=":" /></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                            </h:outputLabel>
+                        </td>
                     </tr>
 
                     <tr style="line-height: 13px">
@@ -65,7 +64,7 @@
                     <tr style="line-height: 13px">
                         <td><h:outputLabel value="Comment"/></td>
                         <td><h:outputLabel value=":" /></td>
-                        <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.comments}" /></td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.comments}" /></td>
                     </tr>
                 </table>
             </div>
