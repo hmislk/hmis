@@ -2341,6 +2341,18 @@ public class GrnReturnWorkflowController implements Serializable {
                     fd.setCostRate(BigDecimal.valueOf(costRatePerUnit));
                     fd.setRetailSaleRate(BigDecimal.valueOf(retailRatePerUnit));
                 }
+
+                // Set cost rate fields (lineCostRate, billCostRate, totalCostRate) - always per unit
+                BigDecimal costRatePerUnitBD = BigDecimal.valueOf(costRatePerUnit);
+                fd.setLineCostRate(costRatePerUnitBD);
+                fd.setBillCostRate(costRatePerUnitBD);
+                fd.setTotalCostRate(costRatePerUnitBD);
+
+                // Calculate cost values (costRate × quantity in units) - negative for returns
+                BigDecimal totalCostValue = costRatePerUnitBD.multiply(qtyByUnits.abs());
+                fd.setLineCost(totalCostValue.negate());
+                fd.setBillCost(totalCostValue.negate());
+                fd.setTotalCost(totalCostValue.negate());
             }
         }
     }
