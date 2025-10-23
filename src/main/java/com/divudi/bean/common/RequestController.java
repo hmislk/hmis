@@ -1,9 +1,11 @@
 package com.divudi.bean.common;
 
+import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Request;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.RequestFacade;
@@ -75,6 +77,8 @@ public class RequestController implements Serializable {
     private RequestType requestType;
     private RequestStatus status;
     
+    private PatientEncounter patientEncounter;
+    
 
     // </editor-fold>
     
@@ -114,6 +118,7 @@ public class RequestController implements Serializable {
             return "";
         } else {
             printPreview = false;
+            bills = new ArrayList<>();
 
             switch (originalBill.getBillTypeAtomic()) {
                 case OPD_BATCH_BILL_WITH_PAYMENT:
@@ -126,6 +131,14 @@ public class RequestController implements Serializable {
                     break;
                 case OPD_BILL_WITH_PAYMENT:
                     navigation = "";
+                    break;
+                case INWARD_SERVICE_BILL:
+                    setBatchBill(originalBill);
+                    bills.add(originalBill);
+                    patient = originalBill.getPatient();
+                    patientEncounter = originalBill.getPatientEncounter();
+                    comment = null;
+                    navigation = "/opd/opd_bill_cancel_request?faces-redirect=true";
                     break;
                 default:
                     navigation = "";
@@ -218,6 +231,7 @@ public class RequestController implements Serializable {
         requestNo = null;
         requestType = null;
         status = null;
+        patientEncounter = null;
     }
 
     public void createRequestforOPDBatchBill() {
@@ -455,6 +469,14 @@ public class RequestController implements Serializable {
 
     public void setRequestNo(String requestNo) {
         this.requestNo = requestNo;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
 
     @FacesConverter(forClass = Request.class)
