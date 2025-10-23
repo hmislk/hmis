@@ -534,8 +534,27 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         int serialStart = getBillItems().size();
+        boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
+        int skippedCount = 0;
 
         for (Item i : items) {
+            // Check for duplicate items if configuration is enabled
+            if (preventDuplicates) {
+                boolean isDuplicate = false;
+                for (BillItem existingItem : getBillItems()) {
+                    if (existingItem != null && !existingItem.isRetired()
+                        && existingItem.getItem() != null
+                        && existingItem.getItem().equals(i)) {
+                        isDuplicate = true;
+                        skippedCount++;
+                        break;
+                    }
+                }
+                if (isDuplicate) {
+                    continue; // Skip this item as it already exists
+                }
+            }
+
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -548,6 +567,10 @@ public class PurchaseOrderRequestController implements Serializable {
             tmp.setRetailRate(getPharmacyBean().getLastRetailRate(i, getSessionController().getDepartment()));
 
             getBillItems().add(bi);
+        }
+
+        if (preventDuplicates && skippedCount > 0) {
+            JsfUtil.addWarningMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
         }
 
         calculateBillTotals();
