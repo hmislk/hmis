@@ -557,6 +557,79 @@ public class DataAdministrationController implements Serializable {
             params.put("types", billTypesToCorrect);
 
             StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No bills found for the selected bill types and date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // Apply sign correction based on bill type
+                if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN) {
+                    // GRN Returns: Values should be NEGATIVE (stock moving out)
+                    billWasCorrected = correctToNegative(bfd);
+                }
+                // Future: Add more bill types here with different correction logic
+                // Example:
+                // else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                //     // GRN: Values should be POSITIVE (stock moving in)
+                //     billWasCorrected = correctToPositive(bfd);
+                // }
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed ").append(billsProcessed).append(" bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Date range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Corrected ").append(billsCorrected).append(" bills with incorrect signs in BillFinanceDetails.");
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting bill finance details signs: " + e.getMessage();
+            e.printStackTrace();
+        }
+    }
+
     public void addCompletedStateToBills() {
         billController.setOutput("");
 
@@ -645,44 +718,6 @@ public class DataAdministrationController implements Serializable {
             List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             if (billsToProcess == null || billsToProcess.isEmpty()) {
-                executionFeedback = "No bills found for the selected bill types and date range.";
-                return;
-            }
-
-            int billsProcessed = 0;
-            int billsCorrected = 0;
-
-            for (Bill bill : billsToProcess) {
-                if (bill == null || bill.getBillFinanceDetails() == null) {
-                    continue;
-                }
-
-                billsProcessed++;
-                boolean billWasCorrected = false;
-
-                BillFinanceDetails bfd = bill.getBillFinanceDetails();
-
-                // Apply sign correction based on bill type
-                if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN) {
-                    // GRN Returns: Values should be NEGATIVE (stock moving out)
-                    billWasCorrected = correctToNegative(bfd);
-                }
-                // Future: Add more bill types here with different correction logic
-                // Example:
-                // else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
-                //     // GRN: Values should be POSITIVE (stock moving in)
-                //     billWasCorrected = correctToPositive(bfd);
-                // }
-
-                if (billWasCorrected) {
-                    billFacade.edit(bill);
-                    billsCorrected++;
-                }
-            }
-
-            output.append("Processed ").append(billsProcessed).append(" bills.\n");
-            if (fromDate != null || toDate != null) {
-                output.append("Date range: ");
                 billController.setOutput("No pharmacy bills found with completed=false for the given date range.");
                 return;
             }
@@ -721,11 +756,6 @@ public class DataAdministrationController implements Serializable {
                 }
                 output.append(".\n");
             }
-            output.append("Corrected ").append(billsCorrected).append(" bills with incorrect signs in BillFinanceDetails.");
-            executionFeedback = output.toString();
-
-        } catch (Exception e) {
-            executionFeedback = "Error correcting bill finance details signs: " + e.getMessage();
             output.append("Updated ").append(billsUpdated).append(" bills to completed=true.");
             billController.setOutput(output.toString());
         } catch (Exception e) {
