@@ -982,6 +982,7 @@ public class PharmacyController implements Serializable {
             String jpql = "SELECT b FROM Bill b "
                     + " WHERE b.retired = false"
                     + " and b.cancelled = false"
+                    + " and b.completed = true"
                     + " and b.billTypeAtomic In :btas"
                     + " and b.createdAt between :fromDate and :toDate";
 
@@ -3353,7 +3354,8 @@ public class PharmacyController implements Serializable {
         totalCreditCostValue = 0.0;
 
         for (Bill bill : billList) {
-            // Get values directly from bill - already in correct +/- format
+            // Get values directly from bill - use as-is from database
+            // Values are already in correct +/- format based on bill type
             double purchaseValue = 0.0;
             double saleValue = 0.0;
             double costValue = 0.0;
@@ -6790,7 +6792,7 @@ public class PharmacyController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth();
+            fromDate = CommonFunctions.getStartOfDay();
         }
         return fromDate;
     }

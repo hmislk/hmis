@@ -22,9 +22,10 @@
 
                     <!-- GRN No -->
                     <p:column headerText="GRN No" width="10em" style="text-align: left;">
-                        <p:commandLink ajax="false" value="#{b.deptId}" action="/pharmacy/pharmacy_grn">
-                            <f:setPropertyActionListener value="#{b}" target="#{grnController.grnBill}"/>
-                            <f:setPropertyActionListener value="true" target="#{grnController.printPreview}"/>
+                        <p:commandLink 
+                            ajax="false" 
+                            value="#{b.deptId}" 
+                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.id)}">
                         </p:commandLink>
                         <f:facet name="footer">
                             <h:outputLabel value="Net Purchase Value"/>
