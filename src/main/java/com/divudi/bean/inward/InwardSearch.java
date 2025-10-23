@@ -44,6 +44,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -162,6 +163,41 @@ public class InwardSearch implements Serializable {
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
+        }
+    }
+    
+    @Inject
+    RequestController requestController;
+    @Inject
+    RequestService requestService;
+
+    Request currentRequest;
+    
+    public String navigateToCancelInpatientBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            currentRequest = requestService.findRequest(bill);
+
+            if (currentRequest == null) {
+                return requestController.navigateToCreateRequest(bill);
+            } else {
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        return "/common/request/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        return "/common/request/request_status?faces-redirect=true";
+                    case APPROVED:
+                        return "/inward/inward_cancel_bill_service?faces-redirect=true";
+                    default:
+                        return "";
+                }
+            }
+        } else {
+            return "/inward/inward_cancel_bill_service?faces-redirect=true";
         }
     }
 
