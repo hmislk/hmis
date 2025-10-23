@@ -818,8 +818,7 @@ public class InwardSearch implements Serializable {
             }
         }
             
-
-            printPreview = true;
+        printPreview = true;
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
