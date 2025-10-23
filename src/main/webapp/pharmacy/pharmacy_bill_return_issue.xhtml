@@ -182,9 +182,7 @@
                                 </p:column>
 
                                 <p:column headerText="Batch No" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}">
-                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}">
-                                        <f:convertNumber pattern=""/>
-                                    </h:outputText>    
+                                    <h:outputText value="#{rbi.pharmaceuticalBillItem.itemBatch.batchNo}"/>   
                                 </p:column>
 
                                 <p:column headerText="Expiry Date" sortBy="#{rbi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
