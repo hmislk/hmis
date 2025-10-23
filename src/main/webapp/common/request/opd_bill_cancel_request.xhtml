@@ -73,11 +73,17 @@
                                             <h:outputLabel value="Bill Type Atomic :" ></h:outputLabel>
                                             <h:outputLabel value="#{requestController.batchBill.billTypeAtomic}" ></h:outputLabel>
                                             <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.total}" ></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.batchBill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                             <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.discount}" ></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.batchBill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                             <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.batchBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
