@@ -60,13 +60,18 @@
 
 ## Essential Rules
 
+### User Control & Automation
+1. **🚨 NO AUTO-ACTIONS**: Do NOT commit, build, run, or push code unless the user explicitly requests it
+2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before executing Git operations, Maven builds, or deployment commands
+3. **🚨 WIKI EXCEPTION**: Wiki publishing requires push - follow [Publishing Workflow](developer_docs/github/wiki-publishing.md) exactly
+
 ### Deployment & Configuration
-1. **🚨 PERSISTENCE.XML**: Verify environment variables before push - [Guide](developer_docs/deployment/persistence-verification.md)
-2. **🚨 DATABASE CREDENTIALS**: Never commit credentials to git - [MySQL Guide](developer_docs/database/mysql-developer-guide.md)
+3. **🚨 PERSISTENCE.XML**: Verify environment variables before push - [Guide](developer_docs/deployment/persistence-verification.md)
+4. **🚨 DATABASE CREDENTIALS**: Never commit credentials to git - [MySQL Guide](developer_docs/database/mysql-developer-guide.md)
 
 ### Git & Documentation
-3. **Include issue closing keywords** (`Closes #N`) in commit messages
-4. **🚨 WIKI PUBLISHING**: Publish to GitHub Wiki immediately - [Guide](developer_docs/github/wiki-publishing.md)
+5. **Include issue closing keywords** (`Closes #N`) in commit messages
+6. **🚨 WIKI PUBLISHING**: Publish to GitHub Wiki immediately - [Guide](developer_docs/github/wiki-publishing.md)
 
 ### Build & Testing
 5. **Run tests before committing** using `./detect-maven.sh test` (Java changes only, when user requests)
