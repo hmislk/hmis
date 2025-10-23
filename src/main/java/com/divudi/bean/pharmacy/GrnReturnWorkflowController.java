@@ -2592,6 +2592,10 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     private String buildSearchCriteria() {
+        if (searchController == null || searchController.getSearchKeyword() == null) {
+            return "";
+        }
+
         StringBuilder criteria = new StringBuilder();
 
         if (searchController.getSearchKeyword().getToInstitution() != null
@@ -2628,6 +2632,10 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     private void addSearchParameters(Map<String, Object> params) {
+        if (searchController == null || searchController.getSearchKeyword() == null) {
+            return;
+        }
+
         if (searchController.getSearchKeyword().getToInstitution() != null
                 && !searchController.getSearchKeyword().getToInstitution().trim().isEmpty()) {
             params.put("toIns", "%" + searchController.getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
