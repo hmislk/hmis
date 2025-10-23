@@ -193,6 +193,7 @@ public class InwardSearch implements Serializable {
                         requestController.setCurrentRequest(currentRequest);
                         return "/common/request/request_status?faces-redirect=true";
                     case APPROVED:
+                        requestController.getBills().add(currentRequest.getBill());
                         setComment(currentRequest.getRequestReason());
                         return "/inward/inward_cancel_bill_service?faces-redirect=true";
                     default:
@@ -812,6 +813,8 @@ public class InwardSearch implements Serializable {
             if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
             Request billRequest = requestService.findRequest(getBill());
             if (billRequest != null) {
+                
+                requestController.getBills().add(getBill());
                 requestController.complteRequest(billRequest);
             } else {
                 JsfUtil.addErrorMessage("Related approval request not found to complete.");

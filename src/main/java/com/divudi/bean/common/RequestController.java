@@ -86,11 +86,7 @@ public class RequestController implements Serializable {
     }
 
     public String navigateToBackSearchBillList() {
-
-        System.out.println("Request = " + currentRequest);
-        System.out.println("Bill = " + currentRequest.getBill());
-        System.out.println("Bill Type Atomic = " + currentRequest.getBill().getBillTypeAtomic());
-
+        
         switch (currentRequest.getBill().getBillTypeAtomic()) {
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return "/opd/opd_batch_bill_print?faces-redirect=true";
@@ -649,6 +645,9 @@ public class RequestController implements Serializable {
     }
 
     public List<Bill> getBills() {
+        if(bills == null){
+            bills = new ArrayList<>();
+        }
         return bills;
     }
 
