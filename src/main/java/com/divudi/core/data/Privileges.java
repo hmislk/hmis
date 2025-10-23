@@ -666,6 +666,11 @@ public enum Privileges {
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Approval">
+    BillCancelRequestApproval("Bill Cancel Request Approval"),
+    ItemRefundRequestApproval("Item Refund Request Approval"),
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
     Developers("Developers"),
@@ -960,6 +965,11 @@ public enum Privileges {
             case CollectingCentreReports:
             case ChangeCollectingCentre:
                 return "Collecting Centre";
+            
+            // Approval Privileges
+            case BillCancelRequestApproval:
+            case ItemRefundRequestApproval:
+                return "Approval";
                 
             default:
                 return this.toString();

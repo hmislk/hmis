@@ -49,18 +49,7 @@
                                 <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
-                            
-<!--                            <p:selectCheckboxMenu value="#{pharmacyReportController.fromInstitutionList}" label="Select Suppliers"
-                                                  id="supplierMenu"
-                                                  filter="true"
-                                                  class="w-100"
-                                                  converter="deal"
-                                                  filterMatchMode="contains">
-                                <f:selectItems value="#{doctorController.selectedItems}" var="item"
-                                               itemLabel="#{item.name}" itemValue="#{item}" />
 
-                            </p:selectCheckboxMenu>-->
-                            
                             <p:spacer width="50"/>
                             <i class="fa-solid fa-circle-check"></i>
                             <h:outputLabel class="mx-2"  value="Status"  ></h:outputLabel>
@@ -73,10 +62,10 @@
                                 >
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
                                 <f:selectItem itemLabel="Summery View" itemValue="Summery" />
-                                
+
 
                             </p:selectOneMenu>
-                             <p:spacer width="50"/>
+
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.fetchScanningSessionForIncome()}" ajax="false" ></p:commandButton>
@@ -127,9 +116,9 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
                                      rowKey="#{row.bill.id}"
-                                     
+
                                      >
-                            
+
                             <p:ajax event="page" oncomplete="updateTotals()" />
                             <f:facet name="header">
 
@@ -144,7 +133,7 @@
                                 </h:outputLabel>
                             </f:facet>
 
-                            <p:column  headerText="Serial No" style=" text-align: center;">
+                            <p:column  headerText="Serial No" style=" text-align: center;" width="2em">
                                 <h:outputText value="#{n+1}">
 
                                 </h:outputText>
@@ -184,16 +173,45 @@
                                 <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
                             </p:column>
 
-                            <p:column headerText="Bill Type" style=" text-align: center;">
+                            <p:column headerText="Bill Type" width="5em" style=" text-align: center;">
                                 <h:outputText value="#{row.bill.billType}">
 
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
+                            <p:column headerText="Patient" width="6em" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
                                 <h:outputText value="#{row.bill.patient.person.name}">
 
                                 </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Doctor" width="8em" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.singleBillItem.item.staff.person.nameWithTitle}">
+                                <h:outputText value="#{row.bill.singleBillItem.item.staff.person.nameWithTitle}">
+
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Session" width="8em" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.singleBillSession.sessionInstance.name}">
+                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.name} / ">
+
+                                </h:outputText>
+                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionDate}">
+                                    <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.shortDateFormat} - "/>
+                                </h:outputText>
+                                <h:outputText value="#{row.bill.singleBillSession.sessionInstance.sessionTime}">
+                                    <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column width="9em" headerText="Item" style=" text-align: center;">
+                                <ui:repeat value="#{row.bill.billItems}" var="i">
+
+                                    <p:outputLabel value="#{i.item.name}/ " />
+                                    <br/>
+
+                                </ui:repeat>
                             </p:column>
 
                             <p:column headerText="Cashier" style=" text-align: center;">
@@ -224,8 +242,8 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
-                                
-                               
+
+
                             </p:column>
 
                             <p:column headerText="Gross Total" style=" text-align: center;">
@@ -410,31 +428,31 @@
 
                         </p:dataTable>
 
-<!--                        <script>
-                            function calculateTotals(selector, targeter) {
-                                const values = Array.from(document.querySelectorAll(selector));
-                                const totalValue = values
-                                        .map(value => {
-                                            const cleanValue = value.innerText.replace(/,/g, "");
-                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                        })
-                                        .reduce((total, value) => total + value, 0);
-
-                                const targetElement = document.querySelector(targeter);
-                                if (targetElement) {
-                                    targetElement.innerText = totalValue.toFixed(2);
-                                }
-
-                            }
-
-                            function updateTotals() {
-                                calculateTotals('.grossFee', '.grossTotal');
-                                calculateTotals('.staffFee', '.staffFeeTotal');
-                                calculateTotals('.hosFee', '.hosFeeTotal');
-                            }
-
-                            setTimeout(updateTotals, 500);
-                        </script>-->
+                        <!--                        <script>
+                                                    function calculateTotals(selector, targeter) {
+                                                        const values = Array.from(document.querySelectorAll(selector));
+                                                        const totalValue = values
+                                                                .map(value => {
+                                                                    const cleanValue = value.innerText.replace(/,/g, "");
+                                                                    return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                                                })
+                                                                .reduce((total, value) => total + value, 0);
+                        
+                                                        const targetElement = document.querySelector(targeter);
+                                                        if (targetElement) {
+                                                            targetElement.innerText = totalValue.toFixed(2);
+                                                        }
+                        
+                                                    }
+                        
+                                                    function updateTotals() {
+                                                        calculateTotals('.grossFee', '.grossTotal');
+                                                        calculateTotals('.staffFee', '.staffFeeTotal');
+                                                        calculateTotals('.hosFee', '.hosFeeTotal');
+                                                    }
+                        
+                                                    setTimeout(updateTotals, 500);
+                                                </script>-->
 
                     </p:panel>
                 </h:form>

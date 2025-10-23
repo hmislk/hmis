@@ -59,35 +59,69 @@
                                         </p:commandButton>
 
                                         <p:commandButton
-                                            id="btnExcel"
                                             icon="fa-solid fa-file-excel"
                                             ajax="false"
-                                            value="Download"
-                                            class="w-100 mt-1">
-                                            <p:dataExporter fileName="OPD Bills" type="xlsx" target="tblBills" ></p:dataExporter>
+                                            class="ui-button-warning w-100 mt-2"
+                                            value="Download">
+                                            <p:dataExporter fileName="Request List" type="xlsx" target="tblBills" ></p:dataExporter>
                                         </p:commandButton>
 
                                         <hr/>
                                         
-<!--                                        <p:inputText
+                                        <p:inputText
+                                            placeholder="Request No"
+                                            autocomplete="off"
+                                            class="w-100"
+                                            value="#{requestController.requestNo}" >
+                                        </p:inputText>
+
+                                        <p:inputText
                                             placeholder="Bill No"
+                                            class="form-control mt-2"
                                             autocomplete="off"
-                                            class="w-100 my-1"
-                                            value="#{searchController.searchKeyword.billNo}" />
-
+                                            value="#{requestController.billNo}" >
+                                        </p:inputText>
+                                        
                                         <p:inputText
-                                            placeholder="MRN No"
-                                            class="form-control my-1"
+                                            placeholder="BHT No"
+                                            class="form-control mt-2"
                                             autocomplete="off"
-                                            value="#{searchController.searchKeyword.code}" />
+                                            value="#{requestController.bhtNo}" >
+                                        </p:inputText>
+                                        
+                                        <p:selectOneMenu
+                                            value="#{requestController.requestType}"
+                                            filter="true"
+                                            placeholder="Request type"
+                                            autoWidth="false"
+                                            class="col-12 mt-2"
+                                            >
+                                            <f:selectItem itemLabel="Any Type" ></f:selectItem>
+                                            <f:selectItems
+                                                value="#{enumController.getRequestTypes()}"
+                                                var="rt"
+                                                itemLabel="#{rt.displayName}"
+                                                itemValue="#{rt}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
 
-                                        <p:inputText
-                                            placeholder="Name"
-                                            class="form-control my-1"
-                                            autocomplete="off"
-                                            value="#{searchController.searchKeyword.patientName}" />
-
-                                        <hr/>-->
+                                        <p:selectOneMenu
+                                            value="#{requestController.status}"
+                                            filter="true"
+                                            placeholder="Request Status"
+                                            class="col-12 mt-2"
+                                            autoWidth="false"
+                                            >
+                                            <f:selectItem itemLabel="Any Status" ></f:selectItem>
+                                            <f:selectItems
+                                                value="#{enumController.getRequestStatus()}"
+                                                var="rs"
+                                                itemLabel="#{rs.label}"
+                                                itemValue="#{rs}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
+                                        
+                                        <hr/>
                                     </h:panelGroup>
                                 </div>
                             </div>
@@ -104,7 +138,7 @@
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,25,50"
+                                    rowsPerPageTemplate="10,25,50"
                                     >
 
                                     <p:column headerText="Request No" width="16em;">
@@ -149,6 +183,7 @@
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="To Approve"
+                                                rendered="#{webUserController.hasPrivilege('BillCancelRequestApproval')}"
                                                 disabled="#{r.status eq 'CANCELLED'}"
                                                 class="ui-button-success"
                                                 action="#{requestController.navigateToApproveRequest()}" >
