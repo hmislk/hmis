@@ -46,8 +46,9 @@
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                             <!-- GRN No -->
-                            <p:column headerText="GRN No" width="10em" style="text-align: left;">
+                            <p:column headerText="Bill No" width="10em" style="text-align: left;">
                                 <p:commandLink 
+                                    id="btnNavigateToViewBill"
                                     ajax="false" 
                                     value="#{b.deptId}" 
                                     action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.id)}">
@@ -58,6 +59,18 @@
                                     <h:outputLabel value="Net Sale Value"/>
                                 </f:facet>
                             </p:column>
+
+                            <p:column headerText="Bill Type" width="10em" style="text-align: left;">
+                                <h:outputLabel 
+                                    value="#{b.billTypeAtomic}" >
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Net Purchase Value"/>
+                                    <br/>
+                                    <h:outputLabel value="Net Sale Value"/>
+                                </f:facet>
+                            </p:column>
+
 
                             <!-- Invoice No -->
                             <p:column headerText="Invoice No" width="6em" style="text-align: center;">
@@ -112,13 +125,15 @@
                             </p:column>
 
                             <!-- Po No -->
-                            <p:column headerText="PO No" width="6em">
-                                #{b.referenceBill.billTypeAtomic}
-                                <p:commandLink 
+                            <p:column id="colPo" headerText="PO No" width="6em">
+                                <p:commandLink
                                     id="btnNavigateToViewPo"
-                                    ajax="false" 
-                                    value="#{b.referenceBill.deptId}"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.referenceBill.id)}">
+                                    ajax="false"
+                                    value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND')
+                                             ? (b.referenceBill.referenceBill ne null ? b.referenceBill.referenceBill.deptId : '')
+                                             : (b.referenceBill ne null ? b.referenceBill.deptId : '')}"
+                                    action="#{billSearch.navigateToViewPo(b.id)}"
+                                    rendered="#{b.referenceBill ne null}">
                                 </p:commandLink>
                             </p:column>
 
@@ -182,7 +197,7 @@
                             <p:column headerText="Sale Value Cash" width="6em" style="text-align: right;">
                                 <h:outputLabel 
                                     value="#{b.billFinanceDetails.totalRetailSaleValue}" 
-                                    rendered="#{b.paymentMethod eq 'Credit'}">
+                                    rendered="#{b.paymentMethod ne 'Credit'}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
