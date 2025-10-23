@@ -127,7 +127,9 @@
                                         </h:panelGroup>
                                         <h:panelGroup>
                                             <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="#{inwardSearch.bill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </h:panelGroup>
 
 
@@ -141,20 +143,20 @@
                                                  value="#{inwardSearch.billFees}" var="bip" >    
                                         <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
                                         <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" /> 
-                                        <p:column>
-                                            <f:facet name="header">No</f:facet>
+                                        <p:column width="2em">
+                                            <f:facet name="header" >No</f:facet>
                                             <h:outputLabel value="#{rowIndex+1}"/>
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">Item</f:facet>
                                             <h:outputLabel value="#{bip.billItem.item.name}"/>
                                         </p:column>
-                                        <p:column headerText="Returned">
-                                            <h:outputLabel  rendered="#{bip.billItem.refunded}" value="Returned" style="color: red;"/>
-                                        </p:column>  
+                                         
                                         <p:column>
                                             <f:facet name="header">Fee</f:facet>
-                                            <h:outputLabel value="#{bip.feeValue}"/>
+                                            <h:outputLabel value="#{bip.feeValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </p:column>  
                                         <p:column>
                                             <f:facet name="header">Fee Name</f:facet>
@@ -178,7 +180,12 @@
                                             </p:cellEditor>  
 
                                         </p:column>
-                                        <p:column >  
+                                        
+                                        <p:column headerText="Returned" width="8em;">
+                                            <h:outputLabel  rendered="#{bip.billItem.refunded}" value="Returned" style="color: red;"/>
+                                        </p:column> 
+                                        
+                                        <p:column width="5em">  
                                             <p:rowEditor > 
                                             </p:rowEditor>
                                         </p:column>                               
