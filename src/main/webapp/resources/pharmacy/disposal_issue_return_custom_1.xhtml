@@ -26,9 +26,25 @@
                 <table class="table table-borderless">
                     <!-- Table rows for bill metadata -->
                     <tr style="line-height: 13px">
-                        <td><h:outputLabel value="Invoice No" /></td>
+                        <td><h:outputLabel value="Receipt No" /></td>
                         <td><h:outputLabel value=":" /></td>
                         <td><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
+                    </tr>
+                    
+                    <tr style="line-height: 13px">
+                        <td><h:outputLabel value="Issue No" /></td>
+                        <td><h:outputLabel value=":" /></td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" /></td>
+                    </tr>
+                    
+                    <tr style="line-height: 13px">
+                        <td><h:outputLabel value="Issued Date" /></td>
+                        <td><h:outputLabel value=":" /></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                            </h:outputLabel>
+                        </td>
                     </tr>
 
                     <tr style="line-height: 13px">
@@ -41,6 +57,12 @@
                         <td><h:outputLabel value="Issued To"/></td>
                         <td><h:outputLabel value=":" /></td>
                         <td><h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" /></td>
+                    </tr>
+                    
+                    <tr style="line-height: 13px">
+                        <td><h:outputLabel value="Comment"/></td>
+                        <td><h:outputLabel value=":" /></td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.comments}" /></td>
                     </tr>
 
                 </table>
