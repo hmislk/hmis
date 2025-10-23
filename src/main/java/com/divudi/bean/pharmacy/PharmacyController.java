@@ -1025,12 +1025,13 @@ public class PharmacyController implements Serializable {
                 JsfUtil.addErrorMessage(e, " Something Went Worng!");
             }
 
-            // Use simplified calculation for detailReport, standard for others
-            if ("detailReport".equals(reportType)) {
-                calculateTotalsForDetailReport(bills);
-            } else {
-                calculateTotals(bills);
-            }
+            calculateTotals(bills);
+//            // Use simplified calculation for detailReport, standard for others
+//            if ("detailReport".equals(reportType)) {
+//                calculateTotalsForDetailReport(bills);
+//            } else {
+//                calculateTotals(bills);
+//            }
         }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
     }
 

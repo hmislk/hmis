@@ -24,6 +24,8 @@
                                 <p:commandButton
                                     id="btnSettle"
                                     value="Settle"
+                                    onclick="if (!confirm('Are you sure?'))
+                                                return false"
                                     action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
                                     styleClass="ui-button-success"
                                     ajax="false"
