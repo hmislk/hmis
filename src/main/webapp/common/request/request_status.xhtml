@@ -25,11 +25,11 @@
                             </div>
                         </f:facet>
 
-                        <h:panelGroup rendered="#{billController.currentRequest ne null and billController.currentRequest.status eq 'PENDING'}" >
+                        <h:panelGroup rendered="#{requestController.currentRequest ne null and requestController.currentRequest.status eq 'PENDING'}" >
                             <na:ststus_pending />
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{billController.currentRequest ne null and billController.currentRequest.status eq 'UNDER_REVIEW'}" >
+                        <h:panelGroup rendered="#{requestController.currentRequest ne null and requestController.currentRequest.status eq 'UNDER_REVIEW'}" >
                             <na:ststus_underReview/>
                         </h:panelGroup>
 
