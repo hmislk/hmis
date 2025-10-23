@@ -534,6 +534,153 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Corrects the sign of BillFinanceDetails totals (totalPurchaseValue, totalCostValue, totalRetailSaleValue)
+     * for specific bill types. This method applies sign corrections based on bill type logic:
+     * - PHARMACY_GRN_RETURN: Values should be negative (stock moving out/returning to supplier)
+     *
+     * Future bill types can be added with their specific sign correction logic.
+     */
+    public void correctBillFinanceDetailsSigns() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            // Start with PHARMACY_GRN_RETURN, can add more types later
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN_RETURN
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No bills found for the selected bill types and date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // Apply sign correction based on bill type
+                if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN) {
+                    // GRN Returns: Values should be NEGATIVE (stock moving out)
+                    billWasCorrected = correctToNegative(bfd);
+                }
+                // Future: Add more bill types here with different correction logic
+                // Example:
+                // else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                //     // GRN: Values should be POSITIVE (stock moving in)
+                //     billWasCorrected = correctToPositive(bfd);
+                // }
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed ").append(billsProcessed).append(" bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Date range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Corrected ").append(billsCorrected).append(" bills with incorrect signs in BillFinanceDetails.");
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting bill finance details signs: " + e.getMessage();
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to NEGATIVE
+     * Returns true if any correction was made
+     */
+    private boolean correctToNegative(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to POSITIVE
+     * Returns true if any correction was made
+     * (Reserved for future use - e.g., for GRN bills)
+     */
+    private boolean correctToPositive(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
     public void correctPharmacyDisbursementSigns() {
         executionFeedback = "";
         StringBuilder out = new StringBuilder();

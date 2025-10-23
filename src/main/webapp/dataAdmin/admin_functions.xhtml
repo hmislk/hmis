@@ -69,6 +69,7 @@
                                         </td>
                                         <td>
                                             <p:commandButton
+                                                id="btnCorrectCancellationAndRefundValues"
                                                 action="#{dataAdministrationController.correctCancellationAndRefundPaymentValues()}"
                                                 ajax="false"
                                                 value="Correct Payment Values"
@@ -172,7 +173,7 @@
                                     </td>
 
                                     <td>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             action="#{billController.fixReferancesInPharmacyGrnReturns()}"
                                             ajax="false"
                                             value="Correct Reference Bill in GRN Returns"  />
@@ -182,6 +183,28 @@
                                     </td>
                                 </tr>
 
+                                <tr>
+                                    <td><strong>Correct Bill Finance Details Signs</strong></td>
+                                    <td>
+                                        Corrects the sign of BillFinanceDetails totals (totalPurchaseValue, totalCostValue, totalRetailSaleValue) for specific bill types.
+                                        Currently handles PHARMACY_GRN_RETURN bills where values should be negative (stock moving out/returning to supplier).
+                                        The bug has been fixed in new transactions - this correction applies to old bills created before the fix.
+                                        Use the date range filter above to limit corrections to specific periods.
+                                    </td>
+                                    <td>
+                                        <p:commandButton
+                                            id="btnCorrectBillFinanceDetailsSigns"
+                                            action="#{dataAdministrationController.correctBillFinanceDetailsSigns()}"
+                                            ajax="false"
+                                            value="Correct Finance Details Signs"
+                                            styleClass="ui-button-warning m-1"
+                                            icon="pi pi-wrench"
+                                            rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                    </td>
+                                    <td>
+                                        #{dataAdministrationController.executionFeedback}
+                                    </td>
+                                </tr>
 
 
                                 <tr>
