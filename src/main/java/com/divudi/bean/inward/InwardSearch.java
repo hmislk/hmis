@@ -187,8 +187,10 @@ public class InwardSearch implements Serializable {
             } else {
                 switch (currentRequest.getStatus()) {
                     case PENDING:
+                        requestController.setCurrentRequest(currentRequest);
                         return "/common/request/request_status?faces-redirect=true";
                     case UNDER_REVIEW:
+                        requestController.setCurrentRequest(currentRequest);
                         return "/common/request/request_status?faces-redirect=true";
                     case APPROVED:
                         return "/inward/inward_cancel_bill_service?faces-redirect=true";
