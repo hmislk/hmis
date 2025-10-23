@@ -570,7 +570,7 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         if (preventDuplicates && skippedCount > 0) {
-            JsfUtil.addWarningMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
+            JsfUtil.addErrorMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
         }
 
         calculateBillTotals();
