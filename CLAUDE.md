@@ -28,6 +28,72 @@
 - **QA Testing Path**: Issue should be tested via GitHub Issues → Projects → HMIS Development Board
 - **PR Review Path**: Pull Requests → Files Changed → Review Required Files → Approve/Request Changes
 
+### Wiki Publishing Workflow (AUTOMATED)
+**🚨 CRITICAL: When creating user documentation, ALWAYS publish to GitHub Wiki immediately**
+
+#### Step 1: Create Wiki Documentation
+- Create markdown files in `wiki-docs/` directory (e.g., `wiki-docs/Pharmacy/Feature-Name.md`)
+- Follow [Wiki Writing Guidelines](#wiki-writing-guidelines)
+- Write for end users (pharmacy staff, nurses, doctors, administrators)
+
+#### Step 2: Commit to Feature Branch
+1. Add to git: `git add wiki-docs/`
+2. Commit to current feature branch with proper message
+3. Push feature branch to GitHub
+
+#### Step 3: Publish to GitHub Wiki (IMMEDIATE)
+**Do this IMMEDIATELY after Step 2 - don't wait for PR merge**
+
+```bash
+# Navigate to project root
+cd /home/buddhika/development/rh
+
+# Clone wiki repository (if not exists)
+git clone https://github.com/hmislk/hmis.wiki.git hmis.wiki
+
+# Copy documentation to wiki
+cp -r wiki-docs/Pharmacy/* hmis.wiki/Pharmacy/
+# OR for specific file:
+# cp wiki-docs/Pharmacy/Your-Feature.md hmis.wiki/Pharmacy/
+
+# Navigate to wiki repository
+cd hmis.wiki
+
+# Commit and push to wiki
+git add .
+git commit -m "Add [Feature Name] user documentation
+
+[Brief description]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+git push origin master
+
+# Return to main repository
+cd ..
+```
+
+#### Quick Command Template
+When user asks to "write wiki documentation and publish it":
+1. Create markdown file in `wiki-docs/Pharmacy/`
+2. Commit to feature branch
+3. **IMMEDIATELY** run these commands:
+   ```bash
+   cd hmis.wiki
+   cp ../wiki-docs/Pharmacy/[Your-File].md Pharmacy/
+   git add Pharmacy/[Your-File].md
+   git commit -m "Add [Feature] documentation"
+   git push origin master
+   cd ..
+   ```
+
+#### Verification
+- After push, wiki is immediately available at: https://github.com/hmislk/hmis/wiki/[Page-Name]
+- File name becomes page name (dashes become spaces)
+- Example: `Stock-Ledger-Report.md` → https://github.com/hmislk/hmis/wiki/Stock-Ledger-Report
+
 ### Testing & Build
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script
@@ -62,7 +128,7 @@
 ## Essential Rules
 1. **MANUAL PERSISTENCE.XML VERIFICATION**: Before any GitHub push, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` - NEVER commit hardcoded JNDI datasources
 2. **Include issue closing keywords** in commit messages
-3. **Update project board status** automatically  
+3. **Update project board status** automatically
 4. **Run tests before committing** using detect-maven script (only for Java changes, only when user requests)
 5. **🚨 MAVEN COMPILE RULE**: NEVER run Maven compile commands unless explicitly requested by user
 6. **Follow DTO patterns** to avoid breaking changes
@@ -77,6 +143,7 @@
 15. **🚨 PRIMEFACES CSS RULE**: Use PrimeFaces button classes (ui-button-success, ui-button-warning, etc.) instead of Bootstrap button classes
 16. **🚨 XML ENTITY RULE**: Always escape ampersands as &amp; in XHTML attribute values to prevent XML parsing errors
 17. **🚨 JSF AJAX UPDATE RULE**: NEVER use plain HTML elements with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead (see JSF AJAX Guidelines)
+18. **🚨 WIKI PUBLISHING RULE**: When creating user documentation, ALWAYS publish to GitHub Wiki immediately after creating the markdown file - don't wait for PR merge. Follow the Wiki Publishing Workflow above.
 
 ## Wiki Writing Guidelines {#wiki-writing-guidelines}
 
