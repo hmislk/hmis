@@ -109,6 +109,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean billReturnIssueA4Paper;
     private boolean billReturnIssueCustom1;
     private boolean billReturnIssueCustom2;
+    
+    // Disposal Cancel Settings
+    private boolean disposalCancelA4Paper;
+    private boolean disposalCancelCustom1;
+    private boolean disposalCancelCustom2;
 
     // Cancel Bill Settings
     private boolean cancelBillPosPaper;
@@ -209,14 +214,19 @@ public class PharmacyConfigController implements Serializable {
         directPurchaseReturnCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 2", true);
         
         // Disposal Issue Settings
-        disposalIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy DIsposal Issue Receipt is A4 Paper", true);
-        disposalIssueCustom1 = configOptionController.getBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 1", false);
-        disposalIssueCustom2 = configOptionController.getBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 2", false);
+        disposalIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Disposal Issue Receipt is A4 Paper", true);
+        disposalIssueCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Disposal Issue Receipt is Custom 1", false);
+        disposalIssueCustom2 = configOptionController.getBooleanValueByKey("Pharmacy Disposal Issue Receipt is Custom 2", false);
 
         // Bill Return Issue Settings
         billReturnIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Bill Return Issue Receipt is A4 Paper", true);
         billReturnIssueCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 1", false);
         billReturnIssueCustom2 = configOptionController.getBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 2", false);
+        
+        // Disposal Cancel Settings
+        disposalCancelA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Disposal Cancel Receipt is A4 Paper", true);
+        disposalCancelCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Disposal Cancel Receipt is Custom 1", false);
+        disposalCancelCustom2 = configOptionController.getBooleanValueByKey("Pharmacy Disposal Cancel Receipt is Custom 2", false);
 
         // Cancel Bill Settings
         cancelBillPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper", true);
@@ -315,14 +325,19 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Direct Purchase Return Receipt Paper is Custom 2", directPurchaseReturnCustom2);
             
             // Disposal Issue Settings
-            configOptionController.setBooleanValueByKey("Pharmacy DIsposal Issue Receipt is A4 Paper", disposalIssueA4Paper);
-            configOptionController.setBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 1", disposalIssueCustom1);
-            configOptionController.setBooleanValueByKey("Pharmacy DIsposal Issue Receipt is Custom 2", disposalIssueCustom2);
+            configOptionController.setBooleanValueByKey("Pharmacy Disposal Issue Receipt is A4 Paper", disposalIssueA4Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Disposal Issue Receipt is Custom 1", disposalIssueCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Disposal Issue Receipt is Custom 2", disposalIssueCustom2);
 
             // Bill Return Issue Settings
             configOptionController.setBooleanValueByKey("Pharmacy Bill Return Issue Receipt is A4 Paper", billReturnIssueA4Paper);
             configOptionController.setBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 1", billReturnIssueCustom1);
             configOptionController.setBooleanValueByKey("Pharmacy Bill Return Issue Receipt is Custom 2", billReturnIssueCustom2);
+            
+            // Disposal Cancel Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Disposal Cancel Receipt is A4 Paper", disposalCancelA4Paper);
+            configOptionController.setBooleanValueByKey("Pharmacy Disposal Cancel Receipt is Custom 1", disposalCancelCustom1);
+            configOptionController.setBooleanValueByKey("Pharmacy Disposal Cancel Receipt is Custom 2", disposalCancelCustom2);
 
             // Cancel Bill Settings
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Paper", cancelBillPosPaper);
@@ -1046,6 +1061,30 @@ public class PharmacyConfigController implements Serializable {
 
     public void setRetailSaleReturnRefundBillPosPaper(boolean retailSaleReturnRefundBillPosPaper) {
         this.retailSaleReturnRefundBillPosPaper = retailSaleReturnRefundBillPosPaper;
+    }
+
+    public boolean isDisposalCancelA4Paper() {
+        return disposalCancelA4Paper;
+    }
+
+    public void setDisposalCancelA4Paper(boolean disposalCancelA4Paper) {
+        this.disposalCancelA4Paper = disposalCancelA4Paper;
+    }
+
+    public boolean isDisposalCancelCustom1() {
+        return disposalCancelCustom1;
+    }
+
+    public void setDisposalCancelCustom1(boolean disposalCancelCustom1) {
+        this.disposalCancelCustom1 = disposalCancelCustom1;
+    }
+
+    public boolean isDisposalCancelCustom2() {
+        return disposalCancelCustom2;
+    }
+
+    public void setDisposalCancelCustom2(boolean disposalCancelCustom2) {
+        this.disposalCancelCustom2 = disposalCancelCustom2;
     }
 
 }
