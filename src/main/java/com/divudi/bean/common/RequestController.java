@@ -87,6 +87,23 @@ public class RequestController implements Serializable {
         requests = new ArrayList<>();
         return "/common/request/view_request?faces-redirect=true";
     }
+    
+    public String navigateToBackSearchBillList() {
+        
+        System.out.println("Request = " + currentRequest);
+        System.out.println("Bill = " + currentRequest.getBill());
+        System.out.println("Bill Type Atomic = " + currentRequest.getBill().getBillTypeAtomic());
+        
+        switch (currentRequest.getBill().getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                return "/opd/opd_batch_bill_print?faces-redirect=true";
+            case INWARD_SERVICE_BILL:
+                return "/lab/inward_search_service?faces-redirect=true";
+            default:
+                return "";
+        }
+        
+    }
 
     public String navigateToBackSearchRequest() {
         return "/common/request/view_request?faces-redirect=true";
@@ -260,7 +277,7 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
             return;
         } else {
-            for (Bill b : billController.billsOfBatchBill(batchBill)) {
+            for (Bill b : bills) {
                 if (b.getCurrentRequest() != null) {
                     JsfUtil.addErrorMessage("There is already a " + b.getCurrentRequest().getRequestType().getDisplayName() + " requesr for this bill.");
                     return;
@@ -289,10 +306,64 @@ public class RequestController implements Serializable {
             billFacade.edit(batchBill);
 
             //Update Induvidual Bills of Batch Bil
-            for (Bill b : billController.billsOfBatchBill(batchBill)) {
+            for (Bill b : bills) {
                 b.setCurrentRequest(newlyRequest);
                 billFacade.edit(b);
             }
+
+            setCurrentRequest(newlyRequest);
+        }
+
+        printPreview = true;
+    }
+    
+    public void createRequestforInpatientServiceBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (batchBill.getDepartment() == null || batchBill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return;
+        }
+
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + batchBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+        
+        Request req = requestService.findRequest(batchBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(batchBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update Batch Bill
+            batchBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(batchBill);
 
             setCurrentRequest(newlyRequest);
         }
