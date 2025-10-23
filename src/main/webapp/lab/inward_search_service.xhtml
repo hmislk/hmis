@@ -77,7 +77,7 @@
                                         <p:commandLink
                                             value="#{bill.deptId}"
                                             ajax="false"
-                                            action="/inward/inward_reprint_bill_service" >
+                                            action="/inward/inward_reprint_bill_service?faces-redirect=true" >
                                             <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
                                         </p:commandLink>                              
                                     </p:column>
