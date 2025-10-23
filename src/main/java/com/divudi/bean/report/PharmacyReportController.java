@@ -220,6 +220,7 @@ public class PharmacyReportController implements Serializable {
     private Patient patient;
     private String diagnosis;
     private String documentType;
+    private String stockLedgerReportType = "byBatch";
 
     private Investigation investigation;
     private Speciality currentSpeciality;
@@ -7395,6 +7396,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setDocumentType(String documentType) {
         this.documentType = documentType;
+    }
+
+    public String getStockLedgerReportType() {
+        return stockLedgerReportType;
+    }
+
+    public void setStockLedgerReportType(String stockLedgerReportType) {
+        this.stockLedgerReportType = stockLedgerReportType;
     }
 
     public List<StockHistory> getStockLedgerHistories() {

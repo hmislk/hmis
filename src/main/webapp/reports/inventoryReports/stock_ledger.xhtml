@@ -202,18 +202,31 @@
                                 <p:outputLabel value="Item Name" for="phmItem" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:autoComplete 
+                            <p:autoComplete
                                 id="phmItem"
-                                value="#{pharmacyReportController.amp}" 
+                                value="#{pharmacyReportController.amp}"
                                 completeMethod="#{ampController.completeAmp}"
-                                var="item" 
+                                var="item"
                                 class="w-100"
                                 minQueryLength="3"
                                 maxResults="20"
                                 inputStyleClass="w-100"
-                                itemLabel="#{item.name}" 
-                                itemValue="#{item}" 
+                                itemLabel="#{item.name}"
+                                itemValue="#{item}"
                                 ></p:autoComplete>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-file-alt mr-2" />
+                                <p:outputLabel value="Report Type" for="reportType" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="reportType"
+                                value="#{pharmacyReportController.stockLedgerReportType}"
+                                class="w-100">
+                                <f:selectItem itemLabel="By Batch" itemValue="byBatch"/>
+                                <f:selectItem itemLabel="By Item" itemValue="byItem"/>
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
@@ -278,7 +291,6 @@
 
                             <p:column headerText="Department" width="12em">
                                 <h:outputText value="#{f.department.name}" />
-                                 <h:outputText value="#{f.pbItem.billItem.id}" />
                             </p:column>
                             <p:column headerText="Category" width="12em">
                                 <h:outputText value="#{empty f.pbItem.billItem.item.amp ? f.pbItem.billItem.item.category.name : f.pbItem.billItem.item.amp.category.name}" />
@@ -367,25 +379,54 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Closing Stock" styleClass="text-end" width="10em">
-                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                    <h:outputText value="#{f.stockQty}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                    <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                        <h:outputText value="#{f.institutionItemStock}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <p:badge value="Ins" styleClass="ml-1"></p:badge>
+                            <p:column id="colClosingStock" styleClass="text-end" width="10em">
+                                <f:facet name="header">
+                                    <h:panelGroup>
+                                        <h:outputText value="Closing Stock " />
+                                        <p:badge value="Batch" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}"></p:badge>
+                                        <p:badge value="Item" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}"></p:badge>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                        <h:outputText value="#{f.totalItemStock}" >
+                                </f:facet>
+
+                                <!-- By Batch Report Type -->
+                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}">
+                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                        <h:outputText value="#{f.stockQty}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:badge value="Tot" styleClass="ml-1"></p:badge>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                            <h:outputText value="#{f.instituionBatchQty}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                            <h:outputText value="#{f.totalBatchQty}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <!-- By Item Report Type -->
+                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}">
+                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                        <h:outputText value="#{f.itemStock}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                            <h:outputText value="#{f.institutionItemStock}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                            <h:outputText value="#{f.totalItemStock}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
@@ -456,9 +497,9 @@
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </p:column>
-<!--                            <p:column headerText="Locator" width="8em">
-                                <h:outputText value="" />
-                            </p:column>-->
+                            <!--                            <p:column headerText="Locator" width="8em">
+                                                            <h:outputText value="" />
+                                                        </p:column>-->
                             <p:column headerText="Batch Code" width="10em">
                                 <h:outputText value="#{f.itemBatch.batchNo}" />
                             </p:column>
@@ -472,11 +513,11 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputText>
                             </p:column>
-<!--                            <p:column headerText="Inserted Date" width="12em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                </h:outputText>
-                            </p:column>-->
+                            <!--                            <p:column headerText="Inserted Date" width="12em">
+                                                            <h:outputText value="#{f.pbItem.billItem.bill.createdAt}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                            </h:outputText>
+                                                        </p:column>-->
                             <p:column headerText="User" width="10em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />
                             </p:column>

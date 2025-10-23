@@ -57,6 +57,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillSessionFacade;
 import com.divudi.core.facade.ConsultantFacade;
+import com.divudi.core.facade.DoctorFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.facade.OnlineBookingFacade;
@@ -1226,6 +1227,7 @@ public class ChannelService {
 
         if (reportStatus != null && reportStatus.equalsIgnoreCase("Details")) {
             bta.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+            bta.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
         }
 
         params.put("bta", bta);
