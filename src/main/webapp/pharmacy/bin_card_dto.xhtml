@@ -81,13 +81,7 @@
                         value="Generate Report"
                         action="#{pharmacyErrorChecking.processBinCardWithDTO()}" >
                     </p:commandButton>
-
-
                 </h:panelGrid>
-
-                <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
-                    <p:inputText value="#{pharmacyErrorChecking.item.id}" ></p:inputText>
-                </h:panelGroup>
 
                 <p:dataTable value="#{pharmacyErrorChecking.binCardEntries}"
                              var="sh"
