@@ -182,15 +182,26 @@ public class RequestController implements Serializable {
             requestService.save(currentRequest, sessionController.getLoggedUser());
         }
 
+        bills = new ArrayList<>();
         String navigation = "";
 
         switch (currentRequest.getBill().getBillTypeAtomic()) {
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 bills = billController.billsOfBatchBill(currentRequest.getBill());
                 patient = currentRequest.getBill().getPatient();
+                patientEncounter = null;
                 comment = null;
 
-                navigation = "/common/request/batch_bill_cancel_request_approvel?faces-redirect=true";
+                navigation = "/common/request/bill_cancel_request_approvel?faces-redirect=true";
+                break;
+            
+            case INWARD_SERVICE_BILL:
+                patient = currentRequest.getBill().getPatient();
+                patientEncounter = currentRequest.getBill().getPatientEncounter();
+                bills.add(currentRequest.getBill());
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_approvel?faces-redirect=true";
                 break;
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
@@ -213,16 +224,21 @@ public class RequestController implements Serializable {
         }
 
         String navigation = "";
+        bills = new ArrayList<>();
 
         switch (currentRequest.getBill().getBillTypeAtomic()) {
             
             case OPD_BATCH_BILL_WITH_PAYMENT:
-            case INWARD_SERVICE_BILL:
                 bills = billController.billsOfBatchBill(currentRequest.getBill());
                 patient = currentRequest.getBill().getPatient();
-                if(currentRequest.getBill().getPatientEncounter() != null){
-                    patientEncounter = currentRequest.getBill().getPatientEncounter();
-                }
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
+                break;
+            case INWARD_SERVICE_BILL:
+                bills.add(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                patientEncounter = currentRequest.getBill().getPatientEncounter();
                 comment = null;
 
                 navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
@@ -463,7 +479,7 @@ public class RequestController implements Serializable {
         billFacade.edit(currentRequest.getBill());
 
         //Update Induvidual Bills of Batch Bil
-        for (Bill b : billController.billsOfBatchBill(currentRequest.getBill())) {
+        for (Bill b : bills) {
             b.setCurrentRequest(null);
             billFacade.edit(b);
         }
@@ -485,7 +501,7 @@ public class RequestController implements Serializable {
         billFacade.edit(req.getBill());
 
         //Update Induvidual Bills of Batch Bil
-        for (Bill b : billController.billsOfBatchBill(req.getBill())) {
+        for (Bill b : bills) {
             b.setCurrentRequest(null);
             billFacade.edit(b);
         }
@@ -514,7 +530,7 @@ public class RequestController implements Serializable {
         billFacade.edit(currentRequest.getBill());
 
         //Update Induvidual Bills of Batch Bil
-        for (Bill b : billController.billsOfBatchBill(currentRequest.getBill())) {
+        for (Bill b : bills) {
             b.setCurrentRequest(null);
             billFacade.edit(b);
         }
