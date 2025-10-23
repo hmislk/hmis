@@ -26,7 +26,7 @@
                             ajax="false"
                             value="#{cb.deptId}"
                             action="/pharmacy/pharmacy_reprint_grn_return">
-                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{r}"/>
+                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{cb}"/>
                         </p:commandLink>
                         <f:facet name="footer">
                             <h:outputText value="Total"/>
@@ -37,7 +37,7 @@
                             ajax="false"
                             value="#{cb.referenceBill.deptId}"
                             action="/pharmacy/pharmacy_grn">
-                            <f:setPropertyActionListener value="#{r.referenceBill}"
+                            <f:setPropertyActionListener value="#{cb.referenceBill}"
                                                          target="#{grnController.grnBill}"/>
                             <f:setPropertyActionListener value="true" target="#{grnController.printPreview}"/>
                         </p:commandLink>
