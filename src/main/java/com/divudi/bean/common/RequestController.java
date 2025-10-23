@@ -215,12 +215,17 @@ public class RequestController implements Serializable {
         String navigation = "";
 
         switch (currentRequest.getBill().getBillTypeAtomic()) {
+            
             case OPD_BATCH_BILL_WITH_PAYMENT:
+            case INWARD_SERVICE_BILL:
                 bills = billController.billsOfBatchBill(currentRequest.getBill());
                 patient = currentRequest.getBill().getPatient();
+                if(currentRequest.getBill().getPatientEncounter() != null){
+                    patientEncounter = currentRequest.getBill().getPatientEncounter();
+                }
                 comment = null;
 
-                navigation = "/common/request/batch_bill_cancel_request_cancel?faces-redirect=true";
+                navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
                 break;
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
