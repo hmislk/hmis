@@ -108,7 +108,7 @@
                     </p:column>
 
                     <p:column headerText="Purchase Details" width="50em" style="text-align: center;">
-                        <p:dataTable id="cBillItemsTable" value="#{cb.billItems}" var="cbi" rowKey="#{bi.id}"
+                        <p:dataTable id="cBillItemsTable" value="#{cb.billItems}" var="cbi" rowKey="#{cbi.id}"
                                      style="margin:0">
                             <p:column headerText="Item Name" style="text-align: left;">
                                 <h:outputText value="#{cbi.item.name}"/>
