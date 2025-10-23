@@ -622,6 +622,25 @@ public class GrnReturnWorkflowController implements Serializable {
                 pharmaceuticalBillItemFacade.edit(phi);
             }
         }
+
+        // After stock update, negate the bill-level finance details for returns (stock moving out)
+        if (currentBill != null && currentBill.getBillFinanceDetails() != null) {
+            BillFinanceDetails bfd = currentBill.getBillFinanceDetails();
+
+            // Negate the purchase, cost, and retail values at bill level
+            if (bfd.getTotalPurchaseValue() != null) {
+                bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
+            }
+            if (bfd.getTotalCostValue() != null) {
+                bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
+            }
+            if (bfd.getTotalRetailSaleValue() != null) {
+                bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
+            }
+
+            // Save the updated bill with corrected finance details
+            billFacade.edit(currentBill);
+        }
     }
 
     // Validation methods
