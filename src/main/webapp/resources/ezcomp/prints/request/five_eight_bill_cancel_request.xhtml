@@ -199,6 +199,13 @@
                             rendered="#{cc.attrs.request.approvedBy ne null and cc.attrs.request.approvedBy.webUserPerson ne null}"
                             value="#{cc.attrs.request.approvedBy.webUserPerson.nameWithTitle}"/>
                     </div>
+                    <div class="d-flex justify-content-center">
+                        <h:outputLabel 
+                            rendered="#{cc.attrs.request.approvedBy ne null and cc.attrs.request.approvedBy.webUserPerson ne null}"
+                            value="#{cc.attrs.request.approvedAt}">
+                            <f:convertDateTime pattern="yyyy-MM-dd hh:mm a" />
+                        </h:outputLabel>
+                    </div>
                 </div>
 
                 <table  style="font-size: 8pt;">
@@ -219,7 +226,7 @@
                     </h:panelGroup>
                 </table>
 
-                <div class="d-flex justify-content-center mt-5" style="font-size: 10px;">
+                <div class="d-flex justify-content-center mt-4" style="font-size: 10px;">
                     <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
                 </div>
 
