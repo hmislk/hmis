@@ -114,11 +114,6 @@
                                 inputStyleClass="w-100"
                                 completeMethod="#{dealerController.completeDealor}"
                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
-                                <f:ajax
-                                    event="itemSelect"
-                                    execute="@this"
-                                    render=":#{p:resolveFirstComponentWithId('exDItem',view).clientId}"
-                                    />
                             </p:autoComplete>
 
                             <h:panelGroup layout="block" styleClass="form-group" class="mx-5">
