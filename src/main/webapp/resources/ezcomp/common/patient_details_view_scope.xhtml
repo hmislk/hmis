@@ -126,7 +126,7 @@
             <h:panelGroup id="editPatient" >
 
                 <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" >
-                    <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                    <h:panelGroup rendered="#{cc.attrs.controller.quickSearchPatientList eq null or empty cc.attrs.controller.quickSearchPatientList}">
                         <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                             <h:panelGroup id="gpPatient" >
                                 <div class="row">

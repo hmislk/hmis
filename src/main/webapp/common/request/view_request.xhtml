@@ -162,6 +162,11 @@
                                     <p:column headerText="Bill No">
                                         <h:outputLabel value="#{r.bill.deptId}" />
                                     </p:column>
+                                    
+                                    <p:column headerText="BHT No">
+                                        <h:outputLabel value="N/A" rendered="#{r.bill.patientEncounter eq null}"/>
+                                        <h:outputLabel value="#{r.bill.patientEncounter.bhtNo}" rendered="#{r.bill.patientEncounter ne null}"/>
+                                    </p:column>
 
                                     <p:column headerText="Request Type" style="width: 12em;" >
                                         <h:panelGroup id="remark">
@@ -183,6 +188,7 @@
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="To Approve"
+                                                rendered="#{webUserController.hasPrivilege('BillCancelRequestApproval')}"
                                                 disabled="#{r.status eq 'CANCELLED'}"
                                                 class="ui-button-success"
                                                 action="#{requestController.navigateToApproveRequest()}" >
