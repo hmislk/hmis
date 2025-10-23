@@ -57,7 +57,7 @@
                                         ajax="false" 
                                         value="To Cancel" 
                                         icon="fa fa-ban"
-                                        action="inward_cancel_bill_service?faces-redirect=true"
+                                        action="#{inwardSearch.navigateToCancelInpatientBill()}"
                                         disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
                                         class="m-2 ui-button-danger">                           
                                     </p:commandButton>
