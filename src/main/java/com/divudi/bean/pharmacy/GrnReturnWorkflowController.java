@@ -2355,6 +2355,32 @@ public class GrnReturnWorkflowController implements Serializable {
                 fd.setTotalCost(totalCostValue.negate());
             }
         }
+
+        // Set bill-level rates and totals (should match line-level for single-item returns)
+        fd.setGrossRate(fd.getLineGrossRate());
+        fd.setNetRate(fd.getLineNetRate());
+        fd.setGrossTotal(fd.getLineGrossTotal());
+        fd.setNetTotal(fd.getLineNetTotal());
+
+        // Set zero-value fields (no discounts, taxes, or expenses on GRN returns)
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setBillDiscount(BigDecimal.ZERO);
+        fd.setBillTax(BigDecimal.ZERO);
+        fd.setBillExpense(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
+        fd.setLineDiscountRate(BigDecimal.ZERO);
+        fd.setBillDiscountRate(BigDecimal.ZERO);
+        fd.setTotalDiscountRate(BigDecimal.ZERO);
+        fd.setLineTaxRate(BigDecimal.ZERO);
+        fd.setBillTaxRate(BigDecimal.ZERO);
+        fd.setTotalTaxRate(BigDecimal.ZERO);
+        fd.setLineExpenseRate(BigDecimal.ZERO);
+        fd.setBillExpenseRate(BigDecimal.ZERO);
+        fd.setTotalExpenseRate(BigDecimal.ZERO);
     }
 
     // Utility methods
