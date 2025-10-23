@@ -1023,7 +1023,13 @@ public class PharmacyController implements Serializable {
             } catch (Exception e) {
                 JsfUtil.addErrorMessage(e, " Something Went Worng!");
             }
-            calculateTotals(bills);
+
+            // Use simplified calculation for detailReport, standard for others
+            if ("detailReport".equals(reportType)) {
+                calculateTotalsForDetailReport(bills);
+            } else {
+                calculateTotals(bills);
+            }
         }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
     }
 
@@ -3321,6 +3327,79 @@ public class PharmacyController implements Serializable {
         addIfNotZero(data, "Final eWallet Total", totalEwalletPurchaseValue, totalEwalletSaleValue, totalEwalletCostValue);
         addIfNotZero(data, "Final None Total", totalNonePurchaseValue, totalNoneSaleValue, totalNoneCostValue);
         addIfNotZero(data, "Final Other Total", totalOtherPurchaseValue, totalOtherSaleValue, totalOtherCostValue);
+        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue);
+
+        return data;
+    }
+
+    /**
+     * Calculates totals for Detail Report type.
+     * This method uses simplified logic as values are already in plus or minus
+     * based on bill type. Only distinguishes between Credit and non-Credit payment methods.
+     *
+     * @param billList List of bills to calculate totals from
+     * @return List of String1Value1 objects containing the calculated totals
+     */
+    public List<String1Value1> calculateTotalsForDetailReport(List<Bill> billList) {
+        data = new ArrayList<>();
+        totalPurchase = 0.0;
+        totalSaleValue = 0.0;
+        totalCostValue = 0.0;
+        totalCreditPurchaseValue = 0.0;
+        totalCreditSaleValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalCashSaleValue = 0.0;
+        totalCashCostValue = 0.0;
+        totalCreditCostValue = 0.0;
+
+        for (Bill bill : billList) {
+            // Get values directly from bill - already in correct +/- format
+            double purchaseValue = 0.0;
+            double saleValue = 0.0;
+            double costValue = 0.0;
+
+            if (bill.getBillFinanceDetails() != null) {
+                purchaseValue = bill.getBillFinanceDetails().getTotalPurchaseValue() != null
+                    ? bill.getBillFinanceDetails().getTotalPurchaseValue().doubleValue()
+                    : 0.0;
+
+                saleValue = bill.getBillFinanceDetails().getTotalRetailSaleValue() != null
+                    ? bill.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()
+                    : 0.0;
+
+                costValue = bill.getBillFinanceDetails().getTotalCostValue() != null
+                    ? bill.getBillFinanceDetails().getTotalCostValue().doubleValue()
+                    : 0.0;
+            }
+
+            // Check payment method
+            if (bill.getPaymentMethod() == null) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING,
+                    "Bill {0} has no payment method", bill.getId());
+                continue;
+            }
+
+            // Separate by Credit vs non-Credit (Cash and others)
+            if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+                totalCreditPurchaseValue += purchaseValue;
+                totalCreditSaleValue += saleValue;
+                totalCreditCostValue += costValue;
+            } else {
+                // All non-credit payments (Cash, Card, Cheque, etc.) go to "Cash" totals
+                totalCashPurchaseValue += purchaseValue;
+                totalCashSaleValue += saleValue;
+                totalCashCostValue += costValue;
+            }
+
+            // Add to overall totals
+            totalPurchase += purchaseValue;
+            totalSaleValue += saleValue;
+            totalCostValue += costValue;
+        }
+
+        // Add summary rows
+        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue, totalCashCostValue);
+        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue, totalCreditCostValue);
         addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue);
 
         return data;
