@@ -555,17 +555,6 @@
                             </div>
                         </f:facet>
 
-                        <div class="d-flex justify-content-end" >
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
-                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                <p:selectOneMenu value="#{sessionController.loggedPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
-                                    <f:selectItem itemLabel="Please Select Paper Type" />
-                                    <f:selectItems value="#{enumController.paperTypes}" />
-                                </p:selectOneMenu>
-                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
-                            </h:panelGroup>
-                        </div>
-
                         <h:panelGroup id="gpBillPreview" >
                             <ph:pharmacy_issue_receipt
                                 rendered="#{configOptionController.getBooleanValueByKey('Pharmacy DIsposal Issue Receipt is A4 Paper',true)}"
