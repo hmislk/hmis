@@ -2,7 +2,6 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
-import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Request;
@@ -52,6 +51,8 @@ public class RequestController implements Serializable {
     BillController billController;
     @Inject
     RequestService requestService;
+    @Inject
+    WebUserController webUserController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -210,8 +211,6 @@ public class RequestController implements Serializable {
         comment = null;
         printPreview = false;
 
-        fromDate = null;
-        toDate = null;
         requests = null;
         
         billNo = null;
@@ -297,6 +296,11 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Request not found for approval");
             return;
         }
+        
+        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+            JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+            return;
+        }
 
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
@@ -327,6 +331,11 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Can't Cancel Approvel");
             return;
         }
+        
+        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+            JsfUtil.addErrorMessage("You have not authorize to Approval this.");
+            return;
+        }
 
         currentRequest.setApprovedAt(null);
         currentRequest.setApprovedBy(null);
@@ -345,6 +354,11 @@ public class RequestController implements Serializable {
         }
         if (currentRequest.getBill() == null) {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
+            return;
+        }
+        
+        if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
+            JsfUtil.addErrorMessage("You have not authorize to Cancel this.");
             return;
         }
 

@@ -8,25 +8,24 @@
 ## Core Workflows
 
 ### Persistence Configuration
+- **🚨 CRITICAL**: Before any push, verify persistence.xml uses environment variables
 - **File**: `src/main/resources/META-INF/persistence.xml`
-- **🚨 CRITICAL QA DEPLOYMENT RULE**: Before any push to GitHub, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables, NOT hardcoded JNDI names like `jdbc/coop`
-- **⚠️ DDL GENERATION BLOCKER**: Remove hardcoded `eclipselink.application-location` paths like `c:/tmp/` from persistence.xml
-- **Manual Process**: Always check `git status` before pushing to see if persistence.xml has been modified
-- **Pre-Push Checklist**: 
-  1. Check if persistence.xml is in staged changes: `git status`
-  2. If modified, verify it contains `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}`
-  3. If it has hardcoded JNDI names, manually replace them before push
-  4. Never push with hardcoded local JNDI names like `jdbc/coop` or `jdbc/ruhunuAudit`
+- **Required**: `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` (NOT hardcoded JNDI names)
+- **Pre-Push Checklist**: [Detailed Verification Guide](developer_docs/deployment/persistence-verification.md)
 
 ### Git & GitHub Integration
-- **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
+- **Commit Conventions**: [Guide](developer_docs/git/commit-conventions.md)
 - **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
-- **Wiki Publishing**: [Guide](developer_docs/github/wiki-publishing.md)
-- **QA Deployment**: [Bot-Friendly QA Deployment Guide](developer_docs/deployment/qa-deployment-guide.md)
-- **VM Management**: [VM Restart Guide](developer_docs/deployment/vm-restart-guide.md)
+- **QA Deployment**: [Guide](developer_docs/deployment/qa-deployment-guide.md)
+- **VM Management**: [Guide](developer_docs/deployment/vm-restart-guide.md)
 - **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
-- **QA Testing Path**: Issue should be tested via GitHub Issues → Projects → HMIS Development Board
-- **PR Review Path**: Pull Requests → Files Changed → Review Required Files → Approve/Request Changes
+
+### Wiki Publishing
+- **🚨 CRITICAL**: ALWAYS publish to GitHub Wiki immediately after creating user documentation
+- **Directory**: Create files in `wiki-docs/` (e.g., `wiki-docs/Pharmacy/Feature-Name.md`)
+- **Publishing Workflow**: [Complete Guide](developer_docs/github/wiki-publishing.md)
+- **Writing Guidelines**: [Content Standards](developer_docs/github/wiki-writing-guidelines.md)
+- **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
 
 ### Testing & Build
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
@@ -60,63 +59,39 @@
 - **Database debugging techniques** and performance optimization guidelines in MySQL guide
 
 ## Essential Rules
-1. **MANUAL PERSISTENCE.XML VERIFICATION**: Before any GitHub push, manually verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` - NEVER commit hardcoded JNDI datasources
-2. **Include issue closing keywords** in commit messages
-3. **Update project board status** automatically  
-4. **Run tests before committing** using detect-maven script (only for Java changes, only when user requests)
-5. **🚨 MAVEN COMPILE RULE**: NEVER run Maven compile commands unless explicitly requested by user
-6. **Follow DTO patterns** to avoid breaking changes
+
+### User Control & Automation
+1. **🚨 NO AUTO-ACTIONS**: Do NOT commit, build, run, or push code unless the user explicitly requests it
+2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before executing Git operations, Maven builds, or deployment commands
+3. **🚨 WIKI EXCEPTION**: Wiki publishing requires push - follow [Publishing Workflow](developer_docs/github/wiki-publishing.md) exactly
+
+### Deployment & Configuration
+3. **🚨 PERSISTENCE.XML**: Verify environment variables before push - [Guide](developer_docs/deployment/persistence-verification.md)
+4. **🚨 DATABASE CREDENTIALS**: Never commit credentials to git - [MySQL Guide](developer_docs/database/mysql-developer-guide.md)
+
+### Git & Documentation
+5. **Include issue closing keywords** (`Closes #N`) in commit messages
+6. **🚨 WIKI PUBLISHING**: Publish to GitHub Wiki immediately - [Guide](developer_docs/github/wiki-publishing.md)
+
+### Build & Testing
+5. **Run tests before committing** using `./detect-maven.sh test` (Java changes only, when user requests)
+6. **🚨 NO AUTO-COMPILE**: Never run Maven compile unless explicitly requested
 7. **JSF-only changes** do not require compilation or testing
-8. **🚨 CRITICAL QA RULE**: Before any QA deployment, verify persistence.xml uses `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` variables
-9. **🚨 DDL GENERATION RULE**: Never commit persistence.xml with hardcoded DDL generation paths (`eclipselink.application-location`)
-10. **🚨 BACKWARD COMPATIBILITY RULE**: NEVER "fix" intentional typos in entity/controller properties (e.g., `purcahseRate` instead of `purchaseRate`) - these exist for database backward compatibility
-11. **🚨 COMPONENT NAMING RULE**: NEVER rename composite components (e.g., `transfeRecieve_detailed`) without checking ALL usage across the entire codebase - these are referenced in multiple pages
-12. **🚨 DATABASE CREDENTIALS RULE**: NEVER commit database credentials to git - store them in environment-specific folders outside the project directory (see MySQL guide)
-13. **🚨 ERP UI RULE**: Use h:outputText instead of HTML heading tags (h1-h6) - this is an ERP system, not a website
-14. **🚨 XHTML STRUCTURE RULE**: Use HTML DOCTYPE with ui:composition and template inside h:body for all XHTML pages
-15. **🚨 PRIMEFACES CSS RULE**: Use PrimeFaces button classes (ui-button-success, ui-button-warning, etc.) instead of Bootstrap button classes
-16. **🚨 XML ENTITY RULE**: Always escape ampersands as &amp; in XHTML attribute values to prevent XML parsing errors
-17. **🚨 JSF AJAX UPDATE RULE**: NEVER use plain HTML elements with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead (see JSF AJAX Guidelines)
 
-## Wiki Writing Guidelines {#wiki-writing-guidelines}
+### Code Integrity
+8. **Follow DTO patterns** to avoid breaking changes - [Guide](developer_docs/dto/implementation-guidelines.md)
+9. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
+10. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
 
-### Purpose and Audience
-- **Wiki is for end users**, not developers
-- Focus on **how to use features**, not how they were implemented
-- Write for pharmacy staff, nurses, doctors, administrators - not programmers
+### UI Development
+11. **🚨 UI-ONLY CHANGES**: Frontend only - no backend modifications unless requested - [Guide](developer_docs/ui/comprehensive-ui-guidelines.md)
+12. **🚨 ERP UI**: Use `h:outputText` instead of HTML headings (h1-h6)
+13. **🚨 PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap
+14. **🚨 XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
+15. **🚨 XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
 
-### Writing Style
-- **User-centric language**: "How to substitute items" not "Implementation of substitute functionality"
-- **Step-by-step instructions**: Clear, numbered procedures
-- **Practical examples**: Real scenarios users encounter
-- **Actionable guidance**: What to do when problems occur
-
-### Content Structure
-1. **Overview**: What the feature does and why users need it
-2. **When to Use**: Specific scenarios and use cases
-3. **How to Use**: Step-by-step procedures with screenshots if possible
-4. **Understanding Messages**: What system messages mean and how to respond
-5. **Best Practices**: Tips for effective use
-6. **Troubleshooting**: Common problems and solutions
-7. **Configuration**: Admin settings that affect the feature (user impact only)
-8. **FAQ**: Common user questions
-
-### What NOT to Include
-- ❌ Code snippets, file paths, line numbers
-- ❌ Technical implementation details
-- ❌ Database schema information
-- ❌ Developer debugging information
-- ❌ Backend process descriptions
-
-### What TO Include
-- ✅ User interface elements and navigation
-- ✅ Error messages and their meanings
-- ✅ Business process workflows
-- ✅ Configuration options (from user perspective)
-- ✅ Integration with other modules
-
-### Exception
-Only include technical details when specifically requested for developer documentation or when writing for the developer_docs/ directory.
+### JSF Development
+16. **🚨 JSF AJAX UPDATES**: Never use plain HTML elements for AJAX updates - [Guide](developer_docs/jsf/ajax-update-guidelines.md)
 
 ---
 This behavior should persist across all Claude Code sessions for this project.
