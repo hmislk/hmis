@@ -127,7 +127,7 @@ public class RequestController implements Serializable {
                     patient = batchBill.getPatient();
                     comment = null;
 
-                    navigation = "/opd/opd_bill_cancel_request?faces-redirect=true";
+                    navigation = "/common/request/opd_bill_cancel_request?faces-redirect=true";
                     break;
                 case OPD_BILL_WITH_PAYMENT:
                     navigation = "";
@@ -138,7 +138,7 @@ public class RequestController implements Serializable {
                     patient = originalBill.getPatient();
                     patientEncounter = originalBill.getPatientEncounter();
                     comment = null;
-                    navigation = "/opd/opd_bill_cancel_request?faces-redirect=true";
+                    navigation = "/common/request/inward_bill_cancel_request?faces-redirect=true";
                     break;
                 default:
                     navigation = "";
