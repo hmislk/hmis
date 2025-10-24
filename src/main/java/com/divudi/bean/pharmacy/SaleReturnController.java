@@ -1233,6 +1233,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
             }
         }
     }
