@@ -41,6 +41,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.ItemBatch;
@@ -220,6 +221,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
             }
 
         }
@@ -578,15 +581,26 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             cleanupInvalidPaymentDetails();
 
             double remain = Math.abs(calculatRemainForMultiplePaymentTotal());
+            System.out.println(">>> VALIDATION CHECK 1 (errorCheckForSaleBill):");
+            System.out.println("    Bill Net Total: " + getPreBill().getNetTotal());
+            System.out.println("    Payment Total: " + calculateMultiplePaymentMethodTotal());
+            System.out.println("    Remain (difference): " + remain);
             if (remain > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+                System.out.println("    >>> FAILED AT CHECK 1: Remain > 1.0");
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total [Check 1]");
+                return true;
+            }
+            System.out.println("    PASSED");
+        }
+
+        // Skip PaymentService validation for MultiplePaymentMethods - handled by controller's errorCheckOnPaymentMethod()
+        // For other payment methods, use PaymentService validation
+        if (getPreBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            if (paymentService.checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData(), getPreBill().getNetTotal(), cashPaid, getPreBill().getPatient(), getPreBill().getToStaff())) {
                 return true;
             }
         }
-        //pharmacyPreSettleController.cashPaid
-        if (paymentService.checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData(), getPreBill().getNetTotal(), cashPaid, getPreBill().getPatient(), getPreBill().getToStaff())) {
-            return true;
-        }
+
         if (getPreBill().getPaymentMethod() == PaymentMethod.Cash && (getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
             JsfUtil.addErrorMessage("Please select tendered amount correctly");
             return true;
@@ -883,6 +897,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
                         p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
                         break;
+                    case Staff_Welfare:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                        }
+                        break;
                     case Agent:
                     case Credit:
                     case OnCall:
@@ -1147,15 +1167,42 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             return true;
                         }
                     }
+
+                    if (cd.getPaymentMethod().equals(PaymentMethod.Staff_Welfare)) {
+                        // Validate staff selection for Staff_Welfare in multiple payments
+                        if (cd.getPaymentMethodData().getStaffWelfare() == null || cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                            JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                            return true;
+                        }
+
+                        // Validate staff welfare balance
+                        Staff selectedStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
+                        double requestedAmount = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                        double availableWelfare = selectedStaff.getAnnualWelfareQualified() - Math.abs(selectedStaff.getAnnualWelfareUtilized());
+
+                        if (requestedAmount > availableWelfare) {
+                            JsfUtil.addErrorMessage("Insufficient welfare balance for " + selectedStaff.getPerson().getName() + ". Available: " + availableWelfare);
+                            return true;
+                        }
+                    }
                 }
             }
 
             //double differenceOfBillTotalAndPaymentValue = preBill.getNetTotal() - calculateMultiplePaymentMethodTotal();
             //differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            if (checkAndUpdateBalance() < 0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+            double balance = checkAndUpdateBalance();
+            double absBalance = Math.abs(balance);
+            System.out.println(">>> VALIDATION CHECK 2 (errorCheckOnPaymentMethod):");
+            System.out.println("    Bill Net Total: " + getPreBill().getNetTotal());
+            System.out.println("    Payment Total: " + calculateMultiplePaymentMethodTotal());
+            System.out.println("    Balance: " + balance);
+            System.out.println("    Abs Balance: " + absBalance);
+            if (absBalance > 1.0) {
+                System.out.println("    >>> FAILED AT CHECK 2: Abs Balance > 1.0");
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total [Check 2]");
                 return true;
             }
+            System.out.println("    PASSED");
 
         }
         return false;
@@ -1163,6 +1210,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     //ToDo : have to duplicate methods in the pharmacy sale. Will implement service class and need to centralize them.
     public double calculateMultiplePaymentMethodTotal() {
+        System.out.println(">>> CALCULATE MULTIPLE PAYMENT START");
         double multiplePaymentMethodTotalValue = 0;
         if (preBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
@@ -1171,54 +1219,111 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     continue;
                 }
                 if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    double valueAdded = 0;
                     // Only add the value from the selected payment method for this ComponentDetail
                     switch (cd.getPaymentMethod()) {
                         case Cash:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            if (cd.getPaymentMethodData().getCash() != null) {
+                                valueAdded = cd.getPaymentMethodData().getCash().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
+                            }
                             break;
                         case Card:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            if (cd.getPaymentMethodData().getCreditCard() != null) {
+                                valueAdded = cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
+                            }
                             break;
                         case Cheque:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            if (cd.getPaymentMethodData().getCheque() != null) {
+                                valueAdded = cd.getPaymentMethodData().getCheque().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
+                            }
                             break;
                         case ewallet:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            if (cd.getPaymentMethodData().getEwallet() != null) {
+                                valueAdded = cd.getPaymentMethodData().getEwallet().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
+                            }
                             break;
                         case PatientDeposit:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            if (cd.getPaymentMethodData().getPatient_deposit() != null) {
+                                // Only include the value if patient is selected
+                                // When patient is null, the payment method is still being configured
+                                if (cd.getPaymentMethodData().getPatient_deposit().getPatient() != null) {
+                                    valueAdded = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                                    multiplePaymentMethodTotalValue += valueAdded;
+                                } else {
+                                    System.out.println("  - PatientDeposit: SKIPPED (patient not selected)");
+                                }
+                            }
                             break;
                         case Slip:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            if (cd.getPaymentMethodData().getSlip() != null) {
+                                valueAdded = cd.getPaymentMethodData().getSlip().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
+                            }
                             break;
                         case Staff:
                             // IMPORTANT: Staff uses getStaffCredit() - do NOT confuse with Staff_Welfare
                             // PaymentMethod.Staff -> PaymentMethodData.getStaffCredit()
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            if (cd.getPaymentMethodData().getStaffCredit() != null) {
+                                // Only include the value if staff is selected
+                                // When staff is null, the payment method is still being configured
+                                if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                                    valueAdded = cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                                    multiplePaymentMethodTotalValue += valueAdded;
+                                } else {
+                                    System.out.println("  - Staff: SKIPPED (staff not selected)");
+                                }
+                            }
                             break;
                         case Staff_Welfare:
                             // IMPORTANT: Staff_Welfare uses getStaffWelfare() - do NOT confuse with Staff
                             // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            if (cd.getPaymentMethodData().getStaffWelfare() != null) {
+                                // Only include the value if staff is selected and value is entered
+                                // When staff is null, the payment method is still being configured
+                                if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                                    valueAdded = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                                    multiplePaymentMethodTotalValue += valueAdded;
+                                } else {
+                                    System.out.println("  - Staff_Welfare: SKIPPED (staff not selected)");
+                                }
+                            }
                             break;
                         case Credit:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            if (cd.getPaymentMethodData().getCredit() != null) {
+                                // Only include the value if credit company is selected
+                                // When institution is null, the payment method is still being configured
+                                if (cd.getPaymentMethodData().getCredit().getInstitution() != null) {
+                                    valueAdded = cd.getPaymentMethodData().getCredit().getTotalValue();
+                                    multiplePaymentMethodTotalValue += valueAdded;
+                                } else {
+                                    System.out.println("  - Credit: SKIPPED (institution not selected)");
+                                }
+                            }
                             break;
                         case OnlineSettlement:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                            if (cd.getPaymentMethodData().getOnlineSettlement() != null) {
+                                valueAdded = cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
+                            }
                             break;
                         default:
                             break;
                     }
+                    if (valueAdded > 0) {
+                        System.out.println("  + " + cd.getPaymentMethod() + ": " + valueAdded);
+                    }
                 }
             }
         }
+        System.out.println(">>> TOTAL: " + multiplePaymentMethodTotalValue);
         return multiplePaymentMethodTotalValue;
     }
 
     public double checkAndUpdateBalance() {
-        System.out.println("=== CHECKANDUPDATE DEBUG ===");
-        System.out.println("Payment Method: " + (getPreBill().getPaymentMethod() != null ? getPreBill().getPaymentMethod() : "NULL"));
 
         // Ensure Patient reference is managed in current UnitOfWork to avoid EclipseLink-6004
         try {
@@ -1243,21 +1348,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
         // PaymentMethod.Staff -> PaymentMethodData.getStaffCredit()
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-            System.out.println("Staff_Welfare payment method in checkAndUpdateBalance");
-            System.out.println("PreBill ToStaff: " + (getPreBill().getToStaff() != null ? getPreBill().getToStaff().getPerson().getName() : "NULL"));
-
             // This will auto-initialize staffWelfare if null
             getPaymentMethodData().getStaffWelfare();
-            System.out.println("StaffWelfare initialized/retrieved");
 
             // Synchronize staff selection if it exists in preBill but not in paymentMethodData
             if (getPreBill().getToStaff() != null && getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
                 getPaymentMethodData().getStaffWelfare().setToStaff(getPreBill().getToStaff());
-                System.out.println("Synchronized staff from preBill to paymentMethodData: " + getPreBill().getToStaff().getPerson().getName());
-            } else {
-                System.out.println("No synchronization needed in checkAndUpdateBalance");
             }
-            System.out.println("StaffWelfare ToStaff: " + (getPaymentMethodData().getStaffWelfare().getToStaff() != null ? getPaymentMethodData().getStaffWelfare().getToStaff().getPerson().getName() : "NULL"));
         }
 
         // Initialize PatientDeposit for PatientDeposit payment method
@@ -1880,8 +1977,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             setPaymentMethodData(new PaymentMethodData());
                             System.out.println("PaymentMethodData was null, created new instance");
                         }
-                        getPaymentMethodData().getStaffCredit().setToStaff(billToSettle.getToStaff());
-                        System.out.println("Assigned to paymentMethodData.staffCredit.toStaff: " + getPaymentMethodData().getStaffCredit().getToStaff().getPerson().getName());
+                        getPaymentMethodData().getStaffWelfare().setToStaff(billToSettle.getToStaff());
+                        System.out.println("Assigned to paymentMethodData.staffWelfare.toStaff: " + getPaymentMethodData().getStaffWelfare().getToStaff().getPerson().getName());
                     } else {
                         System.out.println("WARNING: Staff_Welfare payment method but args.getToStaff() is NULL");
                     }
@@ -2170,17 +2267,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             System.out.println("Staff_Welfare payment method in calTotals");
             // Ensure PaymentMethodData is initialized
-            if (getPaymentMethodData() != null && getPaymentMethodData().getStaffCredit() != null) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getStaffWelfare() != null) {
                 // Get the selected staff from the payment method data
-                if (getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                if (getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
                     // Synchronize to preBill.toStaff for validation
-                    getPreBill().setToStaff(getPaymentMethodData().getStaffCredit().getToStaff());
+                    getPreBill().setToStaff(getPaymentMethodData().getStaffWelfare().getToStaff());
                     System.out.println("Staff synchronized in calTotals: " + getPreBill().getToStaff().getPerson().getName());
                 } else {
-                    System.out.println("WARNING: StaffCredit.toStaff is NULL in calTotals");
+                    System.out.println("WARNING: StaffWelfare.toStaff is NULL in calTotals");
                 }
             } else {
-                System.out.println("WARNING: PaymentMethodData or StaffCredit is NULL in calTotals");
+                System.out.println("WARNING: PaymentMethodData or StaffWelfare is NULL in calTotals");
             }
         }
 

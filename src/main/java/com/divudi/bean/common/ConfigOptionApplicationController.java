@@ -164,6 +164,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
 
+        // Payment Generation Configuration
+        getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+
         // Quantity Validation Configuration
         getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
 

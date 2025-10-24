@@ -139,7 +139,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
                         "Allow Adding Direct Purchase Items When Normal Quantity Is Zero And Free Quantity Is Present",
                         false
                 );
-        
+
         if (f == null || pbi == null) {
             JsfUtil.addErrorMessage("Invalid internal structure. Cannot proceed.");
             return;
@@ -1002,7 +1002,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
 //        getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         getBillFacade().edit(getBill());
-        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
+        finalizeBill();
+        approveBill();
+
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        if (generatePayments) {
+            List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
+        }
 
         JsfUtil.addSuccessMessage("Direct Purchase Successfully Completed.");
         printPreview = true;
@@ -1085,8 +1092,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
         } else {
             // Smart fallback logic
-            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false) ||
-                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)
+                    || configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) {
                 insId = deptId; // Use same number as department
             } else {
                 // Use existing institution method for backward compatibility
@@ -1112,6 +1119,29 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     }
 
+    public void finalizeBill() {
+        getBill().setChecked(true);
+        getBill().setCheckeAt(new Date());
+        getBill().setCheckedBy(getSessionController().getLoggedUser());
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        } else {
+            getBillFacade().edit(getBill());
+        }
+    }
+
+    public void approveBill() {
+        getBill().setCompleted(true);
+        getBill().setCompletedAt(new Date());
+        getBill().setCompletedBy(getSessionController().getLoggedUser());
+        if (getBill().getId() == null) {
+            getBillFacade().create(getBill());
+        } else {
+            getBillFacade().edit(getBill());
+        }
+    }
+    
+    
     public double getNetTotal() {
         // If NetTotal has already been calculated by the service (includes expenses), return it as-is
         if (getBill().getNetTotal() != 0.0) {
@@ -1881,6 +1911,5 @@ public class PharmacyDirectPurchaseController implements Serializable {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
     }
-
 
 }
