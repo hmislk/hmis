@@ -1178,7 +1178,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             }
         }
 
-        return total - multiplePaymentMethodTotalValue;
+        // Use absolute value to handle both sales (positive) and refunds (negative)
+        // For refunds: abs(-12) - 8 = 4 (remaining to refund)
+        // For sales: abs(100) - 80 = 20 (remaining to pay)
+        return Math.abs(total) - multiplePaymentMethodTotalValue;
     }
 
     /**
