@@ -115,15 +115,38 @@ public class PharmacyStockTakeController implements Serializable {
      * Generate stock count bill preview without persisting.
      */
     public String generateStockCountBill() {
+        // Null check for injected dependencies
+        if (webUserController == null) {
+            JsfUtil.addErrorMessage("System error: Web user controller not available");
+            LOGGER.log(Level.SEVERE, "webUserController is null in generateStockCountBill");
+            return null;
+        }
+        if (sessionController == null) {
+            JsfUtil.addErrorMessage("System error: Session controller not available");
+            LOGGER.log(Level.SEVERE, "sessionController is null in generateStockCountBill");
+            return null;
+        }
+        if (stockFacade == null) {
+            JsfUtil.addErrorMessage("System error: Stock facade not available");
+            LOGGER.log(Level.SEVERE, "stockFacade is null in generateStockCountBill");
+            return null;
+        }
+
+        // Check privilege
         if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
             JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
             return null;
         }
+
+        // Check department
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return null;
         }
+
         Department dept = department;
+
+        // Fetch stocks
         String jpql = "select s from Stock s "
                 + "where s.department=:d and s.stock>0 "
                 + "order by coalesce(s.itemBatch.item.category.name, '') asc, "
@@ -136,53 +159,100 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("No stock available");
             return null;
         }
+
+        // Initialize snapshot bill
         snapshotBill = new Bill();
         snapshotBill.setBillType(BillType.PharmacySnapshotBill);
         snapshotBill.setBillClassType(BillClassType.BilledBill);
         snapshotBill.setDepartment(dept);
-        snapshotBill.setInstitution(dept.getInstitution());
+
+        // Null check for institution
+        if (dept.getInstitution() != null) {
+            snapshotBill.setInstitution(dept.getInstitution());
+        }
+
         snapshotBill.setCreatedAt(new Date());
-        snapshotBill.setCreater(sessionController.getLoggedUser());
+
+        // Null check for logged user
+        if (sessionController.getLoggedUser() != null) {
+            snapshotBill.setCreater(sessionController.getLoggedUser());
+        }
+
         double total = 0.0;
         for (Stock s : stocks) {
+            // Null check for stock
             if (s == null) {
                 continue;
             }
+
+            // Null check for item batch
+            ItemBatch itemBatch = s.getItemBatch();
+            if (itemBatch == null) {
+                LOGGER.log(Level.WARNING, "Stock with null itemBatch found. Stock ID: {0}", s.getId());
+                continue;
+            }
+
+            // Null check for item
+            if (itemBatch.getItem() == null) {
+                LOGGER.log(Level.WARNING, "ItemBatch with null item found. ItemBatch ID: {0}", itemBatch.getId());
+                continue;
+            }
+
+            // Create bill item
             BillItem bi = new BillItem();
             bi.setBill(snapshotBill);
-            if (s.getItemBatch() == null) {
-                continue;
-            }
-            if (s.getItemBatch().getItem() == null) {
-                continue;
-            }
-            bi.setItem(s.getItemBatch().getItem());
-            // Cache display fields to avoid lazy loading issues in preview pages
-            if (s.getItemBatch() != null && s.getItemBatch().getItem() != null) {
-                bi.setDescreption(s.getItemBatch().getItem().getName());
-            }
-            bi.setQty(s.getStock());
+            bi.setItem(itemBatch.getItem());
+
+            // Set description safely
+            String itemName = itemBatch.getItem().getName();
+            bi.setDescreption(itemName != null ? itemName : "");
+
+            // Set quantity safely
+            Double stockQty = s.getStock();
+            bi.setQty(stockQty != null ? stockQty : 0.0);
+
             bi.setCreatedAt(new Date());
-            bi.setCreater(sessionController.getLoggedUser());
+
+            // Set creater safely
+            if (sessionController.getLoggedUser() != null) {
+                bi.setCreater(sessionController.getLoggedUser());
+            }
+
+            // Create pharmaceutical bill item
             PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
             pbi.setBillItem(bi);
-            pbi.setItemBatch(s.getItemBatch());
-            pbi.setQty(s.getStock());
+            pbi.setItemBatch(itemBatch);
+            pbi.setQty(stockQty != null ? stockQty : 0.0);
             pbi.setStock(s);
-            if (s.getItemBatch() != null) {
-                pbi.setStringValue(s.getItemBatch().getBatchNo());
+
+            // Set batch number safely
+            String batchNo = itemBatch.getBatchNo();
+            if (batchNo != null) {
+                pbi.setStringValue(batchNo);
             }
-            Double costRate = s.getItemBatch() != null ? s.getItemBatch().getCostRate() : 0.0;
-            pbi.setCostRate(costRate != null ? costRate : 0.0);
-            double lineValue = (pbi.getCostRate()) * (bi.getQty() != null ? bi.getQty() : 0.0);
+
+            // Set cost rate safely
+            Double costRate = itemBatch.getCostRate();
+            double safeCostRate = (costRate != null) ? costRate : 0.0;
+            pbi.setCostRate(safeCostRate);
+
+            // Calculate line value safely
+            double safeQty = (bi.getQty() != null) ? bi.getQty() : 0.0;
+            Double pbiCostRate = pbi.getCostRate();
+            double safePbiCostRate = (pbiCostRate != null) ? pbiCostRate : 0.0;
+            double lineValue = safePbiCostRate * safeQty;
+
             bi.setNetValue(lineValue);
             total += lineValue;
             bi.setPharmaceuticalBillItem(pbi);
+
+            // Initialize bill items list if null
             if (snapshotBill.getBillItems() == null) {
                 snapshotBill.setBillItems(new java.util.ArrayList<>());
             }
             snapshotBill.getBillItems().add(bi);
         }
+
         snapshotBill.setNetTotal(total);
         JsfUtil.addSuccessMessage("Preview generated. Please review and settle.");
         return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
