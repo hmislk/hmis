@@ -229,23 +229,23 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     private void cleanupInvalidPaymentDetails() {
-        if (paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+        if (paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
             return;
         }
 
         // Remove ComponentDetails with null paymentMethodData or null paymentMethod
         paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()
-            .removeIf(cd -> cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null);
+                .removeIf(cd -> cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null);
     }
 
     public boolean isLastPaymentEntry(ComponentDetail cd) {
-        if (cd == null ||
-            paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+        if (cd == null
+                || paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
@@ -1212,7 +1212,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return false;
     }
 
-    //ToDo : have to duplicate methods in the pharmacy sale. Will implement service class and need to centralize them.
+    
     public double calculateMultiplePaymentMethodTotal() {
         System.out.println(">>> CALCULATE MULTIPLE PAYMENT START");
         double multiplePaymentMethodTotalValue = 0;
@@ -1253,7 +1253,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                         case PatientDeposit:
                             if (cd.getPaymentMethodData().getPatient_deposit() != null) {
                                 // Only include the value if patient is selected
-                                // When patient is null, the payment method is still being configured
+                                // When patient is null, the payment method value SHOULD NOT be considered
                                 if (cd.getPaymentMethodData().getPatient_deposit().getPatient() != null) {
                                     valueAdded = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                                     multiplePaymentMethodTotalValue += valueAdded;
@@ -1273,13 +1273,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             // PaymentMethod.Staff -> PaymentMethodData.getStaffCredit()
                             if (cd.getPaymentMethodData().getStaffCredit() != null) {
                                 // Only include the value if staff is selected
-                                // When staff is null, the payment method is still being configured
-                                if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                                    valueAdded = cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                                    multiplePaymentMethodTotalValue += valueAdded;
-                                } else {
-                                    System.out.println("  - Staff: SKIPPED (staff not selected)");
-                                }
+                                // Even when staff is null, the payment method should still consider
+                                valueAdded = cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
                             }
                             break;
                         case Staff_Welfare:
@@ -1287,25 +1283,16 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             // PaymentMethod.Staff_Welfare -> PaymentMethodData.getStaffWelfare()
                             if (cd.getPaymentMethodData().getStaffWelfare() != null) {
                                 // Only include the value if staff is selected and value is entered
-                                // When staff is null, the payment method is still being configured
-                                if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
-                                    valueAdded = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
-                                    multiplePaymentMethodTotalValue += valueAdded;
-                                } else {
-                                    System.out.println("  - Staff_Welfare: SKIPPED (staff not selected)");
-                                }
+                                // Even when staff is null, the payment method total should still needs to be considered
+                                valueAdded = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
                             }
                             break;
                         case Credit:
                             if (cd.getPaymentMethodData().getCredit() != null) {
                                 // Only include the value if credit company is selected
-                                // When institution is null, the payment method is still being configured
-                                if (cd.getPaymentMethodData().getCredit().getInstitution() != null) {
-                                    valueAdded = cd.getPaymentMethodData().getCredit().getTotalValue();
-                                    multiplePaymentMethodTotalValue += valueAdded;
-                                } else {
-                                    System.out.println("  - Credit: SKIPPED (institution not selected)");
-                                }
+                                valueAdded = cd.getPaymentMethodData().getCredit().getTotalValue();
+                                multiplePaymentMethodTotalValue += valueAdded;
                             }
                             break;
                         case OnlineSettlement:
