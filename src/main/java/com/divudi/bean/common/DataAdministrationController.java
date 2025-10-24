@@ -534,6 +534,287 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Corrects the sign of BillFinanceDetails totals (totalPurchaseValue, totalCostValue, totalRetailSaleValue)
+     * for specific bill types. This method applies sign corrections based on bill type logic:
+     * - PHARMACY_GRN_RETURN: Values should be negative (stock moving out/returning to supplier)
+     *
+     * Future bill types can be added with their specific sign correction logic.
+     */
+    public void correctBillFinanceDetailsSigns() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            // Start with PHARMACY_GRN_RETURN, can add more types later
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN_RETURN
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No bills found for the selected bill types and date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // Apply sign correction based on bill type
+                if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN) {
+                    // GRN Returns: Values should be NEGATIVE (stock moving out)
+                    billWasCorrected = correctToNegative(bfd);
+                }
+                // Future: Add more bill types here with different correction logic
+                // Example:
+                // else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                //     // GRN: Values should be POSITIVE (stock moving in)
+                //     billWasCorrected = correctToPositive(bfd);
+                // }
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed ").append(billsProcessed).append(" bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Date range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Corrected ").append(billsCorrected).append(" bills with incorrect signs in BillFinanceDetails.");
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting bill finance details signs: " + e.getMessage();
+            e.printStackTrace();
+        }
+    }
+
+    public void addCompletedStateToBills() {
+        billController.setOutput("");
+
+        StringBuilder output = new StringBuilder();
+        try {
+            List<BillTypeAtomic> pharmacyBillTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_WITHOUT_STOCKS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_PRE,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK_BATCH_BILL,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK,
+                    BillTypeAtomic.PHARMACY_WHOLESALE,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                    BillTypeAtomic.PHARMACY_ORDER,
+                    BillTypeAtomic.PHARMACY_ORDER_PRE,
+                    BillTypeAtomic.PHARMACY_ORDER_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL,
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+                    BillTypeAtomic.PHARMACY_GRN_PAYMENT,
+                    BillTypeAtomic.PHARMACY_GRN_PAYMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE,
+                    BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_RECEIVE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_PRE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED,
+                    BillTypeAtomic.MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL,
+                    BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION,
+                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT,
+                    BillTypeAtomic.PHARMACY_SNAPSHOT_GENERATION,
+                    BillTypeAtomic.PHARMACY_PHYSICAL_COUNT_ENTRY,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                    BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("completed", false);
+            params.put("types", pharmacyBillTypes);
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.completed = :completed AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                billController.setOutput("No pharmacy bills found with completed=false for the given date range.");
+                return;
+            }
+
+            int billsUpdated = 0;
+            Date now = new Date();
+            WebUser currentUser = sessionController.getLoggedUser();
+
+            for (Bill candidate : billsToProcess) {
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                bill.setCompleted(true);
+                bill.setCompletedAt(now);
+                bill.setCompletedBy(currentUser);
+                billFacade.edit(bill);
+                billsUpdated++;
+            }
+
+            output.append("Processed ").append(billsToProcess.size()).append(" pharmacy bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Filtered by createdAt ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Updated ").append(billsUpdated).append(" bills to completed=true.");
+            billController.setOutput(output.toString());
+        } catch (Exception e) {
+            billController.setOutput("Error adding completed state to bills: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to NEGATIVE
+     * Returns true if any correction was made
+     */
+    private boolean correctToNegative(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to POSITIVE
+     * Returns true if any correction was made
+     * (Reserved for future use - e.g., for GRN bills)
+     */
+    private boolean correctToPositive(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
     public void correctPharmacyDisbursementSigns() {
         executionFeedback = "";
         StringBuilder out = new StringBuilder();

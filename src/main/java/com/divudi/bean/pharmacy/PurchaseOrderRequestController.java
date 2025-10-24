@@ -201,6 +201,19 @@ public class PurchaseOrderRequestController implements Serializable {
             return;
         }
 
+        // Check for duplicate items if configuration is enabled
+        if (configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false)) {
+            Item selectedItem = getCurrentBillItem().getItem();
+            for (BillItem existingItem : getBillItems()) {
+                if (existingItem != null && !existingItem.isRetired()
+                    && existingItem.getItem() != null
+                    && existingItem.getItem().equals(selectedItem)) {
+                    JsfUtil.addErrorMessage("This item has already been added to the purchase order. Please update the quantity of the existing item instead of adding it again.");
+                    return;
+                }
+            }
+        }
+
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
@@ -521,8 +534,27 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         int serialStart = getBillItems().size();
+        boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
+        int skippedCount = 0;
 
         for (Item i : items) {
+            // Check for duplicate items if configuration is enabled
+            if (preventDuplicates) {
+                boolean isDuplicate = false;
+                for (BillItem existingItem : getBillItems()) {
+                    if (existingItem != null && !existingItem.isRetired()
+                        && existingItem.getItem() != null
+                        && existingItem.getItem().equals(i)) {
+                        isDuplicate = true;
+                        skippedCount++;
+                        break;
+                    }
+                }
+                if (isDuplicate) {
+                    continue; // Skip this item as it already exists
+                }
+            }
+
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -535,6 +567,10 @@ public class PurchaseOrderRequestController implements Serializable {
             tmp.setRetailRate(getPharmacyBean().getLastRetailRate(i, getSessionController().getDepartment()));
 
             getBillItems().add(bi);
+        }
+
+        if (preventDuplicates && skippedCount > 0) {
+            JsfUtil.addErrorMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
         }
 
         calculateBillTotals();

@@ -5,8 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+      xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -21,7 +21,7 @@
                                         ajax="false"
                                         value="Back to List" 
                                         icon="fa fa-long-arrow-left"
-                                        action="#{opdBillController.navigateToSearchOpdBills()}"
+                                        action="/lab/inward_search_service?faces-redirect=true"
                                         class="ui-button-warning" >
                                     </p:commandButton>
                                 </div>
@@ -40,11 +40,11 @@
 
                                 <p:commandButton 
                                     ajax="false"
-                                    value="Request Cancel Bill" 
+                                    value="Request to Cancel Bill" 
                                     icon="fa fa-cancel"
                                     style="float: right"
                                     class="ui-button-danger" 
-                                    action="#{requestController.createRequestforOPDBatchBill()}">
+                                    action="#{requestController.createRequestforInpatientServiceBill()}">
                                 </p:commandButton>
                             </div>
 
@@ -57,7 +57,7 @@
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <common:patient patient="#{requestController.patient}" class="w-100"/>
+                                        <in:bhtDetail admission="#{requestController.patientEncounter}"/>
                                     </p:panel>
 
                                 </div>
@@ -72,12 +72,10 @@
                                             <h:outputLabel value="#{requestController.batchBill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Bill Type Atomic :" ></h:outputLabel>
                                             <h:outputLabel value="#{requestController.batchBill.billTypeAtomic}" ></h:outputLabel>
-                                            <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.total}" ></h:outputLabel>
-                                            <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.discount}" ></h:outputLabel>
                                             <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{requestController.batchBill.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="#{requestController.batchBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
@@ -131,7 +129,7 @@
                                             ajax="false"
                                             value="Back to List" 
                                             icon="fa fa-long-arrow-left"
-                                            action="#{opdBillController.navigateToSearchOpdBills()}"
+                                            action="/lab/inward_search_service?faces-redirect=true"
                                             class="ui-button-warning" >
                                         </p:commandButton>
                                     </div>

@@ -63,27 +63,27 @@
                             
                             <!-- Search Buttons positioned for better visibility -->
                             <div class="mb-4">
-                                <p:commandButton 
-                                    class="ui-button-info w-100 mb-2" 
-                                    icon="fas fa-search" 
-                                    value="Search All Requests" 
-                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
+                                <p:commandButton
+                                    class="ui-button-info w-100 mb-2"
+                                    icon="fas fa-search"
+                                    value="Search All Requests"
+                                    action="#{grnReturnWorkflowController.fillAllGrnReturns()}"
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-success w-100 mb-2" 
-                                    icon="fas fa-check" 
-                                    value="Search Approved Requests" 
-                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}" 
+                                <p:commandButton
+                                    class="ui-button-success w-100 mb-2"
+                                    icon="fas fa-check"
+                                    value="Search Approved Requests"
+                                    action="#{grnReturnWorkflowController.fillApprovedGrnReturns()}"
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-warning w-100" 
-                                    icon="fas fa-clock" 
-                                    value="Search To Approve Requests" 
-                                    action="#{searchController.fillOnlyFinalizedGrnReturns()}" 
+                                <p:commandButton
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-clock"
+                                    value="Search To Approve Requests"
+                                    action="#{grnReturnWorkflowController.fillGrnReturnsToApprove()}"
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
