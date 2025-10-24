@@ -16,33 +16,67 @@
                         </div>
                         <div class="card-body">
                             <h:form>
+                                <!-- Display status badge -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert" style="#{pharmacyStockTakeController.snapshotBill.completed ? 'background-color: #d4edda; border-color: #c3e6cb; color: #155724;' : 'background-color: #fff3cd; border-color: #ffeaa7; color: #856404;'}">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="fa #{pharmacyStockTakeController.snapshotBill.completed ? 'fa-check-circle' : 'fa-clock'}" style="margin-right: 8px;"></i>
+                                                    <strong>Stock Taking Status:</strong>
+                                                    <span style="margin-left: 8px; font-weight: bold;">
+                                                        #{pharmacyStockTakeController.snapshotBill.completed ? 'Completed' : 'Ongoing'}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <p:commandButton value="Complete Stock Taking"
+                                                                     icon="fa fa-check-circle"
+                                                                     styleClass="ui-button-success"
+                                                                     action="#{pharmacyStockTakeController.completeStockTaking}"
+                                                                     update="@form"
+                                                                     rendered="#{not pharmacyStockTakeController.snapshotBill.completed}">
+                                                        <p:confirm header="Complete Stock Taking"
+                                                                   message="Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed."
+                                                                   icon="fa fa-exclamation-triangle"/>
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="fa fa-check"/>
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times"/>
+                                </p:confirmDialog>
+
                                 <div class="row mb-4">
                                     <div class="col-lg-8">
                                         <div class="btn-toolbar" role="toolbar">
                                             <div class="btn-group mr-3" role="group" aria-label="Print Actions">
-                                                <p:commandButton 
-                                                    value="Print Report" 
-                                                    icon="fa fa-print" 
-                                                    ajax="false" 
+                                                <p:commandButton
+                                                    value="Print Report"
+                                                    icon="fa fa-print"
+                                                    ajax="false"
                                                     styleClass="ui-button-info mx-1">
                                                     <p:printer target="reportView" />
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    value="Export PDF" 
-                                                    icon="fa fa-file-pdf" 
-                                                    ajax="false" 
+                                                <p:commandButton
+                                                    value="Export PDF"
+                                                    icon="fa fa-file-pdf"
+                                                    ajax="false"
                                                     styleClass="ui-button-secondary mx-1">
                                                     <p:dataExporter type="pdf" target=":#{p:resolveFirstComponentWithId('tbl',view).clientId}" fileName="pharmacy_stock_count_#{pharmacyStockTakeController.snapshotBill.deptId}" />
                                                 </p:commandButton>
                                             </div>
                                             <div class="btn-group mr-3" role="group" aria-label="Download Sheets">
-                                                <p:commandButton value="Download Guided Sheet for All" ajax="false" 
-                                                                 styleClass="ui-button-success mx-1" icon="fa fa-download" 
+                                                <p:commandButton value="Download Guided Sheet for All" ajax="false"
+                                                                 styleClass="ui-button-success mx-1" icon="fa fa-download"
                                                                  onclick="PrimeFaces.monitorDownload(start, stop);">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Download Blind Sheet for All" ajax="false" 
-                                                                 styleClass="ui-button-warning mx-1" icon="fa fa-download" 
+                                                <p:commandButton value="Download Blind Sheet for All" ajax="false"
+                                                                 styleClass="ui-button-warning mx-1" icon="fa fa-download"
                                                                  onclick="PrimeFaces.monitorDownload(start, stop);">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
                                                 </p:commandButton>
@@ -50,8 +84,8 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-4 text-right">
-                                        <p:commandButton value="Back to Stock Take" ajax="false" 
-                                                         styleClass="ui-button-secondary" icon="fa fa-arrow-left" 
+                                        <p:commandButton value="Back to Stock Take" ajax="false"
+                                                         styleClass="ui-button-secondary" icon="fa fa-arrow-left"
                                                          action="pharmacy_stock_take?faces-redirect=true"/>
                                     </div>
                                 </div>
