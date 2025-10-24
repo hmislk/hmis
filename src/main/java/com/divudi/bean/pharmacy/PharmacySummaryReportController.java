@@ -315,6 +315,15 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public String navigateToDailyStockValuesReport() {
+        if(institution==null){
+            institution = sessionController.getInstitution();
+        }
+        if(site==null){
+            site = sessionController.getLoggedSite();
+        }
+        if(department==null){
+            department=sessionController.getDepartment();
+        }
         return "/pharmacy/reports/summary_reports/daily_stock_values_report?faces-redirect=true";
     }
 
@@ -344,11 +353,13 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        Date today = new Date();
-        if (!fromDate.before(today)) {
-            JsfUtil.addErrorMessage("Selected date must be earlier than today");
-            return;
-        }
+        
+//        Report can be generated for today as well
+//        Date today = new Date();
+//        if (!fromDate.before(today)) {
+//            JsfUtil.addErrorMessage("Selected date must be earlier than today");
+//            return;
+//        }
 
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);

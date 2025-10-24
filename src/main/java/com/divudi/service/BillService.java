@@ -1057,6 +1057,8 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
