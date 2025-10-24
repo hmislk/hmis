@@ -6183,7 +6183,7 @@ public class PharmacyController implements Serializable {
                 + "b.billItemFinanceDetails.retailSaleRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
                 + "b.billItemFinanceDetails.quantity, " //  b.getBillItemFinanceDetails().getQuantity()
                 + "b.billItemFinanceDetails.freeQuantity, " // b.getBillItemFinanceDetails().getFreeQuantity();
-                + "b.netValue, "  // Updated: was b.bill.netTotal, now using b.netValue as per comment
+                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), "  // Use BigDecimal netTotal from finance details, handle null for legacy data
                 + "b.item.name) "  // item name
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
