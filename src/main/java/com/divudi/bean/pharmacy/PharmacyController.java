@@ -6178,12 +6178,12 @@ public class PharmacyController implements Serializable {
                 + "b.bill.fromInstitution.name, "
                 + "b.bill.creater.webUserPerson.name, "
                 + "b.bill.createdAt, "
-                + "b.pharmaceuticalBillItem.purchaseRate, " //b.getBillItemFinanceDetails().getPurchaseRate();
-                + "b.pharmaceuticalBillItem.costRate, " // b.getBillItemFinanceDetails().getCostRate();
-                + "b.pharmaceuticalBillItem.retailRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
-                + "b.pharmaceuticalBillItem.qty, " //  b.getBillItemFinanceDetails().getQuantity()
-                + "b.pharmaceuticalBillItem.freeQty, " // b.getBillItemFinanceDetails().getFreeQuantity();
-                + "b.bill.netTotal, "  // replace by b.getNetValue();
+                + "b.billItemFinanceDetails.purchaseRate, " //b.getBillItemFinanceDetails().getPurchaseRate();
+                + "b.billItemFinanceDetails.costRate, " // b.getBillItemFinanceDetails().getCostRate();
+                + "b.billItemFinanceDetails.retailSaleRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
+                + "b.billItemFinanceDetails.quantity, " //  b.getBillItemFinanceDetails().getQuantity()
+                + "b.billItemFinanceDetails.freeQuantity, " // b.getBillItemFinanceDetails().getFreeQuantity();
+                + "b.netValue, "  // Updated: was b.bill.netTotal, now using b.netValue as per comment
                 + "b.item.name) "  // item name
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
