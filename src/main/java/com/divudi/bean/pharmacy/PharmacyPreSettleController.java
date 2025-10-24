@@ -2170,17 +2170,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (getPreBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             System.out.println("Staff_Welfare payment method in calTotals");
             // Ensure PaymentMethodData is initialized
-            if (getPaymentMethodData() != null && getPaymentMethodData().getStaffCredit() != null) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getStaffWelfare() != null) {
                 // Get the selected staff from the payment method data
-                if (getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                if (getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
                     // Synchronize to preBill.toStaff for validation
-                    getPreBill().setToStaff(getPaymentMethodData().getStaffCredit().getToStaff());
+                    getPreBill().setToStaff(getPaymentMethodData().getStaffWelfare().getToStaff());
                     System.out.println("Staff synchronized in calTotals: " + getPreBill().getToStaff().getPerson().getName());
                 } else {
-                    System.out.println("WARNING: StaffCredit.toStaff is NULL in calTotals");
+                    System.out.println("WARNING: StaffWelfare.toStaff is NULL in calTotals");
                 }
             } else {
-                System.out.println("WARNING: PaymentMethodData or StaffCredit is NULL in calTotals");
+                System.out.println("WARNING: PaymentMethodData or StaffWelfare is NULL in calTotals");
             }
         }
 
