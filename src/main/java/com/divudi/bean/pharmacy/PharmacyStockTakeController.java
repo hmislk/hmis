@@ -199,9 +199,11 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         // Check if there's an ongoing stock taking for this department
-        if (department != null && hasOngoingStockTaking(department)) {
+        // Use department from snapshotBill to prevent bypass via mutable controller field
+        Department deptFromBill = snapshotBill.getDepartment();
+        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill)) {
             JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department. Please complete the existing session first.");
-            LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", department.getName());
+            LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
             return null;
         }
         // Ensure fresh persistence for a new bill: null out IDs if bill is new
