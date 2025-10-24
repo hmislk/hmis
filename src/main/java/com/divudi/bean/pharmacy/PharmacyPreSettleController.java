@@ -883,6 +883,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
                         p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
                         break;
+                    case Staff_Welfare:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                        }
+                        break;
                     case Agent:
                     case Credit:
                     case OnCall:
@@ -1144,6 +1150,24 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
                         if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
                             JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                            return true;
+                        }
+                    }
+
+                    if (cd.getPaymentMethod().equals(PaymentMethod.Staff_Welfare)) {
+                        // Validate staff selection for Staff_Welfare in multiple payments
+                        if (cd.getPaymentMethodData().getStaffWelfare() == null || cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                            JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
+                            return true;
+                        }
+
+                        // Validate staff welfare balance
+                        Staff selectedStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
+                        double requestedAmount = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                        double availableWelfare = selectedStaff.getAnnualWelfareQualified() - Math.abs(selectedStaff.getAnnualWelfareUtilized());
+
+                        if (requestedAmount > availableWelfare) {
+                            JsfUtil.addErrorMessage("Insufficient welfare balance for " + selectedStaff.getPerson().getName() + ". Available: " + availableWelfare);
                             return true;
                         }
                     }
@@ -1880,8 +1904,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             setPaymentMethodData(new PaymentMethodData());
                             System.out.println("PaymentMethodData was null, created new instance");
                         }
-                        getPaymentMethodData().getStaffCredit().setToStaff(billToSettle.getToStaff());
-                        System.out.println("Assigned to paymentMethodData.staffCredit.toStaff: " + getPaymentMethodData().getStaffCredit().getToStaff().getPerson().getName());
+                        getPaymentMethodData().getStaffWelfare().setToStaff(billToSettle.getToStaff());
+                        System.out.println("Assigned to paymentMethodData.staffWelfare.toStaff: " + getPaymentMethodData().getStaffWelfare().getToStaff().getPerson().getName());
                     } else {
                         System.out.println("WARNING: Staff_Welfare payment method but args.getToStaff() is NULL");
                     }
