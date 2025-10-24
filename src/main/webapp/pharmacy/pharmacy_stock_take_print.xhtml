@@ -71,13 +71,11 @@
                                             </div>
                                             <div class="btn-group mr-3" role="group" aria-label="Download Sheets">
                                                 <p:commandButton value="Download Guided Sheet for All" ajax="false"
-                                                                 styleClass="ui-button-success mx-1" icon="fa fa-download"
-                                                                 onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                                 styleClass="ui-button-success mx-1" icon="fa fa-download">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="Download Blind Sheet for All" ajax="false"
-                                                                 styleClass="ui-button-warning mx-1" icon="fa fa-download"
-                                                                 onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                                 styleClass="ui-button-warning mx-1" icon="fa fa-download">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
                                                 </p:commandButton>
                                             </div>
@@ -156,16 +154,14 @@
                                                                                      ajax="false"
                                                                                      styleClass="ui-button-success mx-1"
                                                                                      icon="fa fa-download"
-                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}"
-                                                                                     onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
                                                                         <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryGuidedSheet}" />
                                                                     </p:commandButton>
                                                                     <p:commandButton value="Download Category Blind Sheet"
                                                                                      ajax="false"
                                                                                      styleClass="ui-button-warning mx-1"
                                                                                      icon="fa fa-download"
-                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}"
-                                                                                     onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
                                                                         <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryBlindSheet}" />
                                                                     </p:commandButton>
                                                                 </div>
