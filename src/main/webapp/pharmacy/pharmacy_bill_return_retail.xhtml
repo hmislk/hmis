@@ -9,7 +9,7 @@
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
-        <h:form>
+        <h:form id="returnForm">
             <h:panelGroup rendered="#{!saleReturnController.printPreview}"  >
                 <p:panel class="w-100">
                     <f:facet name="header" >
@@ -25,6 +25,12 @@
                     </f:facet>
 
                     <div class="row" >
+                        <div class="col-12" >
+                            <p:messages id="msgs" ></p:messages>
+                        </div>
+                    </div>
+
+                    <div class="row" >
                         <div class="col-8" >
                             <p:dataTable 
                                 var="ph" 
@@ -37,9 +43,9 @@
                                 <f:facet name="header">  
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h:outputLabel value="Returning Item"></h:outputLabel>
-                                        <p:commandButton  
-                                            value="Fill All" 
-                                            action="#{saleReturnController.fillReturningQty}" 
+                                        <p:commandButton
+                                            value="Fill All"
+                                            action="#{saleReturnController.fillReturningQty}"
                                             process="@this"
                                             update="itemList :#{p:resolveFirstComponentWithId('totalPanel',view).clientId}"
                                             class="ui-button-warning"
@@ -87,13 +93,16 @@
 
                                 <p:column headerText="Returning Qty" class="text-end">
                                     <p:inputText
+                                        id="txtReturnQty"
                                         converter="javax.faces.Double"
                                         converterMessage="It should be a number"
-                                        autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
+                                        autocomplete="off" 
+                                        value="#{ph.qty}" 
+                                        class="text-end w-100">
                                         <p:ajax
                                             event="blur"
-                                            update="@this :#{p:resolveFirstComponentWithId('totalPanel',view).clientId} :#{p:resolveFirstComponentWithId('msgs',view).clientId}"
-                                            process="@this"
+                                            update=":#{p:resolveFirstComponentWithId('totalPanel',view).clientId} :#{p:resolveFirstComponentWithId('msgs',view).clientId} txtReturnQty"
+                                            process="txtReturnQty"
                                             listener="#{saleReturnController.onEdit(ph)}" >
                                         </p:ajax>
                                     </p:inputText>
@@ -127,8 +136,8 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <p:panel header="Repayment" >
-                                <h:panelGroup id="totalPanel">
+                            <p:panel header="Repayment" id="totalPanel">
+                                <h:panelGroup >
                                     <div class="mb-2">
                                         <p:outputLabel class="form-label" value="Gross Amount" />
                                         <p:outputLabel id="grossTotal"
@@ -261,11 +270,7 @@
                         </div>
                     </div>
 
-                    <div class="row" >
-                        <div class="col-12" >
-                            <p:messages id="msgs" ></p:messages>
-                        </div>
-                    </div>
+
 
                 </p:panel>
 
