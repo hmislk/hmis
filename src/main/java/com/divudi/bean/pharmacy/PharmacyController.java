@@ -6073,9 +6073,13 @@ public class PharmacyController implements Serializable {
         }
 
         List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN); // GRN Return
+        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND); // GRN Return
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION); // GRN Cancelled
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        
+        
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
                 + "bi.bill.deptId, "
@@ -6088,7 +6092,8 @@ public class PharmacyController implements Serializable {
                 + "bi.pharmaceuticalBillItem.purchaseRate, "
                 + "bi.pharmaceuticalBillItem.retailRate, "
                 + "bi.netRate, "
-                + "bi.netValue "
+                + "bi.netValue, "
+                + "bi.bill.billTypeAtomic "
                 + ") "
                 + "FROM BillItem bi "
                 + "WHERE (bi.bill.retired IS NULL OR bi.bill.retired = FALSE) "

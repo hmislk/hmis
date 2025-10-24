@@ -402,6 +402,7 @@
                                 </h:panelGroup>
                                 <p:dataTable styleClass="noBorder" value="#{pharmacyController.grnReturnDtos}" var="g" rendered="#{not empty pharmacyController.grnReturnDtos}">
                                     <p:column headerText="GRN Return No">#{g.grnReturnNo}</p:column>
+                                    <p:column headerText="Bill Type">#{g.billTypeAtomic.label}</p:column>
                                     <p:column headerText="Dept">#{g.departmentName}</p:column>
                                     <p:column headerText="Date">
                                         <h:outputLabel value="#{g.createdAt}">
@@ -1098,6 +1099,7 @@
                                     <thead class="table-dark">
                                         <tr>
                                             <th rowspan="2">GRN Return No</th>
+                                            <th rowspan="2">Bill Type</th>
                                             <th rowspan="2">Department</th>
                                             <th rowspan="2">Return Date</th>
                                             <th rowspan="2">Supplier</th>
@@ -1115,7 +1117,7 @@
                                     <tbody>
                                         <h:panelGroup rendered="#{empty pharmacyController.grnReturnDtos}">
                                             <tr>
-                                                <td colspan="9" class="text-center" style="padding: 20px; color: #6c757d;">
+                                                <td colspan="10" class="text-center" style="padding: 20px; color: #6c757d;">
                                                     <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
                                                     No GRN return data available for the selected period.
                                                 </td>
@@ -1125,6 +1127,9 @@
                                             <tr>
                                                 <td>
                                                     <h:outputText value="#{dd2.grnReturnNo}"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{dd2.billTypeAtomic.label}"/>
                                                 </td>
                                                 <td>
                                                     <h:outputText value="#{dd2.departmentName}"/>
