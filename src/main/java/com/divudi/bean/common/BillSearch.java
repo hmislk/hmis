@@ -3983,6 +3983,70 @@ public class BillSearch implements Serializable {
         return navigateToViewBillByAtomicBillType();
     }
 
+    /**
+     * Navigates to view the Purchase Order (PO) related to the given bill.
+     * The method dynamically determines which reference bill contains the PO
+     * based on the bill's BillTypeAtomic.
+     *
+     * For GRN Returns and Direct Purchase Returns, the PO is at referenceBill.referenceBill
+     * For GRN and Direct Purchase, the PO is at referenceBill
+     *
+     * @param billId The ID of the bill for which to find and navigate to the related PO
+     * @return Navigation string to view the PO, or null if PO not found
+     */
+    public String navigateToViewPo(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill grnBill = billFacade.find(billId);
+        if (grnBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        if (grnBill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("Bill type not specified");
+            return null;
+        }
+
+        Bill poBill = null;
+        BillTypeAtomic billType = grnBill.getBillTypeAtomic();
+
+        // Determine the PO location based on bill type
+        switch (billType) {
+            case PHARMACY_GRN_RETURN:
+            case PHARMACY_DIRECT_PURCHASE_REFUND:
+                // For returns, PO is at referenceBill.referenceBill
+                if (grnBill.getReferenceBill() != null
+                    && grnBill.getReferenceBill().getReferenceBill() != null) {
+                    poBill = grnBill.getReferenceBill().getReferenceBill();
+                }
+                break;
+
+            case PHARMACY_GRN:
+            case PHARMACY_DIRECT_PURCHASE:
+                // For GRN and Direct Purchase, PO is at referenceBill
+                if (grnBill.getReferenceBill() != null) {
+                    poBill = grnBill.getReferenceBill();
+                }
+                break;
+
+            default:
+                JsfUtil.addErrorMessage("Bill type does not have an associated Purchase Order");
+                return null;
+        }
+
+        if (poBill == null) {
+            JsfUtil.addErrorMessage("Purchase Order not found for this bill");
+            return null;
+        }
+
+        // Navigate to view the PO using the existing navigation method
+        return navigateToViewBillByAtomicBillTypeByBillId(poBill.getId());
+    }
+
     public String navigateToViewBillByAtomicBillType() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -4197,7 +4261,7 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyReturnWithoutTreasingBillView();
 
             case PHARMACY_GRN_RETURN:
-                return navigateToPharmacyGrnReturnBillView();
+                return navigateToPharmacyGrnReturnBillReprint();
             case PHARMACY_GRN_CANCELLED:
                 return navigateToPharmacyGrnCancellationBillView();
             case PHARMACY_TRANSFER_REQUEST:
@@ -4469,7 +4533,7 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyReturnWithoutTreasingBillView();
 
             case PHARMACY_GRN_RETURN:
-                return navigateToPharmacyGrnReturnBillView();
+                return navigateToPharmacyGrnReturnBillReprint();
             case PHARMACY_GRN_CANCELLED:
                 return navigateToPharmacyGrnCancellationBillView();
 
@@ -4634,6 +4698,16 @@ public class BillSearch implements Serializable {
         loadBillDetails(bb);
         pharmacyBillSearch.setBill(bb);
         return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyGrnReturnBillReprint() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyBillSearch.setBill(bill);
+        return "/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true";
     }
 
     public String navigateToDonationBillView() {
