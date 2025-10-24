@@ -251,24 +251,17 @@ public class Patient implements Serializable, RetirableEntity {
         ageMonthsOnBilledDate = period.getMonths();
         ageDaysOnBilledDate = period.getDays();
         if (ageYearsonBilledDate > 12) {
-            System.out.println("A");
             ageOnBilledDate = period.getYears() + " Years.";
         } else if (ageYearsonBilledDate > 0) {
-            System.out.println("B");
             if (period.getMonths() > 0) {
-                System.out.println("C");
                 ageOnBilledDate = period.getYears() + " Years and " + period.getMonths() + " Months.";
             } else {
-                System.out.println("D");
                 ageOnBilledDate = period.getYears() + " Years.";
             }
         } else {
-            System.out.println("E");
             if (period.getMonths() > 0) {
-                System.out.println("F");
                 ageOnBilledDate = period.getMonths() + " Months and " + period.getDays() + " Days.";
             } else {
-                System.out.println("G");
                 ageOnBilledDate = period.getDays()+ " Days.";
             }
         }
