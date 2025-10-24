@@ -2391,7 +2391,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        //double remainAmount = calculatRemainForMultiplePaymentTotal();
+        remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             // Guard against empty component list
             if (paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {

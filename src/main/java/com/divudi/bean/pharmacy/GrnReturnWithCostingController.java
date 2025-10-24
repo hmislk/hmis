@@ -1220,7 +1220,12 @@ public class GrnReturnWithCostingController implements Serializable {
         saveBillItems();
         applyRemainingValuesInOriginalBill(returnBill.getBillItems());
 
-        Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        Payment p = null;
+        if (generatePayments) {
+            p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+        }
 
         getBillFacade().edit(getReturnBill());
         
