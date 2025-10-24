@@ -901,6 +901,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
                             p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                            // Set bill.toStaff from the first Staff_Welfare payment component
+                            if (bill.getToStaff() == null) {
+                                bill.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                            }
                         }
                         break;
                     case Agent:

@@ -405,10 +405,18 @@ public class PaymentService {
         if (p.getBill() == null) {
             return;
         }
-        if (p.getBill().getToStaff() == null) {
+
+        // Get staff from payment first (for multiple payment scenarios)
+        // If not available, get from bill (for single payment scenarios)
+        Staff toStaff = p.getToStaff();
+        if (toStaff == null) {
+            toStaff = p.getBill().getToStaff();
+        }
+
+        if (toStaff == null) {
             return;
         }
-        Staff toStaff = p.getBill().getToStaff();
+
         staffService.updateStaffWelfare(toStaff, p.getPaidValue());
     }
 
