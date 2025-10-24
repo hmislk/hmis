@@ -195,11 +195,6 @@
                                                      listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
                                                      process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
                                                      update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal @this :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:ajax>
-                                                 <p:ajax
-                                                     event="blur"
-                                                     listener="#{pharmacyIssueController.calculateBillItemListner}"
-                                                     process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                     update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal @this :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:ajax>
                                              </p:inputText>
                                              <p:keyFilter for="txtQty" mask="#{pharmacyIssueController.stockDto.allowFractions ? 'num' : 'int'}" />
                                         </div>
