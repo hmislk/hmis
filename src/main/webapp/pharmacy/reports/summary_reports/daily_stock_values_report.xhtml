@@ -164,7 +164,9 @@
                                 <h:outputLabel value="Opening Stock"></h:outputLabel>
                             </td>
                             <td class="text-end">
-                                <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.openingStockValue}" class="me-4"></h:outputLabel>
+                                <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.openingStockValue}" class="me-4">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputLabel>
                             </td>
                         </tr>
 
@@ -305,7 +307,9 @@
                                 <h:outputLabel value="Closing Stock"></h:outputLabel>
                             </td>
                             <td class="text-end">
-                                <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStockValue}" class="me-4"></h:outputLabel>
+                                <h:outputLabel value="#{pharmacySummaryReportController.dailyStockBalanceReport.closingStockValue}" class="me-4">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputLabel>
                             </td>
                         </tr>
                     </table>
