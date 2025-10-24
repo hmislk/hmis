@@ -773,17 +773,18 @@ public class PharmacyStockTakeController implements Serializable {
             int colRealStock = findColumnIndex(header, "Real Stock Qty");
             LOGGER.log(Level.INFO, "[StockTake] Header columns detected. BillItemID={0}, Code={1}, Batch={2}, RealStock={3}",
                     new Object[]{colBillItemId, colCode, colBatch, colRealStock});
-
-            if (colRealStock < 0) {
-                JsfUtil.addErrorMessage("Column 'Real Stock Qty' not found in the uploaded file. Please use the exported template and fill quantities.");
-                LOGGER.log(Level.WARNING, "[StockTake] Missing required column: Real Stock Qty");
-                return;
-            }
-            if (colBillItemId < 0 && (colCode < 0 || colBatch < 0)) {
-                JsfUtil.addErrorMessage("Unable to identify items. Ensure either 'BillItem ID' or both 'Code' and 'Batch' columns exist.");
-                LOGGER.log(Level.WARNING, "[StockTake] Unable to match items. Missing BillItem ID and/or Code+Batch");
-                return;
-            }
+// There are systamatically validated below
+//            if (colRealStock < 0) {
+//                // User 
+//                JsfUtil.addErrorMessage("Column 'Real Stock Qty' not found in the uploaded file. Please use the exported template and fill quantities.");
+//                LOGGER.log(Level.WARNING, "[StockTake] Missing required column: Real Stock Qty");
+//                return;
+//            }
+//            if (colBillItemId < 0 && (colCode < 0 || colBatch < 0)) {
+//                JsfUtil.addErrorMessage("Unable to identify items. Ensure either 'BillItem ID' or both 'Code' and 'Batch' columns exist.");
+//                LOGGER.log(Level.WARNING, "[StockTake] Unable to match items. Missing BillItem ID and/or Code+Batch");
+//                return;
+//            }
 
             int processed = 0;
             int matched = 0;
@@ -1999,11 +2000,12 @@ public class PharmacyStockTakeController implements Serializable {
                 // Real Qty (this is the editable column)
                 Cell cReal = row.createCell(c++);
                 if (cReal != null) {
-                    if (includeSystemQty && bi.getQty() != null) {
-                        cReal.setCellValue(bi.getQty()); // pre-fill with system qty for guided sheet
-                    } else {
-                        cReal.setCellValue(0.0);
-                    }
+                    // Do NOT prefill Data.
+//                    if (includeSystemQty && bi.getQty() != null) {
+//                        cReal.setCellValue(bi.getQty()); // pre-fill with system qty for guided sheet
+//                    } else {
+//                        cReal.setCellValue(0.0);
+//                    }
                     if (inputUnlocked != null) {
                         cReal.setCellStyle(inputUnlocked);
                     }
