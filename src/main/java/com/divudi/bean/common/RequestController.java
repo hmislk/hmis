@@ -1,9 +1,11 @@
 package com.divudi.bean.common;
 
+import static com.divudi.core.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.RequestType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Request;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.RequestFacade;
@@ -27,7 +29,6 @@ import javax.inject.Named;
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
-
 @Named
 @SessionScoped
 public class RequestController implements Serializable {
@@ -74,14 +75,27 @@ public class RequestController implements Serializable {
     private String requestNo;
     private RequestType requestType;
     private RequestStatus status;
-    
+
+    private PatientEncounter patientEncounter;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchRequest() {
         requests = new ArrayList<>();
         return "/common/request/view_request?faces-redirect=true";
+    }
+
+    public String navigateToBackSearchBillList() {
+        
+        switch (currentRequest.getBill().getBillTypeAtomic()) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                return "/opd/opd_batch_bill_print?faces-redirect=true";
+            case INWARD_SERVICE_BILL:
+                return "/lab/inward_search_service?faces-redirect=true";
+            default:
+                return "";
+        }
+
     }
 
     public String navigateToBackSearchRequest() {
@@ -114,6 +128,7 @@ public class RequestController implements Serializable {
             return "";
         } else {
             printPreview = false;
+            bills = new ArrayList<>();
 
             switch (originalBill.getBillTypeAtomic()) {
                 case OPD_BATCH_BILL_WITH_PAYMENT:
@@ -122,10 +137,18 @@ public class RequestController implements Serializable {
                     patient = batchBill.getPatient();
                     comment = null;
 
-                    navigation = "/opd/opd_bill_cancel_request?faces-redirect=true";
+                    navigation = "/common/request/opd_bill_cancel_request?faces-redirect=true";
                     break;
                 case OPD_BILL_WITH_PAYMENT:
                     navigation = "";
+                    break;
+                case INWARD_SERVICE_BILL:
+                    setBatchBill(originalBill);
+                    bills.add(originalBill);
+                    patient = originalBill.getPatient();
+                    patientEncounter = originalBill.getPatientEncounter();
+                    comment = null;
+                    navigation = "/common/request/inward_bill_cancel_request?faces-redirect=true";
                     break;
                 default:
                     navigation = "";
@@ -152,15 +175,26 @@ public class RequestController implements Serializable {
             requestService.save(currentRequest, sessionController.getLoggedUser());
         }
 
+        bills = new ArrayList<>();
         String navigation = "";
 
         switch (currentRequest.getBill().getBillTypeAtomic()) {
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 bills = billController.billsOfBatchBill(currentRequest.getBill());
                 patient = currentRequest.getBill().getPatient();
+                patientEncounter = null;
                 comment = null;
 
-                navigation = "/common/request/batch_bill_cancel_request_approvel?faces-redirect=true";
+                navigation = "/common/request/bill_cancel_request_approvel?faces-redirect=true";
+                break;
+
+            case INWARD_SERVICE_BILL:
+                patient = currentRequest.getBill().getPatient();
+                patientEncounter = currentRequest.getBill().getPatientEncounter();
+                bills.add(currentRequest.getBill());
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_approvel?faces-redirect=true";
                 break;
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
@@ -183,14 +217,24 @@ public class RequestController implements Serializable {
         }
 
         String navigation = "";
+        bills = new ArrayList<>();
 
         switch (currentRequest.getBill().getBillTypeAtomic()) {
+
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 bills = billController.billsOfBatchBill(currentRequest.getBill());
                 patient = currentRequest.getBill().getPatient();
                 comment = null;
 
-                navigation = "/common/request/batch_bill_cancel_request_cancel?faces-redirect=true";
+                navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
+                break;
+            case INWARD_SERVICE_BILL:
+                bills.add(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                patientEncounter = currentRequest.getBill().getPatientEncounter();
+                comment = null;
+
+                navigation = "/common/request/bill_cancel_request_cancel?faces-redirect=true";
                 break;
             case OPD_BILL_WITH_PAYMENT:
                 navigation = "";
@@ -202,7 +246,6 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         patient = null;
@@ -212,12 +255,13 @@ public class RequestController implements Serializable {
         printPreview = false;
 
         requests = null;
-        
+
         billNo = null;
         bhtNo = null;
         requestNo = null;
         requestType = null;
         status = null;
+        patientEncounter = null;
     }
 
     public void createRequestforOPDBatchBill() {
@@ -246,7 +290,7 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
             return;
         } else {
-            for (Bill b : billController.billsOfBatchBill(batchBill)) {
+            for (Bill b : bills) {
                 if (b.getCurrentRequest() != null) {
                     JsfUtil.addErrorMessage("There is already a " + b.getCurrentRequest().getRequestType().getDisplayName() + " requesr for this bill.");
                     return;
@@ -275,7 +319,7 @@ public class RequestController implements Serializable {
             billFacade.edit(batchBill);
 
             //Update Induvidual Bills of Batch Bil
-            for (Bill b : billController.billsOfBatchBill(batchBill)) {
+            for (Bill b : bills) {
                 b.setCurrentRequest(newlyRequest);
                 billFacade.edit(b);
             }
@@ -286,9 +330,63 @@ public class RequestController implements Serializable {
         printPreview = true;
     }
 
+    public void createRequestforInpatientServiceBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request ");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+
+        if (batchBill.getDepartment() == null || batchBill.getDepartment().getId() == null || sessionController.getDepartment() == null || sessionController.getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Department information missing.");
+            return;
+        }
+
+        if (!batchBill.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to " + batchBill.getDepartment().getName() + " to cancel this bill.");
+            return;
+        }
+
+        Request req = requestService.findRequest(batchBill);
+
+        if (req != null) {
+            JsfUtil.addErrorMessage("There is already a " + req.getRequestType().getDisplayName() + " requesr for this bill.");
+            return;
+        } else {
+
+            Request newlyRequest = new Request();
+
+            newlyRequest.setBill(batchBill);
+            newlyRequest.setRequester(sessionController.getLoggedUser());
+            newlyRequest.setRequestAt(new Date());
+            newlyRequest.setRequestReason(comment);
+            newlyRequest.setRequestType(RequestType.BILL_CANCELLATION);
+            newlyRequest.setStatus(RequestStatus.PENDING);
+
+            newlyRequest.setInstitution(sessionController.getInstitution());
+            newlyRequest.setDepartment(sessionController.getDepartment());
+
+            String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.BILL_CANCELLATION);
+            newlyRequest.setRequestNo(reqNo);
+
+            requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+            //Update Batch Bill
+            batchBill.setCurrentRequest(newlyRequest);
+            billFacade.edit(batchBill);
+
+            setCurrentRequest(newlyRequest);
+        }
+
+        printPreview = true;
+    }
+
     public void searchRequest() {
         requests = new ArrayList<>();
-        requests = requestService.fillAllRequest(fromDate, toDate,billNo, bhtNo, requestNo, requestType, status, sessionController.getDepartment().getDepartmentType());
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, sessionController.getDepartment().getDepartmentType());
     }
 
     public void approveRequest() {
@@ -296,7 +394,7 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Request not found for approval");
             return;
         }
-        
+
         if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
             JsfUtil.addErrorMessage("You have not authorize to Approval this.");
             return;
@@ -331,7 +429,7 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Can't Cancel Approvel");
             return;
         }
-        
+
         if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
             JsfUtil.addErrorMessage("You have not authorize to Approval this.");
             return;
@@ -356,7 +454,7 @@ public class RequestController implements Serializable {
             JsfUtil.addErrorMessage("Bill not found for request Cancel");
             return;
         }
-        
+
         if (!webUserController.hasPrivilege("BillCancelRequestApproval")) {
             JsfUtil.addErrorMessage("You have not authorize to Cancel this.");
             return;
@@ -373,10 +471,13 @@ public class RequestController implements Serializable {
         billFacade.edit(currentRequest.getBill());
 
         //Update Induvidual Bills of Batch Bil
-        for (Bill b : billController.billsOfBatchBill(currentRequest.getBill())) {
-            b.setCurrentRequest(null);
-            billFacade.edit(b);
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
+            }
         }
+
         System.out.println("Successfully Reject = ");
         JsfUtil.addSuccessMessage("Rejected successfully");
 
@@ -395,9 +496,11 @@ public class RequestController implements Serializable {
         billFacade.edit(req.getBill());
 
         //Update Induvidual Bills of Batch Bil
-        for (Bill b : billController.billsOfBatchBill(req.getBill())) {
-            b.setCurrentRequest(null);
-            billFacade.edit(b);
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
+            }
         }
 
         JsfUtil.addSuccessMessage("Successfully Reject");
@@ -424,9 +527,11 @@ public class RequestController implements Serializable {
         billFacade.edit(currentRequest.getBill());
 
         //Update Induvidual Bills of Batch Bil
-        for (Bill b : billController.billsOfBatchBill(currentRequest.getBill())) {
-            b.setCurrentRequest(null);
-            billFacade.edit(b);
+        if (bills != null) {
+            for (Bill b : bills) {
+                b.setCurrentRequest(null);
+                billFacade.edit(b);
+            }
         }
 
         System.out.println("Successfully Reject = ");
@@ -455,6 +560,14 @@ public class RequestController implements Serializable {
 
     public void setRequestNo(String requestNo) {
         this.requestNo = requestNo;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
 
     @FacesConverter(forClass = Request.class)
@@ -498,7 +611,6 @@ public class RequestController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public boolean isPrintPreview() {
         return printPreview;
@@ -533,6 +645,9 @@ public class RequestController implements Serializable {
     }
 
     public List<Bill> getBills() {
+        if(bills == null){
+            bills = new ArrayList<>();
+        }
         return bills;
     }
 

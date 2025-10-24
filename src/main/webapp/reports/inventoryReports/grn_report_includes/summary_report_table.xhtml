@@ -1,0 +1,54 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+            <h:panelGroup class="m-5" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                <h5>Summary</h5>
+
+                <p:dataTable id="tbl3" value="#{pharmacyController.data}"
+                             var="s"
+                             rowIndexVar="n"
+                             paginator="true"
+                             paginatorPosition="bottom"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                    <f:facet name="header">
+                        Summary
+                    </f:facet>
+
+                    <p:column width="10em">
+                        <h:outputLabel value="#{s.string}"/>
+                    </p:column>
+                    <p:column style="font-weight: bold;text-align:right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Purchase Value"/>
+                        </f:facet>
+                        <h:outputLabel value="#{s.value}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column style="font-weight: bold;text-align:right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Sale Value"/>
+                        </f:facet>
+                        <h:outputLabel value="#{s.value2}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column style="font-weight: bold;text-align:right;"
+                              >
+                        <f:facet name="header">
+                            <h:outputLabel value="Cost Value"/>
+                        </f:facet>
+                        <h:outputLabel value="#{s.value3}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                </p:dataTable>
+            </h:panelGroup>
+</ui:composition>
