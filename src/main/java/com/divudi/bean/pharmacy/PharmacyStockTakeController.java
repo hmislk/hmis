@@ -329,90 +329,197 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     private StreamedContent generateSheet(boolean includeSystemQty, String fileName) {
+        // Null check for required parameters
         if (snapshotBill == null) {
+            LOGGER.log(Level.WARNING, "Cannot generate sheet. snapshotBill is null");
             return null;
         }
+
+        // Null check for billItemFacade
+        if (billItemFacade == null) {
+            LOGGER.log(Level.SEVERE, "billItemFacade is null in generateSheet");
+            return null;
+        }
+
+        // Null check for fileName
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = "pharmacy_stock.xlsx";
+        }
+
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             XSSFSheet sheet = wb.createSheet("Stock");
+            if (sheet == null) {
+                LOGGER.log(Level.SEVERE, "Failed to create Excel sheet");
+                return null;
+            }
 
             // Helpers and formats
             CreationHelper creationHelper = wb.getCreationHelper();
+            if (creationHelper == null) {
+                LOGGER.log(Level.SEVERE, "Failed to get CreationHelper");
+                return null;
+            }
+
             DataFormat dataFormat = wb.createDataFormat();
+            if (dataFormat == null) {
+                LOGGER.log(Level.SEVERE, "Failed to get DataFormat");
+                return null;
+            }
 
             // Styles
             Font headerFont = wb.createFont();
-            headerFont.setBold(true);
+            if (headerFont != null) {
+                headerFont.setBold(true);
+            }
 
             CellStyle headerStyle = wb.createCellStyle();
-            headerStyle.setFont(headerFont);
-            headerStyle.setLocked(true);
+            if (headerStyle != null) {
+                if (headerFont != null) {
+                    headerStyle.setFont(headerFont);
+                }
+                headerStyle.setLocked(true);
+            }
 
             CellStyle textLocked = wb.createCellStyle();
-            textLocked.setLocked(true);
+            if (textLocked != null) {
+                textLocked.setLocked(true);
+            }
 
             CellStyle dateLocked = wb.createCellStyle();
-            dateLocked.setLocked(true);
-            dateLocked.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd"));
+            if (dateLocked != null) {
+                dateLocked.setLocked(true);
+                dateLocked.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd"));
+            }
 
             CellStyle numberLocked = wb.createCellStyle();
-            numberLocked.setLocked(true);
-            numberLocked.setDataFormat(dataFormat.getFormat("#,##0.00"));
+            if (numberLocked != null) {
+                numberLocked.setLocked(true);
+                numberLocked.setDataFormat(dataFormat.getFormat("#,##0.00"));
+            }
 
             CellStyle integerLocked = wb.createCellStyle();
-            integerLocked.setLocked(true);
-            integerLocked.setDataFormat(dataFormat.getFormat("#,##0"));
+            if (integerLocked != null) {
+                integerLocked.setLocked(true);
+                integerLocked.setDataFormat(dataFormat.getFormat("#,##0"));
+            }
 
             CellStyle inputUnlocked = wb.createCellStyle();
-            inputUnlocked.setLocked(false);
-            inputUnlocked.setDataFormat(dataFormat.getFormat("#,##0.######"));
-            inputUnlocked.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
-            inputUnlocked.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            if (inputUnlocked != null) {
+                inputUnlocked.setLocked(false);
+                inputUnlocked.setDataFormat(dataFormat.getFormat("#,##0.######"));
+                inputUnlocked.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+                inputUnlocked.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            }
 
             // Header
             Row header = sheet.createRow(0);
+            if (header == null) {
+                LOGGER.log(Level.SEVERE, "Failed to create header row");
+                return null;
+            }
+
             int col = 0;
             // Always include BillItem ID first for reliable mapping
             Cell hId = header.createCell(col++);
-            hId.setCellValue("BillItem ID");
-            hId.setCellStyle(headerStyle);
+            if (hId != null) {
+                hId.setCellValue("BillItem ID");
+                if (headerStyle != null) {
+                    hId.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hCode = header.createCell(col++);
-            hCode.setCellValue("Code");
-            hCode.setCellStyle(headerStyle);
+            if (hCode != null) {
+                hCode.setCellValue("Code");
+                if (headerStyle != null) {
+                    hCode.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hName = header.createCell(col++);
-            hName.setCellValue("Name");
-            hName.setCellStyle(headerStyle);
+            if (hName != null) {
+                hName.setCellValue("Name");
+                if (headerStyle != null) {
+                    hName.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hCat = header.createCell(col++);
-            hCat.setCellValue("Category");
-            hCat.setCellStyle(headerStyle);
+            if (hCat != null) {
+                hCat.setCellValue("Category");
+                if (headerStyle != null) {
+                    hCat.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hBatch = header.createCell(col++);
-            hBatch.setCellValue("Batch");
-            hBatch.setCellStyle(headerStyle);
+            if (hBatch != null) {
+                hBatch.setCellValue("Batch");
+                if (headerStyle != null) {
+                    hBatch.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hExp = header.createCell(col++);
-            hExp.setCellValue("Expiry Date");
-            hExp.setCellStyle(headerStyle);
+            if (hExp != null) {
+                hExp.setCellValue("Expiry Date");
+                if (headerStyle != null) {
+                    hExp.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hPR = header.createCell(col++);
-            hPR.setCellValue("Purchase Rate");
-            hPR.setCellStyle(headerStyle);
+            if (hPR != null) {
+                hPR.setCellValue("Purchase Rate");
+                if (headerStyle != null) {
+                    hPR.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hRR = header.createCell(col++);
-            hRR.setCellValue("Retail Rate");
-            hRR.setCellStyle(headerStyle);
+            if (hRR != null) {
+                hRR.setCellValue("Retail Rate");
+                if (headerStyle != null) {
+                    hRR.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hCR = header.createCell(col++);
-            hCR.setCellValue("Cost Rate");
-            hCR.setCellStyle(headerStyle);
+            if (hCR != null) {
+                hCR.setCellValue("Cost Rate");
+                if (headerStyle != null) {
+                    hCR.setCellStyle(headerStyle);
+                }
+            }
+
             Integer systemQtyColIndex = null;
             if (includeSystemQty) {
                 Cell hSys = header.createCell(col++);
-                hSys.setCellValue("System Qty");
-                hSys.setCellStyle(headerStyle);
+                if (hSys != null) {
+                    hSys.setCellValue("System Qty");
+                    if (headerStyle != null) {
+                        hSys.setCellStyle(headerStyle);
+                    }
+                }
                 systemQtyColIndex = col - 1;
             }
+
             int realQtyColIndex = col; // this will be unlocked for input
             Cell hReal = header.createCell(col++);
-            hReal.setCellValue("Real Stock Qty");
-            hReal.setCellStyle(headerStyle);
+            if (hReal != null) {
+                hReal.setCellValue("Real Stock Qty");
+                if (headerStyle != null) {
+                    hReal.setCellStyle(headerStyle);
+                }
+            }
+
             Cell hLV = header.createCell(col++);
-            hLV.setCellValue("Line Value");
-            hLV.setCellStyle(headerStyle);
+            if (hLV != null) {
+                hLV.setCellValue("Line Value");
+                if (headerStyle != null) {
+                    hLV.setCellStyle(headerStyle);
+                }
+            }
 
             // Resolve items (avoid lazy issues on detached entity)
             List<BillItem> items = snapshotBill.getBillItems();
@@ -421,108 +528,205 @@ public class PharmacyStockTakeController implements Serializable {
                     HashMap<String, Object> p = new HashMap<>();
                     p.put("b", snapshotBill);
                     items = billItemFacade.findByJpql("select bi from BillItem bi where bi.bill=:b order by bi.id", p);
-                } else {
-                    items = java.util.Collections.emptyList();
                 }
+            }
+
+            // Ensure items is not null
+            if (items == null) {
+                items = java.util.Collections.emptyList();
             }
 
             // Rows
             int rowNum = 1;
             for (BillItem bi : items) {
+                // Null check for bill item
+                if (bi == null) {
+                    continue;
+                }
+
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 ItemBatch ib = pbi != null ? pbi.getItemBatch() : null;
                 Row row = sheet.createRow(rowNum++);
+                if (row == null) {
+                    continue;
+                }
+
                 int c = 0;
 
                 // BillItem ID
                 Cell cId = row.createCell(c++);
-                if (bi.getId() != null) {
-                    cId.setCellValue(bi.getId());
-                    cId.setCellStyle(integerLocked);
-                } else {
-                    cId.setCellValue(0);
-                    cId.setCellStyle(integerLocked);
+                if (cId != null) {
+                    if (bi.getId() != null) {
+                        cId.setCellValue(bi.getId());
+                    } else {
+                        cId.setCellValue(0);
+                    }
+                    if (integerLocked != null) {
+                        cId.setCellStyle(integerLocked);
+                    }
                 }
 
                 // Code
                 Cell cCode = row.createCell(c++);
-                cCode.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getCode() != null ? ib.getItem().getCode() : "");
-                cCode.setCellStyle(textLocked);
+                if (cCode != null) {
+                    cCode.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getCode() != null ? ib.getItem().getCode() : "");
+                    if (textLocked != null) {
+                        cCode.setCellStyle(textLocked);
+                    }
+                }
 
                 // Name
                 Cell cName = row.createCell(c++);
-                cName.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getName() != null ? ib.getItem().getName() : (bi.getDescreption() != null ? bi.getDescreption() : ""));
-                cName.setCellStyle(textLocked);
+                if (cName != null) {
+                    cName.setCellValue(ib != null && ib.getItem() != null && ib.getItem().getName() != null ? ib.getItem().getName() : (bi.getDescreption() != null ? bi.getDescreption() : ""));
+                    if (textLocked != null) {
+                        cName.setCellStyle(textLocked);
+                    }
+                }
 
                 // Category
                 Cell cCat = row.createCell(c++);
-                cCat.setCellValue(bi.getItem() != null && bi.getItem().getCategory() != null && bi.getItem().getCategory().getName() != null ? bi.getItem().getCategory().getName() : "");
-                cCat.setCellStyle(textLocked);
+                if (cCat != null) {
+                    cCat.setCellValue(bi.getItem() != null && bi.getItem().getCategory() != null && bi.getItem().getCategory().getName() != null ? bi.getItem().getCategory().getName() : "");
+                    if (textLocked != null) {
+                        cCat.setCellStyle(textLocked);
+                    }
+                }
 
                 // Batch
                 Cell cBatch = row.createCell(c++);
-                cBatch.setCellValue(ib != null && ib.getBatchNo() != null ? ib.getBatchNo() : "");
-                cBatch.setCellStyle(textLocked);
+                if (cBatch != null) {
+                    cBatch.setCellValue(ib != null && ib.getBatchNo() != null ? ib.getBatchNo() : "");
+                    if (textLocked != null) {
+                        cBatch.setCellStyle(textLocked);
+                    }
+                }
 
                 // Expiry
                 Cell cExp = row.createCell(c++);
-                if (ib != null && ib.getDateOfExpire() != null) {
-                    cExp.setCellValue(ib.getDateOfExpire());
-                } else {
-                    cExp.setCellValue("");
+                if (cExp != null) {
+                    if (ib != null && ib.getDateOfExpire() != null) {
+                        cExp.setCellValue(ib.getDateOfExpire());
+                        if (dateLocked != null) {
+                            cExp.setCellStyle(dateLocked);
+                        }
+                    } else {
+                        cExp.setCellValue("");
+                        if (textLocked != null) {
+                            cExp.setCellStyle(textLocked);
+                        }
+                    }
                 }
-                cExp.setCellStyle(dateLocked);
 
-                // Rates
-                double pr = (ib != null) ? ib.getPurcahseRate() : 0.0;
-                double rr = (ib != null) ? ib.getRetailsaleRate() : 0.0;
-                double cr = (ib != null) ? ib.getCostRate() : 0.0;
+                // Rates - handle null returns from getter methods
+                double pr = 0.0;
+                double rr = 0.0;
+                double cr = 0.0;
+
+                if (ib != null) {
+                    Double prObj = ib.getPurcahseRate();
+                    pr = (prObj != null) ? prObj : 0.0;
+
+                    Double rrObj = ib.getRetailsaleRate();
+                    rr = (rrObj != null) ? rrObj : 0.0;
+
+                    Double crObj = ib.getCostRate();
+                    cr = (crObj != null) ? crObj : 0.0;
+                }
 
                 Cell cPR = row.createCell(c++);
-                cPR.setCellValue(pr);
-                cPR.setCellStyle(numberLocked);
-                Cell cRR = row.createCell(c++);
-                cRR.setCellValue(rr);
-                cRR.setCellStyle(numberLocked);
-                Cell cCR = row.createCell(c++);
-                cCR.setCellValue(cr);
-                cCR.setCellStyle(numberLocked);
+                if (cPR != null) {
+                    cPR.setCellValue(pr);
+                    if (numberLocked != null) {
+                        cPR.setCellStyle(numberLocked);
+                    }
+                }
 
-                // System Qty (optional)
+                Cell cRR = row.createCell(c++);
+                if (cRR != null) {
+                    cRR.setCellValue(rr);
+                    if (numberLocked != null) {
+                        cRR.setCellStyle(numberLocked);
+                    }
+                }
+
+                Cell cCR = row.createCell(c++);
+                if (cCR != null) {
+                    cCR.setCellValue(cr);
+                    if (numberLocked != null) {
+                        cCR.setCellStyle(numberLocked);
+                    }
+                }
+
+                // System Qty (optional) - handle null return from pbi.getQty()
                 if (includeSystemQty) {
-                    double sys = pbi != null ? pbi.getQty() : 0.0;
+                    double sys = 0.0;
+                    if (pbi != null) {
+                        Double sysObj = pbi.getQty();
+                        sys = (sysObj != null) ? sysObj : 0.0;
+                    }
                     Cell cSys = row.createCell(c++);
-                    cSys.setCellValue(sys);
-                    cSys.setCellStyle(integerLocked);
+                    if (cSys != null) {
+                        cSys.setCellValue(sys);
+                        if (integerLocked != null) {
+                            cSys.setCellStyle(integerLocked);
+                        }
+                    }
                 }
 
                 // Real Stock Qty (input - unlocked)
                 Cell cReal = row.createCell(c++);
-                cReal.setCellStyle(inputUnlocked);
+                if (cReal != null && inputUnlocked != null) {
+                    cReal.setCellStyle(inputUnlocked);
+                }
 
-                // Line Value (system = cost rate * system qty)
-                double sysQtyForLV = includeSystemQty ? (pbi != null ? pbi.getQty() : 0.0) : 0.0;
+                // Line Value (system = cost rate * system qty) - handle null return from pbi.getQty()
+                double sysQtyForLV = 0.0;
+                if (includeSystemQty && pbi != null) {
+                    Double qtyObj = pbi.getQty();
+                    sysQtyForLV = (qtyObj != null) ? qtyObj : 0.0;
+                }
                 double lineValue = cr * sysQtyForLV;
                 Cell cLV = row.createCell(c++);
-                cLV.setCellValue(lineValue);
-                cLV.setCellStyle(numberLocked);
+                if (cLV != null) {
+                    cLV.setCellValue(lineValue);
+                    if (numberLocked != null) {
+                        cLV.setCellStyle(numberLocked);
+                    }
+                }
             }
 
             // Autosize columns
             int totalCols = header.getLastCellNum();
             for (int i = 0; i < totalCols; i++) {
-                sheet.autoSizeColumn(i);
+                try {
+                    sheet.autoSizeColumn(i);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to autosize column " + i, e);
+                }
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
-            InputStream in = new ByteArrayInputStream(out.toByteArray());
+            byte[] bytes = out.toByteArray();
+            if (bytes == null || bytes.length == 0) {
+                LOGGER.log(Level.SEVERE, "Failed to generate Excel file bytes");
+                return null;
+            }
+
+            InputStream in = new ByteArrayInputStream(bytes);
             return DefaultStreamedContent.builder()
                     .name(fileName)
                     .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                     .stream(() -> in)
                     .build();
         } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error generating sheet", e);
+            JsfUtil.addErrorMessage("Error generating sheet: " + e.getMessage());
+            return null;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected error generating sheet", e);
+            JsfUtil.addErrorMessage("Unexpected error: " + e.getMessage());
             return null;
         }
     }
