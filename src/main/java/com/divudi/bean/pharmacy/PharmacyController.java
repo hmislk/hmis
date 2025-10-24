@@ -2175,7 +2175,7 @@ public class PharmacyController implements Serializable {
                 // Determine multiplier: returns and cancellations should be negative
                 double multiplier = 1.0;
                 if (b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
-                    || b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                        || b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
                     multiplier = -1.0;
                 }
 
@@ -2385,7 +2385,7 @@ public class PharmacyController implements Serializable {
                 if (row.getBillItem().getBill() != null) {
                     BillTypeAtomic billType = row.getBillItem().getBill().getBillTypeAtomic();
                     if (billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
-                        || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                            || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
                         multiplier = -1.0;
                     }
                 }
@@ -2745,7 +2745,7 @@ public class PharmacyController implements Serializable {
                 // Determine multiplier: returns and cancellations should be negative
                 double multiplier = 1.0;
                 if (billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
-                    || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                        || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
                     multiplier = -1.0;
                 }
 
@@ -3427,9 +3427,9 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Calculates totals for Detail Report type.
-     * This method uses simplified logic as values are already in plus or minus
-     * based on bill type. Only distinguishes between Credit and non-Credit payment methods.
+     * Calculates totals for Detail Report type. This method uses simplified
+     * logic as values are already in plus or minus based on bill type. Only
+     * distinguishes between Credit and non-Credit payment methods.
      *
      * @param billList List of bills to calculate totals from
      * @return List of String1Value1 objects containing the calculated totals
@@ -3455,22 +3455,22 @@ public class PharmacyController implements Serializable {
 
             if (bill.getBillFinanceDetails() != null) {
                 purchaseValue = bill.getBillFinanceDetails().getTotalPurchaseValue() != null
-                    ? bill.getBillFinanceDetails().getTotalPurchaseValue().doubleValue()
-                    : 0.0;
+                        ? bill.getBillFinanceDetails().getTotalPurchaseValue().doubleValue()
+                        : 0.0;
 
                 saleValue = bill.getBillFinanceDetails().getTotalRetailSaleValue() != null
-                    ? bill.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()
-                    : 0.0;
+                        ? bill.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()
+                        : 0.0;
 
                 costValue = bill.getBillFinanceDetails().getTotalCostValue() != null
-                    ? bill.getBillFinanceDetails().getTotalCostValue().doubleValue()
-                    : 0.0;
+                        ? bill.getBillFinanceDetails().getTotalCostValue().doubleValue()
+                        : 0.0;
             }
 
             // Check payment method
             if (bill.getPaymentMethod() == null) {
                 Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING,
-                    "Bill {0} has no payment method", bill.getId());
+                        "Bill {0} has no payment method", bill.getId());
                 continue;
             }
 
@@ -6058,9 +6058,10 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Creates a table of GRN return items for the selected pharmacy item.
-     * Uses BillItem and PharmaceuticalBillItem fields directly instead of BillItemFinanceDetails
-     * because GRN return bills do not have finance details populated.
+     * Creates a table of GRN return items for the selected pharmacy item. Uses
+     * BillItem and PharmaceuticalBillItem fields directly instead of
+     * BillItemFinanceDetails because GRN return bills do not have finance
+     * details populated.
      */
     public void createGrnReturnTable() {
 
@@ -6399,8 +6400,7 @@ public class PharmacyController implements Serializable {
                 + "AND (bi.bill.checked IS NULL OR bi.bill.checked = false) "
                 + "AND bi.item IN :relatedItems "
                 + "AND bi.bill.billTypeAtomic IN :btaList "
-                + "AND bi.bill.createdAt BETWEEN :frm AND :to "
-                + "ORDER BY bi.bill.createdAt DESC";
+                + "AND bi.bill.createdAt BETWEEN :frm AND :to ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -6408,6 +6408,14 @@ public class PharmacyController implements Serializable {
         params.put("frm", getFromDate());
         params.put("to", getToDate());
 
+        boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
+        if (pharmacyHistoryListOnlyDepartmentTransactions) {
+            params.put("department", getSessionController().getDepartment());
+            jpql += "AND bi.bill.department=:department ";
+        }
+
+        jpql += " ORDER BY bi.bill.createdAt DESC ";
+        
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets
@@ -7366,8 +7374,6 @@ public class PharmacyController implements Serializable {
     public void setPharmacyAdminIndex(int pharmacyAdminIndex) {
         this.pharmacyAdminIndex = pharmacyAdminIndex;
     }
-    
-    
 
     public int getPharmacySummaryIndex() {
         return pharmacySummaryIndex;
