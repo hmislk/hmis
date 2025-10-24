@@ -465,7 +465,7 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         // Check if the stock taking is already completed
-        if (snapshotBill.getCompleted() != null && snapshotBill.getCompleted()) {
+        if (snapshotBill.isCompleted()) {
             JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. Stock taking already completed. billId={0}", snapshotBill.getId());
             return;
@@ -809,7 +809,7 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         // Check if the stock taking is already completed
-        if (b.getCompleted() != null && b.getCompleted()) {
+        if (b.isCompleted()) {
             JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session. This stock taking has already been closed.");
             LOGGER.log(Level.WARNING, "[StockTake] Attempted to upload to completed stock taking. billId={0}", b.getId());
             return null;
