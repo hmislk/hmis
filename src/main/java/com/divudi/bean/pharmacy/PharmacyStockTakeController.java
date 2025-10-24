@@ -145,6 +145,9 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill.setCreater(sessionController.getLoggedUser());
         double total = 0.0;
         for (Stock s : stocks) {
+            if (s == null) {
+                continue;
+            }
             BillItem bi = new BillItem();
             bi.setBill(snapshotBill);
             if (s.getItemBatch() == null) {
