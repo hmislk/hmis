@@ -221,6 +221,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
             }
 
         }
@@ -590,10 +592,15 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
             System.out.println("    PASSED");
         }
-        //pharmacyPreSettleController.cashPaid
-        if (paymentService.checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData(), getPreBill().getNetTotal(), cashPaid, getPreBill().getPatient(), getPreBill().getToStaff())) {
-            return true;
+
+        // Skip PaymentService validation for MultiplePaymentMethods - handled by controller's errorCheckOnPaymentMethod()
+        // For other payment methods, use PaymentService validation
+        if (getPreBill().getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            if (paymentService.checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData(), getPreBill().getNetTotal(), cashPaid, getPreBill().getPatient(), getPreBill().getToStaff())) {
+                return true;
+            }
         }
+
         if (getPreBill().getPaymentMethod() == PaymentMethod.Cash && (getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
             JsfUtil.addErrorMessage("Please select tendered amount correctly");
             return true;
