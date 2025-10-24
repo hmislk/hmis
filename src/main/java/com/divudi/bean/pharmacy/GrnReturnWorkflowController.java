@@ -622,6 +622,25 @@ public class GrnReturnWorkflowController implements Serializable {
                 pharmaceuticalBillItemFacade.edit(phi);
             }
         }
+
+        // After stock update, negate the bill-level finance details for returns (stock moving out)
+        if (currentBill != null && currentBill.getBillFinanceDetails() != null) {
+            BillFinanceDetails bfd = currentBill.getBillFinanceDetails();
+
+            // Negate the purchase, cost, and retail values at bill level
+            if (bfd.getTotalPurchaseValue() != null) {
+                bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
+            }
+            if (bfd.getTotalCostValue() != null) {
+                bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
+            }
+            if (bfd.getTotalRetailSaleValue() != null) {
+                bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
+            }
+
+            // Save the updated bill with corrected finance details
+            billFacade.edit(currentBill);
+        }
     }
 
     // Validation methods
@@ -2341,8 +2360,46 @@ public class GrnReturnWorkflowController implements Serializable {
                     fd.setCostRate(BigDecimal.valueOf(costRatePerUnit));
                     fd.setRetailSaleRate(BigDecimal.valueOf(retailRatePerUnit));
                 }
+
+                // Set cost rate fields (lineCostRate, billCostRate, totalCostRate) - always per unit
+                BigDecimal costRatePerUnitBD = BigDecimal.valueOf(costRatePerUnit);
+                fd.setLineCostRate(costRatePerUnitBD);
+                fd.setBillCostRate(costRatePerUnitBD);
+                fd.setTotalCostRate(costRatePerUnitBD);
+
+                // Calculate cost values (costRate × quantity in units) - negative for returns
+                BigDecimal totalCostValue = costRatePerUnitBD.multiply(qtyByUnits.abs());
+                fd.setLineCost(totalCostValue.negate());
+                fd.setBillCost(totalCostValue.negate());
+                fd.setTotalCost(totalCostValue.negate());
             }
         }
+
+        // Set bill-level rates and totals (should match line-level for single-item returns)
+        fd.setGrossRate(fd.getLineGrossRate());
+        fd.setNetRate(fd.getLineNetRate());
+        fd.setGrossTotal(fd.getLineGrossTotal());
+        fd.setNetTotal(fd.getLineNetTotal());
+
+        // Set zero-value fields (no discounts, taxes, or expenses on GRN returns)
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setBillDiscount(BigDecimal.ZERO);
+        fd.setBillTax(BigDecimal.ZERO);
+        fd.setBillExpense(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
+        fd.setLineDiscountRate(BigDecimal.ZERO);
+        fd.setBillDiscountRate(BigDecimal.ZERO);
+        fd.setTotalDiscountRate(BigDecimal.ZERO);
+        fd.setLineTaxRate(BigDecimal.ZERO);
+        fd.setBillTaxRate(BigDecimal.ZERO);
+        fd.setTotalTaxRate(BigDecimal.ZERO);
+        fd.setLineExpenseRate(BigDecimal.ZERO);
+        fd.setBillExpenseRate(BigDecimal.ZERO);
+        fd.setTotalExpenseRate(BigDecimal.ZERO);
     }
 
     // Utility methods
@@ -2447,16 +2504,166 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
                 + "AND b.department = :dept "
-                + "ORDER BY b.createdAt DESC";
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        // Add additional search criteria from searchController
+        jpql += buildSearchCriteria();
+
+        jpql += "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
         params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
         params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", searchController.getFromDate());
+        params.put("toDate", searchController.getToDate());
 
-        grnReturnsToApprove = billFacade.findByJpql(jpql, params);
+        // Add search keyword parameters
+        addSearchParameters(params);
+
+        grnReturnsToApprove = billFacade.findByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP, searchController.getMaxResult());
         if (grnReturnsToApprove == null) {
             grnReturnsToApprove = new ArrayList<>();
+        }
+    }
+
+    public void fillApprovedGrnReturns() {
+        // Approved returns = completed = true
+        String jpql = "SELECT b FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.completed = true "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "AND b.department = :dept "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        // Add additional search criteria from searchController
+        jpql += buildSearchCriteria();
+
+        jpql += "ORDER BY b.createdAt DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", searchController.getFromDate());
+        params.put("toDate", searchController.getToDate());
+
+        // Add search keyword parameters
+        addSearchParameters(params);
+
+        grnReturnsToApprove = billFacade.findByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP, searchController.getMaxResult());
+        if (grnReturnsToApprove == null) {
+            grnReturnsToApprove = new ArrayList<>();
+        }
+    }
+
+    public void fillAllGrnReturns() {
+        // All returns (approved and pending)
+        String jpql = "SELECT b FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.checkedBy IS NOT NULL "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "AND b.department = :dept "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        // Add additional search criteria from searchController
+        jpql += buildSearchCriteria();
+
+        jpql += "ORDER BY b.createdAt DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", searchController.getFromDate());
+        params.put("toDate", searchController.getToDate());
+
+        // Add search keyword parameters
+        addSearchParameters(params);
+
+        grnReturnsToApprove = billFacade.findByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP, searchController.getMaxResult());
+        if (grnReturnsToApprove == null) {
+            grnReturnsToApprove = new ArrayList<>();
+        }
+    }
+
+    private String buildSearchCriteria() {
+        if (searchController == null || searchController.getSearchKeyword() == null) {
+            return "";
+        }
+
+        StringBuilder criteria = new StringBuilder();
+
+        if (searchController.getSearchKeyword().getToInstitution() != null
+                && !searchController.getSearchKeyword().getToInstitution().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.toInstitution.name) LIKE :toIns ");
+        }
+
+        if (searchController.getSearchKeyword().getCreator() != null
+                && !searchController.getSearchKeyword().getCreator().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.creater.webUserPerson.name) LIKE :creator ");
+        }
+
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.department.name) LIKE :deptName ");
+        }
+
+        if (searchController.getSearchKeyword().getRefBillNo() != null
+                && !searchController.getSearchKeyword().getRefBillNo().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.deptId) LIKE :returnNo ");
+        }
+
+        if (searchController.getSearchKeyword().getTotal() != null
+                && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
+            criteria.append("AND CAST(ABS(b.total) AS string) LIKE :total ");
+        }
+
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            criteria.append("AND CAST(ABS(b.netTotal) AS string) LIKE :netTotal ");
+        }
+
+        return criteria.toString();
+    }
+
+    private void addSearchParameters(Map<String, Object> params) {
+        if (searchController == null || searchController.getSearchKeyword() == null) {
+            return;
+        }
+
+        if (searchController.getSearchKeyword().getToInstitution() != null
+                && !searchController.getSearchKeyword().getToInstitution().trim().isEmpty()) {
+            params.put("toIns", "%" + searchController.getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getCreator() != null
+                && !searchController.getSearchKeyword().getCreator().trim().isEmpty()) {
+            params.put("creator", "%" + searchController.getSearchKeyword().getCreator().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            params.put("deptName", "%" + searchController.getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getRefBillNo() != null
+                && !searchController.getSearchKeyword().getRefBillNo().trim().isEmpty()) {
+            params.put("returnNo", "%" + searchController.getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getTotal() != null
+                && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
+            params.put("total", "%" + searchController.getSearchKeyword().getTotal().trim() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            params.put("netTotal", "%" + searchController.getSearchKeyword().getNetTotal().trim() + "%");
         }
     }
 
