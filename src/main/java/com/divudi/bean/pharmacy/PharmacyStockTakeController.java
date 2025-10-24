@@ -197,6 +197,15 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to settle");
             return null;
         }
+
+        // Check if there's an ongoing stock taking for this department
+        // Use department from snapshotBill to prevent bypass via mutable controller field
+        Department deptFromBill = snapshotBill.getDepartment();
+        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill)) {
+            JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department. Please complete the existing session first.");
+            LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
+            return null;
+        }
         // Ensure fresh persistence for a new bill: null out IDs if bill is new
         if (snapshotBill.getId() == null) {
             if (snapshotBill.getBillItems() != null) {
@@ -454,6 +463,13 @@ public class PharmacyStockTakeController implements Serializable {
         if (snapshotBill == null) {
             JsfUtil.addErrorMessage("No snapshot available");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. snapshotBill is null");
+            return;
+        }
+
+        // Check if the stock taking is already completed
+        if (snapshotBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session");
+            LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. Stock taking already completed. billId={0}", snapshotBill.getId());
             return;
         }
         if (file == null) {
@@ -737,7 +753,7 @@ public class PharmacyStockTakeController implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.light.common.PharmacySnapshotBillLight( ");
         jpql.append(" b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, ");
-        jpql.append(" (select count(bi) from BillItem bi where bi.bill = b), b.netTotal ) ");
+        jpql.append(" (select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed ) ");
         jpql.append(" from Bill b where b.billType=:bt");
         params.put("bt", BillType.PharmacySnapshotBill);
         if (fromDate != null) {
@@ -793,6 +809,14 @@ public class PharmacyStockTakeController implements Serializable {
         if (b == null) {
             return null;
         }
+
+        // Check if the stock taking is already completed
+        if (b.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session. This stock taking has already been closed.");
+            LOGGER.log(Level.WARNING, "[StockTake] Attempted to upload to completed stock taking. billId={0}", b.getId());
+            return null;
+        }
+
         this.snapshotBill = b;
         this.institution = b.getInstitution();
         this.department = b.getDepartment();
@@ -965,6 +989,54 @@ public class PharmacyStockTakeController implements Serializable {
             }
         }
         return null;
+    }
+
+    /**
+     * Check if there's an ongoing (incomplete) stock taking for the given department.
+     * An ongoing stock taking is one where bill.completed = false.
+     */
+    private boolean hasOngoingStockTaking(Department dept) {
+        if (dept == null) {
+            return false;
+        }
+        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department=:dept and (b.completed is null or b.completed=false)";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacySnapshotBill);
+        params.put("dept", dept);
+        Long count = billFacade.countByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
+    /**
+     * Complete/close the current stock taking session.
+     * This marks the snapshot bill as completed.
+     */
+    public void completeStockTaking() {
+        LOGGER.log(Level.INFO, "[StockTake] completeStockTaking() called. snapshotBillId={0}",
+                new Object[]{snapshotBill != null ? snapshotBill.getId() : null});
+
+        if (snapshotBill == null) {
+            JsfUtil.addErrorMessage("No stock taking session to complete");
+            LOGGER.log(Level.WARNING, "[StockTake] Complete failed. snapshotBill is null");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to complete stock taking");
+            LOGGER.log(Level.WARNING, "[StockTake] Complete failed. User lacks privilege");
+            return;
+        }
+
+        // Mark the bill as completed
+        snapshotBill.setCompleted(true);
+        snapshotBill.setCompletedAt(new Date());
+        snapshotBill.setCompletedBy(sessionController.getLoggedUser());
+        billFacade.edit(snapshotBill);
+
+        LOGGER.log(Level.INFO, "[StockTake] Stock taking completed. billId={0}, department={1}",
+                new Object[]{snapshotBill.getId(), snapshotBill.getDepartment().getName()});
+
+        JsfUtil.addSuccessMessage("Stock taking session completed successfully");
     }
 
     /**
