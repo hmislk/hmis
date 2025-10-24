@@ -6162,18 +6162,24 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
+//        BillItem b = new BillItem();
+//        b.getNetValue();
+//        b.getBillItemFinanceDetails().getFreeQuantity();
+        
+        
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPurchaseDTO("
                 + "b.bill.id, "
                 + "b.bill.deptId, "
                 + "b.bill.fromInstitution.name, "
                 + "b.bill.creater.webUserPerson.name, "
                 + "b.bill.createdAt, "
-                + "b.pharmaceuticalBillItem.purchaseRate, "
-                + "b.pharmaceuticalBillItem.costRate, "
-                + "b.pharmaceuticalBillItem.retailRate, "
-                + "b.pharmaceuticalBillItem.qty, "
-                + "b.pharmaceuticalBillItem.freeQty, "
-                + "b.bill.netTotal) "
+                + "b.pharmaceuticalBillItem.purchaseRate, " //b.getBillItemFinanceDetails().getPurchaseRate();
+                + "b.pharmaceuticalBillItem.costRate, " // b.getBillItemFinanceDetails().getCostRate();
+                + "b.pharmaceuticalBillItem.retailRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
+                + "b.pharmaceuticalBillItem.qty, " //  b.getBillItemFinanceDetails().getQuantity()
+                + "b.pharmaceuticalBillItem.freeQty, " // b.getBillItemFinanceDetails().getFreeQuantity();
+                + "b.bill.netTotal, "  // replace by b.getNetValue();
+                + "b.item.name) "  // item name
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "

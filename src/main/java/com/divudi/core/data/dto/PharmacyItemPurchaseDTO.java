@@ -218,6 +218,25 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billNetTotal = billNetTotal;
     }
 
+    // Constructor for Direct Purchase table with costRate and itemName (12 parameters)
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName,
+                                   String billCreaterName, Date billCreatedAt, Double purchaseRate,
+                                   Double costRate, Double retailRate, Double qty, Double freeQty,
+                                   Double billNetTotal, String itemName) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billCreaterName = billCreaterName;
+        this.billCreatedAt = billCreatedAt;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
+        this.retailRate = retailRate;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.billNetTotal = billNetTotal;
+        this.itemName = itemName;
+    }
+
     public Bill getBill() {
         return bill;
     }

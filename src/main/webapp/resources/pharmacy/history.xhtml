@@ -1307,6 +1307,7 @@
                                     <thead class="table-dark">
                                         <tr>
                                             <th rowspan="2">Bill No</th>
+                                            <th rowspan="2">Item Name</th>
                                             <th rowspan="2">Supplier</th>
                                             <th rowspan="2">Billed By</th>
                                             <th rowspan="2">Billed At</th>
@@ -1327,6 +1328,9 @@
                                             <tr>
                                                 <td>
                                                     <h:outputText value="#{dd3.billDeptId}"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{dd3.itemName}"/>
                                                 </td>
                                                 <td>
                                                     <h:outputText value="#{dd3.billFromInstitutionName}"/>
