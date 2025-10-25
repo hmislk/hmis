@@ -14244,11 +14244,6 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardProvisionalBills() {
-//        double d = commonController.dateDifferenceInMinutes(fromDate, toDate) / (60 * 24);
-//        if (d > 32 && getReportKeyWord().isBool1()) {
-//            JsfUtil.addErrorMessage("Date Range To Long");
-//            return;
-//        }
         Date startTime = new Date();
 
         String sql;
@@ -14261,6 +14256,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
