@@ -4074,6 +4074,7 @@ public class PharmacyReportController implements Serializable {
         // Eliminates entity loading overhead, reduces queries from 5,000+ to 1, and reduces memory by 70%
         StringBuilder jpql = new StringBuilder(
                 "SELECT NEW com.divudi.core.data.PharmacyRow("
+                + "  sh.id, "
                 + "  i.id, "
                 + "  COALESCE(i.name, ''), "
                 + "  COALESCE(i.code, ''), "
@@ -4122,6 +4123,14 @@ public class PharmacyReportController implements Serializable {
         // CRITICAL: Filter subquery by createdAt to exclude batches created after selected date
         // This ensures only batches that existed at the selected time are included
         jpql.append("  AND sh2.createdAt <= :et ");
+
+        // CRITICAL: Filter out item-level StockHistory records (where itemBatch is NULL)
+        // StockHistory has both 'item' and 'itemBatch' fields:
+        // - Item-level records: item is set, itemBatch is NULL
+        // - Batch-level records: both item and itemBatch are set
+        // Without this filter, GROUP BY sh2.itemBatch groups all NULL values together,
+        // and MAX(sh2.id) from the NULL group adds one random item-level record to results
+        jpql.append("  AND sh2.itemBatch IS NOT NULL ");
 
         // Add all filter conditions to subquery
         if (institution != null) {
