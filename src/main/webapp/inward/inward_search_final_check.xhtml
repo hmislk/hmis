@@ -19,35 +19,35 @@
                                 <h:outputLabel value="From Date"/>
                                 <p:datePicker 
                                     styleClass="dateTimePicker" 
-                                              id="fromDate" 
-                                              value="#{searchController.fromDate}" 
-                                              showTime="true"
-                                              showButtonBar="true"
-                                              timeInput="true" 
-                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                              class="w-100"
-                                              inputStyleClass="form-control">
-
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"
+                                    inputStyleClass="form-control">
                                 </p:datePicker>
+                                
                                 <h:outputLabel value="To Date"/>
                                 <p:datePicker 
                                     id="toDate" 
-                                              value="#{searchController.toDate}" 
-                                              showTime="true"
-                                              showButtonBar="true"
-                                              timeInput="true"
-                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                              class="w-100"
-                                              inputStyleClass="form-control">
+                                    value="#{searchController.toDate}" 
+                                    showTime="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100"
+                                    inputStyleClass="form-control">
                                 </p:datePicker>
+                                
                                 <p:commandButton 
                                     ajax="false" 
-                                                 action="#{searchController.createInwardFinalBillsCheck()}" 
-                                                 value="Search" 
-                                                 icon="fas fa-search"
-                                                 class="w-100 ui-button-warning my-1" >
+                                    action="#{searchController.createInwardFinalBillsCheck()}" 
+                                    value="Search" 
+                                    icon="fas fa-search"
+                                    class="w-100 ui-button-warning my-1" >
                                 </p:commandButton>
-
 
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
@@ -65,6 +65,7 @@
                                 <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
 
                             </div>
+                            
                             <div class="col-10">
                                 <p:dataTable 
                                     id="tblBills" 

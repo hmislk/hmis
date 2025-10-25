@@ -4557,6 +4557,11 @@ public class SearchController implements Serializable {
             sql += " and (((b.insId) like :billNo ) or ((b.deptId) like :billNo )) ";
             tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            tmp.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
