@@ -109,16 +109,18 @@
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15,50"
+                                    rowsPerPageTemplate="10,20,50"
                                     rows="10"
                                     >
-                                    
+
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.deptId}"/>
                                     </p:column>
+                                    
                                     <p:column headerText="BHT No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.patientEncounter.bhtNo}"/>
                                     </p:column>
+                                    
                                     <p:column headerText="Item Name"  styleClass="alignTop" >
                                         <h:outputLabel value="#{pi.item.name}" />    
                                     </p:column>
@@ -135,21 +137,24 @@
                                         <br/>
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.cancelled}" 
-                                                           value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
+                                            <h:outputLabel 
+                                                style="color: red;" 
+                                                rendered="#{pi.bill.referenceBill.cancelled}" 
+                                                value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.refunded}" >
                                             <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.refunded}" 
-                                                           value="#{pi.referanceBillItem.bill.createdAt}" >
+                                            <h:outputLabel 
+                                                style="color: red;" 
+                                                rendered="#{pi.bill.referenceBill.refunded}" 
+                                                value="#{pi.referanceBillItem.bill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>     
+                                    </p:column>  
+                                    
                                     <p:column headerText="Qty" >
                                         <h:outputLabel value="#{pi.qty}" >
                                             <f:convertNumber pattern="#0.00"/>
@@ -166,14 +171,16 @@
                                         <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}" >
                                         </h:outputLabel>                             
                                     </p:column>
+                                    
                                     <p:column headerText="View">
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Bill"
                                             action="/inward/pharmacy_reprint_bill_sale_bht?faces-redirect=true">
-                                            <f:setPropertyActionListener value="#{pi.bill}"target="#{pharmacyBillSearch.bill}"/>                                     
+                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>                                     
                                         </p:commandButton>
                                     </p:column>
+                                    
                                 </p:dataTable>
                             </div>
                         </div>
