@@ -64,11 +64,7 @@ public class StockHistory implements Serializable, RetirableEntity {
     @OneToOne(fetch = FetchType.LAZY)
     PharmaceuticalBillItem pbItem;
 
-    // BATCH-LEVEL QUANTITIES
-    // This is the Item Batch Stock Quantity of the department
-    double stockQty; // == departmentBatchQty
-    private double instituionBatchQty;
-    private double totalBatchQty;
+
 
     double retailRate;
     double wholesaleRate;
@@ -116,6 +112,23 @@ public class StockHistory implements Serializable, RetirableEntity {
     int hxMonth;
     int hxDate;
     int hxWeek;
+    
+    // Where a trnasaction occur, the system records stock quantities as follows
+    // Batch Stock of the transaction's department
+    // Batch Stock of the institution of the transaction's department
+    // Batch Stock of the application, no filtering by institution or department
+    // Currently we do NOT record any data related to the site
+    // Item Stock (=All Batche's belonging to the transaction item) of the transaction's department
+    // Item Stock of the institution of the transaction's department
+    // Item Stock of the application, no filtering by institution or department
+    
+    // BATCH-LEVEL QUANTITIES
+    // This is the Item Batch Stock Quantity of the department at the time of the transaction
+    double stockQty; // == departmentBatchQty
+    // This is the Item Batch Stock Quantity of the institution at the time of the transaction
+    private double instituionBatchQty;
+    // This is the Item Batch Stock Quantity of the whole application at the time of the transaction
+    private double totalBatchQty;    
 
     // ITEM-LEVEL QUANTITIES (All batches of an item aggregated)
     // This gives the stock of this Item for this department (all batches combined)
