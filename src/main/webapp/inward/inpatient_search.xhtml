@@ -13,9 +13,9 @@
 
             <ui:define name="content">
                 <h:form id="form">
-                    <p:panel header="Admissions" style="height: 100vh" >
+                    <p:panel header="Admissions">
                         <div class="row">
-                            <div class="col-3">
+                            <div class="col-2">
                                 <p:outputLabel value="From Date"></p:outputLabel>
                                 <p:datePicker
                                     value="#{admissionController.fromDate}"
@@ -56,6 +56,12 @@
                                 <p:inputText
                                     class="w-100"
                                     value="#{admissionController.patientNameForSearch}" >
+                                </p:inputText>
+                                
+                                <p:outputLabel value="MRN / PHN No" ></p:outputLabel>
+                                <p:inputText
+                                    class="w-100"
+                                    value="#{admissionController.patientNumberForSearch}" >
                                 </p:inputText>
 
                                 <p:outputLabel value="Patient Phone" ></p:outputLabel>
@@ -150,7 +156,7 @@
 
 
                             </div>
-                            <div class="col-9">
+                            <div class="col-10">
                                 <div class="p-1" >
                                     <p:dataTable id="tblBills"
                                                  value="#{admissionController.items}"
