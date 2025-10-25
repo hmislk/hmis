@@ -15,77 +15,90 @@
                             <h:outputLabel value="Search Store Bill Item"/>                                                          
                         </f:facet>
 
-                        <h:panelGroup class="d-flex gap-2">
-                            <h:panelGrid class="col-1 mx-1">
-                                <h:panelGrid columns="1" class="mt-1">
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar 
-                                        styleClass="dateTimePicker" 
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar 
-                                        id="toDate" 
-                                        value="#{searchController.toDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                    </p:calendar>
-                                    <p:commandButton 
-                                        id="btnSearch" 
-                                        ajax="false" 
-                                        value="Search" 
-                                        class="mt-2 mb-3 w-100 ui-button-warning"
-                                        icon="fa fa-search"
-                                        action="#{searchController.createPharmacyBillItemTableBht()}"/>
-                                </h:panelGrid>
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar 
+                                    id="fromDate" 
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}" 
+                                    class="w-100"
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar 
+                                    id="toDate" 
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.toDate}" 
+                                    class="w-100"
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                </p:calendar>
+                                <p:commandButton 
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search" 
+                                    class="mt-2 mb-3 w-100 ui-button-warning"
+                                    icon="fa fa-search"
+                                    action="#{searchController.createPharmacyBillItemTableBht()}">
+                                </p:commandButton>
 
-                                <h:panelGrid columns="1" class="mt-2">
-                                    <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <h:outputLabel value="BHT No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
-                                    <h:outputLabel value="Item Name"/>   
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" />
-                                    <h:outputLabel value="Item Value"/>   
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-                                    <h:outputLabel value="Patient"/>  
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientName}" />
-                                    <h:outputLabel  value="Item Code"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
-                                </h:panelGrid>
-                            </h:panelGrid>
 
-                            <p:panel>
-                                <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.billItems}" var="pi" >
+                                <h:outputLabel value="Bill No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100" />
+                                <h:outputLabel value="BHT No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100" />
+                                <h:outputLabel value="Item Name"/>   
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100" />
+                                <h:outputLabel value="Item Value"/>   
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" class="w-100" />
+                                <h:outputLabel value="Patient"/>  
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientName}" class="w-100" />
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
+                                <h:outputLabel  value="Item Code"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblBills" 
+                                    value="#{searchController.billItems}" 
+                                    var="pi"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,20,50"
+                                    rows="10">
+
                                     <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
+
                                     <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="/store/store_reprint_bill_sale">
-                                            <f:setPropertyActionListener value="#{pi.bill}"
-                                                                         target="#{storeBillSearch.bill}"/>                                     
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Bill"
+                                            action="/store/store_reprint_bill_sale?faces-redirect=true">
+                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{storeBillSearch.bill}"/>                                     
                                         </p:commandButton>
                                     </p:column>
+                                    
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.deptId}"/>
                                     </p:column>
+                                    
                                     <p:column headerText="BHT No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.patientEncounter.bhtNo}"/>
                                     </p:column>
+                                    
                                     <p:column headerText="Item Name"  styleClass="alignTop" >
                                         <h:outputLabel value="#{pi.item.name}" />    
                                     </p:column>
 
                                     <p:column headerText="Item Code">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Code"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{pi.item.code}"
-                                                       style="width: 100px!important;" ></h:outputLabel>
+                                        <h:outputLabel value="#{pi.item.code}"style="width: 100px!important;" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed At"  >
@@ -110,7 +123,8 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>     
+                                    </p:column>    
+                                    
                                     <p:column headerText="Qty" >
                                         <h:outputLabel value="#{pi.qty}" >
                                             <f:convertNumber pattern="#0.00"/>
@@ -127,9 +141,11 @@
                                         <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}" >
                                         </h:outputLabel>                             
                                     </p:column>
+                                    
                                 </p:dataTable>
-                            </p:panel>
-                        </h:panelGroup>
+                            </div>
+                        </div>
+
                     </p:panel>
                 </h:form>
             </ui:define>
