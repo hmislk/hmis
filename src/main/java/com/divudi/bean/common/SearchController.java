@@ -13946,7 +13946,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.bill.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-
+ 
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.bill.patientEncounter.patient.code) =:number ) or ((b.bill.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+        
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.bill.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -13973,10 +13978,9 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.bill.deptId desc ";
+        
         temMap.put("billType", BillType.InwardBill);
-        temMap
-                .put("class", BilledBill.class
-                );
+        temMap.put("class", BilledBill.class);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
@@ -13999,7 +14003,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+        
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
