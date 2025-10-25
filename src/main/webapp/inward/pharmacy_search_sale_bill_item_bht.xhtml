@@ -112,8 +112,7 @@
                                     rowsPerPageTemplate="5,10,15,50"
                                     rows="10"
                                     >
-
-
+                                    
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.deptId}"/>
                                     </p:column>
@@ -124,12 +123,8 @@
                                         <h:outputLabel value="#{pi.item.name}" />    
                                     </p:column>
 
-                                    <p:column headerText="Item Code">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Code"/>
-                                        </f:facet>
-                                        <h:outputLabel value="#{pi.item.code}"
-                                                       style="width: 100px!important;" ></h:outputLabel>
+                                    <p:column headerText="Code">
+                                        <h:outputLabel value="#{pi.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed At"  >
@@ -172,10 +167,11 @@
                                         </h:outputLabel>                             
                                     </p:column>
                                     <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="/inward/pharmacy_reprint_bill_sale_bht">
-                                            <f:setPropertyActionListener value="#{pi.bill}"
-                                                                         target="#{pharmacyBillSearch.bill}"/>                                     
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="View Bill"
+                                            action="/inward/pharmacy_reprint_bill_sale_bht?faces-redirect=true">
+                                            <f:setPropertyActionListener value="#{pi.bill}"target="#{pharmacyBillSearch.bill}"/>                                     
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
