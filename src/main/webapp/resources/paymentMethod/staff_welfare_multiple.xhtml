@@ -31,7 +31,9 @@
                         id="txtVal"
                         styleClass="form-control"
                         placeholder="Enter amount to pay"
-                        disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
+                        disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                        required="true"
+                        requiredMessage="Amount is required">
                         <p:ajax
                             event="keyup"
                             process="@this"
@@ -57,7 +59,9 @@
                         inputStyleClass="form-control"
                         itemLabel="#{mys.person.name}"
                         itemValue="#{mys}"
-                        size="10">
+                        size="10"
+                        required="true"
+                        requiredMessage="Staff is required">
                         <p:column headerText="Name" style="padding: 2px;">
                             <h:outputText value="#{mys.person.nameWithTitle}" />
                         </p:column>

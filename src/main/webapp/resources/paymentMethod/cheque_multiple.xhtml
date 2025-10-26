@@ -25,7 +25,9 @@
                     styleClass="form-control"
                     style="width: 150px;"
                     autocomplete="off"
-                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    required="true"
+                    requiredMessage="Amount is required">
                     <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
@@ -40,7 +42,9 @@
                     styleClass="form-control"
                     style="width: 150px;"
                     autocomplete="off"
-                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    required="#{cc.attrs.componentDetail == null or cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    requiredMessage="Cheque No is required">
                     <p:ajax process="@this"/>
                 </p:inputText>
             </div>
@@ -51,7 +55,9 @@
                     id="bankSelect"
                     value="#{cc.attrs.paymentMethodData.cheque.institution}"
                     styleClass="form-control"
-                    style="width: 180px;">
+                    style="width: 180px;"
+                    required="true"
+                    requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                     <p:ajax process="@this"/>
@@ -66,7 +72,9 @@
                     value="#{cc.attrs.paymentMethodData.cheque.date}"
                     pattern="#{sessionController.applicationPreference.longDateFormat}"
                     styleClass="form-control"
-                    style="width: 150px;">
+                    style="width: 150px;"
+                    required="true"
+                    requiredMessage="Date is required">
                     <p:ajax process="@this"/>
                 </p:calendar>
             </div>
@@ -77,7 +85,9 @@
                     id="chequeComment"
                     value="#{cc.attrs.paymentMethodData.cheque.comment}"
                     placeholder="Enter comments"
-                    styleClass="form-control">
+                    styleClass="form-control"
+                    required="true"
+                    requiredMessage="Comment is required">
                     <p:ajax process="@this"/>
                 </p:inputText>
             </div>
