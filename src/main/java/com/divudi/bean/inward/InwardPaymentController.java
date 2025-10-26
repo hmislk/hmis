@@ -71,13 +71,21 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private BillFeeFacade billFeeFacade;
     @EJB
     PaymentService paymentService;
+    @EJB
+    CashTransactionBean cashTransactionBean;
     
+    @Inject
+    private InwardBeanController inwardBean;
+    @Inject
+    private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
     @Inject
     PatientDepositController patientDepositController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PaymentSchemeController paymentSchemeController;
     
     private BilledBill current;
     private boolean printPreview;
@@ -93,8 +101,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         return PaymentMethod.values();
     }
 
-    @Inject
-    private PaymentSchemeController paymentSchemeController;
     private PaymentMethodData paymentMethodData;
 
     public void bhtListener() {
@@ -143,9 +149,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 //        return billValue - (paidByPatient + netCredit);
     }
 
-    @Inject
-    private InwardBeanController inwardBean;
-
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Select BHT");
@@ -179,9 +182,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         return false;
 
     }
-
-    @EJB
-    CashTransactionBean cashTransactionBean;
 
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
@@ -384,10 +384,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         current = null;
         printPreview = false;
         comment = null;
+        paymentMethod = null;
+        total= 0.0;
     }
-
-    @Inject
-    private BillBeanController billBean;
 
     private void saveBill() {
         getBillBean().setPaymentMethodData(getCurrent(), getPaymentMethod(), getPaymentMethodData());
