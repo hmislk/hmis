@@ -173,7 +173,7 @@ public class InwardSearch implements Serializable {
             return;
         }
         if (referredBy == null) {
-            JsfUtil.addErrorMessage("Pleace Select Reffering Doctor !");
+            JsfUtil.addErrorMessage("Please Select Referring Doctor !");
             return;
         }
         editedBill.setReferredBy(referredBy);
