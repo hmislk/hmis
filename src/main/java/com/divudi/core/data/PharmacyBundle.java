@@ -1299,86 +1299,88 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(b.getTotal());
-        r.setNetTotal(b.getNetTotal());
-        r.setDiscount(b.getDiscount());
-        r.setServiceCharge(b.getMargin());
-        r.setActualTotal(b.getTotal() - b.getServiceCharge());
+        r.setGrossTotal(nullSafeDouble(b.getTotal()));
+        r.setNetTotal(nullSafeDouble(b.getNetTotal()));
+        r.setDiscount(nullSafeDouble(b.getDiscount()));
+        r.setServiceCharge(nullSafeDouble(b.getServiceCharge()));
+        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getServiceCharge()));
 
-        r.setValueOfStocksAtCostRate(b.getTotalCostValue());
-        r.setValueOfStocksAtPurchaseRate(b.getTotalPurchaseValue());
-        r.setValueOfStocksAtRetailSaleRate(b.getTotalRetailSaleValue());
+        r.setValueOfStocksAtCostRate(b.getTotalCostValue() == null ? BigDecimal.ZERO : b.getTotalCostValue());
+        r.setValueOfStocksAtPurchaseRate(b.getTotalPurchaseValue() == null ? BigDecimal.ZERO : b.getTotalPurchaseValue());
+        r.setValueOfStocksAtRetailSaleRate(b.getTotalRetailSaleValue() == null ? BigDecimal.ZERO : b.getTotalRetailSaleValue());
 
         PaymentMethod pm = b.getPaymentMethod();
 
         if (pm == null) {
-            r.setCreditValue(b.getNetTotal());
+            r.setCreditValue(nullSafeDouble(b.getNetTotal()));
             if (b.getPatientEncounter() != null) {
                 r.setOpdCreditValue(0);
-                r.setInpatientCreditValue(b.getNetTotal());
+                r.setInpatientCreditValue(nullSafeDouble(b.getNetTotal()));
             } else {
                 r.setOpdCreditValue(0);
                 r.setInpatientCreditValue(0);
-                r.setNoneValue(b.getNetTotal());
+                r.setNoneValue(nullSafeDouble(b.getNetTotal()));
             }
             return;
         }
 
         switch (pm) {
             case Agent:
-                r.setAgentValue(b.getNetTotal());
+                r.setAgentValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Card:
-                r.setCardValue(b.getNetTotal());
+                r.setCardValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Cash:
-                r.setCashValue(b.getNetTotal());
+                r.setCashValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Cheque:
-                r.setChequeValue(b.getNetTotal());
+                r.setChequeValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case IOU:
-                r.setIouValue(b.getNetTotal());
+                r.setIouValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case OnCall:
-                r.setOnCallValue(b.getNetTotal());
+                r.setOnCallValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Credit:
-                r.setCreditValue(b.getNetTotal());
+                r.setCreditValue(nullSafeDouble(b.getNetTotal()));
                 if (b.getPatientEncounter() != null) {
                     r.setOpdCreditValue(0);
-                    r.setInpatientCreditValue(b.getNetTotal());
+                    r.setInpatientCreditValue(nullSafeDouble(b.getNetTotal()));
                 } else {
-                    r.setOpdCreditValue(b.getNetTotal());
+                    r.setOpdCreditValue(nullSafeDouble(b.getNetTotal()));
                     r.setInpatientCreditValue(0);
                 }
                 break;
             case MultiplePaymentMethods:
+                // Note: BillLight does not have payment details, so this will be skipped
+                // The calculateBillPaymentValuesFromPayments method checks for r.getBill() != null
                 calculateBillPaymentValuesFromPayments(r);
                 break;
             case OnlineSettlement:
-                r.setOnlineSettlementValue(b.getNetTotal());
+                r.setOnlineSettlementValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case PatientDeposit:
-                r.setPatientDepositValue(b.getNetTotal());
+                r.setPatientDepositValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case PatientPoints:
-                r.setPatientPointsValue(b.getNetTotal());
+                r.setPatientPointsValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Slip:
-                r.setSlipValue(b.getNetTotal());
+                r.setSlipValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Staff:
-                r.setStaffValue(b.getNetTotal());
+                r.setStaffValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Staff_Welfare:
-                r.setStaffWelfareValue(b.getNetTotal());
+                r.setStaffWelfareValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case Voucher:
-                r.setVoucherValue(b.getNetTotal());
+                r.setVoucherValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case ewallet:
-                r.setEwalletValue(b.getNetTotal());
+                r.setEwalletValue(nullSafeDouble(b.getNetTotal()));
                 break;
             case YouOweMe:
                 break;
