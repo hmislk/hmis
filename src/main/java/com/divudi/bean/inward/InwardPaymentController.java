@@ -54,13 +54,12 @@ import javax.inject.Named;
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
  * Consultant (Health Informatics)
  */
-
 @Named
 @SessionScoped
 public class InwardPaymentController implements Serializable, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
-    
+
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -73,7 +72,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     PaymentService paymentService;
     @EJB
     CashTransactionBean cashTransactionBean;
-    
+
     @Inject
     private InwardBeanController inwardBean;
     @Inject
@@ -86,12 +85,12 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
-    
+
     private BilledBill current;
     private boolean printPreview;
     private double due;
     String comment;
-    
+
     private PaymentMethod paymentMethod;
     private double remainAmount;
     private double total;
@@ -349,7 +348,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             getPaymentMethodData().getCreditCard().setTotalValue(getCurrent().getTotal());
             System.out.println("this = " + this);
         } else if (getCurrent().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            
+
             getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
 
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
@@ -385,7 +384,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         printPreview = false;
         comment = null;
         paymentMethod = null;
-        total= 0.0;
+        total = 0.0;
     }
 
     private void saveBill() {
@@ -429,15 +428,19 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         }
 
     }
-    
+
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
-        
+
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
-            
-            if(paymentMethodData != null){
+
+            if (paymentMethodData != null && paymentMethodData.getPaymentMethodMultiple() != null && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
                 for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if(cd == null || cd.getPaymentMethodData() == null){
+                        continue;
+                    }
+                    
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
@@ -460,7 +463,10 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             // Guard against empty component list
-            if (paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            if (paymentMethodData == null
+                    || paymentMethodData.getPaymentMethodMultiple() == null
+                    || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                    || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
                 return;
             }
 
@@ -498,9 +504,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     }
                     break;
                 case PatientDeposit:
-                    if (patient != null) {
-                        pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
-                        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
+                    Patient p = (getCurrent() != null && getCurrent().getPatientEncounter() != null) ? getCurrent().getPatientEncounter().getPatient() : null;
+                    
+                    if (p == null){
+                        break;
+                    }else{
+                        pm.getPaymentMethodData().getPatient_deposit().setPatient(p);
+                        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(p, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
                         // Only set if user hasn't already entered a value
                         if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() == 0.0) {
@@ -542,18 +552,18 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             }
 
         }
-        
+
         listnerForPaymentMethodChange();
 
     }
 
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
-        if (cd == null ||
-            paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+        if (cd == null
+                || paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
