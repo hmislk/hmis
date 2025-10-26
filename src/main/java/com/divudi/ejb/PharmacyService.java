@@ -418,7 +418,6 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
                 BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
                 BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
-                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
                 BillTypeAtomic.PHARMACY_ISSUE_RETURN,
                 BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
         );
