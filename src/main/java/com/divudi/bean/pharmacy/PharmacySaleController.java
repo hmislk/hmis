@@ -2879,19 +2879,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
                         break;
                     case Staff:
-                        p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Credit Updated");
+                            p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                            // Set bill.toStaff from the first Staff payment component
+                            if (bill.getToStaff() == null) {
+                                bill.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                            }
                         }
                         break;
                     case Staff_Welfare:
-                        p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
-                            staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                            p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                            // Set bill.toStaff from the first Staff_Welfare payment component
+                            if (bill.getToStaff() == null) {
+                                bill.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                            }
                         }
                         break;
                     case YouOweMe:
