@@ -857,6 +857,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         BigDecimal returnTotal = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalRetailValue = BigDecimal.ZERO;
         int itemCount = 0;
 
         for (BillItem bi : billItems) {
@@ -865,6 +868,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
 
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
             if (fd == null) {
                 continue;
             }
@@ -875,6 +879,15 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 itemCount++;
                 // Also update the individual bill item net value for consistency
                 bi.setNetValue(lineGrossTotal.doubleValue());
+            }
+
+            // CRITICAL FIX: Calculate purchase, cost, and retail values from PharmaceuticalBillItem
+            // This aggregates stock valuations for the entire return bill (matching GRN Return pattern)
+            if (phi != null) {
+                // Sum up the purchase, cost, and retail values
+                totalPurchaseValue = totalPurchaseValue.add(BigDecimal.valueOf(phi.getPurchaseValue()));
+                totalCostValue = totalCostValue.add(BigDecimal.valueOf(phi.getCostValue()));
+                totalRetailValue = totalRetailValue.add(BigDecimal.valueOf(phi.getRetailValue()));
             }
         }
 
@@ -887,6 +900,13 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // Set the calculated totals
         currentBill.getBillFinanceDetails().setNetTotal(returnTotal);
         currentBill.getBillFinanceDetails().setGrossTotal(returnTotal);
+
+        // CRITICAL FIX: Set purchase, cost, and retail sale values at bill level
+        // These are used for stock valuation reports (matching GRN Return pattern)
+        // STOCK VALUATIONS must be NEGATIVE (stock moving out) - use abs().negate() to ensure always negative
+        currentBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue.abs().negate());
+        currentBill.getBillFinanceDetails().setTotalCostValue(totalCostValue.abs().negate());
+        currentBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue.abs().negate());
 
         // Also set the legacy total fields for backward compatibility
         currentBill.setTotal(returnTotal.doubleValue());
@@ -2165,6 +2185,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
         BigDecimal qty = fd.getQuantity();
         BigDecimal freeQty = fd.getFreeQuantity();
         BigDecimal rate = fd.getLineGrossRate();
@@ -2200,35 +2221,56 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // Set total quantity (in packs for AMPP, in units for AMP) - make negative for returns (stock moving out)
         fd.setTotalQuantity(totalQty.abs().negate());
 
-        // Set the calculated line total
+        // Set the calculated line total - POSITIVE for financial transactions (refund amount)
+        // Financial values represent money to be returned, which is positive
         fd.setLineGrossTotal(lineTotal);
         fd.setLineNetTotal(lineTotal);
+
+        // Calculate and set line net rate (line net total / total quantity)
+        if (totalQty.compareTo(BigDecimal.ZERO) > 0) {
+            fd.setLineNetRate(lineTotal.divide(totalQty, 4, RoundingMode.HALF_UP));
+        } else {
+            fd.setLineNetRate(BigDecimal.ZERO);
+        }
+
+        // Set bill-level rates and totals in BIFD (should match line-level values)
+        fd.setGrossRate(rate);
+        fd.setNetRate(fd.getLineNetRate());
+        fd.setGrossTotal(lineTotal);
+        fd.setNetTotal(lineTotal);
+
+        // Set BillItem fields (matching BIFD values)
+        bi.setRate(rate.doubleValue());
+        bi.setQty(qty.doubleValue());
+        bi.setNetRate(fd.getLineNetRate() != null ? fd.getLineNetRate().doubleValue() : 0.0);
+        bi.setGrossValue(lineTotal.doubleValue());
         bi.setNetValue(lineTotal.doubleValue());
 
         System.out.println("After setting: lineGrossTotal=" + fd.getLineGrossTotal() + ", lineNetTotal=" + fd.getLineNetTotal());
 
+        // Calculate unit-based quantities (ALWAYS in units per HMIS standard)
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        BigDecimal qtyByUnits = isAmpp ? qty.multiply(unitsPerPack) : qty;
+        BigDecimal freeQtyByUnits = isAmpp ? freeQty.multiply(unitsPerPack) : freeQty;
+        BigDecimal totalReturningQtyByUnits = qtyByUnits.add(freeQtyByUnits);
+
+        // Update BIFD quantities - make negative for returns (stock moving out)
+        fd.setQuantity(qty.abs().negate());
+        fd.setFreeQuantity(freeQty.abs().negate());
+        fd.setQuantityByUnits(qtyByUnits.abs().negate());
+        fd.setFreeQuantityByUnits(freeQtyByUnits.abs().negate());
+        fd.setTotalQuantityByUnits(totalReturningQtyByUnits.abs().negate());
+
         // Calculate and set quantity-related fields only
         // CRITICAL: DO NOT modify rates - they were set at bill creation time based on configuration
-        if (bi.getReferanceBillItem() != null) {
+        if (bi.getReferanceBillItem() != null && phi != null) {
             PharmaceuticalBillItem originalPhi = bi.getReferanceBillItem().getPharmaceuticalBillItem();
             if (originalPhi != null) {
-                // Get the original rates from original purchase (for reference value calculations only)
+                // Get the original rates from original purchase (for stock valuation calculations)
                 double purchaseRatePerUnit = originalPhi.getPurchaseRate();
                 double costRatePerUnit = originalPhi.getCostRate();
                 double retailRatePerUnit = originalPhi.getRetailRate();
-
-                // Get units per pack for calculations
-                BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
-
-                // Calculate total quantity in units for value calculations
-                BigDecimal qtyByUnits = isAmpp ? qty.multiply(unitsPerPack) : qty;
-                BigDecimal freeQtyByUnits = isAmpp ? freeQty.multiply(unitsPerPack) : freeQty;
-                BigDecimal totalReturningQtyByUnits = qtyByUnits.add(freeQtyByUnits);
                 double totalReturningQtyInUnits = totalReturningQtyByUnits.doubleValue();
-
-                // Set quantities - make negative for returns (stock moving out)
-                fd.setQuantity(qty.abs().negate());
-                fd.setTotalQuantityByUnits(totalReturningQtyByUnits.abs().negate());
 
                 // Calculate reference values (quantity in units × original rate per unit)
                 // These are for reporting/reference only - the actual return value uses lineGrossRate
@@ -2236,11 +2278,69 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit).abs().negate());
                 fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit).abs().negate());
 
-                // CRITICAL: DO NOT set purchaseRate, costRate, retailSaleRate, or lineGrossRate here
+                // CRITICAL FIX: Set PharmaceuticalBillItem stock values (matching GRN Return pattern)
+                // These values are used for stock valuation reports and bill-level aggregation
+                // Returns are stock moving out, so values are negative (opposite of financial transactions)
+                // Use abs() then negate to ensure values are ALWAYS negative regardless of user input
+                phi.setPurchaseValue(-Math.abs(totalReturningQtyInUnits * purchaseRatePerUnit));
+                phi.setCostValue(-Math.abs(totalReturningQtyInUnits * costRatePerUnit));
+                phi.setRetailValue(-Math.abs(totalReturningQtyInUnits * retailRatePerUnit));
+
+                // Set cost rate in PharmaceuticalBillItem
+                phi.setCostRate(costRatePerUnit);
+                phi.setRetailRate(retailRatePerUnit);
+
+                // Set rates in BillItemFinanceDetails (in packs for AMPPs, in units for AMPs)
+                if (isAmpp) {
+                    // For AMPPs: Calculate rates per pack
+                    BigDecimal purchaseRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(purchaseRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+                    BigDecimal costRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(costRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+                    BigDecimal retailRatePerPack = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                            ? BigDecimal.valueOf(retailRatePerUnit).multiply(unitsPerPack)
+                            : BigDecimal.ZERO;
+
+                    fd.setPurchaseRate(purchaseRatePerPack);
+                    fd.setCostRate(costRatePerPack);
+                    fd.setRetailSaleRate(retailRatePerPack);
+                } else {
+                    // For AMPs: Rates are already per unit
+                    fd.setPurchaseRate(BigDecimal.valueOf(purchaseRatePerUnit));
+                    fd.setCostRate(BigDecimal.valueOf(costRatePerUnit));
+                    fd.setRetailSaleRate(BigDecimal.valueOf(retailRatePerUnit));
+                }
+
+                // Set cost rate fields (lineCostRate, billCostRate, totalCostRate) - always per unit
+                BigDecimal costRatePerUnitBD = BigDecimal.valueOf(costRatePerUnit);
+                fd.setLineCostRate(costRatePerUnitBD);
+                fd.setBillCostRate(costRatePerUnitBD);
+                fd.setTotalCostRate(costRatePerUnitBD);
+
+                // Calculate cost values (costRate × quantity in units) - negative for returns
+                BigDecimal totalCostValue = costRatePerUnitBD.multiply(qtyByUnits.abs());
+                fd.setLineCost(totalCostValue.negate());
+                fd.setBillCost(totalCostValue.negate());
+                fd.setTotalCost(totalCostValue.negate());
+
+                // CRITICAL: DO NOT set purchaseRate or lineGrossRate here
                 // These rates were set at bill creation time based on configuration and MUST NOT be changed
                 // The lineGrossRate contains the configuration-based return rate and is used for lineTotal calculation
             }
         }
+
+        // Set zero-value fields (no discounts, taxes, or expenses on Direct Purchase returns)
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setBillDiscount(BigDecimal.ZERO);
+        fd.setBillTax(BigDecimal.ZERO);
+        fd.setBillExpense(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
 
     }
 
