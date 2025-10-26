@@ -166,12 +166,33 @@ public class InwardSearch implements Serializable {
         }
     }
     
+    public void editBillDetails() {
+        Bill editedBill = bill;
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill Error !");
+            return;
+        }
+        if (referredBy == null) {
+            JsfUtil.addErrorMessage("Pleace Select Reffering Doctor !");
+            return;
+        }
+        editedBill.setReferredBy(referredBy);
+        if (bill.getId() == null) {
+            billFacade.create(editedBill);
+        }
+        billFacade.edit(editedBill);
+        JsfUtil.addSuccessMessage("Saved");
+        referredBy = null;
+    }
+    
     @Inject
     RequestController requestController;
     @Inject
     RequestService requestService;
+    
+    private Doctor referredBy;
 
-    Request currentRequest;
+    private Request currentRequest;
     
     public String navigateToCancelInpatientBill() {
         if (bill == null) {
@@ -2067,6 +2088,22 @@ public class InwardSearch implements Serializable {
 
     public void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    public Doctor getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(Doctor referredBy) {
+        this.referredBy = referredBy;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
     }
 
 }
