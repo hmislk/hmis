@@ -7,6 +7,7 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.session.customizer" value="com.divudi.data.PreventDeleteSessionCustomizer"/>
         </properties>
     </persistence-unit>
 
@@ -16,6 +17,7 @@
         <properties>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>
+            <property name="eclipselink.session.customizer" value="com.divudi.data.PreventDeleteSessionCustomizer"/>
         </properties>
     </persistence-unit>
 </persistence>
