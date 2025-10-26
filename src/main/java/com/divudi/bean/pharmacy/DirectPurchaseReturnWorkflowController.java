@@ -2380,6 +2380,26 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
     }
 
+    public void fillAllFinalizedDirectPurchaseReturns() {
+        // All finalized returns (irrespective of completed status)
+        String jpql = "SELECT b FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.checkedBy IS NOT NULL "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "AND b.department = :dept "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PurchaseReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        params.put("dept", sessionController.getDepartment());
+        directPurchaseReturnsToApprove = billFacade.findByJpql(jpql, params);
+        if (directPurchaseReturnsToApprove == null) {
+            directPurchaseReturnsToApprove = new ArrayList<>();
+        }
+    }
+
     public void closeDirectPurchaseReturn(Bill returnBillToClose) {
         if (returnBillToClose == null) {
             JsfUtil.addErrorMessage("No direct purchase return selected to close");
