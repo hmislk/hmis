@@ -39,7 +39,9 @@
                         inputStyleClass="form-control"
                         itemLabel="#{mys.person.name}"
                         itemValue="#{mys}"
-                        size="10">
+                        size="10"
+                        required="#{cc.attrs.valueRequired}"
+                        requiredMessage="Please select a staff member for welfare payment">
                         <p:column headerText="Name" style="padding: 2px;">
                             <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                         </p:column>
