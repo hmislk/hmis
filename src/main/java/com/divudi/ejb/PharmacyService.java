@@ -80,8 +80,8 @@ public class PharmacyService {
     }
 
     /**
-     * Build a human readable warning if the bill item matches any recorded allergies.
-     * Checks the Amp, Atm, Vmp, and Vtm hierarchy for conflicts.
+     * Build a human readable warning if the bill item matches any recorded
+     * allergies. Checks the Amp, Atm, Vmp, and Vtm hierarchy for conflicts.
      *
      * @param patient patient whose allergies are evaluated
      */
@@ -323,7 +323,7 @@ public class PharmacyService {
         bundle.generatePharmacyPurchaseGroupedByBillType();
         return bundle;
     }
-    
+
     public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
@@ -360,6 +360,15 @@ public class PharmacyService {
         return bundle;
     }
 
+    public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
         return Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE,
@@ -393,6 +402,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
                 BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING,
                 BillTypeAtomic.PHARMACY_GRN_RETURN,
                 BillTypeAtomic.PHARMACY_GRN_CANCELLED
         );
@@ -416,6 +426,11 @@ public class PharmacyService {
 
     public List<BillTypeAtomic> getPharmacyAdjustmentBillTypes() {
         return Arrays.asList(
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );

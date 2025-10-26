@@ -176,6 +176,10 @@ public class PharmacyBundle implements Serializable {
         double sumOfActualTotal = 0.0;
         double sumOfNetTotal = 0.0;
 
+        BigDecimal sumOfStocksAtCostRate = BigDecimal.ZERO;
+        BigDecimal sumOfStocksAtPurchaseRate = BigDecimal.ZERO;
+        BigDecimal sumOfStocksAtRetailSaleRate = BigDecimal.ZERO;
+
         // Aggregate all rows
         for (PharmacyRow r : rows) {
             sumOfCashValues += r.getCashValue();
@@ -203,6 +207,16 @@ public class PharmacyBundle implements Serializable {
             sumOfTax += r.getTax();
             sumOfActualTotal += r.getActualTotal();
             sumOfNetTotal += r.getNetTotal();
+
+            if (r.getValueOfStocksAtCostRate() != null) {
+                sumOfStocksAtCostRate = sumOfStocksAtCostRate.add(r.getValueOfStocksAtCostRate());
+            }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                sumOfStocksAtPurchaseRate = sumOfStocksAtPurchaseRate.add(r.getValueOfStocksAtPurchaseRate());
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                sumOfStocksAtRetailSaleRate = sumOfStocksAtRetailSaleRate.add(r.getValueOfStocksAtRetailSaleRate());
+            }
         }
 
         // Set summary row values
@@ -231,6 +245,10 @@ public class PharmacyBundle implements Serializable {
         getSummaryRow().setTax(sumOfTax);
         getSummaryRow().setActualTotal(sumOfActualTotal);
         getSummaryRow().setNetTotal(sumOfNetTotal);
+
+        getSummaryRow().setValueOfStocksAtCostRate(sumOfStocksAtCostRate);
+        getSummaryRow().setValueOfStocksAtPurchaseRate(sumOfStocksAtPurchaseRate);
+        getSummaryRow().setValueOfStocksAtRetailSaleRate(sumOfStocksAtRetailSaleRate);
     }
 
     public PharmacyBundle(List<?> entries) {
