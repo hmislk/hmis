@@ -26,7 +26,7 @@
                     styleClass="form-control"
                     style="width: 150px;"
                     disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
-                    required="#{cc.attrs.componentDetail == null or cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    required="#{cc.attrs.componentDetail != null and cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     requiredMessage="Amount is required">
                     <p:ajax
                         event="keyup"
