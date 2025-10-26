@@ -2997,6 +2997,11 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            m.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.deptId) like :billNo )";
@@ -3736,6 +3741,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            m.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -4557,6 +4567,11 @@ public class SearchController implements Serializable {
             sql += " and (((b.insId) like :billNo ) or ((b.deptId) like :billNo )) ";
             tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            tmp.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
@@ -5300,6 +5315,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((bi.bill.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((bi.bill.patientEncounter.patient.code) =:number ) or ((bi.bill.patientEncounter.patient.phn) =:number )) ";
+            m.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
@@ -13946,7 +13966,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.bill.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-
+ 
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.bill.patientEncounter.patient.code) =:number ) or ((b.bill.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+        
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.bill.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -13973,10 +13998,9 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.bill.deptId desc ";
+        
         temMap.put("billType", BillType.InwardBill);
-        temMap
-                .put("class", BilledBill.class
-                );
+        temMap.put("class", BilledBill.class);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
@@ -13999,7 +14023,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+        
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -14144,6 +14173,11 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
@@ -14181,11 +14215,6 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardFinalBills() {
-//        double d = commonController.dateDifferenceInMinutes(fromDate, toDate) / (60 * 24);
-//        if (d > 32 && getReportKeyWord().isBool1()) {
-//            JsfUtil.addErrorMessage("Date Range To Long");
-//            return;
-//        }
         Date startTime = new Date();
 
         String sql;
@@ -14198,6 +14227,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
@@ -14235,11 +14269,6 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardProvisionalBills() {
-//        double d = commonController.dateDifferenceInMinutes(fromDate, toDate) / (60 * 24);
-//        if (d > 32 && getReportKeyWord().isBool1()) {
-//            JsfUtil.addErrorMessage("Date Range To Long");
-//            return;
-//        }
         Date startTime = new Date();
 
         String sql;
@@ -14252,6 +14281,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
@@ -14307,7 +14341,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+        
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -14745,7 +14784,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-
+        
+        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+        
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");

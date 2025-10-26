@@ -315,6 +315,15 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public String navigateToDailyStockValuesReport() {
+        if(institution==null){
+            institution = sessionController.getInstitution();
+        }
+        if(site==null){
+            site = sessionController.getLoggedSite();
+        }
+        if(department==null){
+            department=sessionController.getDepartment();
+        }
         return "/pharmacy/reports/summary_reports/daily_stock_values_report?faces-redirect=true";
     }
 
@@ -344,11 +353,13 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        Date today = new Date();
-        if (!fromDate.before(today)) {
-            JsfUtil.addErrorMessage("Selected date must be earlier than today");
-            return;
-        }
+        
+//        Report can be generated for today as well
+//        Date today = new Date();
+//        if (!fromDate.before(today)) {
+//            JsfUtil.addErrorMessage("Selected date must be earlier than today");
+//            return;
+//        }
 
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
@@ -364,19 +375,19 @@ public class PharmacySummaryReportController implements Serializable {
         cal.add(Calendar.DATE, 1);
         toDate = cal.getTime();
 
-        Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
+        Date startOfTheDay = CommonFunctions.getStartOfDay(fromDate);
         Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
 
         PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
-        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
 
-        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
 
-        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
         // Calculate Closing Stock Value at Retail Rate
