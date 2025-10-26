@@ -437,10 +437,10 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
             if (paymentMethodData != null && paymentMethodData.getPaymentMethodMultiple() != null && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
                 for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    if(cd == null || cd.getPaymentMethodData() == null){
+                    if (cd == null || cd.getPaymentMethodData() == null) {
                         continue;
                     }
-                    
+
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
@@ -505,21 +505,26 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     break;
                 case PatientDeposit:
                     Patient p = (getCurrent() != null && getCurrent().getPatientEncounter() != null) ? getCurrent().getPatientEncounter().getPatient() : null;
-                    
-                    if (p == null){
+
+                    if (p == null) {
                         break;
-                    }else{
+                    } else {
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(p);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(p, sessionController.getDepartment());
-                        pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        // Only set if user hasn't already entered a value
-                        if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() == 0.0) {
-                            if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
-                                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
-                            } else {
-                                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+
+                        if (pd != null) {
+                            pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                            // Only set if user hasn't already entered a value
+                            if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() == 0.0) {
+                                if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
+                                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
+                                } else {
+                                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                                }
                             }
                         }
+
                     }
 
                     break;
