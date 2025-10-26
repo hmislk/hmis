@@ -857,6 +857,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         BigDecimal returnTotal = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalRetailValue = BigDecimal.ZERO;
         int itemCount = 0;
 
         for (BillItem bi : billItems) {
@@ -865,6 +868,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
 
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
             if (fd == null) {
                 continue;
             }
@@ -875,6 +879,15 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 itemCount++;
                 // Also update the individual bill item net value for consistency
                 bi.setNetValue(lineGrossTotal.doubleValue());
+            }
+
+            // CRITICAL FIX: Calculate purchase, cost, and retail values from PharmaceuticalBillItem
+            // This aggregates stock valuations for the entire return bill (matching GRN Return pattern)
+            if (phi != null) {
+                // Sum up the purchase, cost, and retail values
+                totalPurchaseValue = totalPurchaseValue.add(BigDecimal.valueOf(phi.getPurchaseValue()));
+                totalCostValue = totalCostValue.add(BigDecimal.valueOf(phi.getCostValue()));
+                totalRetailValue = totalRetailValue.add(BigDecimal.valueOf(phi.getRetailValue()));
             }
         }
 
@@ -887,6 +900,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // Set the calculated totals
         currentBill.getBillFinanceDetails().setNetTotal(returnTotal);
         currentBill.getBillFinanceDetails().setGrossTotal(returnTotal);
+
+        // CRITICAL FIX: Set purchase, cost, and retail sale values at bill level
+        // These are used for stock valuation reports (matching GRN Return pattern)
+        currentBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
+        currentBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+        currentBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
 
         // Also set the legacy total fields for backward compatibility
         currentBill.setTotal(returnTotal.doubleValue());
@@ -2165,6 +2184,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
         BigDecimal qty = fd.getQuantity();
         BigDecimal freeQty = fd.getFreeQuantity();
         BigDecimal rate = fd.getLineGrossRate();
@@ -2209,10 +2229,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
         // Calculate and set quantity-related fields only
         // CRITICAL: DO NOT modify rates - they were set at bill creation time based on configuration
-        if (bi.getReferanceBillItem() != null) {
+        if (bi.getReferanceBillItem() != null && phi != null) {
             PharmaceuticalBillItem originalPhi = bi.getReferanceBillItem().getPharmaceuticalBillItem();
             if (originalPhi != null) {
-                // Get the original rates from original purchase (for reference value calculations only)
+                // Get the original rates from original purchase (for stock valuation calculations)
                 double purchaseRatePerUnit = originalPhi.getPurchaseRate();
                 double costRatePerUnit = originalPhi.getCostRate();
                 double retailRatePerUnit = originalPhi.getRetailRate();
@@ -2236,7 +2256,18 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 fd.setValueAtCostRate(BigDecimal.valueOf(totalReturningQtyInUnits * costRatePerUnit).abs().negate());
                 fd.setValueAtRetailRate(BigDecimal.valueOf(totalReturningQtyInUnits * retailRatePerUnit).abs().negate());
 
-                // CRITICAL: DO NOT set purchaseRate, costRate, retailSaleRate, or lineGrossRate here
+                // CRITICAL FIX: Set PharmaceuticalBillItem stock values (matching GRN Return pattern)
+                // These values are used for stock valuation reports and bill-level aggregation
+                // Returns are stock moving out, so values are negative (opposite of financial transactions)
+                phi.setPurchaseValue(totalReturningQtyInUnits * purchaseRatePerUnit * -1);
+                phi.setCostValue(totalReturningQtyInUnits * costRatePerUnit * -1);
+                phi.setRetailValue(totalReturningQtyInUnits * retailRatePerUnit * -1);
+
+                // Set cost rate in PharmaceuticalBillItem
+                phi.setCostRate(costRatePerUnit);
+                phi.setRetailRate(retailRatePerUnit);
+
+                // CRITICAL: DO NOT set purchaseRate or lineGrossRate here
                 // These rates were set at bill creation time based on configuration and MUST NOT be changed
                 // The lineGrossRate contains the configuration-based return rate and is used for lineTotal calculation
             }
