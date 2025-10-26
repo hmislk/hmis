@@ -203,13 +203,15 @@
                             </td>
                         </tr>
 
-                        <ui:repeat value="#{pharmacySummaryReportController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.rows}" var="purchase">
+                        <ui:repeat
+                            id="purchaseBundles"
+                            value="#{pharmacySummaryReportController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.rows}" var="purchase">
                             <tr class="table-warning">
                                 <td>
                                     <h:outputLabel value="#{purchase.rowType}"></h:outputLabel>
                                 </td>
                                 <td class="text-end">
-                                    <h:outputLabel value="#{purchase.grossTotal}" class="me-4">
+                                    <h:outputLabel value="#{purchase.valueOfStocksAtRetailSaleRate}" class="me-4">
                                         <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                     </h:outputLabel>
                                 </td>

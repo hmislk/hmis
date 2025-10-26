@@ -23,6 +23,7 @@ import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -322,6 +323,15 @@ public class PharmacyService {
         bundle.generatePharmacyPurchaseGroupedByBillType();
         return bundle;
     }
+    
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
 
     public PharmacyBundle fetchPharmacyTransferValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
@@ -329,6 +339,15 @@ public class PharmacyService {
         List<Bill> pharmacyIncomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBills);
         bundle.generatePharmacyPurchaseGroupedByBillType();
+        return bundle;
+    }
+
+    public PharmacyBundle fetchPharmacyTransferValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
     }
 
@@ -382,7 +401,16 @@ public class PharmacyService {
     public List<BillTypeAtomic> getPharmacyInternalTransferBillTypes() {
         return Arrays.asList(
                 BillTypeAtomic.PHARMACY_ISSUE,
-                BillTypeAtomic.PHARMACY_RECEIVE
+                BillTypeAtomic.PHARMACY_RECEIVE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
         );
     }
 

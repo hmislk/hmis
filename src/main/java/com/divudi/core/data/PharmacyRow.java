@@ -22,6 +22,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,6 +57,7 @@ public class PharmacyRow implements Serializable {
 
     private Category category;
     private Bill bill;
+    private BillLight billLight;
     private Bill batchBill;
     private Bill referanceBill;
     private BillItem billItem;
@@ -187,6 +189,9 @@ public class PharmacyRow implements Serializable {
 
     private long duration;
 
+    private BigDecimal valueOfStocksAtCostRate = BigDecimal.ZERO;
+    private BigDecimal valueOfStocksAtPurchaseRate = BigDecimal.ZERO;
+    private BigDecimal valueOfStocksAtRetailSaleRate = BigDecimal.ZERO;
 
     private BigDecimal grossSaleRate = BigDecimal.ZERO;
     private BigDecimal discountRate = BigDecimal.ZERO;
@@ -196,7 +201,6 @@ public class PharmacyRow implements Serializable {
     private BigDecimal marginValue = BigDecimal.ZERO;
     private BigDecimal discountValue = BigDecimal.ZERO;
     private BigDecimal netSaleValue = BigDecimal.ZERO;
-
 
     public PharmacyRow() {
         this.uuid = UUID.randomUUID();
@@ -270,6 +274,12 @@ public class PharmacyRow implements Serializable {
         this();
         this.bill = bill;
         rowType = "Bill";
+    }
+
+    public PharmacyRow(BillLight billLight) {
+        this();
+        this.billLight = billLight;
+        rowType = "BillLight";
     }
 
     public PharmacyRow(BillItem billItem) {
@@ -485,9 +495,9 @@ public class PharmacyRow implements Serializable {
     }
 
     /**
-     * DTO Constructor for Closing Stock Report (Batch-wise)
-     * Optimized to fetch only required scalar values without loading full entities
-     * Eliminates N+1 queries and reduces memory usage by 70%
+     * DTO Constructor for Closing Stock Report (Batch-wise) Optimized to fetch
+     * only required scalar values without loading full entities Eliminates N+1
+     * queries and reduces memory usage by 70%
      *
      * @param itemId Item ID
      * @param itemName Item Name
@@ -505,7 +515,8 @@ public class PharmacyRow implements Serializable {
      * @param stockSaleValue Department-level sale value
      * @param stockCostValue Department-level cost value
      * @param instituionBatchQty Institution-level batch quantity
-     * @param institutionBatchStockValueAtPurchaseRate Institution-level purchase value
+     * @param institutionBatchStockValueAtPurchaseRate Institution-level
+     * purchase value
      * @param institutionBatchStockValueAtSaleRate Institution-level sale value
      * @param institutionBatchStockValueAtCostRate Institution-level cost value
      * @param totalBatchQty Total batch quantity across all institutions
@@ -1570,9 +1581,9 @@ public class PharmacyRow implements Serializable {
     }
 
     /**
-     * DTO Constructor for Closing Stock Report (Item-wise)
-     * Optimized to fetch only required scalar values without loading full entities
-     * Eliminates N+1 queries and reduces memory usage by 70%
+     * DTO Constructor for Closing Stock Report (Item-wise) Optimized to fetch
+     * only required scalar values without loading full entities Eliminates N+1
+     * queries and reduces memory usage by 70%
      *
      * @param itemId Item ID
      * @param itemName Item Name
@@ -1584,9 +1595,12 @@ public class PharmacyRow implements Serializable {
      * @param itemStockValueAtSaleRate Department-level item sale value
      * @param itemStockValueAtCostRate Department-level item cost value
      * @param institutionItemStock Institution-level item stock quantity
-     * @param institutionItemStockValueAtPurchaseRate Institution-level item purchase value
-     * @param institutionItemStockValueAtSaleRate Institution-level item sale value
-     * @param institutionItemStockValueAtCostRate Institution-level item cost value
+     * @param institutionItemStockValueAtPurchaseRate Institution-level item
+     * purchase value
+     * @param institutionItemStockValueAtSaleRate Institution-level item sale
+     * value
+     * @param institutionItemStockValueAtCostRate Institution-level item cost
+     * value
      * @param totalItemStock Total item stock across all institutions
      * @param totalItemStockValueAtPurchaseRate Total item purchase value
      * @param totalItemStockValueAtSaleRate Total item sale value
@@ -1643,5 +1657,37 @@ public class PharmacyRow implements Serializable {
         this.tax = totalItemStockValueAtPurchaseRate != null ? totalItemStockValueAtPurchaseRate : 0.0;
         this.actualTotal = totalItemStockValueAtSaleRate != null ? totalItemStockValueAtSaleRate : 0.0;
         this.staffTotal = totalItemStockValueAtCostRate != null ? totalItemStockValueAtCostRate : 0.0;
+    }
+
+    public BillLight getBillLight() {
+        return billLight;
+    }
+
+    public void setBillLight(BillLight billLight) {
+        this.billLight = billLight;
+    }
+
+    public BigDecimal getValueOfStocksAtCostRate() {
+        return valueOfStocksAtCostRate;
+    }
+
+    public void setValueOfStocksAtCostRate(BigDecimal valueOfStocksAtCostRate) {
+        this.valueOfStocksAtCostRate = valueOfStocksAtCostRate;
+    }
+
+    public BigDecimal getValueOfStocksAtPurchaseRate() {
+        return valueOfStocksAtPurchaseRate;
+    }
+
+    public void setValueOfStocksAtPurchaseRate(BigDecimal valueOfStocksAtPurchaseRate) {
+        this.valueOfStocksAtPurchaseRate = valueOfStocksAtPurchaseRate;
+    }
+
+    public BigDecimal getValueOfStocksAtRetailSaleRate() {
+        return valueOfStocksAtRetailSaleRate;
+    }
+
+    public void setValueOfStocksAtRetailSaleRate(BigDecimal valueOfStocksAtRetailSaleRate) {
+        this.valueOfStocksAtRetailSaleRate = valueOfStocksAtRetailSaleRate;
     }
 }
