@@ -25,7 +25,9 @@
                     id="txtVal"
                     styleClass="form-control"
                     style="width: 150px;"
-                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    required="true"
+                    requiredMessage="Amount is required">
                     <p:ajax
                         event="keyup"
                         process="@this"
@@ -43,7 +45,9 @@
                     id="refno"
                     styleClass="form-control"
                     style="width: 120px;"
-                    placeholder="1234">
+                    placeholder="1234"
+                    required="true"
+                    requiredMessage="Last 4 Digits is required">
                     <p:ajax process="@this" />
                 </p:inputText>
             </div>
@@ -56,7 +60,9 @@
                     filter="true"
                     filterMatchMode="contains"
                     styleClass="form-control"
-                    style="width: 180px;">
+                    style="width: 180px;"
+                    required="true"
+                    requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                     <p:ajax process="@this" />
@@ -69,7 +75,9 @@
                     id="comment"
                     value="#{cc.attrs.paymentMethodData.creditCard.comment}"
                     styleClass="form-control"
-                    placeholder="Enter comments"/>
+                    placeholder="Enter comments"
+                    required="true"
+                    requiredMessage="Comment is required"/>
             </div>
         </div>
     </cc:implementation>

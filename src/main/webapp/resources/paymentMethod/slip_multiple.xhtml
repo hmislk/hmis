@@ -25,7 +25,9 @@
                     value="#{cc.attrs.paymentMethodData.slip.totalValue}"
                     id="txtVal"
                     styleClass="form-control"
-                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    required="true"
+                    requiredMessage="Amount is required">
                     <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
@@ -36,7 +38,9 @@
                 <p:selectOneMenu
                     id="bank"
                     value="#{cc.attrs.paymentMethodData.slip.institution}"
-                    styleClass="form-control">
+                    styleClass="form-control"
+                    required="true"
+                    requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                     <p:ajax process="@this" />
@@ -52,7 +56,9 @@
                     value="#{cc.attrs.paymentMethodData.slip.date}"
                     placeholder="Select date"
                     pattern="#{sessionController.applicationPreference.longDateFormat}"
-                    showButtonPanel="true">
+                    showButtonPanel="true"
+                    required="true"
+                    requiredMessage="Date is required">
                     <p:ajax process="@this" />
                 </p:calendar>
             </div>
@@ -63,7 +69,9 @@
                     id="refNo"
                     value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
                     placeholder="Reference No"
-                    styleClass="form-control">
+                    styleClass="form-control"
+                    required="true"
+                    requiredMessage="Reference No is required">
                     <p:ajax process="@this" />
                 </p:inputText>
             </div>
@@ -74,7 +82,9 @@
                     id="comment"
                     value="#{cc.attrs.paymentMethodData.slip.comment}"
                     placeholder="Comments"
-                    styleClass="form-control">
+                    styleClass="form-control"
+                    required="true"
+                    requiredMessage="Comment is required">
                     <p:ajax process="@this" />
                 </p:inputText>
             </div>

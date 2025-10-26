@@ -25,7 +25,9 @@
                     onfocus="this.select();"
                     value="#{cc.attrs.paymentMethodData.slip.totalValue}"
                     style="width: 6em;"
-                    id="txtVal" >
+                    id="txtVal"
+                    required="true"
+                    requiredMessage="Value is required" >
                     <p:ajax process="@this" ></p:ajax>
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
@@ -37,22 +39,30 @@
                              var="mys" class="w-100" inputStyleClass="w-100"
                              itemLabel="#{mys.person.nameWithTitle}"
                              itemValue="#{mys}"
+                             required="true"
+                             requiredMessage="Staff is required"
                              >
             </p:autoComplete>
 
             <h:outputLabel value="Date" ></h:outputLabel>
             <p:calendar
                 value="#{cc.attrs.paymentMethodData.iou.date}"
-                placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">
+                placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date"
+                required="true"
+                requiredMessage="Date is required">
                 <p:ajax process="@this" ></p:ajax>
             </p:calendar>
 
             <h:outputLabel value="Referance" ></h:outputLabel>
             <p:inputText value="#{cc.attrs.paymentMethodData.iou.referenceNo}"
-                         placeholder="Referance No" class="w-100" ></p:inputText>
+                         placeholder="Referance No" class="w-100"
+                         required="true"
+                         requiredMessage="Reference is required" ></p:inputText>
 
             <h:outputLabel value="Comments" ></h:outputLabel>
-            <p:inputTextarea value="#{cc.attrs.paymentMethodData.iou.comment}" placeholder="Comments" class="w-100" ></p:inputTextarea>
+            <p:inputTextarea value="#{cc.attrs.paymentMethodData.iou.comment}" placeholder="Comments" class="w-100"
+                             required="true"
+                             requiredMessage="Comments are required" ></p:inputTextarea>
 
         </h:panelGrid>
 
