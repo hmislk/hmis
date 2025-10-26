@@ -43,7 +43,7 @@
                     style="width: 150px;"
                     autocomplete="off"
                     disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
-                    required="true"
+                    required="#{cc.attrs.componentDetail == null or cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     requiredMessage="Cheque No is required">
                     <p:ajax process="@this"/>
                 </p:inputText>
