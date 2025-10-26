@@ -60,7 +60,7 @@
                                 <h:outputLabel  value="Item Code"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
                             </div>
-                            
+
                             <div class="col-10">
                                 <p:dataTable 
                                     rowIndexVar="i" 
@@ -85,21 +85,21 @@
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{storeBillSearch.bill}"/>                                     
                                         </p:commandButton>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Bill No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.deptId}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="BHT No" styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.bill.patientEncounter.bhtNo}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Item Name"  styleClass="alignTop" >
                                         <h:outputLabel value="#{pi.item.name}" />    
                                     </p:column>
 
                                     <p:column headerText="Item Code">
-                                        <h:outputLabel value="#{pi.item.code}"style="width: 100px!important;" ></h:outputLabel>
+                                        <h:outputLabel value="#{pi.item.code}" style="width: 100px!important;" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed At"  >
@@ -110,22 +110,24 @@
                                         <br/>
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.cancelled}" 
-                                                           value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
+                                            <h:outputLabel 
+                                                style="color: red;" 
+                                                rendered="#{pi.bill.referenceBill.cancelled}" 
+                                                value="#{pi.bill.referenceBill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{pi.bill.referenceBill.refunded}" >
                                             <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" 
-                                                           rendered="#{pi.bill.referenceBill.refunded}" 
-                                                           value="#{pi.referanceBillItem.bill.createdAt}" >
+                                            <h:outputLabel 
+                                                style="color: red;" 
+                                                rendered="#{pi.bill.referenceBill.refunded}" 
+                                                value="#{pi.referanceBillItem.bill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>    
-                                    
+
                                     <p:column headerText="Qty" >
                                         <h:outputLabel value="#{pi.qty}" >
                                             <f:convertNumber pattern="#0.00"/>
@@ -142,7 +144,7 @@
                                         <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}" >
                                         </h:outputLabel>                             
                                     </p:column>
-                                    
+
                                 </p:dataTable>
                             </div>
                         </div>
