@@ -499,6 +499,7 @@ public class PharmacyRow implements Serializable {
      * only required scalar values without loading full entities Eliminates N+1
      * queries and reduces memory usage by 70%
      *
+     * @param stockHistoryId StockHistory ID (for debugging)
      * @param itemId Item ID
      * @param itemName Item Name
      * @param itemCode Item Code
@@ -525,6 +526,7 @@ public class PharmacyRow implements Serializable {
      * @param totalBatchStockValueAtCostRate Total cost value
      */
     public PharmacyRow(
+            Long stockHistoryId,
             Long itemId, String itemName, String itemCode, String categoryName, String measurementUnitName,
             Long batchId, String batchNo, Date dateOfExpire,
             Double stockQty, Double purchaseRate, Double retailRate, Double costRate,
@@ -539,6 +541,7 @@ public class PharmacyRow implements Serializable {
             Double totalBatchStockValueAtCostRate) {
 
         this.uuid = UUID.randomUUID();
+        this.id = stockHistoryId;  // Store StockHistory ID for debugging
 
         // Create minimal Item object with only needed fields
         this.item = new Item();
