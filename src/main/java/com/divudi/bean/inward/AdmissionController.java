@@ -1214,6 +1214,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            if(!getCurrent().isClaimable()){
+                JsfUtil.addErrorMessage("Please mark as Claimable");
+                return true;
+            }
+            
             if (encounterCreditCompany.getInstitution() != null) {
                 getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
                 getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
