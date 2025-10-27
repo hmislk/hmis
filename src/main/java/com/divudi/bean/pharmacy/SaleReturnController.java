@@ -1178,7 +1178,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             }
         }
 
-        return total - multiplePaymentMethodTotalValue;
+        // Use absolute value to handle both sales (positive) and refunds (negative)
+        // For refunds: abs(-12) - 8 = 4 (remaining to refund)
+        // For sales: abs(100) - 80 = 20 (remaining to pay)
+        return Math.abs(total) - multiplePaymentMethodTotalValue;
     }
 
     /**
@@ -1233,6 +1236,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
             }
         }
     }

@@ -20,7 +20,9 @@
                 <p:selectOneMenu
                     id="bank"
                     value="#{cc.attrs.paymentMethodData.slip.institution}"
-                    styleClass="form-control">
+                    styleClass="form-control"
+                    required="#{cc.attrs.valueRequired}"
+                    requiredMessage="Please select a bank">
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                     <p:ajax process="@this" />
@@ -47,7 +49,9 @@
                     id="refNo"
                     value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
                     placeholder="Reference No"
-                    styleClass="form-control">
+                    styleClass="form-control"
+                    required="#{cc.attrs.valueRequired}"
+                    requiredMessage="Please enter the reference number">
                     <p:ajax process="@this" />
                 </p:inputText>
             </div>

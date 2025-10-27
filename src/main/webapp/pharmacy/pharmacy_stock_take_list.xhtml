@@ -161,6 +161,11 @@
                                         </h:outputText>
                                     </p:column>
 
+                                    <p:column headerText="Status" sortBy="#{d.completed}" filterBy="#{d.completed}" style="width: 100px; text-align: center;">
+                                        <h:outputText value="#{d.statusText}"
+                                                      style="#{d.completed ? 'color: #28a745; font-weight: bold;' : 'color: #ffc107; font-weight: bold;'}"/>
+                                    </p:column>
+
                                     <p:column headerText="Actions" style="text-align: center;">
                                         <p:commandButton 
                                             value="View" 

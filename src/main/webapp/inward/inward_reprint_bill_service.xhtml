@@ -103,96 +103,199 @@
 
                             </div>
                         </f:facet>
-                        <div class="col-12">
-                            <div class="row  d-flex justify-content-center m-1">
-                                <div class="col-3 ">
 
-                                    <p:panel header="Patient Details">
-                                        <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
+                        <div class="row">
+                            <div class="col-5">
+                                <div class="row  d-flex justify-content-center m-1">
+                                    <div class="col-8">
+                                        <p:panel header="Patient Details">
+                                            <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
+                                        </p:panel>
+                                    </div>
+                                    <div class="col-4 ">
+                                        <p:panelGrid columns="1" class="w-100">
+                                            <f:facet name = "header">
+                                                <h:outputLabel value="Bill Details"/>
+                                            </f:facet>
+                                            <h:panelGroup>
+                                                <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                                <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup>
+                                                <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                                <h:outputLabel value="#{inwardSearch.bill.paymentMethod}" ></h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup>
+                                                <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                                <h:outputLabel value="#{inwardSearch.bill.netTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3 m-1">
+                                    <p:panel rendered="#{webUserController.hasPrivilege('EditData')}">
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <h:outputLabel  value="Add Referring Details" class="mt-2"/>
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    value="Update" 
+                                                    icon="fa fa-pencil"
+                                                    class="d-flex justify-content-end ui-button-warning"
+                                                    action="#{inwardSearch.editBillDetails()}" >
+                                                </p:commandButton>
+                                            </div>
+                                        </f:facet>
+
+                                        <div class="d-flex gap-4">
+                                            <div class="d-flex gap-2 mt-1">
+                                                <h:outputLabel  value="Referring Doctor" style="width: 150px;"/>
+                                                <p:commandLink 
+                                                    id="btnAddNewDoc" 
+                                                    type="button"  
+                                                    value="&nbsp;(+)" 
+                                                    oncomplete="PF('dlg').show();" 
+                                                    actionListener="#{doctorController.prepareAdd}" 
+                                                    process="btnAddNewDoc" 
+                                                    update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" >
+                                                </p:commandLink>
+                                            </div>
+
+                                            <p:autoComplete 
+                                                forceSelection="true" 
+                                                id="cmbDoc" 
+                                                value="#{inwardSearch.referredBy}" 
+                                                completeMethod="#{doctorController.completeDoctor}" 
+                                                var="ix" 
+                                                itemLabel="#{ix.person.nameWithTitle}" 
+                                                itemValue="#{ix}" 
+                                                maxResults="20"
+                                                inputStyleClass="form-control w-100"
+                                                class="w-100" 
+                                                scrollHeight="500">
+                                                <p:column headerText="Name" style="padding: 2px;">
+                                                    <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Code" style="padding: 2px;">
+                                                    <h:outputText value="#{ix.code}" ></h:outputText>
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+
+                                        <p:dialog 
+                                            id="panDoc" 
+                                            header="Add New Doctor" 
+                                            widgetVar="dlg" 
+                                            resizable="false" 
+                                            modal="true" 
+                                            class="p-2" 
+                                            showEffect="fade"  
+                                            width="600">  
+
+                                            <h:panelGrid columns="2" style="line-height: 1.8" >  
+                                                <p:outputLabel id="lblNameD" value="Name" style="width: 150px;" ></p:outputLabel>
+                                                <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}" class="w-100 mt-2" ></p:inputText>
+                                                <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
+                                                <p:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}" class="w-100 mt-2"  ></p:inputText>
+                                                <p:outputLabel id="lblFaxD" value="Fax" ></p:outputLabel>
+                                                <p:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}" class="w-100 mt-2" ></p:inputText>
+                                                <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
+                                                <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}" class="w-100 mt-2" ></p:inputText>
+                                                <p:outputLabel id="lblAddressD" value="Address" ></p:outputLabel>
+                                                <p:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}" class="w-100 mt-2" ></p:inputText>
+                                                <p:outputLabel value="Code"></p:outputLabel>   
+                                                <p:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}" class="w-100 mt-2" ></p:inputText>
+                                                <p:outputLabel value="Speciality" ></p:outputLabel>
+                                                <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" class="w-100 mt-2" >
+                                                    <f:selectItem itemLabel="Please select a speciality"/>
+                                                    <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                </p:selectOneMenu>
+                                                <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
+                                                <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}" class="w-100 mt-2" ></p:inputText>                 
+                                                <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
+                                                <p:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}" class="w-100 mt-2" ></p:inputText>   
+
+                                            </h:panelGrid>  
+
+                                            <div class="mt-4 d-flex justify-content-end">
+                                                <p:commandButton 
+                                                    id="btnDocSave" 
+                                                    value="Add New" 
+                                                    ajax="false"
+                                                    icon="fa fa-plus"
+                                                    class=" ui-button-warning"
+                                                    process="btnDocSave panDoc" 
+                                                    update="msg panDoc cmbDoc " 
+                                                    actionListener="#{doctorController.saveSelected()}" 
+                                                    styleClass="buttons" 
+                                                    oncomplete="dlg.hide();">
+                                                </p:commandButton>
+                                            </div>
+
+                                        </p:dialog> 
+
                                     </p:panel>
                                 </div>
-                                <div class="col-2" >
 
-                                    <p:panelGrid columns="1" class="w-100">
-                                        <f:facet name = "header">
-                                            <h:outputLabel value="Bill Details"/>
-                                        </f:facet>
-                                        <h:panelGroup>
-                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup>
-                                            <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.paymentMethod}" ></h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup>
-                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.netTotal}" >
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-
-
-
-                                    </p:panelGrid>
-
-                                </div>
-                                <div class="col-7 " >
-                                    <p:dataTable rowIndexVar="rowIndex"
-                                                 editable="true"
-                                                 value="#{inwardSearch.billFees}" var="bip" >    
-                                        <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
-                                        <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" /> 
-                                        <p:column width="2em">
-                                            <f:facet name="header" >No</f:facet>
-                                            <h:outputLabel value="#{rowIndex+1}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <f:facet name="header">Item</f:facet>
-                                            <h:outputLabel value="#{bip.billItem.item.name}"/>
-                                        </p:column>
-                                         
-                                        <p:column>
-                                            <f:facet name="header">Fee</f:facet>
-                                            <h:outputLabel value="#{bip.feeValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>  
-                                        <p:column>
-                                            <f:facet name="header">Fee Name</f:facet>
-                                            <h:outputLabel value="#{bip.fee.name}"/>
-                                        </p:column> 
-                                        <p:column>
-                                            <f:facet name="header">Speciality</f:facet>
-                                            <h:outputLabel value="#{bip.fee.speciality.name}"/>
-                                        </p:column> 
-                                        <p:column headerText="Payee">
-                                            <p:cellEditor>  
-                                                <f:facet name="output"> 
-                                                    <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
-                                                </f:facet>  
-                                                <f:facet name="input">  
-                                                    <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >
-                                                        <f:selectItem itemLabel="Select Staff" />
-                                                        <f:selectItems  value="#{staffController.getSpecialityStaff(bip.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
-                                                    </p:selectOneMenu>
-                                                </f:facet>  
-                                            </p:cellEditor>  
-
-                                        </p:column>
-                                        
-                                        <p:column headerText="Returned" width="8em;">
-                                            <h:outputLabel  rendered="#{bip.billItem.refunded}" value="Returned" style="color: red;"/>
-                                        </p:column> 
-                                        
-                                        <p:column width="5em">  
-                                            <p:rowEditor > 
-                                            </p:rowEditor>
-                                        </p:column>                               
-                                    </p:dataTable>
-                                </div>
                             </div>
+                            <div class="col-7">
+                                <p:dataTable rowIndexVar="rowIndex"
+                                             editable="true"
+                                             value="#{inwardSearch.billFees}" var="bip" >    
+                                    <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
+                                    <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" /> 
+                                    <p:column width="2em">
+                                        <f:facet name="header" >No</f:facet>
+                                        <h:outputLabel value="#{rowIndex+1}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Item</f:facet>
+                                        <h:outputLabel value="#{bip.billItem.item.name}"/>
+                                    </p:column>
 
+                                    <p:column>
+                                        <f:facet name="header">Fee</f:facet>
+                                        <h:outputLabel value="#{bip.feeValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>  
+                                    <p:column>
+                                        <f:facet name="header">Fee Name</f:facet>
+                                        <h:outputLabel value="#{bip.fee.name}"/>
+                                    </p:column> 
+                                    <p:column>
+                                        <f:facet name="header">Speciality</f:facet>
+                                        <h:outputLabel value="#{bip.fee.speciality.name}"/>
+                                    </p:column> 
+                                    <p:column headerText="Payee">
+                                        <p:cellEditor>  
+                                            <f:facet name="output"> 
+                                                <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
+                                            </f:facet>  
+                                            <f:facet name="input">  
+                                                <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >
+                                                    <f:selectItem itemLabel="Select Staff" />
+                                                    <f:selectItems  value="#{staffController.getSpecialityStaff(bip.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                </p:selectOneMenu>
+                                            </f:facet>  
+                                        </p:cellEditor>  
+
+                                    </p:column>
+
+                                    <p:column headerText="Returned" width="8em;">
+                                        <h:outputLabel  rendered="#{bip.billItem.refunded}" value="Returned" style="color: red;"/>
+                                    </p:column> 
+
+                                    <p:column width="5em">  
+                                        <p:rowEditor > 
+                                        </p:rowEditor>
+                                    </p:column>                               
+                                </p:dataTable>
+                            </div>
                         </div>
 
                     </p:panel>
@@ -216,7 +319,7 @@
                                     <br/>
                                 </ui:repeat>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}" >
                                 <ui:repeat value="#{inwardSearch.bill}" var="pp">
                                     <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
@@ -248,8 +351,6 @@
 
                 </h:form>
             </ui:define>
-
-
 
         </ui:composition>
 

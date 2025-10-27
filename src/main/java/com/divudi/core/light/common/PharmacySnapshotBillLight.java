@@ -16,6 +16,7 @@ public class PharmacySnapshotBillLight implements Serializable {
     private String departmentName;
     private Long itemsCount;
     private Double netTotal;
+    private Boolean completed;
 
     public PharmacySnapshotBillLight(Long id,
                                      String deptId,
@@ -31,6 +32,28 @@ public class PharmacySnapshotBillLight implements Serializable {
         this.departmentName = departmentName;
         this.itemsCount = itemsCount;
         this.netTotal = netTotal;
+    }
+
+    /**
+     * Constructor with completed status field.
+     * New constructor added to support stock taking status display.
+     */
+    public PharmacySnapshotBillLight(Long id,
+                                     String deptId,
+                                     Date createdAt,
+                                     String institutionName,
+                                     String departmentName,
+                                     Long itemsCount,
+                                     Double netTotal,
+                                     Boolean completed) {
+        this.id = id;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
+        this.itemsCount = itemsCount;
+        this.netTotal = netTotal;
+        this.completed = completed;
     }
 
     public PharmacySnapshotBillLight() {
@@ -90,6 +113,22 @@ public class PharmacySnapshotBillLight implements Serializable {
 
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
+    /**
+     * Helper method to get status text for display.
+     * @return "Completed" or "Ongoing"
+     */
+    public String getStatusText() {
+        return (completed != null && completed) ? "Completed" : "Ongoing";
     }
 }
 

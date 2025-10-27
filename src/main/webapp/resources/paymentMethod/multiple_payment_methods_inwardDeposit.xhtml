@@ -16,19 +16,21 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="col-12 p-0" >
+        <div class="col-12" >
             <!-- Balance Display - moved outside dataTable for reliable AJAX updates -->
-            <h:panelGroup id="balanceDisplay" layout="block" styleClass="d-flex align-items-center gap-2 mb-3 p-3 bg-light border rounded">
-                <p:outputLabel
-                    id="lblMultiplePaymentBalance"
-                    value="Balance Amount:"
-                    style="font-weight: 600; font-size: 1.1rem; color: #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal() > 0 ? '#dc3545' : '#28a745'};" />
-                <p:outputLabel
-                    id="bl"
-                    value="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
-                    style="font-weight: 700; font-size: 1.2rem; color: #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal() > 0 ? '#dc3545' : '#28a745'};" >
-                    <f:convertNumber pattern="#,##0.00" />
-                </p:outputLabel>
+            <h:panelGroup id="balanceDisplay" layout="block" styleClass="d-flex justify-content-end p-2 mb-2 bg-light border rounded">
+                <div class="d-flex  gap-3">
+                    <p:outputLabel
+                        id="lblMultiplePaymentBalance"
+                        value="Paying Amount : "
+                        style="font-weight: 600; font-size: 1.1rem; color: #28a745;" />
+                    <p:outputLabel
+                        id="bl"
+                        value="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
+                        style="font-weight: 700; font-size: 1.2rem; color: #28a745;" >
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </div>
             </h:panelGroup>
 
             <p:dataTable class="w-100"
@@ -36,10 +38,11 @@
                          value="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}"
                          var="pm"
                          styleClass="ui-datatable-gridlines">
+
                 <p:column class="w-100">
                     <f:facet name="header">
-                        <div class="d-flex align-items-center justify-content-between w-100 p-2">
-                            <h:outputText value="Multiple Payments" style="font-weight: 600; font-size: 1rem;"/>
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <h:outputText value="Multiple Payments" style="font-weight: 600;"/>
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                     id="bunAddNewMultiplePaymentComponent"
@@ -49,12 +52,15 @@
                                     icon="fas fa-plus"
                                     process="@this"
                                     update="tblMultiplePayments balanceDisplay"
-                                    action="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" />
+                                    action="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
+                                </p:commandButton>
+
                                 <p:commandButton
                                     icon="fas fa-arrows-rotate"
                                     styleClass="ui-button-secondary ui-button-sm"
                                     process="@this"
-                                    update="tblMultiplePayments balanceDisplay"/>
+                                    update="tblMultiplePayments balanceDisplay ">
+                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>
@@ -65,20 +71,21 @@
                             value="#{pm.paymentMethod}"
                             styleClass="flex-grow-1"
                             style="max-width: 300px;"
-                            disabled="#{pm.paymentMethod ne null and pm.paymentMethod ne ''}"
-                            required="true"
-                            requiredMessage="Payment Method is required">
+                            disabled="#{pm.paymentMethod ne null and pm.paymentMethod ne ''}">
                             <f:selectItem itemLabel="Select Payment Method" />
                             <f:selectItems
                                 value="#{cc.attrs.paymentMethods}"
                                 var="pm1"
                                 itemLabel="#{pm1.label}"
                                 itemValue="#{pm1}"/>
-                            <p:ajax process="pay"
-                                    update="paymentDetails tblMultiplePayments balanceDisplay"
-                                    event="change"
-                                    listener="#{cc.attrs.controller.recieveRemainAmountAutomatically()}"  />
+                            <p:ajax 
+                                process="pay"
+                                update="paymentDetails tblMultiplePayments balanceDisplay"
+                                event="change"
+                                listener="#{cc.attrs.controller.recieveRemainAmountAutomatically()}"  >
+                            </p:ajax>
                         </p:selectOneMenu>
+
                         <p:commandButton
                             styleClass="ui-button-danger ui-button-sm"
                             actionListener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
@@ -86,7 +93,9 @@
                             title="Remove Payment"
                             process="@this"
                             update="tblMultiplePayments balanceDisplay"
-                            action="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.removePaymentDetail(pm)}" />
+                            action="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.removePaymentDetail(pm)}" >
+                        </p:commandButton>
+
                     </div>
 
                     <h:panelGroup layout="block" class="p-2" id="paymentDetails">
@@ -118,6 +127,7 @@
                             <pa:online_settlement_multiple valueRequired="true" paymentMethodData="#{pm.paymentMethodData}" controller="#{cc.attrs.controller}" componentDetail="#{pm}"/>
                         </h:panelGroup>
                     </h:panelGroup>
+
                 </p:column>
             </p:dataTable>
         </div>

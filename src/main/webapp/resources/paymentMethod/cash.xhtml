@@ -18,7 +18,9 @@
             <p:inputText
                 autocomplete="off"
                 value="#{cc.attrs.paymentMethodData.cash.totalValue}"
-                id="txtVal">
+                id="txtVal"
+                required="true"
+                requiredMessage="Cash value is required">
                 <p:ajax process="@this" ></p:ajax>
                 <f:convertNumber pattern="#,##0.00" />
             </p:inputText>
