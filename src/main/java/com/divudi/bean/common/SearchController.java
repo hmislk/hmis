@@ -8464,7 +8464,7 @@ public class SearchController implements Serializable {
         System.out.println("DTO jpql = " + jpql);
         System.out.println("DTO params = " + params);
 
-        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        return (List<PharmacyPreBillSearchDTO>) getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
     public void createWholePreBillsForReturn() {
