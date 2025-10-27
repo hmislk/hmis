@@ -413,7 +413,7 @@
                                                                 <h:outputLabel value="Account Balance (PD) " class="mx-3" rendered="#{billPackageController.patient.hasAnAccount}"/>
                                                                 <h:outputLabel value=" : " class="mx-3" rendered="#{billPackageController.patient.hasAnAccount}"/>
 
-                                                                <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(billPackageController.patient, sessionController.loggedUser.department)}" rendered="#{opdBillController.patient.hasAnAccount}">
+                                                                <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(billPackageController.patient, sessionController.loggedUser.department)}" rendered="#{billPackageController.patient.hasAnAccount}">
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputText>
 
