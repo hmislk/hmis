@@ -781,7 +781,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getCreditCompany());
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
                     getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
@@ -865,13 +865,13 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                         break;
                     case Slip:
                         cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
-                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate() != null ? originalPayment.getPaymentDate() : originalPayment.getRealizedAt());
                         cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getCreditCompany());
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
                         cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);

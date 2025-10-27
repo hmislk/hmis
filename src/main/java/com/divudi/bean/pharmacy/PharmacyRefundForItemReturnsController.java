@@ -2609,7 +2609,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                         break;
                     case Slip:
                         cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
-                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate() != null ? originalPayment.getPaymentDate() : originalPayment.getRealizedAt());
                         cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);

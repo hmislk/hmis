@@ -901,7 +901,9 @@
                                                     <div class="row" >
                                                         <div class="col-md-5" >
                                                             <p:selectOneMenu   id="pay"
-                                                                               value="#{pharmacySaleController.paymentMethod}">
+                                                                               value="#{pharmacySaleController.paymentMethod}"
+                                                                               required="true"
+                                                                               requiredMessage="Please select a payment method">
                                                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}"
                                                                                itemValue="#{p}"/>
                                                                 <p:ajax process="@this cmbPs cmbPaymentScheme"
@@ -910,7 +912,9 @@
                                                                         listener="#{pharmacySaleController.listnerForPaymentMethodChange()}"/>
                                                             </p:selectOneMenu>
 
-                                                            <p:selectOneMenu   id="cmbPaymentScheme" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">
+                                                            <p:selectOneMenu   id="cmbPaymentScheme" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}"
+                                                                               required="true"
+                                                                               requiredMessage="Please select a payment scheme">
                                                                 <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                                 <p:ajax process="@this pay "
                                                                         update="panelBillDetails panelPaymentDetails"
@@ -941,6 +945,8 @@
                                                                                             value="#{pharmacySaleController.paymentMethodData.credit.institution}"
                                                                                             completeMethod="#{institutionController.completeCreditCompany}"
                                                                                             var="ix"
+                                                                                            required="true"
+                                                                                            requiredMessage="Please Select a Company"
                                                                                             minQueryLength="2"
                                                                                             placeholder="Company (Type at least 4 letters to search)"
                                                                                             itemLabel="#{ix.name}"
@@ -958,12 +964,16 @@
                                                                                             id="polNo"
                                                                                             style="width: 100px;"
                                                                                             value="#{pharmacySaleController.paymentMethodData.credit.referralNo}"
-                                                                                            placeholder="Policy NO" >
+                                                                                            placeholder="Policy NO"
+                                                                                            required="true"
+                                                                                            requiredMessage="Please enter a policy number" >
                                                                                         </p:inputText>
 
                                                                                         <p:inputText
                                                                                             id="refNo"
                                                                                             style="width: 100px;"
+                                                                                            required="true"
+                                                                                            requiredMessage="Please enter a Referance Number"
                                                                                             value="#{pharmacySaleController.paymentMethodData.credit.referenceNo}"
                                                                                             placeholder="Reference NO" >
                                                                                         </p:inputText>
@@ -971,6 +981,8 @@
                                                                                         <p:inputText
                                                                                             id="memo"
                                                                                             style="width: 300px;"
+                                                                                            required="true"
+                                                                                            requiredMessage="Please Enter a comment"
                                                                                             value="#{pharmacySaleController.paymentMethodData.credit.comment}"
                                                                                             placeholder="Memo" >
                                                                                         </p:inputText>
@@ -1003,6 +1015,8 @@
                                                                                         completeMethod="#{staffController.completeStaff}"
                                                                                         var="mys"
                                                                                         class="w-100"
+                                                                                        required="true"
+                                                                                        requiredMessage="Please select a staff member"
                                                                                         placeholder="Staff (Type at least 4 letters to search)"
                                                                                         inputStyleClass="form-control"
                                                                                         itemLabel="#{mys.person.name}"
@@ -1048,6 +1062,8 @@
                                                                                         completeMethod="#{staffController.completeStaff}"
                                                                                         var="mys"
                                                                                         class="w-100"
+                                                                                        required="true"
+                                                                                        requiredMessage="Please select a staff member"
                                                                                         placeholder="Staff (Type Name, Code or EPF No to search)"
                                                                                         inputStyleClass="form-control"
                                                                                         itemLabel="#{mys.person.name}"
@@ -1122,7 +1138,12 @@
                                                     </div>
 
                                                     <div class="col-5">
-                                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">
+                                                        <p:selectOneMenu   
+                                                            id="cmbPs"
+                                                            value="#{pharmacySaleController.paymentScheme}" 
+                                                            rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" 
+                                                            class="my-1"
+                                                            >
                                                             <f:selectItem itemLabel="Discount Scheme"/>
                                                             <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                             <p:ajax process="@this pay "
