@@ -390,7 +390,7 @@
                                 </p:badge>
                             </h:panelGroup>
 
-                            <h:outputLabel value="Account Balance " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
+                            <h:outputLabel value="Account Balance (PD)" class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
                             <h:outputLabel value=" : " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
                             
                             <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(cc.attrs.controller.patient, sessionController.loggedUser.department)}" rendered="#{cc.attrs.controller.patient.hasAnAccount}">

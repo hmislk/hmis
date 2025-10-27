@@ -428,8 +428,8 @@
                                                         severity="#{opdBillController.patient.person.foreigner?'warning':'success'}" 
                                                         styleClass="mr-2">
                                                     </p:badge>
-
-                                                    <h:outputLabel value="Account Balance " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
+                                                        
+                                                    <h:outputLabel value="Account Balance (PD)" class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
 
                                                     <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(opdBillController.patient, sessionController.loggedUser.department)}" rendered="#{opdBillController.patient.hasAnAccount}">
