@@ -556,6 +556,38 @@ public class PatientDepositController implements Serializable, ControllerWithPat
 
         patientDepositHistoryFacade.create(pdh);
     }
+    
+    public double getPatientCurrentPatientDepositeTotal(Patient p, Department dept){
+        
+        if(p == null || p.getId() == null){
+            return 0;
+        }
+        
+        Map m = new HashMap<>();
+        boolean departmentSpecificDeposits = configOptionApplicationController.getBooleanValueByKey(
+                "Patient Deposits are Department Specific", false
+        );
+
+        String jpql = "select pd.balance from PatientDeposit pd"
+                + " where pd.patient.id=:pt "
+                + (departmentSpecificDeposits ? " and pd.department.id=:dep " : "")
+                + " and pd.retired=:ret";
+
+        m.put("pt", p.getId());
+        if (departmentSpecificDeposits) {
+            m.put("dep", dept.getId());
+        }
+        m.put("ret", false);
+
+        Double currentBalance = patientDepositFacade.findDoubleByJpql(jpql, m);
+        
+        if(currentBalance == null || currentBalance.isNaN()){
+            return 0;
+        }
+        
+        return currentBalance;
+    }
+
 
     @Deprecated // Use the methods in  PatientDepositService
     public PatientDeposit getDepositOfThePatient(Patient p, Department d) {
