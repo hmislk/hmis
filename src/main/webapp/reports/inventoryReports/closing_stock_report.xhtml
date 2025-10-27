@@ -294,6 +294,17 @@
                                         <h:outputText value="Total"/>
                                     </f:facet>
                                 </p:column>
+                                <p:column 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    id="txtStockHistoryIdForBatchReport" 
+                                    headerText="StockHistory ID" 
+                                    width="8em" 
+                                    styleClass="text-end">
+                                    <h:outputText value="#{f.id}"/>
+                                    <f:facet name="footer">
+                                        <h:outputText value=""/>
+                                    </f:facet>
+                                </p:column>
                                 <p:column headerText="Item Category" width="12em">
                                     <h:outputText value="#{f.item.category.name}"/>
                                 </p:column>
@@ -318,21 +329,14 @@
                                 <p:column headerText="Batch No" width="10em">
                                     <h:outputText value="#{f.itemBatch.batchNo}"/>
                                 </p:column>
-                                <p:column headerText="Qty" width="9em" styleClass="text-end">
+                                <p:column 
+                                    headerText="Qty" 
+                                    width="9em" 
+                                    sortBy="#{f.stockQty}"
+                                    styleClass="text-end">
                                     <h:outputText value="#{f.stockQty}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockQty}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -352,17 +356,6 @@
                                     <h:outputText value="#{f.purchaseValue}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -382,17 +375,6 @@
                                     <h:outputText value="#{f.costValue}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockCostValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -415,17 +397,6 @@
                                     <h:outputText value="#{f.saleValue}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockSaleValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -505,17 +476,6 @@
                                     <h:outputText value="#{p.quantity}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockQty}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -530,17 +490,6 @@
                                         value="#{p.purchaseValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -555,17 +504,6 @@
                                         value="#{p.costValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockCostValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -580,17 +518,6 @@
                                         value="#{p.saleValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <p:badge value="Dept" styleClass="ml-1"></p:badge>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <p:badge value="Ins" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <p:badge value="Tot" styleClass="ml-1"></p:badge>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyReportController.stockSaleValue}">
                                             <f:convertNumber pattern="#,##0.00"/>

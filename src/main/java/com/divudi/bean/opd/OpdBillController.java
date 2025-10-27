@@ -2391,50 +2391,85 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        //double remainAmount = calculatRemainForMultiplePaymentTotal();
+        remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            // Guard against empty component list
+            if (paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                return;
+            }
+
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
             switch (pm.getPaymentMethod()) {
                 case Cash:
-                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCash().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                    }
                     break;
                 case Card:
-                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCreditCard().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                    }
                     break;
                 case Cheque:
-                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCheque().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                    }
                     break;
                 case Slip:
-                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getSlip().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                    }
                     break;
                 case ewallet:
-                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getEwallet().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                    }
                     break;
                 case PatientDeposit:
                     if (patient != null) {
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
-                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
-                        } else {
-                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                        // Only set if user hasn't already entered a value
+                        if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() == 0.0) {
+                            if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
+                                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
+                            } else {
+                                pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                            }
                         }
                     }
 
                     break;
                 case Credit:
-                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCredit().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                    }
                     break;
                 case Staff:
-                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    }
                     break;
                 case Staff_Welfare:
-                    pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                    }
                     break;
                 case OnlineSettlement:
-                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());

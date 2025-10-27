@@ -251,18 +251,18 @@ public class Patient implements Serializable, RetirableEntity {
         ageMonthsOnBilledDate = period.getMonths();
         ageDaysOnBilledDate = period.getDays();
         if (ageYearsonBilledDate > 12) {
-            ageOnBilledDate = period.getYears() + " years.";
+            ageOnBilledDate = period.getYears() + " Years.";
         } else if (ageYearsonBilledDate > 0) {
             if (period.getMonths() > 0) {
-                ageOnBilledDate = period.getYears() + " years and " + period.getMonths() + " months.";
+                ageOnBilledDate = period.getYears() + " Years and " + period.getMonths() + " Months.";
             } else {
-                ageOnBilledDate = period.getYears() + " years.";
+                ageOnBilledDate = period.getYears() + " Years.";
             }
         } else {
-            if (period.getDays() > 0) {
-                ageOnBilledDate = period.getMonths() + " months and " + period.getDays() + " days.";
+            if (period.getMonths() > 0) {
+                ageOnBilledDate = period.getMonths() + " Months and " + period.getDays() + " Days.";
             } else {
-                ageOnBilledDate = period.getMonths() + " months.";
+                ageOnBilledDate = period.getDays()+ " Days.";
             }
         }
         period = new Period(dob, date, PeriodType.days());

@@ -1004,7 +1004,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getBillFacade().edit(getBill());
         finalizeBill();
         approveBill();
-        List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
+
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        if (generatePayments) {
+            List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
+        }
 
         JsfUtil.addSuccessMessage("Direct Purchase Successfully Completed.");
         printPreview = true;

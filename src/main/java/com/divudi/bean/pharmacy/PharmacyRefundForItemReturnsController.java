@@ -1377,6 +1377,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getEwallet().getTotalValue());
                 multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                 multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getSlip().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                multiplePaymentMethodTotalValue += Math.abs(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
             }
         }
         return multiplePaymentMethodTotalValue;

@@ -783,7 +783,11 @@ public class GrnCostingController implements Serializable {
     }
 
     private void createAndPersistPayment() {
-        createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        if (generatePayments) {
+            createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
+        }
     }
 
     private void finalizeSettle() {
@@ -868,7 +872,12 @@ public class GrnCostingController implements Serializable {
         saveWholesaleBill();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
 
-        Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        Payment p = null;
+        if (generatePayments) {
+            p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
+        }
 
         for (BillItem i : getBillItems()) {
             if (i.getTmpQty() == 0.0 && i.getTmpFreeQty() == 0.0) {
@@ -3030,7 +3039,12 @@ public class GrnCostingController implements Serializable {
         getBillFacade().edit(getCurrentGrnBillPre());
 
         // Create payment record
-        Payment p = createPayment(getCurrentGrnBillPre(), getCurrentGrnBillPre().getPaymentMethod());
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        Payment p = null;
+        if (generatePayments) {
+            p = createPayment(getCurrentGrnBillPre(), getCurrentGrnBillPre().getPaymentMethod());
+        }
 
         // Check if Purchase Order is fully received and update fullyIssued status
         if (getApproveBill() != null && !getApproveBill().isFullyIssued()) {

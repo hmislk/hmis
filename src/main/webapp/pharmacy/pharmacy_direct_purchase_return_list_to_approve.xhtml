@@ -63,27 +63,27 @@
                             
                             <!-- Search Buttons positioned for better visibility -->
                             <div class="mb-4">
-                                <p:commandButton 
-                                    class="ui-button-info w-100 mb-2" 
-                                    icon="fas fa-search" 
-                                    value="Search All Requests" 
-                                    action="#{directPurchaseReturnWorkflowController.fillDirectPurchaseReturnsToApprove()}" 
+                                <p:commandButton
+                                    class="ui-button-success w-100 mb-2"
+                                    icon="fas fa-clock"
+                                    value="Search To Approve Requests"
+                                    action="#{directPurchaseReturnWorkflowController.fillDirectPurchaseReturnsToApprove()}"
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-success w-100 mb-2" 
-                                    icon="fas fa-check" 
-                                    value="Search Approved Requests" 
-                                    action="#{directPurchaseReturnWorkflowController.fillApprovedDirectPurchaseReturns()}" 
+                                <p:commandButton
+                                    class="w-100 mb-2"
+                                    icon="fas fa-check"
+                                    value="Search Approved Requests"
+                                    action="#{directPurchaseReturnWorkflowController.fillApprovedDirectPurchaseReturns()}"
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-warning w-100" 
-                                    icon="fas fa-clock" 
-                                    value="Search To Approve Requests" 
-                                    action="#{searchController.fillOnlyFinalizedDirectPurchaseReturns()}" 
+                                <p:commandButton
+                                    class="ui-button-secondary w-100"
+                                    icon="fas fa-search"
+                                    value="Search All Requests"
+                                    action="#{directPurchaseReturnWorkflowController.fillAllFinalizedDirectPurchaseReturns()}"
                                     ajax="false"
                                     style="min-height: 40px;">
                                 </p:commandButton>
