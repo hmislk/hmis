@@ -218,6 +218,47 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.billNetTotal = billNetTotal;
     }
 
+    // Constructor for Direct Purchase table with costRate and itemName (12 parameters)
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName,
+                                   String billCreaterName, Date billCreatedAt, Double purchaseRate,
+                                   Double costRate, Double retailRate, Double qty, Double freeQty,
+                                   Double billNetTotal, String itemName) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billCreaterName = billCreaterName;
+        this.billCreatedAt = billCreatedAt;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
+        this.retailRate = retailRate;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.billNetTotal = billNetTotal;
+        this.itemName = itemName;
+    }
+
+    // Constructor for Direct Purchase table with BigDecimal types (12 parameters)
+    // NEW: Uses BigDecimal for proper financial precision
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, String billFromInstitutionName,
+                                   String billCreaterName, Date billCreatedAt,
+                                   java.math.BigDecimal purchaseRate, java.math.BigDecimal costRate,
+                                   java.math.BigDecimal retailRate, java.math.BigDecimal qty,
+                                   java.math.BigDecimal freeQty, java.math.BigDecimal billNetTotal,
+                                   String itemName) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billCreaterName = billCreaterName;
+        this.billCreatedAt = billCreatedAt;
+        this.purchaseRate = (purchaseRate != null) ? purchaseRate.doubleValue() : null;
+        this.costRate = (costRate != null) ? costRate.doubleValue() : null;
+        this.retailRate = (retailRate != null) ? retailRate.doubleValue() : null;
+        this.qty = (qty != null) ? qty.doubleValue() : null;
+        this.freeQty = (freeQty != null) ? freeQty.doubleValue() : null;
+        this.billNetTotal = (billNetTotal != null) ? billNetTotal.doubleValue() : null;
+        this.itemName = itemName;
+    }
+
     public Bill getBill() {
         return bill;
     }

@@ -35,7 +35,9 @@
                         onfocus="this.select();"
                         value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
                         styleClass="form-control"
-                        style="width: 150px;">
+                        style="width: 150px;"
+                        required="true"
+                        requiredMessage="Amount is required">
                         <f:convertNumber pattern="#,##0.00" />
                         <p:ajax event="keyup" process="txtMpPd" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     </p:inputText>

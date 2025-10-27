@@ -28,7 +28,9 @@
                 placeholder="Company (Type at least 4 letters to search)"
                 itemLabel="#{ix.name}"
                 itemValue="#{ix}"
-                size="10"  >
+                size="10"
+                required="#{cc.attrs.valueRequired}"
+                requiredMessage="Please select a credit company">
                 <p:ajax process="@this" ></p:ajax>
             </p:autoComplete>
 

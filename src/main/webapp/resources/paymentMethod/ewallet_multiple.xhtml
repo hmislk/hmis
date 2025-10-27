@@ -25,7 +25,9 @@
                     id="txtVal"
                     styleClass="form-control"
                     style="width: 150px;"
-                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}">
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    required="true"
+                    requiredMessage="Amount is required">
                     <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
@@ -39,7 +41,9 @@
                     id="refno"
                     styleClass="form-control"
                     style="width: 150px;"
-                    placeholder="Reference number">
+                    placeholder="Reference number"
+                    required="true"
+                    requiredMessage="E-Wallet No is required">
                     <p:ajax process="@this" />
                 </p:inputText>
             </div>
@@ -50,7 +54,9 @@
                     id="bank"
                     value="#{cc.attrs.paymentMethodData.ewallet.institution}"
                     styleClass="form-control"
-                    style="width: 180px;">
+                    style="width: 180px;"
+                    required="true"
+                    requiredMessage="Provider is required">
                     <f:selectItem itemLabel="Select Provider"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                     <p:ajax process="@this" />
@@ -64,7 +70,9 @@
                     value="#{cc.attrs.paymentMethodData.ewallet.comment}"
                     id="memo"
                     styleClass="form-control"
-                    placeholder="Enter comments">
+                    placeholder="Enter comments"
+                    required="true"
+                    requiredMessage="Comment is required">
                     <p:ajax process="@this" />
                 </p:inputText>
             </div>

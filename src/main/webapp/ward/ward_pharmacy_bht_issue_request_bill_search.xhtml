@@ -18,20 +18,29 @@
                 <div class="row">
                     <div class="col-2">
                         <h:outputLabel value="From Date" class="my-1"/>
-                        <p:datePicker styleClass="dateTimePicker my-1" id="fromDate" value="#{searchController.fromDate}" 
-                                      showTime="true"                                            
-                                      showButtonBar="true"                                            
-                                      timeInput="true"
-                                      class="w-100" inputStyleClass="w-100"
-                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                        <p:datePicker 
+                            styleClass="dateTimePicker my-1" 
+                            id="fromDate" 
+                            value="#{searchController.fromDate}" 
+                            showTime="true"                                            
+                            showButtonBar="true"                                            
+                            timeInput="true"
+                            class="w-100" inputStyleClass="w-100"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                         </p:datePicker>
+
                         <h:outputLabel value="To Date" class="my-1"/>
                         <p:datePicker
-                            class="w-100" inputStyleClass="w-100"
-                            id="toDate" value="#{searchController.toDate}" showTime="true"                                            
+                            class="w-100" 
+                            inputStyleClass="w-100"
+                            id="toDate" 
+                            value="#{searchController.toDate}" 
+                            showTime="true"                                            
                             showButtonBar="true"                                            
-                            timeInput="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            timeInput="true" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                         </p:datePicker>
+
                         <p:commandButton 
                             class="w-100 ui-button-warning my-1"
                             icon="fas fa-search"
@@ -39,15 +48,16 @@
                             ajax="false"
                             value="Search"
                             action="#{searchController.createInwardBHTRequestTable}"
-                            actionListener="#{transferIssueForRequestsController.makeNull()}"/>
-
+                            actionListener="#{transferIssueForRequestsController.makeNull()}">
+                        </p:commandButton>
 
                         <h:outputLabel value="Request No" class="my-1"/> 
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>  
                         <h:outputLabel value="BHT No" class="my-1"/> 
-
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100" />                                                
-                        <h:outputLabel/><h:outputLabel/>
+                        <h:outputLabel value="MRN / PHN No" class="my-1" />
+                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
+
                     </div>
                     <div class="col-10">
                         <div class="px-1">
