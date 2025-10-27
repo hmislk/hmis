@@ -20,7 +20,7 @@
                         <p:panel >
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
-                                    <div>
+                                    <div class="mt-2">
                                         <h:outputText styleClass="fas fa-search" />
                                         <h:outputLabel value="Pay to Collecting Center" class="mx-2"/>
                                     </div>
@@ -101,7 +101,6 @@
 
                                 </h:panelGrid>
 
-
                             </h:panelGroup>
 
                             <h:panelGroup 
@@ -110,12 +109,28 @@
                                 rendered="#{collectingCentrePaymentController.currentCollectingCentre ne null}" >
                                 <h:panelGroup rendered="#{collectingCentrePaymentController.printPriview eq false}">
 
-                                    <div>
-                                        <div>#{collectingCentrePaymentController.currentCollectingCentre.code} - #{collectingCentrePaymentController.currentCollectingCentre.name}</div>
-                                        <div>#{collectingCentrePaymentController.fromDate} to #{collectingCentrePaymentController.toDate} </div>
-                                        <div>Pay to Collecting Center</div>
+                                    <div class="d-flex justify-content-center">
+                                        <div>
+                                            <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 28px;">
+                                                #{collectingCentrePaymentController.currentCollectingCentre.code} - #{collectingCentrePaymentController.currentCollectingCentre.name}
+                                            </div>
+                                            <div  class="d-flex justify-content-center gap-2" style="font-weight: 600; font-size: 18px;">
+                                                <h:outputLabel value="#{collectingCentrePaymentController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                                <h:outputLabel value="to"></h:outputLabel>
+                                                <h:outputLabel value="#{collectingCentrePaymentController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+
+                                            </div>
+                                            <div  class="d-flex justify-content-center" style="font-weight: 600; font-size: 22px;">
+                                                Pay to Collecting Center
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
+                                    
+                                    <div class="my-2">
                                         <p:commandButton
                                             id="btnExcel"
                                             icon="fa-solid fa-file-excel"
@@ -129,8 +144,7 @@
 
                                     <p:dataTable   
                                         id="tblFee"
-                                        value="#{collectingCentrePaymentController.pandingCCpaymentBills}"
-                                        selection="#{collectingCentrePaymentController.selectedCCpaymentBills}"
+                                        value="#{collectingCentrePaymentController.selectedCCpaymentBills}"
                                         class="w-100 m-1"
                                         paginator="true"
                                         rows="10"
@@ -139,19 +153,12 @@
                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                         rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                                         var="b" 
+                                        rowIndexVar="i"
                                         rowKey="#{b.id}" >
 
-                                        <p:ajax  event="rowSelectCheckbox" process="tblFee" listener="#{collectingCentrePaymentController.performCalculations()}"   
-                                                 update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
-
-                                        <p:ajax  event="rowUnselectCheckbox" process="tblFee" listener="#{collectingCentrePaymentController.performCalculations()}"   
-                                                 update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
-
-                                        <p:ajax  event="toggleSelect" process="tblFee" listener="#{collectingCentrePaymentController.performCalculations()}"   
-                                                 update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
-
-                                        <p:column selectionBox="true" width="10" style="padding:8px;"></p:column>
-
+                                        <p:column width="10" headerText="#" style="padding:8px;">
+                                            <h:outputLabel value="#{i+1}"></h:outputLabel>
+                                        </p:column>
 
                                         <p:column headerText="Bill No" width="9em;" style="padding:8px;">
                                             <h:outputLabel value="#{b.billNo}"></h:outputLabel>
