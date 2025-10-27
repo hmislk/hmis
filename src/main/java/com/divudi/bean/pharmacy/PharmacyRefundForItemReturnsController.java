@@ -1158,8 +1158,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         itemReturnBill.setCompletedBy(sessionController.getLoggedUser());
         itemReturnBill.setPaid(true);
         itemReturnBill.setPaidAt(new Date());
-        itemReturnBill.setPaidBill(saleBill);
-        billFacade.edit(refundBill);
+        itemReturnBill.setPaidBill(refundBill);
+        billFacade.edit(itemReturnBill);
     }
 
     /**
