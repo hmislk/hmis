@@ -431,7 +431,8 @@
 
                                                     <h:outputLabel value="Account Balance " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
-                                                    <h:outputText value="#{opdBillController.patient.runningBalance}" rendered="#{opdBillController.patient.hasAnAccount}">
+
+                                                    <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(opdBillController.patient, sessionController.loggedUser.department)}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
 
@@ -1266,7 +1267,7 @@
                                                 class="row my-1"
                                                 layout="block"
                                                 id="onlinePayment"  rendered="#{opdBillController.paymentMethod eq 'OnlineSettlement'}" >
-                                                
+
                                                 <pa:online_settlement paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
