@@ -28,6 +28,8 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.dto.PharmacyRefundBillDTO;
+import com.divudi.core.data.dto.PharmacyReturnCashBillDTO;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
@@ -161,6 +163,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     private final AtomicBoolean billSettlingStarted = new AtomicBoolean(false);
     /////////////////
     private List<Bill> bills;
+    private List<PharmacyRefundBillDTO> billDTOs;
+    private Map<Long, List<PharmacyReturnCashBillDTO>> returnCashBillsMap;
     private SearchKeyword searchKeyword;
     private Date fromDate;
     private Date toDate;
@@ -225,6 +229,106 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
         bills = getBillFacade().findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP, 50);
 
+    }
+
+    /**
+     * DTO-based query for pharmacy refund bills - improved performance
+     * Avoids loading full entity graphs
+     */
+    public void fillAllItemReturnBillsDTO() {
+        billDTOs = null;
+        returnCashBillsMap = new HashMap<>();
+
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyRefundBillDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "b.cancelledBill.createdAt, "
+                + "b.creater.webUserPerson.name, "
+                + "b.cancelledBill.creater.webUserPerson.name, "
+                + "b.netTotal) "
+                + "from Bill b "
+                + "where b.billTypeAtomic in :btas "
+                + "and b.institution=:ins "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired=false ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql += " and ((b.patient.person.name) like :patientName) ";
+            params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql += " and ((b.patient.person.phone) like :patientPhone) ";
+            params.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and ((b.deptId) like :billNo) ";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            jpql += " and ((b.netTotal) = :netTotal) ";
+            params.put("netTotal", getSearchKeyword().getNetTotal().trim());
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            jpql += " and ((b.total) like :total) ";
+            params.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ins", getSessionController().getInstitution());
+        params.put("btas", btas);
+
+        billDTOs = getBillFacade().findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    /**
+     * Get return cash bills for a specific parent bill using DTO projection
+     * Called from nested table in XHTML for each row
+     */
+    public List<PharmacyReturnCashBillDTO> getReturnCashBillsForParent(Long parentBillId) {
+        // Check if already loaded
+        if (returnCashBillsMap.containsKey(parentBillId)) {
+            return returnCashBillsMap.get(parentBillId);
+        }
+
+        String jpql = "select new com.divudi.core.data.dto.PharmacyReturnCashBillDTO("
+                + "rb.id, "
+                + "rb.billedBill.id, "
+                + "rb.deptId, "
+                + "rb.createdAt, "
+                + "rb.cancelled, "
+                + "rb.cancelledBill.createdAt, "
+                + "rb.creater.webUserPerson.name, "
+                + "rb.cancelledBill.creater.webUserPerson.name, "
+                + "rb.netTotal, "
+                + "rb.refundedBill.id) "
+                + "from Bill rb "
+                + "where rb.billedBill.id = :parentBillId "
+                + "and rb.retired = false "
+                + "order by rb.createdAt desc";
+
+        Map params = new HashMap();
+        params.put("parentBillId", parentBillId);
+
+        List<PharmacyReturnCashBillDTO> returnBills = getBillFacade().findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+        // Cache the result
+        returnCashBillsMap.put(parentBillId, returnBills);
+
+        return returnBills;
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
@@ -439,6 +543,18 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return true;
     }
 
+    /**
+     * DTO-based version - loads Bill entity by ID then delegates to main method
+     */
+    public String toSettleReturnById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill ID provided.");
+            return null;
+        }
+        Bill bill = getBillFacade().find(billId);
+        return toSettleReturn(bill);
+    }
+
     public String toSettleReturn(Bill selecttedItemReturnBill) {
         System.out.println("toSettleReturn");
         System.out.println("args = " + selecttedItemReturnBill);
@@ -578,6 +694,22 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public List<PharmacyRefundBillDTO> getBillDTOs() {
+        return billDTOs;
+    }
+
+    public void setBillDTOs(List<PharmacyRefundBillDTO> billDTOs) {
+        this.billDTOs = billDTOs;
+    }
+
+    public Map<Long, List<PharmacyReturnCashBillDTO>> getReturnCashBillsMap() {
+        return returnCashBillsMap;
+    }
+
+    public void setReturnCashBillsMap(Map<Long, List<PharmacyReturnCashBillDTO>> returnCashBillsMap) {
+        this.returnCashBillsMap = returnCashBillsMap;
     }
 
     public Double getEditingQty() {
