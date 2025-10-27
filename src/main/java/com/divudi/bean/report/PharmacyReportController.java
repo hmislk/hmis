@@ -2649,24 +2649,13 @@ public class PharmacyReportController implements Serializable {
         retailValueTotal = 0.0;
 
         for (BillItem item : items) {
-            double purchaseValue = item.getPharmaceuticalBillItem().getPurchaseRate() * item.getQty();
-            double costValue = item.getPharmaceuticalBillItem().getItemBatch().getCostRate() * item.getQty();
-            double retailValue = item.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * item.getQty();
-            double itemNetValue = item.getNetValue();
-
-            if (item.getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE) {
-                // Disposal Issue - stock reduces - negative values
-                netTotal -= itemNetValue;
-                purchaseValueTotal -= purchaseValue;
-                costValueTotal -= costValue;
-                retailValueTotal -= retailValue;
-            } else {
-                // Disposal Return - stock increases - positive values
-                netTotal += itemNetValue;
-                purchaseValueTotal += purchaseValue;
-                costValueTotal += costValue;
-                retailValueTotal += retailValue;
+            // Simply sum the values from the columns without bill type manipulation
+            if (item.getBillItemFinanceDetails() != null) {
+                purchaseValueTotal += item.getBillItemFinanceDetails().getValueAtPurchaseRate();
+                costValueTotal += item.getBillItemFinanceDetails().getValueAtCostRate();
+                retailValueTotal += item.getBillItemFinanceDetails().getValueAtRetailRate();
             }
+            netTotal += item.getNetValue();
         }
     }
 
