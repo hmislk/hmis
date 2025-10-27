@@ -887,7 +887,7 @@
 
                                                             <h:outputLabel value="Address " class="mx-3"/>
                                                             <h:outputLabel value=" : " class="mx-3"/>
-                                                            <h:outputText value="#{pharmacySaleController.patient.person.address}" />
+                                                            <h:outputText value="#{empty pharmacySaleController.patient.person.address ? 'N/A' : pharmacySaleController.patient.person.address}" />
 
                                                             <h:outputLabel value="Area " class="mx-3"/>
                                                             <h:outputLabel value=" : " class="mx-3"/>

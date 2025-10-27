@@ -398,7 +398,7 @@
 
                                                                 <h:outputLabel value="Address " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{billPackageController.patient.person.address}" />
+                                                                <h:outputText value="#{empty billPackageController.patient.person.address ? 'N/A' : billPackageController.patient.person.address}" />
 
 
                                                                 <h:outputLabel value="Patient Status " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
