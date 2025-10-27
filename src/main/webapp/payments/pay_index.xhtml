@@ -98,10 +98,35 @@
 
                                     <p:tab title="Inward Deposit">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Payment" title="Payment" action="/inward/inward_bill_payment?faces-redirect=true" actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" />
-                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Payment Search" title="Payment Search" action="/inward/inward_search_payment?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" />
-                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Refund" title="Refund" action="/inward/inward_bill_refund?faces-redirect=true" actionListener="#{inwardRefundController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" />
-                                            <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" value="Refund Search" title="Refund Search" action="/inward/inward_search_refund?faces-redirect=true" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" />
+                                            <p:commandButton 
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" value="Payment" 
+                                                title="Payment" 
+                                                action="/inward/inward_bill_payment?faces-redirect=true" 
+                                                actionListener="#{inwardPaymentController.makeNull}" 
+                                                rendered="#{webUserController.hasPrivilege('InwardBilling')}">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" value="Payment Search" 
+                                                title="Payment Search" action="/inward/inward_search_payment?faces-redirect=true" 
+                                                actionListener="#{searchController.makeListNull}" 
+                                                rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" value="Refund" title="Refund" 
+                                                action="/inward/inward_bill_refund?faces-redirect=true" 
+                                                actionListener="#{inwardRefundController.makeNull}" 
+                                                rendered="#{webUserController.hasPrivilege('InwardBilling')}" >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                ajax="false" value="Refund Search" title="Refund Search" 
+                                                action="/inward/inward_search_refund?faces-redirect=true" 
+                                                actionListener="#{searchController.makeListNull}" 
+                                                rendered="#{webUserController.hasPrivilege('InwardBillSearch')}">
+                                            </p:commandButton>
                                         </div>
                                     </p:tab>
 

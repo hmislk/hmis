@@ -10,7 +10,6 @@
             <property name="eclipselink.session.customizer" value="com.divudi.data.PreventDeleteSessionCustomizer"/>
         </properties>
     </persistence-unit>
-
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
         <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
