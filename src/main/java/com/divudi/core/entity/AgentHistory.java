@@ -88,9 +88,12 @@ public class AgentHistory implements Serializable {
     @Transient
     double transCumilativeTotal;
 
-
-
-
+    private boolean paymentDone = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paymentDoneAt;
+    @ManyToOne
+    private WebUser paymentDoneUser;
+    
     public String getReferenceNumber() {
         return referenceNumber;
     }
@@ -382,6 +385,30 @@ public class AgentHistory implements Serializable {
 
     public void setStaffTrasnactionValue(double staffTrasnactionValue) {
         this.staffTrasnactionValue = staffTrasnactionValue;
+    }
+
+    public boolean isPaymentDone() {
+        return paymentDone;
+    }
+
+    public void setPaymentDone(boolean paymentDone) {
+        this.paymentDone = paymentDone;
+    }
+
+    public Date getPaymentDoneAt() {
+        return paymentDoneAt;
+    }
+
+    public void setPaymentDoneAt(Date paymentDoneAt) {
+        this.paymentDoneAt = paymentDoneAt;
+    }
+
+    public WebUser getPaymentDoneUser() {
+        return paymentDoneUser;
+    }
+
+    public void setPaymentDoneUser(WebUser paymentDoneUser) {
+        this.paymentDoneUser = paymentDoneUser;
     }
 
 }
