@@ -12,8 +12,7 @@
                 <h:form id="formSearchBillsForReturnPayments">
                     <p:panel header="Search Purchase Orders" style="height: 100vh">
                         <f:facet name="header" >
-                            <h:outputLabel value="Search Bills For Refund"/>
-
+                            <h:outputLabel value="Search Item Return Bills to Refund"/>
                         </f:facet>
 
                         <div class="row">
@@ -49,12 +48,28 @@
                                     <h:outputLabel value="Net Total"/>
 
                                     <p:inputText class="w-100" autocomplete="off" value="#{pharmacyRefundForItemReturnsController.searchKeyword.netTotal}"/>
+
+                                    <h:outputLabel value="Search By Status"/>
+                                    <p:commandButton
+                                        class="w-100 my-1 ui-button-success"
+                                        icon="fas fa-hand-holding-usd"
+                                        id="btnBillsToRefund"
+                                        ajax="false"
+                                        value="Bills to Refund"
+                                        action="#{pharmacyRefundForItemReturnsController.fillBillsToRefundDTO}"/>
+                                    <p:commandButton
+                                        class="w-100 my-1 ui-button-info"
+                                        icon="fas fa-check-circle"
+                                        id="btnRefundedBills"
+                                        ajax="false"
+                                        value="Refunded Bills"
+                                        action="#{pharmacyRefundForItemReturnsController.fillRefundedBillsDTO}"/>
                                     <p:commandButton
                                         class="w-100 my-1 ui-button-warning"
                                         icon="fas fa-search"
-                                        id="btnSearch"
+                                        id="btnAllBills"
                                         ajax="false"
-                                        value="Search"
+                                        value="All Bills"
                                         action="#{pharmacyRefundForItemReturnsController.fillAllItemReturnBillsDTO}"/>
 
                                 </h:panelGrid>
@@ -77,10 +92,10 @@
                                              rowsPerPageTemplate="5,10,15"
                                              >
 
-                                    <p:column headerText="Pre Bill No"  width="7%">
+                                    <p:column headerText="Item return Bill No"  width="7%">
                                         <h:outputLabel value="#{bill.deptId}"  />
                                     </p:column>
-                                    <p:column headerText="Billed At"  width="10%">
+                                    <p:column headerText="Item Returned At"  width="10%">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -93,7 +108,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Billed By" width="8%">
+                                    <p:column headerText="Item Returns accepted By" width="8%">
                                         <h:outputLabel value="#{bill.creatorName}" >
                                         </h:outputLabel>
                                         <br/>
@@ -103,7 +118,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Net Value" width="5%">
+                                    <p:column headerText="Return Value" width="5%">
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
@@ -112,58 +127,13 @@
                                     <p:column>
                                         <p:commandButton
                                             ajax="false"
-                                            value="Return Payment"
+                                            value="REFUND"
                                             action="#{pharmacyRefundForItemReturnsController.toSettleReturnById(bill.id)}"
                                             disabled="#{bill.cancelled eq true}" >
                                         </p:commandButton>
                                     </p:column>
 
-                                    <p:column width="45%">
-                                        <p:dataTable
-                                            id="tblPaidBills"
-                                            paginator="false"
-                                            value="#{pharmacyRefundForItemReturnsController.getReturnCashBillsForParent(bill.id)}"
-                                            var="rb">
-                                            <p:column  headerText="Bill No">
-                                                <h:outputLabel  value="#{rb.deptId}" rendered="#{rb.refundedBillId eq null}"/>
-                                            </p:column>
-                                            <p:column headerText="Return At">
-                                                <h:outputLabel value="#{rb.createdAt}" rendered="#{rb.refundedBillId eq null}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </h:outputLabel>
-                                                <br/>
-                                                <h:panelGroup rendered="#{rb.cancelled}">
-                                                    <h:outputLabel style="color: red;" value="Cancelled at " rendered="#{rb.refundedBillId eq null}" />
-                                                    <h:outputLabel style="color: red;" rendered="#{rb.cancelled and rb.refundedBillId eq null}"
-                                                                   value="#{rb.cancelledBillCreatedAt}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                    </h:outputLabel>
-                                                </h:panelGroup>
-                                            </p:column>
-
-                                            <p:column headerText="Return By">
-                                                <h:outputLabel value="#{rb.creatorName}" rendered="#{rb.refundedBillId eq null}">
-                                                </h:outputLabel>
-                                                <br/>
-                                                <h:panelGroup rendered="#{rb.cancelled}" >
-                                                    <h:outputLabel style="color: red;" value="Cancelled by " rendered="#{rb.refundedBillId eq null}" />
-                                                    <h:outputLabel style="color: red;" rendered="#{rb.cancelled and rb.refundedBillId eq null}"
-                                                                   value="#{rb.cancelledBillCreatorName}" >
-                                                    </h:outputLabel>
-                                                </h:panelGroup>
-                                            </p:column>
-                                            <p:column headerText="Net Value">
-                                                <h:outputLabel value="#{rb.netTotal}" rendered="#{rb.refundedBillId eq null}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column>
-                                                <p:commandButton ajax="false" value="View Returned Bill"  rendered="#{rb.refundedBillId eq null}"
-                                                                 action="#{pharmacyBillSearch.navigateToBillByIdForReprint(rb.id)}"  >
-                                                </p:commandButton>
-                                            </p:column>
-                                        </p:dataTable>
-                                    </p:column>
+                                 
 
                                 </p:dataTable>
 

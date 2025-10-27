@@ -232,8 +232,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     }
 
     /**
-     * DTO-based query for pharmacy refund bills - improved performance
-     * Avoids loading full entity graphs
+     * DTO-based query for pharmacy refund bills - improved performance Avoids
+     * loading full entity graphs
      */
     public void fillAllItemReturnBillsDTO() {
         billDTOs = null;
@@ -263,6 +263,144 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 + "and b.institution=:ins "
                 + "and b.createdAt between :fromDate and :toDate "
                 + "and b.retired=false ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql += " and ((b.patient.person.name) like :patientName) ";
+            params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql += " and ((b.patient.person.phone) like :patientPhone) ";
+            params.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and ((b.deptId) like :billNo) ";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            jpql += " and ((b.netTotal) = :netTotal) ";
+            params.put("netTotal", getSearchKeyword().getNetTotal().trim());
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            jpql += " and ((b.total) like :total) ";
+            params.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ins", getSessionController().getInstitution());
+        params.put("btas", btas);
+
+        billDTOs = getBillFacade().findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    /**
+     * Fill bills that need to be refunded (unpaid bills)
+     * Filters for bills where paid = false or paid is null
+     */
+    public void fillBillsToRefundDTO() {
+        billDTOs = null;
+        returnCashBillsMap = new HashMap<>();
+
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyRefundBillDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "b.netTotal) "
+                + "from Bill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "where b.billTypeAtomic in :btas "
+                + "and b.institution=:ins "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired=false "
+                + "and (b.paid = false or b.paid is null) ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql += " and ((b.patient.person.name) like :patientName) ";
+            params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql += " and ((b.patient.person.phone) like :patientPhone) ";
+            params.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and ((b.deptId) like :billNo) ";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            jpql += " and ((b.netTotal) = :netTotal) ";
+            params.put("netTotal", getSearchKeyword().getNetTotal().trim());
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            jpql += " and ((b.total) like :total) ";
+            params.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ins", getSessionController().getInstitution());
+        params.put("btas", btas);
+
+        billDTOs = getBillFacade().findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    /**
+     * Fill bills that have been refunded (paid bills)
+     * Filters for bills where paid = true
+     */
+    public void fillRefundedBillsDTO() {
+        billDTOs = null;
+        returnCashBillsMap = new HashMap<>();
+
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyRefundBillDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "b.netTotal) "
+                + "from Bill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "where b.billTypeAtomic in :btas "
+                + "and b.institution=:ins "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired=false "
+                + "and b.paid = true ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             jpql += " and ((b.patient.person.name) like :patientName) ";
@@ -396,11 +534,11 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
-        if (cd == null ||
-            paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+        if (cd == null
+                || paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
@@ -974,8 +1112,30 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
             getBillFacade().edit(getRefundBill());
         }
 
-        // Update the original sale bill's financial tracking fields
-        updateOriginalBillForRefund();
+        // Taken to the mathod settleRefundForReturnItems
+        // updateOriginalBillForRefund();
+    }
+
+    private void updateItemReturnBill() {
+        if (itemReturnBill == null) {
+            JsfUtil.addErrorMessage("Programming Error. No Item Return bill");
+            return;
+        }
+        if (itemReturnBill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("Programming Error. No BTA for Return bill");
+            return;
+        }
+        if (itemReturnBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY) {
+            JsfUtil.addErrorMessage("Programming Error. Wrong BTA for Return bill");
+            return;
+        }
+        itemReturnBill.setCompleted(true);
+        itemReturnBill.setCompletedAt(new Date());
+        itemReturnBill.setCompletedBy(sessionController.getLoggedUser());
+        itemReturnBill.setPaid(true);
+        itemReturnBill.setPaidAt(new Date());
+        itemReturnBill.setPaidBill(saleBill);
+        billFacade.edit(refundBill);
     }
 
     /**
@@ -1011,25 +1171,27 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
         if (null == originalBill.getBillTypeAtomic()) {
             throw new RuntimeException("Retail Sale found has a wrong Bill Type Atomic. Cannot update financial tracking fields.");
-        } else switch (originalBill.getBillTypeAtomic()) {
-            case PHARMACY_RETAIL_SALE:
-                saleBill = originalBill;
-                salePreBill = originalBill.getReferenceBill();
-                break;
-            case PHARMACY_RETAIL_SALE_PRE:
-                salePreBill = originalBill;
-                saleBill = originalBill.getReferenceBill();
-                break;
-            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
-                saleBill = originalBill;
-                salePreBill = originalBill.getReferenceBill();
-                break;
-            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
-                salePreBill = originalBill;
-                saleBill = originalBill.getReferenceBill();
-                break;
-            default:
-                throw new RuntimeException("Retail Sale found has a wrong Bill Type Atomic. Cannot update financial tracking fields.");
+        } else {
+            switch (originalBill.getBillTypeAtomic()) {
+                case PHARMACY_RETAIL_SALE:
+                    saleBill = originalBill;
+                    salePreBill = originalBill.getReferenceBill();
+                    break;
+                case PHARMACY_RETAIL_SALE_PRE:
+                    salePreBill = originalBill;
+                    saleBill = originalBill.getReferenceBill();
+                    break;
+                case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                    saleBill = originalBill;
+                    salePreBill = originalBill.getReferenceBill();
+                    break;
+                case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                    salePreBill = originalBill;
+                    saleBill = originalBill.getReferenceBill();
+                    break;
+                default:
+                    throw new RuntimeException("Retail Sale found has a wrong Bill Type Atomic. Cannot update financial tracking fields.");
+            }
         }
 
         if (salePreBill == null) {
@@ -2042,6 +2204,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         saveBill();
+        updateOriginalBillForRefund();
+        updateItemReturnBill();
 
         applyRefundSignToPaymentData();
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
