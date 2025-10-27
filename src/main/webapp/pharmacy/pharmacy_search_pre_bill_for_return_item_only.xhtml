@@ -117,7 +117,7 @@
                                     </p:column>
 
                                     <p:column width="300px" headerText="Return Bills">
-                                        <p:dataTable value="#{searchController.loadReturnPreBillsByBillId(bill.id)}" var="returnBill">
+                                        <p:dataTable value="#{searchController.returnBillsByParentBillId[bill.id]}" var="returnBill">
                                             <p:column headerText="Return Bill No">
                                                 <h:outputLabel value="#{returnBill.deptId}"/>
                                             </p:column>

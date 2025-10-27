@@ -266,6 +266,8 @@ public class SearchController implements Serializable {
     private List<Bill> filteredBills;
     // DTO list for pharmacy pre-bill search for return items and cash
     private List<PharmacyPreBillSearchDTO> preBillSearchDtos;
+    // Map to store return bills grouped by parent bill ID for nested datatable display
+    private Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
     // DTO lists for disposal issue search results
@@ -8386,6 +8388,16 @@ public class SearchController implements Serializable {
         billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
         billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
         preBillSearchDtos = createPreBillSearchDTOs(billTypesForReturnItemsAndPayments);
+
+        // Load all return bills for the search results in a single query to avoid N+1 problem
+        if (preBillSearchDtos != null && !preBillSearchDtos.isEmpty()) {
+            List<Long> parentBillIds = preBillSearchDtos.stream()
+                    .map(PharmacyPreBillSearchDTO::getId)
+                    .collect(Collectors.toList());
+            returnBillsByParentBillId = loadReturnPreBillsForMultipleParentBills(parentBillIds);
+        } else {
+            returnBillsByParentBillId = new HashMap<>();
+        }
     }
 
     /**
@@ -8442,6 +8454,80 @@ public class SearchController implements Serializable {
         params.put("billType", BillType.PharmacyPre);
 
         return getBillFacade().findLightsByJpql(jpql, params);
+    }
+
+    /**
+     * Loads all return pre-bills for multiple parent bills in a single query and groups them by parent bill ID.
+     * This avoids N+1 query problem by loading all return bills at once.
+     * Used by listBillsToReturnItemsAndPayments() to populate returnBillsByParentBillId map.
+     *
+     * @param parentBillIds List of parent bill IDs whose return bills should be loaded
+     * @return Map with parent bill ID as key and list of return bill DTOs as value
+     */
+    private Map<Long, List<PharmacyPreBillSearchDTO>> loadReturnPreBillsForMultipleParentBills(List<Long> parentBillIds) {
+        Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsMap = new HashMap<>();
+
+        if (parentBillIds == null || parentBillIds.isEmpty()) {
+            return returnBillsMap;
+        }
+
+        // Select all fields as Object[] to include parent bill ID for grouping
+        String jpql = "select "
+                + "b.id, "
+                + "b.referenceBill.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "COALESCE(pp.name, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "b.netTotal, "
+                + "b.billedBill.id "  // Parent bill ID for grouping
+                + "from RefundBill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "left join b.patient.person pp "
+                + "where b.billedBill.id in :billIds "
+                + "and b.billType = :billType "
+                + "and b.retired = false "
+                + "order by b.billedBill.id, b.createdAt desc";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billIds", parentBillIds);
+        params.put("billType", BillType.PharmacyPre);
+
+        List<Object[]> results = getBillFacade().findAggregates(jpql, params);
+
+        // Group results by parent bill ID
+        for (Object[] row : results) {
+            Long parentBillId = (Long) row[12];  // Last item is parent bill ID
+
+            // Create DTO from the first 12 values
+            PharmacyPreBillSearchDTO dto = new PharmacyPreBillSearchDTO(
+                (Long) row[0],      // id
+                (Long) row[1],      // referenceBillId
+                (String) row[2],    // deptId
+                (Date) row[3],      // createdAt
+                (Boolean) row[4],   // cancelled
+                (Date) row[5],      // cancelledBillCreatedAt
+                (String) row[6],    // creatorName
+                (String) row[7],    // cancelledBillCreatorName
+                (String) row[8],    // patientName
+                (BillTypeAtomic) row[9],  // billTypeAtomic
+                (PaymentMethod) row[10],  // paymentMethod
+                (Double) row[11]    // netTotal
+            );
+
+            returnBillsMap.computeIfAbsent(parentBillId, k -> new ArrayList<>()).add(dto);
+        }
+
+        return returnBillsMap;
     }
 
     /**
@@ -20264,6 +20350,17 @@ public class SearchController implements Serializable {
 
     public void setPreBillSearchDtos(List<PharmacyPreBillSearchDTO> preBillSearchDtos) {
         this.preBillSearchDtos = preBillSearchDtos;
+    }
+
+    public Map<Long, List<PharmacyPreBillSearchDTO>> getReturnBillsByParentBillId() {
+        if (returnBillsByParentBillId == null) {
+            returnBillsByParentBillId = new HashMap<>();
+        }
+        return returnBillsByParentBillId;
+    }
+
+    public void setReturnBillsByParentBillId(Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId) {
+        this.returnBillsByParentBillId = returnBillsByParentBillId;
     }
 
     public List<PharmacyTransferRequestListDTO> getTransferRequestDtos() {
