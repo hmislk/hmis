@@ -2850,6 +2850,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 case ewallet:
                     getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank());
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getRefundBill().getNetTotal()));
                     getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
                     break;
@@ -2949,6 +2950,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                     case ewallet:
                         cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
                         break;

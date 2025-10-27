@@ -783,6 +783,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 case ewallet:
                     getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
                     getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
                     getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
@@ -873,6 +874,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                     case ewallet:
                         cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
                         cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());

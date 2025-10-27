@@ -19,6 +19,7 @@ import java.util.List;
  * @author safrin
  */
 public class ComponentDetail {
+
     private String no;
     private String comment;
     private Institution institution;
@@ -67,6 +68,11 @@ public class ComponentDetail {
     }
 
     public String getNo() {
+        if (no == null || no.isBlank()) {
+            if (referenceNo != null && !referenceNo.isBlank()) {
+                no = referenceNo;
+            }
+        }
         return no;
     }
 
@@ -153,6 +159,11 @@ public class ComponentDetail {
     }
 
     public String getReferenceNo() {
+        if (referenceNo == null || referenceNo.isBlank()) {
+            if (no != null && !no.isBlank()) {
+                referenceNo = no;
+            }
+        }
         return referenceNo;
     }
 
