@@ -74,6 +74,7 @@ import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
+import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
@@ -263,6 +264,8 @@ public class SearchController implements Serializable {
     private List<PaymentMethod> allCashierCollectionExcludedMethods = new ArrayList<>();
     private List<Bill> bills;
     private List<Bill> filteredBills;
+    // DTO list for pharmacy pre-bill search for return items and cash
+    private List<PharmacyPreBillSearchDTO> preBillSearchDtos;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
     // DTO lists for disposal issue search results
@@ -8382,7 +8385,86 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> billTypesForReturnItemsAndPayments = new ArrayList<>();
         billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
         billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-        bills = createBillsToReturnItemsAndPayments(billTypesForReturnItemsAndPayments);
+        preBillSearchDtos = createPreBillSearchDTOs(billTypesForReturnItemsAndPayments);
+    }
+
+    /**
+     * Helper method to load Bill entity by ID for actions that require the full entity.
+     * Used when working with DTOs in the UI but need to load the full entity for processing.
+     */
+    public Bill loadBillById(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        return getBillFacade().find(billId);
+    }
+
+    /**
+     * Creates lightweight DTOs for pharmacy pre-bill search to avoid loading full entity graphs.
+     * Used by pharmacy_search_pre_bill_for_return_item_and_cash.xhtml
+     */
+    public List<PharmacyPreBillSearchDTO> createPreBillSearchDTOs(List<BillTypeAtomic> billTypeAtomics) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyPreBillSearchDTO("
+                + "b.id, "
+                + "b.referenceBill.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "COALESCE(pp.name, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "b.netTotal) "
+                + "from Bill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "left join b.patient.person pp "
+                + "where b.billTypeAtomic in :btas "
+                + "and b.institution = :ins "
+                + "and b.department = :dept "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired = false "
+                + "and b.referenceBill.retired = false "
+                + "and b.cancelled = false "
+                + "and b.referenceBill.cancelled = false ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += "and b.deptId like :billNo ";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            try {
+                Double netTotalValue = Double.parseDouble(netTotalString);
+                jpql += "and b.netTotal = :netTotal ";
+                params.put("netTotal", netTotalValue);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                System.out.println("Invalid net total search value: " + netTotalString);
+            }
+        }
+
+        jpql += "order by b.createdAt desc ";
+
+        params.put("btas", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", getSessionController().getLoggedUser().getDepartment());
+
+        System.out.println("DTO jpql = " + jpql);
+        System.out.println("DTO params = " + params);
+
+        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
     public void createWholePreBillsForReturn() {
@@ -20129,6 +20211,14 @@ public class SearchController implements Serializable {
 
     public void setFilteredBills(List<Bill> filteredBills) {
         this.filteredBills = filteredBills;
+    }
+
+    public List<PharmacyPreBillSearchDTO> getPreBillSearchDtos() {
+        return preBillSearchDtos;
+    }
+
+    public void setPreBillSearchDtos(List<PharmacyPreBillSearchDTO> preBillSearchDtos) {
+        this.preBillSearchDtos = preBillSearchDtos;
     }
 
     public List<PharmacyTransferRequestListDTO> getTransferRequestDtos() {
