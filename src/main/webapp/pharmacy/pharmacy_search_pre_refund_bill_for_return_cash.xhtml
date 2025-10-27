@@ -124,16 +124,32 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column>
+                                    <p:column headerText="Refunded At" width="10%">
+                                        <h:outputLabel value="#{bill.paidBillCreatedAt}" rendered="#{bill.paid eq true}">
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Refunded By" width="8%">
+                                        <h:outputLabel value="#{bill.paidBillCreatorName}" rendered="#{bill.paid eq true}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Method" width="8%">
+                                        <h:outputLabel value="#{bill.paymentMethod.label}" rendered="#{bill.paid eq true and bill.paymentMethod ne null}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Action" width="5%">
                                         <p:commandButton
                                             ajax="false"
                                             value="REFUND"
                                             action="#{pharmacyRefundForItemReturnsController.toSettleReturnById(bill.id)}"
-                                            disabled="#{bill.cancelled eq true}" >
+                                            disabled="#{bill.cancelled eq true or bill.paid eq true}"
+                                            styleClass="#{bill.paid eq true ? 'ui-button-secondary' : ''}"
+                                            icon="#{bill.paid eq true ? 'fas fa-check' : 'fas fa-hand-holding-usd'}">
                                         </p:commandButton>
                                     </p:column>
 
-                                 
+
 
                                 </p:dataTable>
 
