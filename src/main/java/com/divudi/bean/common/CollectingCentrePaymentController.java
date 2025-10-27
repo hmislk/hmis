@@ -42,6 +42,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
+
 @Named
 @SessionScoped
 public class CollectingCentrePaymentController implements Serializable {
@@ -99,6 +100,7 @@ public class CollectingCentrePaymentController implements Serializable {
     private List<AgentHistory> allHistorys;
 
 // </editor-fold>
+
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchCCPaymentBills() {
         makeNull();
@@ -109,6 +111,11 @@ public class CollectingCentrePaymentController implements Serializable {
         setCurrentPaymentBill(bill);
         return "/collecting_centre/cc_repayment_bill_reprint?faces-redirect=true";
     }
+    
+    public String navigateToCancelCCPaymentBill() {
+        allHistorys = getAllHistoryFromPaymentBill(currentPaymentBill);
+        return "/collecting_centre/cc_payment_cancel?faces-redirect=true";
+    }
 
     public String navigateToCCPayment() {
         makeNull();
@@ -116,6 +123,7 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
 // </editor-fold>
+
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
     }
@@ -177,6 +185,40 @@ public class CollectingCentrePaymentController implements Serializable {
         calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory);
 
         calculateTotalOfPaymentReceive();
+    }
+    
+    public List<AgentHistory> getAllHistoryFromPaymentBill(Bill ccPaymentBill) {
+        List<HistoryType> types = new ArrayList<>();
+        types.add(HistoryType.CollectingCentreBilling);
+        types.add(HistoryType.CollectingCentreBillingCancel);
+        types.add(HistoryType.CollectingCentreBalanceUpdateBill);
+        types.add(HistoryType.CollectingCentreDeposit);
+        types.add(HistoryType.CollectingCentreDepositCancel);
+        types.add(HistoryType.CollectingCentreCreditNote);
+        types.add(HistoryType.RepaymentToCollectingCentre);
+        types.add(HistoryType.RepaymentToCollectingCentreCancel);
+
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.agency =:cc "
+                + " and ah.historyType in :types "
+                + " and ah.bill.createdAt between :fromDate and :toDate "
+                + " and ah.paymentDone =:payDone "
+                + " and ah.bill.retired = false ";
+
+        m.put("payDone", true);
+        m.put("ret", false);
+        m.put("cc", ccPaymentBill.getCollectingCentre());
+        m.put("types", types);
+        m.put("fromDate", ccPaymentBill.getFromDate());
+        m.put("toDate", ccPaymentBill.getToDate());
+
+        List<AgentHistory> listCount = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        return listCount;
     }
 
     public double calculaPayingBalanceAcodingToCCBalabce(AgentHistory startingHistory, AgentHistory endingHistory) {
@@ -370,15 +412,12 @@ public class CollectingCentrePaymentController implements Serializable {
                         bl.setCcTotal(-originalBill.getTotalCenterFee());
                         bl.setHospitalTotal(-originalBill.getTotalHospitalFee());
                     }
-
                 } else {
                     BillLight bill = bills.get(0);
                     bl.setReferenceNumber(bill.getReferenceNumber());
                     bl.setCcTotal(-bill.getCcTotal());
                     bl.setHospitalTotal(-bill.getHospitalTotal());
-
                 }
-
             }
             totalHospitalAmount += bl.getHospitalTotal();
             totalCCAmount += bl.getCcTotal();
@@ -404,7 +443,6 @@ public class CollectingCentrePaymentController implements Serializable {
         temMap.put("toDate", toDate);
 
         totalCCReceiveAmount = billFacade.findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-
     }
 
     public void performCalculations() {
@@ -478,7 +516,7 @@ public class CollectingCentrePaymentController implements Serializable {
         agentHistoryFacade.edit(agentHistory);
     }
     
-    public void cancelUpdateDonePaymentHistry(AgentHistory agentHistory){
+    public void clearPaymentDoneHistry(AgentHistory agentHistory){
         agentHistory.setPaymentDone(false);
         agentHistory.setPaymentDoneAt(null);
         agentHistory.setPaymentDoneUser(null);
@@ -496,6 +534,7 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setBillType(BillType.CollectingCentreAgentPayment);
         ccAgentPaymentBill.setBillDate(new Date());
         ccAgentPaymentBill.setBillTime(new Date());
+        ccAgentPaymentBill.setCollectingCentre(currentCollectingCentre);
 
         ccAgentPaymentBill.setBillTypeAtomic(BillTypeAtomic.CC_AGENT_PAYMENT);
         ccAgentPaymentBill.setNetTotal(payingBalanceAcodingToCCBalabce);
@@ -539,7 +578,6 @@ public class CollectingCentrePaymentController implements Serializable {
         if (p.getId() == null) {
             paymentFacade.create(p);
         }
-
     }
 
     private void saveBillItemForPaymentBill(Bill ccBill, Bill originalBill) {
@@ -755,7 +793,7 @@ public class CollectingCentrePaymentController implements Serializable {
         //Update Agent History
         for (AgentHistory ah : allHistorys) {
             AgentHistory originalHistry = agentHistoryFacade.find(ah.getId());
-            updateDonePaymentHistry(originalHistry);
+            clearPaymentDoneHistry(originalHistry);
         }
 
         // Update CC Balance
@@ -810,6 +848,7 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     // </editor-fold>
+
 // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Date getFromDate() {
         if (fromDate == null) {
@@ -968,8 +1007,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-// </editor-fold>
-
+    
     public List<AgentHistory> getAllHistorys() {
         return allHistorys;
     }
@@ -977,4 +1015,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setAllHistorys(List<AgentHistory> allHistorys) {
         this.allHistorys = allHistorys;
     }
+    
+// </editor-fold>
+
 }
