@@ -8400,6 +8400,51 @@ public class SearchController implements Serializable {
     }
 
     /**
+     * Loads return pre-bills for a given original bill ID as lightweight DTOs.
+     * Returns all RefundBill instances of type PharmacyPre that are linked to the specified bill.
+     * Used by pharmacy_search_pre_bill_for_return_item_only.xhtml for nested datatable.
+     *
+     * @param billId The ID of the original bill whose return bills should be loaded
+     * @return List of PharmacyPreBillSearchDTO representing the return bills
+     */
+    public List<PharmacyPreBillSearchDTO> loadReturnPreBillsByBillId(Long billId) {
+        if (billId == null) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "select new com.divudi.core.data.dto.PharmacyPreBillSearchDTO("
+                + "b.id, "
+                + "b.referenceBill.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "COALESCE(pp.name, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "b.netTotal) "
+                + "from RefundBill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "left join b.patient.person pp "
+                + "where b.billedBill.id = :billId "
+                + "and b.billType = :billType "
+                + "and b.retired = false "
+                + "order by b.createdAt desc";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        params.put("billType", BillType.PharmacyPre);
+
+        return getBillFacade().findLightsByJpql(jpql, params);
+    }
+
+    /**
      * Creates lightweight DTOs for pharmacy pre-bill search to avoid loading full entity graphs.
      * Used by pharmacy_search_pre_bill_for_return_item_and_cash.xhtml
      */
