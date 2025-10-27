@@ -156,29 +156,29 @@
                                         rowIndexVar="i"
                                         rowKey="#{b.id}" >
 
-                                        <p:column width="10" headerText="#" style="padding:8px;">
+                                        <p:column width="15" headerText="#" style="padding:8px;">
                                             <h:outputLabel value="#{i+1}"></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Bill No" width="9em;" style="padding:8px;">
+                                        <p:column headerText="Bill No" width="16em;" style="padding:8px;">
                                             <h:outputLabel value="#{b.billNo}"></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Reference Number" width="9em;" style="padding:8px;">
+                                        <p:column headerText="Reference Number" width="14em;" style="padding:8px;">
                                             <h:outputLabel value="#{b.referenceNumber}"></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Bill At" width="8em" style="padding:8px;">   
+                                        <p:column headerText="Bill At" width="16em" style="padding:8px;">   
                                             <h:outputLabel value="#{b.billDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Patient" width="5em" style="padding:8px;">                                  
+                                        <p:column headerText="Patient" style="padding:8px;">                                  
                                             <h:outputLabel value="#{b.patientName}"/>                                    
                                         </p:column>
 
-                                        <p:column headerText="Hos. Fee" width="6em;" class="text-end" style="padding:8px;">
+                                        <p:column headerText="Hos. Fee" width="12em;" class="text-end" style="padding:8px;">
                                             <h:outputLabel value="#{b.hospitalTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -189,7 +189,7 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column headerText="CC Fee" width="6em;" class="text-end" style="padding:8px;">
+                                        <p:column headerText="CC Fee" width="12em;" class="text-end" style="padding:8px;">
                                             <h:outputLabel value="#{b.ccTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -199,6 +199,7 @@
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
+                                        
                                     </p:dataTable>
 
                                     <p:panel id="pTotals" class="mt-2" >
@@ -229,7 +230,7 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                     <h:outputLabel value="Total Paying Amount ( Acoding to CC Balabce )" ></h:outputLabel>
-                                                    <h:outputLabel value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" >
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" style="font-weight: 700; font-size: 22px;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
 
@@ -258,7 +259,7 @@
                                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                                     </p:selectOneMenu>
                                                     <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
-                                                    <h:outputLabel   value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" >
+                                                    <h:outputLabel   value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" style="font-weight: 700; font-size: 22px;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:panelGrid>
