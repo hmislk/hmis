@@ -2174,6 +2174,31 @@ public class PharmacyStockTakeController implements Serializable {
         return "pharmacy_stock_take_variance_" + sanitized ;
     }
 
+    // Navigation methods
+    /**
+     * Navigate to the Start New Stock Taking page
+     * @return navigation outcome
+     */
+    public String navigateToStartNewStockTaking() {
+        return "/pharmacy/pharmacy_stock_take?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the Manage Stock Takings page
+     * @return navigation outcome
+     */
+    public String navigateToManageStockTakings() {
+        return "/pharmacy/pharmacy_stock_take_list?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the Pending Physical Count Approvals page
+     * @return navigation outcome
+     */
+    public String navigateToPendingPhysicalCountApprovals() {
+        return "/pharmacy/pharmacy_physical_count_pending?faces-redirect=true";
+    }
+
     // DTO for variance report
     public static class VarianceRow implements Serializable {
 
