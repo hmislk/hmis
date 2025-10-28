@@ -376,7 +376,7 @@
                                         value="Add" 
                                         action="#{purchaseOrderRequestController.addItem}" 
                                         process="exItem @this" 
-                                        update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
+                                        update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot pageMessages" />
 
                                 </p:panel>
                             </div>

@@ -22,7 +22,9 @@
                 onfocus="this.select();"
                 value="#{cc.attrs.paymentMethodData.creditCard.no}"
                 id="txtCardNumber"
-                placeholder="Card Last 4 Digits">
+                placeholder="Card Last 4 Digits"
+                required="#{cc.attrs.valueRequired}"
+                requiredMessage="Please enter the card number (last 4 digits)">
                 <p:ajax process="@this" ></p:ajax>
             </p:inputText>
 
@@ -31,7 +33,7 @@
                 for="cmbCcBank"></p:outputLabel>
             <p:selectOneMenu
                 class="w-100"
-                id="cmbCcBank" value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains"  >
+                id="cmbCcBank" value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains" required="#{cc.attrs.valueRequired}" requiredMessage="Please select a bank">
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>

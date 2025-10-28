@@ -3,11 +3,13 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
+
 package com.divudi.core.entity;
 
 import com.divudi.core.data.HistoryType;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -23,6 +25,7 @@ import javax.persistence.Transient;
  *
  * @author safrin
  */
+
 @Entity
 public class AgentHistory implements Serializable {
 
@@ -49,11 +52,9 @@ public class AgentHistory implements Serializable {
     private double companyBalanceBefore;
     private double companyBalanceAfter;
 
-
     private double agentTransactionValue;
     private double agentBalanceBefore;
     private double agentBalanceAfter;
-
 
     private double staffTrasnactionValue;
 
@@ -71,8 +72,6 @@ public class AgentHistory implements Serializable {
     @ManyToOne
     private Institution agency;
 
-
-
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     //Retairing properties
@@ -88,8 +87,12 @@ public class AgentHistory implements Serializable {
     @Transient
     double transCumilativeTotal;
 
-
-
+    @Column(nullable=false)
+    private boolean paymentDone = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date paymentDoneAt;
+    @ManyToOne
+    private WebUser paymentDoneUser;
 
     public String getReferenceNumber() {
         return referenceNumber;
@@ -241,8 +244,6 @@ public class AgentHistory implements Serializable {
         this.transCumilativeTotal = transCumilativeTotal;
     }
 
-
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -382,6 +383,30 @@ public class AgentHistory implements Serializable {
 
     public void setStaffTrasnactionValue(double staffTrasnactionValue) {
         this.staffTrasnactionValue = staffTrasnactionValue;
+    }
+
+    public boolean isPaymentDone() {
+        return paymentDone;
+    }
+
+    public void setPaymentDone(boolean paymentDone) {
+        this.paymentDone = paymentDone;
+    }
+
+    public Date getPaymentDoneAt() {
+        return paymentDoneAt;
+    }
+
+    public void setPaymentDoneAt(Date paymentDoneAt) {
+        this.paymentDoneAt = paymentDoneAt;
+    }
+
+    public WebUser getPaymentDoneUser() {
+        return paymentDoneUser;
+    }
+
+    public void setPaymentDoneUser(WebUser paymentDoneUser) {
+        this.paymentDoneUser = paymentDoneUser;
     }
 
 }

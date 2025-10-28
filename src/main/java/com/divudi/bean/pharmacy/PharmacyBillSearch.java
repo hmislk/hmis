@@ -262,7 +262,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigatePharmacyReprintPo() {
-        return "pharmacy_reprint_po?faces-redirect=true";
+        return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
     }
 
     private boolean isManageCostingEnabled() {
@@ -435,6 +435,24 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
+
+    /**
+     * Used by DTO-based tables where only bill ID is available
+     * Loads bill and navigates to return cash bill reprint page
+     */
+    public String navigateToBillByIdForReprint(Long paramBillId) {
+        if (paramBillId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billService.reloadBill(paramBillId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
+        return "/pharmacy/pharmacy_reprint_bill_return_cash?faces-redirect=true";
     }
 
     // </editor-fold>

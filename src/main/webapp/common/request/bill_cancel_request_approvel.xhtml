@@ -7,6 +7,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
       xmlns:request="http://xmlns.jcp.org/jsf/composite/ezcomp/prints/request"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
@@ -100,7 +101,15 @@
                                                 <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                                 <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                             </f:facet>
-                                            <common:patient patient="#{requestController.patient}" class="w-100"/>
+                                            
+                                            <h:panelGroup rendered="#{requestController.patientEncounter eq null}">
+                                                <common:patient patient="#{requestController.patient}" class="w-100"/>
+                                            </h:panelGroup>
+                                        
+                                            <h:panelGroup rendered="#{requestController.patientEncounter ne null}">
+                                                <in:bhtDetail admission="#{requestController.patientEncounter}"/>
+                                            </h:panelGroup>
+                                            
                                         </p:panel>
 
                                         <p:panel class="mt-2" id="payment">

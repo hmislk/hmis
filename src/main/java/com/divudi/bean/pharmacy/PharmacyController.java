@@ -982,6 +982,7 @@ public class PharmacyController implements Serializable {
             String jpql = "SELECT b FROM Bill b "
                     + " WHERE b.retired = false"
                     + " and b.cancelled = false"
+                    + " and b.completed = true"
                     + " and b.billTypeAtomic In :btas"
                     + " and b.createdAt between :fromDate and :toDate";
 
@@ -1023,7 +1024,14 @@ public class PharmacyController implements Serializable {
             } catch (Exception e) {
                 JsfUtil.addErrorMessage(e, " Something Went Worng!");
             }
+
             calculateTotals(bills);
+//            // Use simplified calculation for detailReport, standard for others
+//            if ("detailReport".equals(reportType)) {
+//                calculateTotalsForDetailReport(bills);
+//            } else {
+//                calculateTotals(bills);
+//            }
         }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
     }
 
@@ -2110,6 +2118,8 @@ public class PharmacyController implements Serializable {
 
             String jpql = "SELECT b FROM Bill b WHERE b.retired = false"
                     + " and b.billTypeAtomic in :btpAtomics"
+                    + " and (b.retired = false OR b.retired IS NULL)  "
+                    + " and b.completed=true "
                     + " and b.createdAt between :fromDate and :toDate";
 
             Map<String, Object> tmp = new HashMap<>();
@@ -2162,9 +2172,21 @@ public class PharmacyController implements Serializable {
                 PharmacyRow row = new PharmacyRow();
                 row.setBill(b);
 
-                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-                totalCostValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
-                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+                // Determine multiplier: returns and cancellations should be negative
+                double multiplier = 1.0;
+                if (b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                        || b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                    multiplier = -1.0;
+                }
+
+                // Take absolute values and apply multiplier to ensure correct sign
+                double purchaseValue = Math.abs(b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue()) * multiplier;
+                double costValue = Math.abs(b.getBillFinanceDetails().getTotalCostValue().doubleValue()) * multiplier;
+                double retailValue = Math.abs(b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()) * multiplier;
+
+                totalPurchase += purchaseValue;
+                totalCostValue += costValue;
+                totalRetailValue += retailValue;
 
                 pharmacyRows.add(row);
 
@@ -2266,6 +2288,7 @@ public class PharmacyController implements Serializable {
 
             jpql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ");
             jpql.append("AND bi.bill.retired = false ");
+            jpql.append("AND bi.bill.completed = true ");
             jpql.append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ");
             jpql.append("AND bi.bill.billTypeAtomic IN :billTypeAtomics ");
 
@@ -2356,6 +2379,21 @@ public class PharmacyController implements Serializable {
                     purchaseValue = row.getBillItem().getPharmaceuticalBillItem().getPurchaseRate() * row.getBillItem().getQty();
                     costValue = row.getItemBatch().getCostRate() * row.getBillItem().getQty();
                 }
+
+                // Determine multiplier: returns and cancellations should be negative
+                double multiplier = 1.0;
+                if (row.getBillItem().getBill() != null) {
+                    BillTypeAtomic billType = row.getBillItem().getBill().getBillTypeAtomic();
+                    if (billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                            || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                        multiplier = -1.0;
+                    }
+                }
+
+                // Take absolute values and apply multiplier to ensure correct sign
+                purchaseValue = Math.abs(purchaseValue) * multiplier;
+                costValue = Math.abs(costValue) * multiplier;
+                retailValue = Math.abs(retailValue) * multiplier;
 
                 totalPurchase += purchaseValue;
                 totalCostValue += costValue;
@@ -2635,71 +2673,107 @@ public class PharmacyController implements Serializable {
         totalCostValue = 0.0;
         qty = 0.0;
 
-        Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
-                + "bi.bill.department, "
-                + "bi.bill.toDepartment, "
-                + "bi.item, "
-                + "bi.item.category, "
-                + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
-                + "COALESCE(ib.costRate, 0.0), "
-                + "bi.pharmaceuticalBillItem.purchaseRate, "
-                + "SUM(bi.qty)) "
-                + "FROM BillItem bi "
-                + "JOIN ItemBatch ib ON ib.item = bi.item "
-                + "WHERE bi.retired = false AND bi.bill.retired = false "
-                + "AND ib.id = (SELECT MAX(ib2.id) FROM ItemBatch ib2 WHERE ib2.item = bi.item) "
-                + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
-                + "AND bi.bill.billTypeAtomic in :billTypeAtomics ";
+        // Process each bill type separately with appropriate sign
+        List<DepartmentCategoryWiseItems> combinedResults = new ArrayList<>();
 
-        // Mandatory parameters
-        parameters.put("fromDate", fromDate);
-        parameters.put("toDate", toDate);
-        parameters.put("billTypeAtomics", billTypeAtomics);
+        for (BillTypeAtomic billType : billTypeAtomics) {
+            List<BillTypeAtomic> singleType = new ArrayList<>();
+            singleType.add(billType);
 
-        // Dynamic filters
-        if (institution != null) {
-            jpql += "AND bi.bill.institution = :institution ";
-            parameters.put("institution", institution);
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
+                    + "bi.bill.department, "
+                    + "bi.bill.toDepartment, "
+                    + "bi.item, "
+                    + "bi.item.category, "
+                    + "SUM(bi.qty * bi.pharmaceuticalBillItem.purchaseRate), "
+                    + "COALESCE(ib.costRate, 0.0), "
+                    + "bi.pharmaceuticalBillItem.purchaseRate, "
+                    + "SUM(bi.qty)) "
+                    + "FROM BillItem bi "
+                    + "JOIN ItemBatch ib ON ib.item = bi.item "
+                    + "WHERE (bi.retired = false OR bi.retired IS NULL) "
+                    + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)  "
+                    + "AND bi.bill.completed = true  "
+                    + "AND ib.id = (SELECT MAX(ib2.id) FROM ItemBatch ib2 WHERE ib2.item = bi.item) "
+                    + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
+                    + "AND bi.bill.billTypeAtomic = :billTypeAtomic ";
+
+            // Mandatory parameters
+            parameters.put("fromDate", fromDate);
+            parameters.put("toDate", toDate);
+            parameters.put("billTypeAtomic", billType);
+
+            // Dynamic filters
+            if (institution != null) {
+                jpql += "AND bi.bill.institution = :institution ";
+                parameters.put("institution", institution);
+            }
+
+            if (site != null) {
+                jpql += "AND bi.bill.department.site = :site ";
+                parameters.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql += "AND bi.bill.department = :department ";
+                parameters.put("department", dept);
+            }
+
+            if (category != null) {
+                jpql += "AND bi.item.category = :category ";
+                parameters.put("category", category);
+            }
+
+            if (item != null) {
+                jpql += "AND bi.item = :item ";
+                parameters.put("item", item);
+            }
+
+            if (toDepartment != null) {
+                jpql += "AND bi.bill.toDepartment = :toDepartment ";
+                parameters.put("toDepartment", toDepartment);
+            }
+
+            // Group by clause
+            jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, COALESCE(ib.costRate, 0.0), bi.pharmaceuticalBillItem.purchaseRate "
+                    + "ORDER BY bi.bill.toDepartment, bi.item.category";
+
+            try {
+                List<DepartmentCategoryWiseItems> batchResults = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+                // Determine multiplier: returns and cancellations should be negative
+                double multiplier = 1.0;
+                if (billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                        || billType == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+                    multiplier = -1.0;
+                }
+
+                // Apply multiplier to the results
+                for (DepartmentCategoryWiseItems item : batchResults) {
+                    if (multiplier != 1.0) {
+                        // Take absolute value and apply negative multiplier
+                        item.setNetTotal(Math.abs(item.getNetTotal()) * multiplier);
+                        item.setQty(Math.abs(item.getQty()) * multiplier);
+                    }
+                    combinedResults.add(item);
+                }
+
+            } catch (Exception e) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption report by department and category for " + billType, e);
+            }
         }
 
-        if (site != null) {
-            jpql += "AND bi.bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-
-        if (dept != null) {
-            jpql += "AND bi.bill.department = :department ";
-            parameters.put("department", dept);
-        }
-
-        if (category != null) {
-            jpql += "AND bi.item.category = :category ";
-            parameters.put("category", category);
-        }
-
-        if (item != null) {
-            jpql += "AND bi.item = :item ";
-            parameters.put("item", item);
-        }
-
-        if (toDepartment != null) {
-            jpql += "AND bi.bill.toDepartment = :toDepartment ";
-            parameters.put("toDepartment", toDepartment);
-        }
-
-        // Group by clause
-        jpql += "GROUP BY bi.bill.department, bi.bill.toDepartment, bi.item, bi.item.category, COALESCE(ib.costRate, 0.0), bi.pharmaceuticalBillItem.purchaseRate "
-                + "ORDER BY bi.bill.toDepartment, bi.item.category";
-
+        // Process combined results
         try {
-            resultsList = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-            if (resultsList.isEmpty()) {
+            if (combinedResults.isEmpty()) {
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_WARN, "No Data", "No records found for the selected criteria."));
                 return Collections.emptyList();
             }
+
+            // Aggregate results by department, consumption dept, item, and category
+            resultsList = aggregateDepartmentCategoryWiseItems(combinedResults);
 
             totalPurchase = 0.0;
             grantIssueQty = 0.0;
@@ -2719,6 +2793,32 @@ public class PharmacyController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
             return Collections.emptyList();
         }
+    }
+
+    private List<DepartmentCategoryWiseItems> aggregateDepartmentCategoryWiseItems(List<DepartmentCategoryWiseItems> items) {
+        // Group by key: department + consumption dept + item + category + purchase rate + cost rate
+        Map<String, DepartmentCategoryWiseItems> aggregatedMap = new HashMap<>();
+
+        for (DepartmentCategoryWiseItems item : items) {
+            String key = item.getMainDepartment().getId() + "_"
+                    + item.getConsumptionDepartment().getId() + "_"
+                    + item.getItem().getId() + "_"
+                    + item.getCategory().getId() + "_"
+                    + item.getPurchaseRate() + "_"
+                    + item.getCostRate();
+
+            DepartmentCategoryWiseItems existing = aggregatedMap.get(key);
+            if (existing != null) {
+                // Aggregate values
+                existing.setNetTotal(existing.getNetTotal() + item.getNetTotal());
+                existing.setQty(existing.getQty() + item.getQty());
+            } else {
+                // Create new entry
+                aggregatedMap.put(key, item);
+            }
+        }
+
+        return new ArrayList<>(aggregatedMap.values());
     }
 
     public void generateConsumptionReportTableAsCategoryWise(final List<DepartmentCategoryWiseItems> list) {
@@ -3321,6 +3421,80 @@ public class PharmacyController implements Serializable {
         addIfNotZero(data, "Final eWallet Total", totalEwalletPurchaseValue, totalEwalletSaleValue, totalEwalletCostValue);
         addIfNotZero(data, "Final None Total", totalNonePurchaseValue, totalNoneSaleValue, totalNoneCostValue);
         addIfNotZero(data, "Final Other Total", totalOtherPurchaseValue, totalOtherSaleValue, totalOtherCostValue);
+        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue);
+
+        return data;
+    }
+
+    /**
+     * Calculates totals for Detail Report type. This method uses simplified
+     * logic as values are already in plus or minus based on bill type. Only
+     * distinguishes between Credit and non-Credit payment methods.
+     *
+     * @param billList List of bills to calculate totals from
+     * @return List of String1Value1 objects containing the calculated totals
+     */
+    public List<String1Value1> calculateTotalsForDetailReport(List<Bill> billList) {
+        data = new ArrayList<>();
+        totalPurchase = 0.0;
+        totalSaleValue = 0.0;
+        totalCostValue = 0.0;
+        totalCreditPurchaseValue = 0.0;
+        totalCreditSaleValue = 0.0;
+        totalCashPurchaseValue = 0.0;
+        totalCashSaleValue = 0.0;
+        totalCashCostValue = 0.0;
+        totalCreditCostValue = 0.0;
+
+        for (Bill bill : billList) {
+            // Get values directly from bill - use as-is from database
+            // Values are already in correct +/- format based on bill type
+            double purchaseValue = 0.0;
+            double saleValue = 0.0;
+            double costValue = 0.0;
+
+            if (bill.getBillFinanceDetails() != null) {
+                purchaseValue = bill.getBillFinanceDetails().getTotalPurchaseValue() != null
+                        ? bill.getBillFinanceDetails().getTotalPurchaseValue().doubleValue()
+                        : 0.0;
+
+                saleValue = bill.getBillFinanceDetails().getTotalRetailSaleValue() != null
+                        ? bill.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()
+                        : 0.0;
+
+                costValue = bill.getBillFinanceDetails().getTotalCostValue() != null
+                        ? bill.getBillFinanceDetails().getTotalCostValue().doubleValue()
+                        : 0.0;
+            }
+
+            // Check payment method
+            if (bill.getPaymentMethod() == null) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING,
+                        "Bill {0} has no payment method", bill.getId());
+                continue;
+            }
+
+            // Separate by Credit vs non-Credit (Cash and others)
+            if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+                totalCreditPurchaseValue += purchaseValue;
+                totalCreditSaleValue += saleValue;
+                totalCreditCostValue += costValue;
+            } else {
+                // All non-credit payments (Cash, Card, Cheque, etc.) go to "Cash" totals
+                totalCashPurchaseValue += purchaseValue;
+                totalCashSaleValue += saleValue;
+                totalCashCostValue += costValue;
+            }
+
+            // Add to overall totals
+            totalPurchase += purchaseValue;
+            totalSaleValue += saleValue;
+            totalCostValue += costValue;
+        }
+
+        // Add summary rows
+        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue, totalCashCostValue);
+        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue, totalCreditCostValue);
         addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue);
 
         return data;
@@ -5884,9 +6058,10 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Creates a table of GRN return items for the selected pharmacy item.
-     * Uses BillItem and PharmaceuticalBillItem fields directly instead of BillItemFinanceDetails
-     * because GRN return bills do not have finance details populated.
+     * Creates a table of GRN return items for the selected pharmacy item. Uses
+     * BillItem and PharmaceuticalBillItem fields directly instead of
+     * BillItemFinanceDetails because GRN return bills do not have finance
+     * details populated.
      */
     public void createGrnReturnTable() {
 
@@ -5898,9 +6073,13 @@ public class PharmacyController implements Serializable {
         }
 
         List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
-        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN); // GRN Return
+        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND); // GRN Return
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION); // GRN Cancelled
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        
+        
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
                 + "bi.bill.deptId, "
@@ -5913,7 +6092,8 @@ public class PharmacyController implements Serializable {
                 + "bi.pharmaceuticalBillItem.purchaseRate, "
                 + "bi.pharmaceuticalBillItem.retailRate, "
                 + "bi.netRate, "
-                + "bi.netValue "
+                + "bi.netValue, "
+                + "bi.bill.billTypeAtomic "
                 + ") "
                 + "FROM BillItem bi "
                 + "WHERE (bi.bill.retired IS NULL OR bi.bill.retired = FALSE) "
@@ -5987,18 +6167,24 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
+//        BillItem b = new BillItem();
+//        b.getNetValue();
+//        b.getBillItemFinanceDetails().getFreeQuantity();
+        
+        
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPurchaseDTO("
                 + "b.bill.id, "
                 + "b.bill.deptId, "
                 + "b.bill.fromInstitution.name, "
                 + "b.bill.creater.webUserPerson.name, "
                 + "b.bill.createdAt, "
-                + "b.pharmaceuticalBillItem.purchaseRate, "
-                + "b.pharmaceuticalBillItem.costRate, "
-                + "b.pharmaceuticalBillItem.retailRate, "
-                + "b.pharmaceuticalBillItem.qty, "
-                + "b.pharmaceuticalBillItem.freeQty, "
-                + "b.bill.netTotal) "
+                + "b.billItemFinanceDetails.purchaseRate, " //b.getBillItemFinanceDetails().getPurchaseRate();
+                + "b.billItemFinanceDetails.costRate, " // b.getBillItemFinanceDetails().getCostRate();
+                + "b.billItemFinanceDetails.retailSaleRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
+                + "b.billItemFinanceDetails.quantity, " //  b.getBillItemFinanceDetails().getQuantity()
+                + "b.billItemFinanceDetails.freeQuantity, " // b.getBillItemFinanceDetails().getFreeQuantity();
+                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), "  // Use BigDecimal netTotal from finance details, handle null for legacy data
+                + "b.item.name) "  // item name
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
@@ -6225,8 +6411,7 @@ public class PharmacyController implements Serializable {
                 + "AND (bi.bill.checked IS NULL OR bi.bill.checked = false) "
                 + "AND bi.item IN :relatedItems "
                 + "AND bi.bill.billTypeAtomic IN :btaList "
-                + "AND bi.bill.createdAt BETWEEN :frm AND :to "
-                + "ORDER BY bi.bill.createdAt DESC";
+                + "AND bi.bill.createdAt BETWEEN :frm AND :to ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -6234,6 +6419,14 @@ public class PharmacyController implements Serializable {
         params.put("frm", getFromDate());
         params.put("to", getToDate());
 
+        boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
+        if (pharmacyHistoryListOnlyDepartmentTransactions) {
+            params.put("department", getSessionController().getDepartment());
+            jpql += "AND bi.bill.department=:department ";
+        }
+
+        jpql += " ORDER BY bi.bill.createdAt DESC ";
+        
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets
@@ -6711,7 +6904,7 @@ public class PharmacyController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth();
+            fromDate = CommonFunctions.getStartOfDay();
         }
         return fromDate;
     }
@@ -7192,8 +7385,6 @@ public class PharmacyController implements Serializable {
     public void setPharmacyAdminIndex(int pharmacyAdminIndex) {
         this.pharmacyAdminIndex = pharmacyAdminIndex;
     }
-    
-    
 
     public int getPharmacySummaryIndex() {
         return pharmacySummaryIndex;

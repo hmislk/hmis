@@ -339,7 +339,7 @@ public class IssueReturnController implements Serializable {
 
         // Copy reference information from original bill for traceability
         getReturnBill().setReferenceNumber(originalBill.getReferenceNumber());
-        getReturnBill().setComments(originalBill.getComments());
+        getReturnBill().setComments(returnBill.getComments());
 
         // Handle Department ID generation (independent)
         String deptId;
