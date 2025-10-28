@@ -74,6 +74,7 @@ import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
+import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestListDTO;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderDTO;
@@ -263,6 +264,10 @@ public class SearchController implements Serializable {
     private List<PaymentMethod> allCashierCollectionExcludedMethods = new ArrayList<>();
     private List<Bill> bills;
     private List<Bill> filteredBills;
+    // DTO list for pharmacy pre-bill search for return items and cash
+    private List<PharmacyPreBillSearchDTO> preBillSearchDtos;
+    // Map to store return bills grouped by parent bill ID for nested datatable display
+    private Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId;
     // DTO list for pharmacy transfer requests
     private List<PharmacyTransferRequestListDTO> transferRequestDtos;
     // DTO lists for disposal issue search results
@@ -1209,7 +1214,8 @@ public class SearchController implements Serializable {
 
     /**
      * Navigate to OPD Bill Item List from DTO - loads entities on demand
-     * Following DTO pattern: use IDs from DTO to load full entities only when needed
+     * Following DTO pattern: use IDs from DTO to load full entities only when
+     * needed
      */
     public String navigateToOpdBillItemListFromDto(OpdSaleSummaryDTO dto) {
         // Load full entities only when navigating (on-demand loading)
@@ -2536,6 +2542,7 @@ public class SearchController implements Serializable {
 
     /**
      * Calculate total net amount from DTO list
+     *
      * @return Total of all netTotal values in opdSaleSummaryDtos
      */
     public double getOpdSaleSummaryTotal() {
@@ -2997,8 +3004,8 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             m.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -3742,8 +3749,8 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             m.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -4567,8 +4574,8 @@ public class SearchController implements Serializable {
             sql += " and (((b.insId) like :billNo ) or ((b.deptId) like :billNo )) ";
             tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             tmp.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -5316,8 +5323,8 @@ public class SearchController implements Serializable {
             sql += " and  ((bi.bill.patient.person.name) like :patientName )";
             m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((bi.bill.patientEncounter.patient.code) =:number ) or ((bi.bill.patientEncounter.patient.phn) =:number )) ";
             m.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -5955,7 +5962,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
     }
-    
+
     public void fillPharmacyTransferRequestsToApprove() {
         bills = null;
         HashMap tmp = new HashMap();
@@ -8382,7 +8389,223 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> billTypesForReturnItemsAndPayments = new ArrayList<>();
         billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
         billTypesForReturnItemsAndPayments.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
-        bills = createBillsToReturnItemsAndPayments(billTypesForReturnItemsAndPayments);
+        preBillSearchDtos = createPreBillSearchDTOs(billTypesForReturnItemsAndPayments);
+
+        // Load all return bills for the search results in a single query to avoid N+1 problem
+        if (preBillSearchDtos != null && !preBillSearchDtos.isEmpty()) {
+            List<Long> parentBillIds = preBillSearchDtos.stream()
+                    .map(PharmacyPreBillSearchDTO::getId)
+                    .collect(Collectors.toList());
+            returnBillsByParentBillId = loadReturnPreBillsForMultipleParentBills(parentBillIds);
+        } else {
+            returnBillsByParentBillId = new HashMap<>();
+        }
+    }
+
+    /**
+     * Helper method to load Bill entity by ID for actions that require the full
+     * entity. Used when working with DTOs in the UI but need to load the full
+     * entity for processing.
+     */
+    public Bill loadBillById(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        return getBillFacade().find(billId);
+    }
+
+    /**
+     * Loads return pre-bills for a given original bill ID as lightweight DTOs.
+     * Returns all RefundBill instances of type PharmacyPre that are linked to
+     * the specified bill. Used by
+     * pharmacy_search_pre_bill_for_return_item_only.xhtml for nested datatable.
+     *
+     * @param billId The ID of the original bill whose return bills should be
+     * loaded
+     * @return List of PharmacyPreBillSearchDTO representing the return bills
+     */
+    public List<PharmacyPreBillSearchDTO> loadReturnPreBillsByBillId(Long billId) {
+        if (billId == null) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "select new com.divudi.core.data.dto.PharmacyPreBillSearchDTO("
+                + "b.id, "
+                + "b.referenceBill.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "COALESCE(pp.name, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "b.netTotal) "
+                + "from RefundBill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "left join b.patient.person pp "
+                + "where b.billedBill.id = :billId "
+                + "and b.billType = :billType "
+                + "and b.retired = false "
+                + "order by b.createdAt desc";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        params.put("billType", BillType.PharmacyPre);
+
+        return (List<PharmacyPreBillSearchDTO>) getBillFacade().findLightsByJpql(jpql, params);
+    }
+
+    /**
+     * Loads all return pre-bills for multiple parent bills in a single query
+     * and groups them by parent bill ID. This avoids N+1 query problem by
+     * loading all return bills at once. Used by
+     * listBillsToReturnItemsAndPayments() to populate returnBillsByParentBillId
+     * map.
+     *
+     * @param parentBillIds List of parent bill IDs whose return bills should be
+     * loaded
+     * @return Map with parent bill ID as key and list of return bill DTOs as
+     * value
+     */
+    private Map<Long, List<PharmacyPreBillSearchDTO>> loadReturnPreBillsForMultipleParentBills(List<Long> parentBillIds) {
+        Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsMap = new HashMap<>();
+
+        if (parentBillIds == null || parentBillIds.isEmpty()) {
+            return returnBillsMap;
+        }
+
+        // Select all fields as Object[] to include parent bill ID for grouping
+        String jpql = "select "
+                + "b.id, "
+                + "b.referenceBill.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "COALESCE(pp.name, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "b.netTotal, "
+                + "b.billedBill.id " // Parent bill ID for grouping
+                + "from RefundBill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "left join b.patient.person pp "
+                + "where b.billedBill.id in :billIds "
+                + "and b.billType = :billType "
+                + "and b.retired = false "
+                + "order by b.billedBill.id, b.createdAt desc";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billIds", parentBillIds);
+        params.put("billType", BillType.PharmacyPre);
+
+        List<Object[]> results = getBillFacade().findAggregates(jpql, params);
+
+        // Group results by parent bill ID
+        for (Object[] row : results) {
+            Long parentBillId = (Long) row[12];  // Last item is parent bill ID
+
+            // Create DTO from the first 12 values
+            PharmacyPreBillSearchDTO dto = new PharmacyPreBillSearchDTO(
+                    (Long) row[0], // id
+                    (Long) row[1], // referenceBillId
+                    (String) row[2], // deptId
+                    (Date) row[3], // createdAt
+                    (Boolean) row[4], // cancelled
+                    (Date) row[5], // cancelledBillCreatedAt
+                    (String) row[6], // creatorName
+                    (String) row[7], // cancelledBillCreatorName
+                    (String) row[8], // patientName
+                    (BillTypeAtomic) row[9], // billTypeAtomic
+                    (PaymentMethod) row[10], // paymentMethod
+                    (Double) row[11] // netTotal
+            );
+
+            returnBillsMap.computeIfAbsent(parentBillId, k -> new ArrayList<>()).add(dto);
+        }
+
+        return returnBillsMap;
+    }
+
+    /**
+     * Creates lightweight DTOs for pharmacy pre-bill search to avoid loading
+     * full entity graphs. Used by
+     * pharmacy_search_pre_bill_for_return_item_and_cash.xhtml
+     */
+    public List<PharmacyPreBillSearchDTO> createPreBillSearchDTOs(List<BillTypeAtomic> billTypeAtomics) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyPreBillSearchDTO("
+                + "b.id, "
+                + "b.referenceBill.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.cancelled, "
+                + "cb.createdAt, "
+                + "COALESCE(cwp.name, ''), "
+                + "COALESCE(ccwp.name, ''), "
+                + "COALESCE(pp.name, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "b.netTotal) "
+                + "from Bill b "
+                + "left join b.cancelledBill cb "
+                + "left join b.creater c "
+                + "left join c.webUserPerson cwp "
+                + "left join cb.creater cc "
+                + "left join cc.webUserPerson ccwp "
+                + "left join b.patient.person pp "
+                + "where b.billTypeAtomic in :btas "
+                + "and b.institution = :ins "
+                + "and b.department = :dept "
+                + "and b.createdAt between :fromDate and :toDate "
+                + "and b.retired = false "
+                + "and b.referenceBill.retired = false "
+                + "and b.cancelled = false "
+                + "and b.referenceBill.cancelled = false ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += "and b.deptId like :billNo ";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            try {
+                Double netTotalValue = Double.parseDouble(netTotalString);
+                jpql += "and b.netTotal = :netTotal ";
+                params.put("netTotal", netTotalValue);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                System.out.println("Invalid net total search value: " + netTotalString);
+            }
+        }
+
+        jpql += "order by b.createdAt desc ";
+
+        params.put("btas", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", getSessionController().getLoggedUser().getDepartment());
+
+        System.out.println("DTO jpql = " + jpql);
+        System.out.println("DTO params = " + params);
+
+        return (List<PharmacyPreBillSearchDTO>) getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
 
     public void createWholePreBillsForReturn() {
@@ -13966,12 +14189,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.bill.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
- 
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.bill.patientEncounter.patient.code) =:number ) or ((b.bill.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
-        
+
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.bill.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -13998,7 +14221,7 @@ public class SearchController implements Serializable {
         }
 
         sql += " order by b.bill.deptId desc ";
-        
+
         temMap.put("billType", BillType.InwardBill);
         temMap.put("class", BilledBill.class);
         temMap.put("toDate", toDate);
@@ -14023,12 +14246,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
-        
+
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -14173,8 +14396,8 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -14228,8 +14451,8 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -14282,8 +14505,8 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -14341,12 +14564,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
-        
+
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -14784,12 +15007,12 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
-        
+
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
             sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
@@ -20129,6 +20352,25 @@ public class SearchController implements Serializable {
 
     public void setFilteredBills(List<Bill> filteredBills) {
         this.filteredBills = filteredBills;
+    }
+
+    public List<PharmacyPreBillSearchDTO> getPreBillSearchDtos() {
+        return preBillSearchDtos;
+    }
+
+    public void setPreBillSearchDtos(List<PharmacyPreBillSearchDTO> preBillSearchDtos) {
+        this.preBillSearchDtos = preBillSearchDtos;
+    }
+
+    public Map<Long, List<PharmacyPreBillSearchDTO>> getReturnBillsByParentBillId() {
+        if (returnBillsByParentBillId == null) {
+            returnBillsByParentBillId = new HashMap<>();
+        }
+        return returnBillsByParentBillId;
+    }
+
+    public void setReturnBillsByParentBillId(Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId) {
+        this.returnBillsByParentBillId = returnBillsByParentBillId;
     }
 
     public List<PharmacyTransferRequestListDTO> getTransferRequestDtos() {
