@@ -393,6 +393,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void saveCurrent() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("No admission record to save");
+            return;
+        }
+        
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
             if (!getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark as Claimable");
