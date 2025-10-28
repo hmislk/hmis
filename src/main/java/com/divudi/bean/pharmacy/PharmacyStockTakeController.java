@@ -111,6 +111,10 @@ public class PharmacyStockTakeController implements Serializable {
     private boolean printPreview;
     private Bill adjustmentBill; // stores the adjustment bill created during approval for printing
 
+    // Configuration for including zero-stock batches in stock count
+    private boolean includeZeroStockBatches;
+    private int zeroStockBatchLimit = 5; // default limit of 5 zero-stock batches per item
+
     /**
      * Generate stock count bill preview without persisting.
      */
@@ -251,6 +255,78 @@ public class PharmacyStockTakeController implements Serializable {
                 snapshotBill.setBillItems(new java.util.ArrayList<>());
             }
             snapshotBill.getBillItems().add(bi);
+        }
+
+        // Handle zero-stock batches if configured
+        if (includeZeroStockBatches && zeroStockBatchLimit > 0) {
+            // Fetch zero-stock batches, ordered by expiry date descending
+            String zeroStockJpql = "select s from Stock s "
+                    + "where s.department=:d and (s.stock is null or s.stock = 0) "
+                    + "order by coalesce(s.itemBatch.item.category.name, '') asc, "
+                    + "coalesce(s.itemBatch.item.name, '') asc, "
+                    + "coalesce(s.itemBatch.dateOfExpire, current_date) desc";
+            List<Stock> zeroStocks = stockFacade.findByJpql(zeroStockJpql, params);
+
+            if (zeroStocks != null && !zeroStocks.isEmpty()) {
+                // Group zero-stock batches by item and limit per item
+                java.util.Map<Item, java.util.List<Stock>> zeroStocksByItem = new java.util.LinkedHashMap<>();
+                for (Stock zs : zeroStocks) {
+                    if (zs == null || zs.getItemBatch() == null || zs.getItemBatch().getItem() == null) {
+                        continue;
+                    }
+                    Item item = zs.getItemBatch().getItem();
+                    zeroStocksByItem.computeIfAbsent(item, k -> new java.util.ArrayList<>()).add(zs);
+                }
+
+                // Process zero-stock batches with limit per item
+                for (java.util.Map.Entry<Item, java.util.List<Stock>> entry : zeroStocksByItem.entrySet()) {
+                    java.util.List<Stock> itemZeroStocks = entry.getValue();
+                    int limit = Math.min(zeroStockBatchLimit, itemZeroStocks.size());
+
+                    for (int i = 0; i < limit; i++) {
+                        Stock zs = itemZeroStocks.get(i);
+                        ItemBatch itemBatch = zs.getItemBatch();
+
+                        // Create bill item for zero-stock batch
+                        BillItem bi = new BillItem();
+                        bi.setBill(snapshotBill);
+                        bi.setItem(itemBatch.getItem());
+
+                        String itemName = itemBatch.getItem().getName();
+                        bi.setDescreption(itemName != null ? itemName : "");
+                        bi.setQty(0.0);
+                        bi.setCreatedAt(new Date());
+
+                        if (sessionController.getLoggedUser() != null) {
+                            bi.setCreater(sessionController.getLoggedUser());
+                        }
+
+                        // Create pharmaceutical bill item
+                        PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+                        pbi.setBillItem(bi);
+                        pbi.setItemBatch(itemBatch);
+                        pbi.setQty(0.0);
+                        pbi.setStock(zs);
+
+                        String batchNo = itemBatch.getBatchNo();
+                        if (batchNo != null) {
+                            pbi.setStringValue(batchNo);
+                        }
+
+                        Double costRate = itemBatch.getCostRate();
+                        double safeCostRate = (costRate != null) ? costRate : 0.0;
+                        pbi.setCostRate(safeCostRate);
+
+                        bi.setNetValue(0.0);
+                        bi.setPharmaceuticalBillItem(pbi);
+
+                        if (snapshotBill.getBillItems() == null) {
+                            snapshotBill.setBillItems(new java.util.ArrayList<>());
+                        }
+                        snapshotBill.getBillItems().add(bi);
+                    }
+                }
+            }
         }
 
         snapshotBill.setNetTotal(total);
@@ -2156,6 +2232,22 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setAdjustmentBill(Bill adjustmentBill) {
         this.adjustmentBill = adjustmentBill;
+    }
+
+    public boolean isIncludeZeroStockBatches() {
+        return includeZeroStockBatches;
+    }
+
+    public void setIncludeZeroStockBatches(boolean includeZeroStockBatches) {
+        this.includeZeroStockBatches = includeZeroStockBatches;
+    }
+
+    public int getZeroStockBatchLimit() {
+        return zeroStockBatchLimit;
+    }
+
+    public void setZeroStockBatchLimit(int zeroStockBatchLimit) {
+        this.zeroStockBatchLimit = zeroStockBatchLimit;
     }
 
     /**

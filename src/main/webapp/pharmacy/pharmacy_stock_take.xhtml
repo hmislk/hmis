@@ -88,8 +88,21 @@
                             </h:panelGroup>
 
 
-                            <p:spacer/>
-                            <p:spacer/>
+                            <h:outputLabel for="includeZeroStock" value="Include Zero Stock Batches"/>
+                            <p:selectBooleanCheckbox id="includeZeroStock"
+                                                     value="#{pharmacyStockTakeController.includeZeroStockBatches}">
+                                <p:ajax update="zeroStockLimit"/>
+                            </p:selectBooleanCheckbox>
+
+                            <h:outputLabel for="zeroStockLimit" value="Zero Stock Batch Limit per Item"/>
+                            <h:panelGroup id="zeroStockLimit">
+                                <p:spinner value="#{pharmacyStockTakeController.zeroStockBatchLimit}"
+                                          min="1"
+                                          max="50"
+                                          disabled="#{!pharmacyStockTakeController.includeZeroStockBatches}"
+                                          styleClass="w-100"/>
+                            </h:panelGroup>
+
                             <p:spacer/>
                             <p:spacer/>
 
