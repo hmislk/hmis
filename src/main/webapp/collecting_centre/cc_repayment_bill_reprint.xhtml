@@ -31,9 +31,9 @@
                                         ajax="false" 
                                         styleClass="ui-button-danger"
                                         value="To Cancel" 
-                                        action="/collecting_centre/cc_payment_cancel?faces-redirect=true"
-                                        disabled="#{collectingCentrePaymentController.currentPaymentBill.cancelled}" 
-                                        icon="fa fa-times" >
+                                        action="#{collectingCentrePaymentController.navigateToCancelCCPaymentBill()}"
+                                        disabled="#{collectingCentrePaymentController.currentPaymentBill.cancelled}"
+                                        icon="fa fa-times">
                                     </p:commandButton>
                                     
                                     <p:commandButton 
