@@ -393,6 +393,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void saveCurrent() {
+        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            if (!getCurrent().isClaimable()) {
+                JsfUtil.addErrorMessage("Please mark as Claimable");
+                return;
+
+            }
+        }
         // Apply patient name capitalization based on configuration settings
         patientController.applyPatientNameCapitalization(getCurrent().getPatient());
 
