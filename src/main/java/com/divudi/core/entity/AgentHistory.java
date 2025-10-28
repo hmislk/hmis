@@ -9,6 +9,7 @@ package com.divudi.core.entity;
 import com.divudi.core.data.HistoryType;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -86,6 +87,7 @@ public class AgentHistory implements Serializable {
     @Transient
     double transCumilativeTotal;
 
+    @Column(nullable=false)
     private boolean paymentDone = false;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date paymentDoneAt;

@@ -42,7 +42,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
-
 @Named
 @SessionScoped
 public class CollectingCentrePaymentController implements Serializable {
@@ -100,7 +99,6 @@ public class CollectingCentrePaymentController implements Serializable {
     private List<AgentHistory> allHistorys;
 
 // </editor-fold>
-
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchCCPaymentBills() {
         makeNull();
@@ -111,8 +109,12 @@ public class CollectingCentrePaymentController implements Serializable {
         setCurrentPaymentBill(bill);
         return "/collecting_centre/cc_repayment_bill_reprint?faces-redirect=true";
     }
-    
+
     public String navigateToCancelCCPaymentBill() {
+        if (currentPaymentBill == null) {
+            JsfUtil.addErrorMessage("Payment Bill is Missing");
+            return "";
+        }
         allHistorys = getAllHistoryFromPaymentBill(currentPaymentBill);
         return "/collecting_centre/cc_payment_cancel?faces-redirect=true";
     }
@@ -123,7 +125,6 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
 // </editor-fold>
-
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
     }
@@ -157,15 +158,14 @@ public class CollectingCentrePaymentController implements Serializable {
         }
 
         double paymentDone = getAllAgentHistory(currentCollectingCentre, true);
-        
-        if(paymentDone > 0.0){
+
+        if (paymentDone > 0.0) {
             JsfUtil.addErrorMessage("There is a bill that was taken within this range.");
             setCurrentCollectingCentre(null);
             return;
         }
-        
-        //double paymentpending = getAllAgentHistory(currentCollectingCentre, false);
 
+        //double paymentpending = getAllAgentHistory(currentCollectingCentre, false);
         System.out.println("paymentDone = " + paymentDone);
         //System.out.println("paymentpending = " + paymentpending);
 
@@ -187,7 +187,7 @@ public class CollectingCentrePaymentController implements Serializable {
 
         calculateTotalOfPaymentReceive();
     }
-    
+
     public List<AgentHistory> getAllHistoryFromPaymentBill(Bill ccPaymentBill) {
         List<HistoryType> types = new ArrayList<>();
         types.add(HistoryType.CollectingCentreBilling);
@@ -207,7 +207,7 @@ public class CollectingCentrePaymentController implements Serializable {
                 + " and ah.agency =:cc "
                 + " and ah.historyType in :types "
                 + " and ah.bill.createdAt between :fromDate and :toDate "
-                + " and ah.paymentDone =:payDone "
+                + " and COALESCE(ah.paymentDone,false) = :payDone"
                 + " and ah.bill.retired = false ";
 
         m.put("payDone", true);
@@ -472,7 +472,7 @@ public class CollectingCentrePaymentController implements Serializable {
             JsfUtil.addErrorMessage("Select PaymentMethod");
             return;
         }
-        
+
         if (selectedCCpaymentBills == null || selectedCCpaymentBills.isEmpty()) {
             ccPaymentSettlingStarted = false;
             JsfUtil.addErrorMessage("No Selected Bills");
@@ -487,7 +487,7 @@ public class CollectingCentrePaymentController implements Serializable {
             Bill bill = billFacade.find(b.getId());
             saveBillItemForPaymentBill(bill, currentPaymentBill);
         }
-        
+
         //Update Agent History
         for (AgentHistory ah : allHistorys) {
             AgentHistory originalHistry = agentHistoryFacade.find(ah.getId());
@@ -509,15 +509,15 @@ public class CollectingCentrePaymentController implements Serializable {
         printPriview = true;
 
     }
-    
-    public void updateDonePaymentHistry(AgentHistory agentHistory){
+
+    public void updateDonePaymentHistry(AgentHistory agentHistory) {
         agentHistory.setPaymentDone(true);
         agentHistory.setPaymentDoneAt(new Date());
         agentHistory.setPaymentDoneUser(sessionController.getLoggedUser());
         agentHistoryFacade.edit(agentHistory);
     }
-    
-    public void clearPaymentDoneHistry(AgentHistory agentHistory){
+
+    public void clearPaymentDoneHistory(AgentHistory agentHistory) {
         agentHistory.setPaymentDone(false);
         agentHistory.setPaymentDoneAt(null);
         agentHistory.setPaymentDoneUser(null);
@@ -541,7 +541,7 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setNetTotal(payingBalanceAcodingToCCBalabce);
         ccAgentPaymentBill.setTotal(payingBalanceAcodingToCCBalabce);
         ccAgentPaymentBill.setPaidAmount(payingBalanceAcodingToCCBalabce);
-        
+
         ccAgentPaymentBill.setFromDate(fromDate);
         ccAgentPaymentBill.setToDate(toDate);
 
@@ -753,7 +753,7 @@ public class CollectingCentrePaymentController implements Serializable {
             JsfUtil.addErrorMessage("Payment Bill is Missing");
             return;
         }
-        
+
         if (currentPaymentBill.isCancelled()) {
             ccPaymentSettlingStarted = false;
             JsfUtil.addErrorMessage("Bill already cancelled.");
@@ -765,7 +765,7 @@ public class CollectingCentrePaymentController implements Serializable {
             JsfUtil.addErrorMessage("Comment is Missing");
             return;
         }
-        
+
         Bill cancelBill = saveCancelBill();
 
         createPayment(cancelBill, cancelBill.getPaymentMethod());
@@ -788,13 +788,15 @@ public class CollectingCentrePaymentController implements Serializable {
             ref.setPaidAt(null);
             ref.setPaidBill(null);
             billFacade.edit(ref);
-            
+
         }
-        
+
         //Update Agent History
-        for (AgentHistory ah : allHistorys) {
-            AgentHistory originalHistry = agentHistoryFacade.find(ah.getId());
-            clearPaymentDoneHistry(originalHistry);
+        if (allHistorys != null) {
+            for (AgentHistory ah : allHistorys) {
+                AgentHistory originalHistry = agentHistoryFacade.find(ah.getId());
+                clearPaymentDoneHistory(originalHistry);
+            }
         }
 
         // Update CC Balance
@@ -849,7 +851,6 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     // </editor-fold>
-
 // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Date getFromDate() {
         if (fromDate == null) {
@@ -1008,7 +1009,7 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
+
     public List<AgentHistory> getAllHistorys() {
         return allHistorys;
     }
@@ -1016,7 +1017,6 @@ public class CollectingCentrePaymentController implements Serializable {
     public void setAllHistorys(List<AgentHistory> allHistorys) {
         this.allHistorys = allHistorys;
     }
-    
-// </editor-fold>
 
+// </editor-fold>
 }
