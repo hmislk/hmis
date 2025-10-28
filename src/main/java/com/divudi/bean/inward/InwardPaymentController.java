@@ -335,8 +335,36 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         return curr;
     }
 
+    public void changePaymentMethodChange() {
+        if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+
+            getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
+
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                System.out.println("pd = " + pd);
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    System.out.println("cd = " + cd);
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        System.out.println("cd = " + cd);
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+        } else {
+            listnerForPaymentMethodChange();
+        }
+    }
+
     public void listnerForPaymentMethodChange() {
-        if (getCurrent().getPaymentMethod() == PaymentMethod.PatientDeposit) {
+
+        if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
             getPaymentMethodData().getPatient_deposit().setTotalValue(getCurrent().getTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
@@ -344,10 +372,10 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
             }
-        } else if (getCurrent().getPaymentMethod() == PaymentMethod.Card) {
+        } else if (getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(getCurrent().getTotal());
             System.out.println("this = " + this);
-        } else if (getCurrent().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
 
