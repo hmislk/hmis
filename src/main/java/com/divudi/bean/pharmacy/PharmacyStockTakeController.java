@@ -1270,8 +1270,8 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Check if there's an ongoing (incomplete) stock taking for the given department.
-     * An ongoing stock taking is one where bill.completed = false.
+     * Check if there's an ongoing (incomplete) stock taking for the given
+     * department. An ongoing stock taking is one where bill.completed = false.
      */
     private boolean hasOngoingStockTaking(Department dept) {
         if (dept == null) {
@@ -1286,8 +1286,8 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Complete/close the current stock taking session.
-     * This marks the snapshot bill as completed.
+     * Complete/close the current stock taking session. This marks the snapshot
+     * bill as completed.
      */
     public void completeStockTaking() {
         LOGGER.log(Level.INFO, "[StockTake] completeStockTaking() called. snapshotBillId={0}",
@@ -2159,8 +2159,10 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Generate a sanitized filename for variance report Excel export.
-     * Includes the snapshot bill number, sanitized to remove invalid filename characters.
+     * Generate a sanitized filename for variance report Excel export. Includes
+     * the snapshot bill number, sanitized to remove invalid filename
+     * characters.
+     *
      * @return sanitized filename with .xlsx extension
      */
     public String getVarianceExcelFilename() {
@@ -2171,28 +2173,37 @@ public class PharmacyStockTakeController implements Serializable {
         String sanitized = snapshotBill.getDeptId()
                 .replaceAll("[/\\\\:*?\"<>|,.-]", "_")
                 .trim();
-        return "pharmacy_stock_take_variance_" + sanitized ;
+        return "pharmacy_stock_take_variance_" + sanitized;
     }
 
     // Navigation methods
     /**
      * Navigate to the Start New Stock Taking page
+     *
      * @return navigation outcome
      */
     public String navigateToStartNewStockTaking() {
+        institution = sessionController.getInstitution();
+        site = sessionController.getLoggedSite();
+        department = sessionController.getDepartment();
         return "/pharmacy/pharmacy_stock_take?faces-redirect=true";
     }
 
     /**
      * Navigate to the Manage Stock Takings page
+     *
      * @return navigation outcome
      */
     public String navigateToManageStockTakings() {
+        institution = sessionController.getInstitution();
+        site = sessionController.getLoggedSite();
+        department = sessionController.getDepartment();
         return "/pharmacy/pharmacy_stock_take_list?faces-redirect=true";
     }
 
     /**
      * Navigate to the Pending Physical Count Approvals page
+     *
      * @return navigation outcome
      */
     public String navigateToPendingPhysicalCountApprovals() {
