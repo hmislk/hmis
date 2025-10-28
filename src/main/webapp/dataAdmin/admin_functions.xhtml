@@ -230,8 +230,9 @@
                                     <td>
                                         Updates historical StockHistory records with missing rate and value data from their associated ItemBatch records.
                                         This fixes closing stock reports where old data shows quantities but not values (purchase, cost, retail).
+                                        Only updates fields when existing values are null or zero - does not overwrite curated data.
                                         Fills in: purchaseRate, retailRate, costRate from ItemBatch and calculates stockPurchaseValue, stockSaleValue, stockCostValue.
-                                        Only these 6 fields are updated; all other attributes remain unchanged.
+                                        Avoids unnecessary database writes by only persisting when changes are actually made.
                                         Use the date range filter above to limit updates to specific periods.
                                     </td>
                                     <td>
