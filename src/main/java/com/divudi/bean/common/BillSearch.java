@@ -4683,9 +4683,9 @@ public class BillSearch implements Serializable {
         BilledBill bb = (BilledBill) bill;
         viewingBill = billBean.fetchBill(bb.getId());
         loadBillDetails(bb);
-        pharmacyPurchaseController.setPrintPreview(true);
-        pharmacyPurchaseController.setBill(bb);
-        return "/pharmacy/pharmacy_purchase?faces-redirect=true";
+        pharmacyBillSearch.setPrintPreview(true);
+        pharmacyBillSearch.setBill(bb);
+        return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
     }
 
     public String navigateToPharmacyGrnBillView() {
