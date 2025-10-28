@@ -22,7 +22,9 @@ public class DepartmentCategoryWiseItems {
      private Double netTotal;
      private Double purchaseRate;
      private Double costRate;
+     private Double totalPurchaseValue;
      private Double totalCostValue;
+     private Double totalRetailValue;
      private double qty;
      private double paidAmount;
 
@@ -66,24 +68,29 @@ public class DepartmentCategoryWiseItems {
         this.qty = qty;
     }
 
-    // Constructor for summary reports with aggregated values
+    // Constructor for summary reports with aggregated values only (no rates)
     public DepartmentCategoryWiseItems(
             Department mainDepartment,
             Department consumptionDepartment,
             Item item,
             Category category,
             Double purchaseValue,
-            Double costValue,
-            double totalQty,
-            boolean isAggregated  // Dummy parameter to differentiate signature
+            Double totalCostValue,
+            Double totalRetailValue,
+            Double netTotal,
+            double qty,
+            String summaryType  // Dummy parameter to make signature unique
     ) {
         this.mainDepartment = mainDepartment;
         this.consumptionDepartment = consumptionDepartment;
         this.item = item;
         this.category = category;
-        this.netTotal = purchaseValue;
-        this.totalCostValue = costValue;
-        this.qty = totalQty;
+        this.totalPurchaseValue = purchaseValue;  // Stock valuation at purchase rate
+        this.totalCostValue = totalCostValue;      // Stock valuation at cost rate
+        this.totalRetailValue = totalRetailValue;  // Stock valuation at retail rate
+        this.netTotal = netTotal;                  // Financial value (actual billing)
+        this.qty = qty;
+        // summaryType is just for signature differentiation, not stored
     }
 
     public Department getMainDepartment() {
@@ -164,5 +171,21 @@ public class DepartmentCategoryWiseItems {
 
     public void setTotalCostValue(Double totalCostValue) {
         this.totalCostValue = totalCostValue;
+    }
+
+    public Double getTotalRetailValue() {
+        return totalRetailValue;
+    }
+
+    public void setTotalRetailValue(Double totalRetailValue) {
+        this.totalRetailValue = totalRetailValue;
+    }
+
+    public Double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(Double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
     }
 }

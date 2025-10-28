@@ -2644,19 +2644,21 @@ public class PharmacyController implements Serializable {
             singleType.add(billType);
 
             Map<String, Object> parameters = new HashMap<>();
-            String jpql = "SELECT new com.divudi.core.data.DepartmentCategoryWiseItems("
+            String jpql = "SELECT "
                     + "bi.bill.department, "
                     + "bi.bill.toDepartment, "
                     + "bi.item, "
                     + "bi.item.category, "
-                    + "SUM(bi.billItemFinanceDetails.valueAtPurchaseRate), "
-                    + "SUM(bi.billItemFinanceDetails.valueAtCostRate), "
-                    + "SUM(bi.qty), "
-                    + "true) "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtPurchaseRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtCostRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtRetailRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.netTotal, 0.0)), "
+                    + "SUM(bi.qty) "
                     + "FROM BillItem bi "
                     + "WHERE (bi.retired = false OR bi.retired IS NULL) "
                     + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)  "
                     + "AND bi.bill.completed = true  "
+                    + "AND bi.billItemFinanceDetails IS NOT NULL "
                     + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
                     + "AND bi.bill.billTypeAtomic = :billTypeAtomic ";
 
@@ -2701,13 +2703,33 @@ public class PharmacyController implements Serializable {
                     + "ORDER BY bi.bill.toDepartment, bi.item.category";
 
             try {
-                List<DepartmentCategoryWiseItems> batchResults = (List<DepartmentCategoryWiseItems>) getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+                List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-                // Simply add the results without manipulation
-                combinedResults.addAll(batchResults);
+                // Convert Object[] to DepartmentCategoryWiseItems
+                for (Object[] row : results) {
+                    Department mainDept = (Department) row[0];
+                    Department consumptionDept = (Department) row[1];
+                    Item item = (Item) row[2];
+                    Category category = (Category) row[3];
+                    Double purchaseValue = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
+                    Double costValue = row[5] != null ? ((Number) row[5]).doubleValue() : 0.0;
+                    Double retailValue = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
+                    Double netTotal = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
+                    Double qty = row[8] != null ? ((Number) row[8]).doubleValue() : 0.0;
+
+                    DepartmentCategoryWiseItems dtoItem = new DepartmentCategoryWiseItems(
+                            mainDept, consumptionDept, item, category,
+                            purchaseValue, costValue, retailValue, netTotal, qty, "summary");
+
+                    combinedResults.add(dtoItem);
+                }
 
             } catch (Exception e) {
                 Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption report by department and category for " + billType, e);
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "JPQL Query: " + jpql, e);
+                if (e.getCause() != null) {
+                    Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Root cause: ", e.getCause());
+                }
             }
         }
 
@@ -2754,12 +2776,21 @@ public class PharmacyController implements Serializable {
 
             DepartmentCategoryWiseItems existing = aggregatedMap.get(key);
             if (existing != null) {
-                // Aggregate values
+                // Aggregate all values
                 existing.setNetTotal(existing.getNetTotal() + item.getNetTotal());
                 existing.setQty(existing.getQty() + item.getQty());
+
+                Double existingPurchaseValue = existing.getTotalPurchaseValue() != null ? existing.getTotalPurchaseValue() : 0.0;
+                Double itemPurchaseValue = item.getTotalPurchaseValue() != null ? item.getTotalPurchaseValue() : 0.0;
+                existing.setTotalPurchaseValue(existingPurchaseValue + itemPurchaseValue);
+
                 Double existingCostValue = existing.getTotalCostValue() != null ? existing.getTotalCostValue() : 0.0;
                 Double itemCostValue = item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0;
                 existing.setTotalCostValue(existingCostValue + itemCostValue);
+
+                Double existingRetailValue = existing.getTotalRetailValue() != null ? existing.getTotalRetailValue() : 0.0;
+                Double itemRetailValue = item.getTotalRetailValue() != null ? item.getTotalRetailValue() : 0.0;
+                existing.setTotalRetailValue(existingRetailValue + itemRetailValue);
             } else {
                 // Create new entry
                 aggregatedMap.put(key, item);
@@ -2772,11 +2803,13 @@ public class PharmacyController implements Serializable {
     public void generateConsumptionReportTableAsCategoryWise(final List<DepartmentCategoryWiseItems> list) {
         totalSaleValue = 0.0;
         totalCostValue = 0.0;
+        totalRetailValue = 0.0;
+        totalPurchase = 0.0;
         // Department Name -> Category Name -> Item List
         Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
         // Category Name -> Item List
         Map<String, List<DepartmentCategoryWiseItems>> categorizedItems = new HashMap<>();
-        // Department Name -> Category Name -> [Total Value, Total Cost Value]
+        // Department Name -> Category Name -> [Purchase Value, Cost Value, Retail Value, Net Total]
         Map<String, Map<String, Double[]>> departmentTotals = new TreeMap<>();
 
         for (DepartmentCategoryWiseItems item : list) {
@@ -2803,44 +2836,71 @@ public class PharmacyController implements Serializable {
             departmentTotals
                     .computeIfAbsent(departmentName, k -> new TreeMap<>())
                     .merge(categoryName,
-                            new Double[]{item.getNetTotal(), (item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0)},
+                            new Double[]{
+                                (item.getTotalPurchaseValue() != null ? item.getTotalPurchaseValue() : 0.0),
+                                (item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0),
+                                (item.getTotalRetailValue() != null ? item.getTotalRetailValue() : 0.0),
+                                item.getNetTotal()
+                            },
                             (existing, newValues) -> new Double[]{
-                                existing[0] + newValues[0], // Sum net totals
-                                existing[1] + newValues[1] // Sum cost values
+                                existing[0] + newValues[0], // Sum purchase values
+                                existing[1] + newValues[1], // Sum cost values
+                                existing[2] + newValues[2], // Sum retail values
+                                existing[3] + newValues[3]  // Sum net totals
                             });
 
-            totalSaleValue += item.getNetTotal();
+            totalPurchase += (item.getTotalPurchaseValue() != null ? item.getTotalPurchaseValue() : 0.0);
             totalCostValue += (item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0);
+            totalRetailValue += (item.getTotalRetailValue() != null ? item.getTotalRetailValue() : 0.0);
+            totalSaleValue += item.getNetTotal();
         }
 
         setDepartmentCategoryMap(departmentCategoryMap);
         setDepartmentTotals(departmentTotals);
     }
 
-    public String getCategoryTotalForConsumptionReport(final String departmentName, final String categoryName) {
+    // Array structure: [0]=Purchase, [1]=Cost, [2]=Retail, [3]=NetTotal
+
+    public String getCategoryPurchaseTotalForConsumptionReport(final String departmentName, final String categoryName) {
         double total = departmentTotals
                 .getOrDefault(departmentName, Collections.emptyMap())
-                .getOrDefault(categoryName, new Double[]{0.0, 0.0})[0];
-
-        return formatNumber(total);
-    }
-
-    public String getDepartmentTotalForConsumptionReport(final String departmentName) {
-        double total = departmentTotals
-                .getOrDefault(departmentName, Collections.emptyMap())
-                .values()
-                .stream()
-                .mapToDouble(arr -> arr[0])
-                .sum();
-
+                .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[0];
         return formatNumber(total);
     }
 
     public String getCategoryCostTotalForConsumptionReport(final String departmentName, final String categoryName) {
         double total = departmentTotals
                 .getOrDefault(departmentName, Collections.emptyMap())
-                .getOrDefault(categoryName, new Double[]{0.0, 0.0})[1];
+                .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[1];
+        return formatNumber(total);
+    }
 
+    public String getCategoryRetailTotalForConsumptionReport(final String departmentName, final String categoryName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[2];
+        return formatNumber(total);
+    }
+
+    public String getCategoryNetTotalForConsumptionReport(final String departmentName, final String categoryName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[3];
+        return formatNumber(total);
+    }
+
+    // Deprecated - kept for backward compatibility
+    public String getCategoryTotalForConsumptionReport(final String departmentName, final String categoryName) {
+        return getCategoryNetTotalForConsumptionReport(departmentName, categoryName);
+    }
+
+    public String getDepartmentPurchaseTotalForConsumptionReport(final String departmentName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .values()
+                .stream()
+                .mapToDouble(arr -> arr[0])
+                .sum();
         return formatNumber(total);
     }
 
@@ -2851,8 +2911,32 @@ public class PharmacyController implements Serializable {
                 .stream()
                 .mapToDouble(arr -> arr[1])
                 .sum();
-
         return formatNumber(total);
+    }
+
+    public String getDepartmentRetailTotalForConsumptionReport(final String departmentName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .values()
+                .stream()
+                .mapToDouble(arr -> arr[2])
+                .sum();
+        return formatNumber(total);
+    }
+
+    public String getDepartmentNetTotalForConsumptionReport(final String departmentName) {
+        double total = departmentTotals
+                .getOrDefault(departmentName, Collections.emptyMap())
+                .values()
+                .stream()
+                .mapToDouble(arr -> arr[3])
+                .sum();
+        return formatNumber(total);
+    }
+
+    // Deprecated - kept for backward compatibility
+    public String getDepartmentTotalForConsumptionReport(final String departmentName) {
+        return getDepartmentNetTotalForConsumptionReport(departmentName);
     }
 
     private String formatNumber(double value) {
@@ -2864,42 +2948,52 @@ public class PharmacyController implements Serializable {
         departmentSummaries = new ArrayList<>();
         totalSaleValue = 0.0;
         totalCostValue = 0.0;
+        totalRetailValue = 0.0;
+        totalPurchase = 0.0;
 
-        // Main Department -> [Total Value, Total Cost Value]
+        // Main Department -> [Purchase Value, Cost Value, Retail Value, Net Total]
         Map<String, Map<String, Double[]>> departmentTotals = new TreeMap<>();
-        // Pharmacy Department -> [Total Value, Total Cost Value]
+        // Pharmacy Department -> [Purchase Value, Cost Value, Retail Value, Net Total]
         Map<String, Double[]> pharmacyTotals = new TreeMap<>();
 
         for (DepartmentCategoryWiseItems item : list) {
             String mainDepartmentName = item.getMainDepartment().getName();
             String consumptionDepartmentName = item.getConsumptionDepartment().getName();
-            double paidAmount = item.getNetTotal();
-            double costAmount = item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0;
+            double purchaseValue = item.getTotalPurchaseValue() != null ? item.getTotalPurchaseValue() : 0.0;
+            double costValue = item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0;
+            double retailValue = item.getTotalRetailValue() != null ? item.getTotalRetailValue() : 0.0;
+            double netTotal = item.getNetTotal();
 
-            if (paidAmount == 0.0) {
+            if (purchaseValue == 0.0 && netTotal == 0.0) {
                 continue;
             }
 
-            // Store net total at [0] and cost value at [1] for pharmacy totals
+            // Store purchase value at [0], cost value at [1], retail value at [2], net total at [3] for pharmacy totals
             pharmacyTotals.merge(mainDepartmentName,
-                    new Double[]{paidAmount, costAmount},
+                    new Double[]{purchaseValue, costValue, retailValue, netTotal},
                     (existing, newValues) -> new Double[]{
-                        existing[0] + newValues[0], // Sum net totals
-                        existing[1] + newValues[1] // Sum cost values
+                        existing[0] + newValues[0], // Sum purchase values
+                        existing[1] + newValues[1], // Sum cost values
+                        existing[2] + newValues[2], // Sum retail values
+                        existing[3] + newValues[3]  // Sum net totals
                     });
 
-            // Store net total at [0] and cost value at [1] for department totals
+            // Store purchase value at [0], cost value at [1], retail value at [2], net total at [3] for department totals
             departmentTotals
                     .computeIfAbsent(mainDepartmentName, k -> new TreeMap<>())
                     .merge(consumptionDepartmentName,
-                            new Double[]{paidAmount, costAmount},
+                            new Double[]{purchaseValue, costValue, retailValue, netTotal},
                             (existing, newValues) -> new Double[]{
-                                existing[0] + newValues[0], // Sum net totals
-                                existing[1] + newValues[1] // Sum cost values
+                                existing[0] + newValues[0], // Sum purchase values
+                                existing[1] + newValues[1], // Sum cost values
+                                existing[2] + newValues[2], // Sum retail values
+                                existing[3] + newValues[3]  // Sum net totals
                             });
 
-            totalSaleValue += paidAmount;
-            totalCostValue += costAmount;
+            totalPurchase += purchaseValue;
+            totalCostValue += costValue;
+            totalRetailValue += retailValue;
+            totalSaleValue += netTotal;
         }
 
         setPharmacyTotals(pharmacyTotals);

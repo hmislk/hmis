@@ -268,13 +268,13 @@
                                               filterMatchMode="contains">
                                         <h:outputLabel value="#{entry.key}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Purchase Value" style="text-align: right">
-                                        <h:outputLabel value="#{entry.value[1]}">
+                                        <h:outputLabel value="#{entry.value[0]}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Cost Value" style="text-align: right">
                                         <h:outputLabel value="#{entry.value[1]}">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -282,13 +282,13 @@
                                     </p:column>
 
                                     <p:column headerText="Retail Value" style="text-align: right">
-                                        <h:outputLabel value="#{entry.value[1]}">
+                                        <h:outputLabel value="#{entry.value[2]}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Net Total" style="text-align: right">
-                                        <h:outputLabel value="#{entry.value[0]}">
+                                        <h:outputLabel value="#{entry.value[3]}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -302,6 +302,14 @@
                                             <p:column style="text-align: right; font-weight: bold;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel
+                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[0]}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel
                                                         value="#{pharmacyController.pharmacyTotals.get(map.key)[1]}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
@@ -310,7 +318,15 @@
                                             <p:column style="text-align: right; font-weight: bold;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel
-                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[0]}">
+                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[2]}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel
+                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[3]}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
                                                 </f:facet>
@@ -325,7 +341,21 @@
                                             </p:column>
                                             <p:column style="text-align: right; font-weight: bold;">
                                                 <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
                                                     <h:outputLabel value="#{pharmacyController.totalCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalRetailValue}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
                                                 </f:facet>
@@ -749,28 +779,36 @@
                                     <p:columnGroup type="header">
                                         <p:row style="background: #e5e9ec" rendered="#{status.first}">
                                             <p:column headerText="Department Unit"
-                                                      style="font-weight: bold; background: #e5e9ec" colspan="5"/>
+                                                      style="font-weight: bold; background: #e5e9ec" colspan="7"/>
                                         </p:row>
                                         <p:row style="background: #70a4ca">
                                             <p:column headerText="#{map.key}" style="font-weight: bold; background: #70a4ca"
                                                       colspan="3"/>
                                             <p:column
-                                                headerText="#{pharmacyController.getDepartmentCostTotalForConsumptionReport(map.key)}"
-                                                style="font-weight: bold; background: #70a4ca"/>
+                                                headerText="#{pharmacyController.getDepartmentPurchaseTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
                                             <p:column
-                                                headerText="#{pharmacyController.getDepartmentTotalForConsumptionReport(map.key)}"
-                                                style="font-weight: bold; background: #70a4ca"/>
+                                                headerText="#{pharmacyController.getDepartmentCostTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
+                                            <p:column
+                                                headerText="#{pharmacyController.getDepartmentRetailTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
+                                            <p:column
+                                                headerText="#{pharmacyController.getDepartmentNetTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
                                         </p:row>
                                         <p:row>
                                             <p:column headerText="Category" style="font-weight: bold;"/>
                                             <p:column headerText="Issues" style="font-weight: bold;"/>
-                                            <p:column headerText="" style="font-weight: bold;" colspan="2"/>
+                                            <p:column headerText="" style="font-weight: bold;" colspan="4"/>
                                         </p:row>
                                         <p:row>
                                             <p:column headerText="" style="font-weight: bold;"/>
                                             <p:column headerText="Qty" style="font-weight: bold;"/>
+                                            <p:column headerText="Purchase Value" style="font-weight: bold;"/>
                                             <p:column headerText="Cost Value" style="font-weight: bold;"/>
-                                            <p:column headerText="Value" style="font-weight: bold;"/>
+                                            <p:column headerText="Retail Value" style="font-weight: bold;"/>
+                                            <p:column headerText="Net Total" style="font-weight: bold;"/>
                                         </p:row>
                                     </p:columnGroup>
                                     <p:subTable value="#{entry.value}" var="item">
@@ -778,11 +816,17 @@
                                             <p:row>
                                                 <p:column headerText="#{entry.key}" style="font-weight: bold;" colspan="2"/>
                                                 <p:column
-                                                    headerText="#{pharmacyController.getCategoryCostTotalForConsumptionReport(map.key, entry.key)}"
-                                                    style="font-weight: bold;"/>
+                                                    headerText="#{pharmacyController.getCategoryPurchaseTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
                                                 <p:column
-                                                    headerText="#{pharmacyController.getCategoryTotalForConsumptionReport(map.key, entry.key)}"
-                                                    style="font-weight: bold;"/>
+                                                    headerText="#{pharmacyController.getCategoryCostTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
+                                                <p:column
+                                                    headerText="#{pharmacyController.getCategoryRetailTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
+                                                <p:column
+                                                    headerText="#{pharmacyController.getCategoryNetTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
                                             </p:row>
                                         </p:columnGroup>
                                         <p:column headerText="Item Name">
@@ -791,12 +835,22 @@
                                         <p:column headerText="Quantity">
                                             <h:outputText value="#{item.qty}"/>
                                         </p:column>
-                                        <p:column headerText="Cost Value">
+                                        <p:column headerText="Purchase Value" style="text-align: right;">
+                                            <h:outputText value="#{item.totalPurchaseValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Cost Value" style="text-align: right;">
                                             <h:outputText value="#{item.totalCostValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
-                                        <p:column headerText="Value">
+                                        <p:column headerText="Retail Value" style="text-align: right;">
+                                            <h:outputText value="#{item.totalRetailValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Net Total" style="text-align: right;">
                                             <h:outputText value="#{item.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
@@ -809,14 +863,28 @@
                                                     <h:outputLabel value="Total" style="font-weight: bold;"/>
                                                 </f:facet>
                                             </p:column>
-                                            <p:column style="font-weight: bold;">
+                                            <p:column style="font-weight: bold; text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="font-weight: bold; text-align: right;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{pharmacyController.totalCostValue}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
                                                 </f:facet>
                                             </p:column>
-                                            <p:column style="font-weight: bold;">
+                                            <p:column style="font-weight: bold; text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalRetailValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="font-weight: bold; text-align: right;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{pharmacyController.totalSaleValue}">
                                                         <f:convertNumber pattern="#,##0.00"/>
