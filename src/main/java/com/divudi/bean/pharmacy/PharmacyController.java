@@ -2769,10 +2769,10 @@ public class PharmacyController implements Serializable {
         Map<String, DepartmentCategoryWiseItems> aggregatedMap = new HashMap<>();
 
         for (DepartmentCategoryWiseItems item : items) {
-            String key = item.getMainDepartment().getId() + "_"
-                    + item.getConsumptionDepartment().getId() + "_"
-                    + item.getItem().getId() + "_"
-                    + item.getCategory().getId();
+            String key = (item.getMainDepartment() != null ? item.getMainDepartment().getId() : "null") + "_"
+                    + (item.getConsumptionDepartment() != null ? item.getConsumptionDepartment().getId() : "null") + "_"
+                    + (item.getItem() != null ? item.getItem().getId() : "null") + "_"
+                    + (item.getCategory() != null ? item.getCategory().getId() : "null");
 
             DepartmentCategoryWiseItems existing = aggregatedMap.get(key);
             if (existing != null) {
@@ -2813,10 +2813,14 @@ public class PharmacyController implements Serializable {
         Map<String, Map<String, Double[]>> departmentTotals = new TreeMap<>();
 
         for (DepartmentCategoryWiseItems item : list) {
-            String departmentName = item.getConsumptionDepartment().getName();
-            String categoryName = item.getCategory().getName();
+            String departmentName = item.getConsumptionDepartment() != null ? item.getConsumptionDepartment().getName() : null;
+            String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
 
             if (item.getQty() == 0) {
+                continue;
+            }
+
+            if (departmentName == null || departmentName.trim().isEmpty()) {
                 continue;
             }
 
@@ -2957,14 +2961,22 @@ public class PharmacyController implements Serializable {
         Map<String, Double[]> pharmacyTotals = new TreeMap<>();
 
         for (DepartmentCategoryWiseItems item : list) {
-            String mainDepartmentName = item.getMainDepartment().getName();
-            String consumptionDepartmentName = item.getConsumptionDepartment().getName();
+            String mainDepartmentName = item.getMainDepartment() != null ? item.getMainDepartment().getName() : null;
+            String consumptionDepartmentName = item.getConsumptionDepartment() != null ? item.getConsumptionDepartment().getName() : null;
             double purchaseValue = item.getTotalPurchaseValue() != null ? item.getTotalPurchaseValue() : 0.0;
             double costValue = item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0;
             double retailValue = item.getTotalRetailValue() != null ? item.getTotalRetailValue() : 0.0;
             double netTotal = item.getNetTotal();
 
             if (purchaseValue == 0.0 && netTotal == 0.0) {
+                continue;
+            }
+
+            if (mainDepartmentName == null || mainDepartmentName.trim().isEmpty()) {
+                continue;
+            }
+
+            if (consumptionDepartmentName == null || consumptionDepartmentName.trim().isEmpty()) {
                 continue;
             }
 
@@ -3054,7 +3066,7 @@ public class PharmacyController implements Serializable {
 
                     for (DepartmentCategoryWiseItems item : items) {
                         Row dataRow = sheet.createRow(rowIndex++);
-                        dataRow.createCell(0).setCellValue(item.getItem().getName());
+                        dataRow.createCell(0).setCellValue(item.getItem() != null ? item.getItem().getName() : "");
                         dataRow.createCell(1).setCellValue(item.getPurchaseRate());
                         dataRow.createCell(2).setCellValue(item.getQty());
                         dataRow.createCell(3).setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
@@ -3148,7 +3160,7 @@ public class PharmacyController implements Serializable {
                     table.addCell(categoryCell);
 
                     for (DepartmentCategoryWiseItems item : items) {
-                        table.addCell(new PdfPCell(new Phrase(item.getItem().getName(), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getItem() != null ? item.getItem().getName() : "", normalFont)));
                         table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getPurchaseRate()), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQty()), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0), normalFont)));
@@ -4486,6 +4498,9 @@ public class PharmacyController implements Serializable {
                 toDate, null, department, null, bts, rbts);
 
         for (ItemQuantityAndValues v : rs) {
+            if (v.getItem() == null || v.getItem().getId() == null) {
+                continue;
+            }
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
                 if (Math.abs(v.getQuantity()) > 0.0) {
@@ -4502,6 +4517,9 @@ public class PharmacyController implements Serializable {
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, rbts);
         for (ItemQuantityAndValues v : rs) {
+            if (v.getItem() == null || v.getItem().getId() == null) {
+                continue;
+            }
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
                 if (Math.abs(v.getQuantity()) > 0.0) {
@@ -4516,6 +4534,9 @@ public class PharmacyController implements Serializable {
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, rbts);
         for (ItemQuantityAndValues v : rs) {
+            if (v.getItem() == null || v.getItem().getId() == null) {
+                continue;
+            }
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
                 r.setIssueQty(Math.abs(v.getQuantity()));
@@ -4530,6 +4551,9 @@ public class PharmacyController implements Serializable {
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, rbts);
         for (ItemQuantityAndValues v : rs) {
+            if (v.getItem() == null || v.getItem().getId() == null) {
+                continue;
+            }
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
                 if (Math.abs(v.getQuantity()) > 0.0) {
@@ -4544,6 +4568,9 @@ public class PharmacyController implements Serializable {
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, rbts);
         for (ItemQuantityAndValues v : rs) {
+            if (v.getItem() == null || v.getItem().getId() == null) {
+                continue;
+            }
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
                 if (Math.abs(v.getQuantity()) > 0.0) {
@@ -4558,6 +4585,9 @@ public class PharmacyController implements Serializable {
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, null);
         for (ItemQuantityAndValues v : rs) {
+            if (v.getItem() == null || v.getItem().getId() == null) {
+                continue;
+            }
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
                 if (Math.abs(v.getQuantity()) > 0.0) {
@@ -4572,6 +4602,9 @@ public class PharmacyController implements Serializable {
         rs = findPharmacyTrnasactionQuantityAndValues(fromDate,
                 toDate, null, department, null, bts, rbts);
         for (ItemQuantityAndValues v : rs) {
+            if (v.getItem() == null || v.getItem().getId() == null) {
+                continue;
+            }
             ItemTransactionSummeryRow r = m.get(v.getItem().getId());
             if (r != null) {
                 if (Math.abs(v.getQuantity()) > 0.0) {
@@ -6674,9 +6707,16 @@ public class PharmacyController implements Serializable {
                             && billItem.getBill().getReferenceBill().getToDepartment().getName() != null)
                             ? billItem.getBill().getReferenceBill().getToDepartment().getName()
                             : "-");
-                    emptyInnerRow.createCell(5).setCellValue(billItem.getItem().getCategory().getName());
-                    emptyInnerRow.createCell(6).setCellValue(billItem.getItem().getCode());
-                    emptyInnerRow.createCell(7).setCellValue(billItem.getItem().getName());
+                    emptyInnerRow.createCell(5).setCellValue(
+                            (billItem.getItem() != null && billItem.getItem().getCategory() != null
+                            && billItem.getItem().getCategory().getName() != null)
+                            ? billItem.getItem().getCategory().getName() : "-");
+                    emptyInnerRow.createCell(6).setCellValue(
+                            (billItem.getItem() != null && billItem.getItem().getCode() != null)
+                            ? billItem.getItem().getCode() : "-");
+                    emptyInnerRow.createCell(7).setCellValue(
+                            (billItem.getItem() != null && billItem.getItem().getName() != null)
+                            ? billItem.getItem().getName() : "-");
                     emptyInnerRow.createCell(8).setCellValue("-");
                     emptyInnerRow.createCell(9).setCellValue(billItem.getQty());
                     emptyInnerRow.createCell(10).setCellValue(
@@ -6782,12 +6822,12 @@ public class PharmacyController implements Serializable {
                     table.addCell("-");
                     table.addCell("-");
                     table.addCell(billItem.getBill() != null && billItem.getBill().getToDepartment() != null ? billItem.getBill().getToDepartment().getName() : "-");
-                    table.addCell(billItem.getItem().getCategory().getName());
-                    table.addCell(billItem.getItem().getCode());
-                    table.addCell(billItem.getItem().getName());
+                    table.addCell(billItem.getItem() != null && billItem.getItem().getCategory() != null ? billItem.getItem().getCategory().getName() : "-");
+                    table.addCell(billItem.getItem() != null ? billItem.getItem().getCode() : "-");
+                    table.addCell(billItem.getItem() != null ? billItem.getItem().getName() : "-");
                     table.addCell("-");
                     table.addCell(String.valueOf(billItem.getQty()));
-                    table.addCell(billItem.getItem().getMeasurementUnit() != null ? billItem.getItem().getMeasurementUnit().getName() : "-");
+                    table.addCell(billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null ? billItem.getItem().getMeasurementUnit().getName() : "-");
                     table.addCell(String.valueOf(billItem.getPharmaceuticalBillItem().getPurchaseRate()));
                     table.addCell(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
                     table.addCell(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
@@ -8032,13 +8072,13 @@ public class PharmacyController implements Serializable {
             for (BillItem bi : adjustmentItems) {
                 if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
                     Map<String, Object> variance = new HashMap<>();
-                    variance.put("itemName", bi.getItem().getName());
+                    variance.put("itemName", bi.getItem() != null ? bi.getItem().getName() : "");
                     variance.put("batchNo", bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
                     variance.put("expiryDate", bi.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire());
                     variance.put("adjustmentQty", bi.getQty());
                     variance.put("adjustmentDate", bi.getBill().getCreatedAt());
                     variance.put("adjustmentBy", bi.getBill().getCreater() != null ? bi.getBill().getCreater().getName() : "");
-                    variance.put("department", bi.getBill().getDepartment().getName());
+                    variance.put("department", bi.getBill() != null && bi.getBill().getDepartment() != null ? bi.getBill().getDepartment().getName() : "");
                     varianceData.add(variance);
                 }
             }
