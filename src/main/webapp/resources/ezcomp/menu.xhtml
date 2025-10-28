@@ -1077,7 +1077,13 @@
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
                         <p:menuitem ajax="false"
                                     action="#{searchController.navigateToTransferRequestFinalize}"
-                                    value="To Finalize Transfer Requests"
+                                    value="Finalize Requests"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
+                                    icon="fas fa-tasks"></p:menuitem>
+                        <p:menuitem ajax="false"
+                                    action="#{searchController.navigateToTransferRequestFinalize()}"
+                                    value="Approve Requests"
                                     actionListener="#{searchController.makeListNull()}"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                     icon="fas fa-tasks"></p:menuitem>
