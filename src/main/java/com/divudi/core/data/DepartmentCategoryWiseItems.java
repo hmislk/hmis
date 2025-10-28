@@ -22,6 +22,7 @@ public class DepartmentCategoryWiseItems {
      private Double netTotal;
      private Double purchaseRate;
      private Double costRate;
+     private Double totalCostValue;
      private double qty;
      private double paidAmount;
 
@@ -63,6 +64,26 @@ public class DepartmentCategoryWiseItems {
         this.costRate = costRate;
         this.purchaseRate = purchaseRate;
         this.qty = qty;
+    }
+
+    // Constructor for summary reports with aggregated values
+    public DepartmentCategoryWiseItems(
+            Department mainDepartment,
+            Department consumptionDepartment,
+            Item item,
+            Category category,
+            Double purchaseValue,
+            Double costValue,
+            double totalQty,
+            boolean isAggregated  // Dummy parameter to differentiate signature
+    ) {
+        this.mainDepartment = mainDepartment;
+        this.consumptionDepartment = consumptionDepartment;
+        this.item = item;
+        this.category = category;
+        this.netTotal = purchaseValue;
+        this.totalCostValue = costValue;
+        this.qty = totalQty;
     }
 
     public Department getMainDepartment() {
@@ -135,5 +156,13 @@ public class DepartmentCategoryWiseItems {
 
     public void setCostRate(Double costRate) {
         this.costRate = costRate;
+    }
+
+    public Double getTotalCostValue() {
+        return totalCostValue;
+    }
+
+    public void setTotalCostValue(Double totalCostValue) {
+        this.totalCostValue = totalCostValue;
     }
 }

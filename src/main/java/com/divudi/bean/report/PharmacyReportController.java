@@ -2651,9 +2651,15 @@ public class PharmacyReportController implements Serializable {
         for (BillItem item : items) {
             // Simply sum the values from the columns without bill type manipulation
             if (item.getBillItemFinanceDetails() != null) {
-                purchaseValueTotal += item.getBillItemFinanceDetails().getValueAtPurchaseRate();
-                costValueTotal += item.getBillItemFinanceDetails().getValueAtCostRate();
-                retailValueTotal += item.getBillItemFinanceDetails().getValueAtRetailRate();
+                if (item.getBillItemFinanceDetails().getValueAtPurchaseRate() != null) {
+                    purchaseValueTotal += item.getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue();
+                }
+                if (item.getBillItemFinanceDetails().getValueAtCostRate() != null) {
+                    costValueTotal += item.getBillItemFinanceDetails().getValueAtCostRate().doubleValue();
+                }
+                if (item.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
+                    retailValueTotal += item.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
+                }
             }
             netTotal += item.getNetValue();
         }
@@ -3776,7 +3782,7 @@ public class PharmacyReportController implements Serializable {
                 billTypes.add(BillType.PharmacyTransferIssue);
                 billTypes.add(BillType.PharmacyTransferReceive);
                 billTypes.add(BillType.PharmacyStockAdjustmentBill);
-                
+
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
             }
 
@@ -5044,6 +5050,60 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public Map<String, Double> retrievePurchaseAndCostValues(List<BillTypeAtomic> billTypeValue) {
+        try {
+            Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            commonParams.put("ret", false);
+            commonParams.put("billTypes", billTypeValue);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            baseQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrievePurchaseAndCostValues (List<BillTypeAtomic>, List<PaymentMethod>) ===");
+                System.out.println("Bill Types: " + billTypeValue);
+                System.out.println("totals[0] = " + totals[0]);
+                System.out.println("totals[1] = " + totals[1]);
+                System.out.println("totals[2] = " + totals[2]);
+                System.out.println("Query: " + baseQuery.toString());
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
+            }
+            return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
     public void processCostOfGoodSoldReport() {
 
         cogsRows.clear();
@@ -5131,10 +5191,14 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateStockConsumption() {
         try {
-            List<BillType> billTypes = new ArrayList<>();
-            billTypes.add(BillType.PharmacyDisposalIssue);
-            billTypes.add(BillType.PharmacyIssue);
-            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValuesWithSignLogic(" bi.bill.billType ", billTypes);
+//            List<BillType> billTypes = new ArrayList<>();
+//            billTypes.add(BillType.PharmacyDisposalIssue);
+//            billTypes.add(BillType.PharmacyIssue);
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+            btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(btas);
             cogsRows.put("Stock Consumption", stockConsumptions);
 
         } catch (Exception e) {

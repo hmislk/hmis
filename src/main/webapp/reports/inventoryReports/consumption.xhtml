@@ -182,17 +182,17 @@
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              rendered="#{pharmacyController.reportType eq 'byBill'}"
                                              onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="tbl2" oncomplete="restorePaginatorAfterPrint()"/>
+                                <p:printer target="tblListBills" oncomplete="restorePaginatorAfterPrint()"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              rendered="#{pharmacyController.reportType eq 'byBillItem'}"
                                              onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="tbl3" oncomplete="restorePaginatorAfterPrint()"/>
+                                <p:printer target="tblListBillItems" oncomplete="restorePaginatorAfterPrint()"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              rendered="#{pharmacyController.reportType eq 'categoryWise'}"
                                              onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="tbl4" oncomplete="restorePaginatorAfterPrint()"/>
+                                <p:printer target="tblCategory" oncomplete="restorePaginatorAfterPrint()"/>
                             </p:commandButton>
                             <h:outputScript>
                                 function hidePaginatorBeforePrint() {
@@ -217,12 +217,12 @@
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="xlsx" target="tbl2"
+                                <p:dataExporter type="xlsx" target="tblListBills"
                                                 fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                              value="Download" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                                <p:dataExporter type="xlsx" target="tbl3"
+                                <p:dataExporter type="xlsx" target="tblListBillItems"
                                                 fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
@@ -235,12 +235,12 @@
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'byBill'}">
-                                <p:dataExporter type="pdf" target="tbl2"
+                                <p:dataExporter type="pdf" target="tblListBills"
                                                 fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                              rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                                <p:dataExporter type="pdf" target="tbl3"
+                                <p:dataExporter type="pdf" target="tblListBillItems"
                                                 fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
@@ -254,7 +254,7 @@
 
                             <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
                                        varStatus="status">
-                                <p:dataTable id="tbl5" value="#{map.value.entrySet()}" var="entry"
+                                <p:dataTable id="tblSummary" value="#{map.value.entrySet()}" var="entry"
                                              rowIndexVar="n" rowKey="#{entry.key}" rows="10"
                                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
@@ -268,8 +268,20 @@
                                               filterMatchMode="contains">
                                         <h:outputLabel value="#{entry.key}"/>
                                     </p:column>
+                                    
+                                    <p:column headerText="Purchase Value" style="text-align: right">
+                                        <h:outputLabel value="#{entry.value[1]}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Cost Value" style="text-align: right">
+                                        <h:outputLabel value="#{entry.value[1]}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                    <p:column headerText="Cost Value Total" style="text-align: right">
+                                    <p:column headerText="Retail Value" style="text-align: right">
                                         <h:outputLabel value="#{entry.value[1]}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
@@ -333,15 +345,17 @@
 
                         <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBill'}">
                             <h5 class="mt-3">Department unit issue by Bill No</h5>
-                            <p:dataTable id="tbl2" value="#{pharmacyController.pharmacyRows}"
-                                         var="b"
-                                         rowIndexVar="n"
-                                         paginator="true"
-                                         rows="10"
-                                         paginatorPosition="bottom"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                            <p:dataTable 
+                                id="tblListBills" 
+                                value="#{pharmacyController.pharmacyRows}"
+                                var="b"
+                                rowIndexVar="n"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
                                 <p:column
                                     headerText="Bill No"
                                     width="10em"
@@ -432,7 +446,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-1 * pharmacyController.totalPurchase}">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}">
                                             <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -492,16 +506,18 @@
 
                         <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBillItem'}">
                             <h5 class="mt-3"> Department unit issue by Bill Item</h5>
-                            <p:dataTable id="tbl3" value="#{pharmacyController.pharmacyRows}"
-                                         var="i"
-                                         rowIndexVar="n"
-                                         rowKey="#{i.id}"
-                                         paginator="true"
-                                         rows="10"
-                                         paginatorPosition="bottom"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                            <p:dataTable 
+                                id="tblListBillItems"
+                                value="#{pharmacyController.pharmacyRows}"
+                                var="i"
+                                rowIndexVar="n"
+                                rowKey="#{i.id}"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
                                 <p:column headerText="No" width="2em">
                                     <p:outputLabel value="#{n+1}"/>
                                 </p:column>
@@ -640,7 +656,7 @@
                                             <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column
                                     headerText="Retail Rate"
                                     width="6em"
@@ -716,11 +732,13 @@
                             </p:dataTable>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'categoryWise'}" id="tbl4">
+                        <h:panelGroup 
+                            rendered="#{pharmacyController.reportType eq 'categoryWise'}" 
+                            id="tblCategory">
                             <h5 class="mt-3">Category Wise Issue Details by Department</h5>
                             <ui:repeat value="#{pharmacyController.departmentCategoryMap.entrySet()}" var="map"
                                        varStatus="status">
-                                <p:dataTable id="itbl4"
+                                <p:dataTable id="itblCategory"
                                              value="#{map.value.entrySet()}"
                                              var="entry"
                                              rowIndexVar="n"
@@ -746,11 +764,10 @@
                                         <p:row>
                                             <p:column headerText="Category" style="font-weight: bold;"/>
                                             <p:column headerText="Issues" style="font-weight: bold;"/>
-                                            <p:column headerText="" style="font-weight: bold;" colspan="3"/>
+                                            <p:column headerText="" style="font-weight: bold;" colspan="2"/>
                                         </p:row>
                                         <p:row>
                                             <p:column headerText="" style="font-weight: bold;"/>
-                                            <p:column headerText="Rate" style="font-weight: bold;"/>
                                             <p:column headerText="Qty" style="font-weight: bold;"/>
                                             <p:column headerText="Cost Value" style="font-weight: bold;"/>
                                             <p:column headerText="Value" style="font-weight: bold;"/>
@@ -759,7 +776,7 @@
                                     <p:subTable value="#{entry.value}" var="item">
                                         <p:columnGroup type="header">
                                             <p:row>
-                                                <p:column headerText="#{entry.key}" style="font-weight: bold;" colspan="3"/>
+                                                <p:column headerText="#{entry.key}" style="font-weight: bold;" colspan="2"/>
                                                 <p:column
                                                     headerText="#{pharmacyController.getCategoryCostTotalForConsumptionReport(map.key, entry.key)}"
                                                     style="font-weight: bold;"/>
@@ -771,14 +788,11 @@
                                         <p:column headerText="Item Name">
                                             <h:outputText value="#{item.item.name}"/>
                                         </p:column>
-                                        <p:column headerText="Rate">
-                                            <h:outputText value="#{item.purchaseRate}"/>
-                                        </p:column>
                                         <p:column headerText="Quantity">
                                             <h:outputText value="#{item.qty}"/>
                                         </p:column>
                                         <p:column headerText="Cost Value">
-                                            <h:outputText value="#{item.costRate * item.qty}">
+                                            <h:outputText value="#{item.totalCostValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
@@ -790,7 +804,7 @@
                                     </p:subTable>
                                     <p:columnGroup type="footer" rendered="#{status.last}">
                                         <p:row>
-                                            <p:column colspan="3">
+                                            <p:column colspan="2">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="Total" style="font-weight: bold;"/>
                                                 </f:facet>
