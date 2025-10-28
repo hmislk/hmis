@@ -2675,13 +2675,13 @@ public class PharmacyReportController implements Serializable {
                         costValueTotal += costRate * qty;
                     }
 
-                    Double retailRate = item.getPharmaceuticalBillItem().getItemBatch().getRetailRate();
+                    Double retailRate = item.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
                     if (retailRate != null) {
                         retailValueTotal += retailRate * qty;
                     }
                 }
             }
-            netTotal += item.getNetValue() != null ? item.getNetValue() : 0.0;
+            netTotal += item.getNetValue();
         }
     }
 
