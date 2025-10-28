@@ -344,12 +344,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
@@ -374,7 +371,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             }
         } else if (getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(getCurrent().getTotal());
-            System.out.println("this = " + this);
         } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
@@ -382,12 +378,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
