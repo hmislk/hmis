@@ -630,6 +630,110 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Updates historical StockHistory records with missing rate and value data
+     * from their associated ItemBatch records.
+     *
+     * Fills in:
+     * - purchaseRate, retailRate, costRate from ItemBatch
+     * - stockPurchaseValue, stockSaleValue, stockCostValue (calculated from rates * stockQty)
+     *
+     * Only updates these 6 fields; all other attributes remain unchanged.
+     * Uses the date range filter (fromDate/toDate) if provided.
+     */
+    public void updateHistoricalStockData() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            // Build JPQL query to fetch StockHistory records
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE sh.retired = :ret");
+
+            if (fromDate != null) {
+                jpql.append(" AND sh.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND sh.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<StockHistory> stockHistories = stockHistoryFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (stockHistories == null || stockHistories.isEmpty()) {
+                executionFeedback = "No stock history records found for the selected date range.";
+                return;
+            }
+
+            int recordsProcessed = 0;
+            int recordsUpdated = 0;
+            int recordsSkipped = 0;
+
+            for (StockHistory sh : stockHistories) {
+                if (sh == null) {
+                    continue;
+                }
+
+                recordsProcessed++;
+
+                // Get the referenced ItemBatch
+                ItemBatch ib = sh.getItemBatch();
+                if (ib == null) {
+                    recordsSkipped++;
+                    continue;
+                }
+
+                // Fill the rates from ItemBatch
+                sh.setPurchaseRate(ib.getPurcahseRate());  // Note: typo in ItemBatch field name
+                sh.setRetailRate(ib.getRetailsaleRate());
+
+                // Use getter for costRate which handles the 0 case automatically
+                Double costRate = ib.getCostRate();
+                sh.setCostRate(costRate != null ? costRate : 0.0);
+
+                // Calculate and fill the stock values
+                double stockQty = sh.getStockQty();
+                sh.setStockPurchaseValue(sh.getPurchaseRate() * stockQty);
+                sh.setStockSaleValue(sh.getRetailRate() * stockQty);
+                sh.setStockCostValue(sh.getCostRate() * stockQty);
+
+                // Update the StockHistory entity
+                stockHistoryFacade.edit(sh);
+                recordsUpdated++;
+            }
+
+            output.append("Historical Stock Data Update Results:\n");
+            output.append("Total records processed: ").append(recordsProcessed).append("\n");
+            output.append("Records updated: ").append(recordsUpdated).append("\n");
+            output.append("Records skipped (no ItemBatch): ").append(recordsSkipped).append("\n");
+
+            if (fromDate != null || toDate != null) {
+                output.append("\nDate range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+            }
+
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error updating historical stock data: " + e.getMessage();
+            e.printStackTrace();
+        }
+    }
+
     public void addCompletedStateToBills() {
         billController.setOutput("");
 

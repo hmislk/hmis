@@ -225,6 +225,30 @@
                                     </td>
                                 </tr>
 
+                                <tr>
+                                    <td><strong>Update Historical Stock Data</strong></td>
+                                    <td>
+                                        Updates historical StockHistory records with missing rate and value data from their associated ItemBatch records.
+                                        This fixes closing stock reports where old data shows quantities but not values (purchase, cost, retail).
+                                        Fills in: purchaseRate, retailRate, costRate from ItemBatch and calculates stockPurchaseValue, stockSaleValue, stockCostValue.
+                                        Only these 6 fields are updated; all other attributes remain unchanged.
+                                        Use the date range filter above to limit updates to specific periods.
+                                    </td>
+                                    <td>
+                                        <p:commandButton
+                                            id="btnUpdateHistoricalStockData"
+                                            action="#{dataAdministrationController.updateHistoricalStockData()}"
+                                            ajax="false"
+                                            value="Update Historical Stock Data"
+                                            styleClass="ui-button-info m-1"
+                                            icon="pi pi-database"
+                                            rendered="#{webUserController.hasPrivilege('Admin')}"
+                                            onclick="return confirm('This will update historical stock data for the selected period. Proceed?');" />
+                                    </td>
+                                    <td>
+                                        #{dataAdministrationController.executionFeedback}
+                                    </td>
+                                </tr>
 
                                 <tr>
                                     <td><strong>Add Data to Bill Finance Details</strong></td>
