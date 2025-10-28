@@ -82,7 +82,7 @@
                                         <p:commandButton
                                             icon="fas fa-money-bill"
                                             styleClass="ui-button-warning"
-                                            value="Authorize Return"
+                                            value="Approve Return"
                                             title="Authorize and process the return"
                                             action="#{issueReturnController.settleDisposalIssueReturnBill}"
                                             rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and webUserController.hasPrivilege('ApproveDisposalReturn') and not issueReturnController.originalBill.fullReturned}"

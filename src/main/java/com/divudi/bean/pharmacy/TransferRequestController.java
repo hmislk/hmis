@@ -360,7 +360,7 @@ public class TransferRequestController implements Serializable {
         preBillToCreateApprovedBill.setApproveUser(sessionController.getLoggedUser());
         preBillToCreateApprovedBill.setApproveAt(new Date());
         preBillToCreateApprovedBill.setReferenceBill(newApprovedBill);
-        
+
         preBillToCreateApprovedBill.setCompleted(true);
         preBillToCreateApprovedBill.setCompletedAt(new Date());
         preBillToCreateApprovedBill.setCompletedBy(sessionController.getLoggedUser());
@@ -685,29 +685,50 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setCheckeAt(new Date());
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
 
-        getTransferRequestBillPre().setApproveAt(new Date());
-        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
-
+//        getTransferRequestBillPre().setApproveAt(new Date());
+//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
 //        getTransferRequestBillPre().setCompleted(true);
 //        getTransferRequestBillPre().setCompletedAt(new Date());
 //        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
-
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
-        boolean approvalIsNeeded = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transer Request With Approval", false);
-        if (!approvalIsNeeded) {
-            bill = createNewApprovedTransferRequestBill(
-                    getTransferRequestBillPre(),
-                    getTransferRequestBillPre().getBillItems(),
-                    new BilledBill()
-            );
-        } else {
-            bill = getTransferRequestBillPre();
-        }
+        bill = getTransferRequestBillPre();
 
         printPreview = true;
     }
+
+    // Commented out - No longer needed as approval is done via separate approval page
+    // This method was called from pharmacy_transfer_request.xhtml Approve button which has been removed
+//    public void approveTranserRequestPreBill() {
+//        if (errorsPresent()) {
+//            return;
+//        }
+//        saveTransferRequestPreBillAndBillItems();
+//        getTransferRequestBillPre().setEditedAt(new Date());
+//        getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setCheckeAt(new Date());
+//        getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setApproveAt(new Date());
+//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setCompleted(true);
+//        getTransferRequestBillPre().setCompletedAt(new Date());
+//        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
+//
+//        getBillFacade().edit(getTransferRequestBillPre());
+//        JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
+//
+//        bill = createNewApprovedTransferRequestBill(
+//                getTransferRequestBillPre(),
+//                getTransferRequestBillPre().getBillItems(),
+//                new BilledBill()
+//        );
+//
+//        printPreview = true;
+//    }
 
     public String processTransferRequest() {
         if (toDepartment == null) {
