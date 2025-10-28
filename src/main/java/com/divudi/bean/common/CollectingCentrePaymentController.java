@@ -160,6 +160,7 @@ public class CollectingCentrePaymentController implements Serializable {
         
         if(paymentDone > 0.0){
             JsfUtil.addErrorMessage("There is a bill that was taken within this range.");
+            setCurrentCollectingCentre(null);
             return;
         }
         
@@ -317,7 +318,7 @@ public class CollectingCentrePaymentController implements Serializable {
                 + " and ah.agency =:cc "
                 + " and ah.historyType in :types "
                 + " and ah.bill.createdAt between :fromDate and :toDate "
-                + " and ah.paymentDone =:payDone "
+                + " and COALESCE(ah.paymentDone, false) =:payDone"
                 + " and ah.bill.retired = false ";
 
         m.put("payDone", paymentDone);

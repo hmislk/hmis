@@ -3,6 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
+
 package com.divudi.core.entity;
 
 import com.divudi.core.data.HistoryType;
@@ -23,6 +24,7 @@ import javax.persistence.Transient;
  *
  * @author safrin
  */
+
 @Entity
 public class AgentHistory implements Serializable {
 
@@ -49,11 +51,9 @@ public class AgentHistory implements Serializable {
     private double companyBalanceBefore;
     private double companyBalanceAfter;
 
-
     private double agentTransactionValue;
     private double agentBalanceBefore;
     private double agentBalanceAfter;
-
 
     private double staffTrasnactionValue;
 
@@ -70,8 +70,6 @@ public class AgentHistory implements Serializable {
     private Department department;
     @ManyToOne
     private Institution agency;
-
-
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -93,7 +91,7 @@ public class AgentHistory implements Serializable {
     private Date paymentDoneAt;
     @ManyToOne
     private WebUser paymentDoneUser;
-    
+
     public String getReferenceNumber() {
         return referenceNumber;
     }
@@ -243,8 +241,6 @@ public class AgentHistory implements Serializable {
     public void setTransCumilativeTotal(double transCumilativeTotal) {
         this.transCumilativeTotal = transCumilativeTotal;
     }
-
-
 
     @Override
     public int hashCode() {
