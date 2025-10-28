@@ -2660,8 +2660,28 @@ public class PharmacyReportController implements Serializable {
                 if (item.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
                     retailValueTotal += item.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
                 }
+            } else {
+                // Fallback: derive values from PharmaceuticalBillItem -> ItemBatch
+                if (item.getPharmaceuticalBillItem() != null && item.getPharmaceuticalBillItem().getItemBatch() != null) {
+                    double qty = item.getQty();
+
+                    Double purchaseRate = item.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
+                    if (purchaseRate != null) {
+                        purchaseValueTotal += purchaseRate * qty;
+                    }
+
+                    Double costRate = item.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+                    if (costRate != null) {
+                        costValueTotal += costRate * qty;
+                    }
+
+                    Double retailRate = item.getPharmaceuticalBillItem().getItemBatch().getRetailRate();
+                    if (retailRate != null) {
+                        retailValueTotal += retailRate * qty;
+                    }
+                }
             }
-            netTotal += item.getNetValue();
+            netTotal += item.getNetValue() != null ? item.getNetValue() : 0.0;
         }
     }
 
