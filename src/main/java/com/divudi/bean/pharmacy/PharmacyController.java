@@ -2173,9 +2173,9 @@ public class PharmacyController implements Serializable {
                 row.setBill(b);
 
                 // Simply aggregate the values displayed in the columns without manipulation
-                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-                totalCostValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
-                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue() != null ? b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() : 0.0;
+                totalCostValue += b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0;
+                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
 
                 pharmacyRows.add(row);
 
