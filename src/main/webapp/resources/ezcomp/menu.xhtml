@@ -423,22 +423,32 @@
                             actionListener="#{pharmacySaleBhtController.resetAll}">
                         </p:menuitem>
 
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
+                            value="Direct Issue to BHTs"
+                            icon="fa fa-capsules"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            actionListener="#{pharmacySaleBhtController.resetAll()}">
+                        </p:menuitem>
 
-                        <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
-                                    value="Direct Issue to BHTs"
-                                    icon="fa fa-capsules"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
-                                    actionListener="#{pharmacySaleBhtController.resetAll()}"/>
-                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true"
-                                     value="Direct Issue to Theatre Cases"
-                                     icon="fa fa-user-injured"
-                                     actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
-                        <p:menuitem  ajax="false"  action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
-                                     value="BHT Issue Requests"
-                                     icon="fa fa-notes-medical"
-                                     actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" />
+                        <p:menuitem  
+                            ajax="false"  
+                            action="/theater/inward_bill_surgery_issue?faces-redirect=true"
+                            value="Direct Issue to Theatre Cases"
+                            icon="fa fa-user-injured"
+                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
+                        </p:menuitem>
+
+                        <p:menuitem  
+                            ajax="false"  
+                            action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
+                            value="BHT Issue Requests"
+                            icon="fa fa-notes-medical"
+                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
 
                         <p:menuitem
                             ajax="false"
@@ -447,28 +457,59 @@
                             icon="fa fa-search"
                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}">
                         </p:menuitem>
-                        <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}"
-                                     value="Search Inpatient Direct Issues by Bill" icon="fas fa-file-medical" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                     value="Search Inpatient Direct Issues by Item" icon="fas fa-pills" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                    value="Search Inpatient Direct Issue Returns by Bill"
-                                    icon="fas fa-file-invoice"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                    value="Search Inpatient Direct Issue Returns by Item"
-                                    icon="fas fa-pills"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/inward/pharmacy_search_sale_bill_bht?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            value="Search Inpatient Direct Issues by Bill" 
+                            icon="fas fa-file-medical" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
+                        </p:menuitem>
+
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            value="Search Inpatient Direct Issues by Item" 
+                            icon="fas fa-pills" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
+                        </p:menuitem>
+
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            value="Search Inpatient Direct Issue Returns by Bill"
+                            icon="fas fa-file-invoice"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
+                        </p:menuitem>
+
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            value="Search Inpatient Direct Issue Returns by Item"
+                            icon="fas fa-pills"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
+                        </p:menuitem>
 
                     </p:submenu>
 
-                    <p:menuitem  ajax="false"  action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" value="Investigation Trace" icon="fa fa-search"></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" 
+                        value="Investigation Trace" 
+                        icon="fa fa-search">
+                    </p:menuitem>
+
                     <p:menuitem  
                         ajax="false"  
                         action="/inward/inward_reports?faces-redirect=true" 
                         value="Inward Analytics"
                         icon="pi pi-chart-bar" 
-                        rendered="#{webUserController.hasPrivilege('InwardReport')}" ></p:menuitem>
+                        rendered="#{webUserController.hasPrivilege('InwardReport')}" >
+                    </p:menuitem>
 
                 </p:submenu>
 
@@ -585,7 +626,7 @@
                     </p:submenu>
 
                 </p:submenu>
-                
+
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
 
                     <p:submenu
@@ -739,7 +780,7 @@
                         height="28" 
                         src="https://img.icons8.com/external-kmg-design-detailed-outline-kmg-design/64/external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design.png" alt="external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design"/>
                 </p:menuitem>
-                
+
                 <p:menuitem 
                     id="smLabDocDashboard"
                     ajax="false"
@@ -1036,7 +1077,13 @@
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
                         <p:menuitem ajax="false"
                                     action="#{searchController.navigateToTransferRequestFinalize}"
-                                    value="To Finalize Transfer Requests"
+                                    value="Finalize Requests"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
+                                    icon="fas fa-tasks"></p:menuitem>
+                        <p:menuitem ajax="false"
+                                    action="#{searchController.navigateToTransferRequestFinalize()}"
+                                    value="Approve Requests"
                                     actionListener="#{searchController.makeListNull()}"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                     icon="fas fa-tasks"></p:menuitem>
@@ -1503,7 +1550,7 @@
                         icon="pi pi-wallet"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
-                    
+
                     <p:menuitem  
                         ajax="false"
                         value="Request Manager"

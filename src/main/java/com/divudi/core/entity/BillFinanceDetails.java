@@ -97,7 +97,7 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalTaxValue;
 
-    // ------------------ VALUES ------------------
+    // ------------------ STOCK VALUATIONS START------------------
     // Total purchase value for all BillItems (excluding discounts/taxes)
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalPurchaseValue;
@@ -145,6 +145,7 @@ public class BillFinanceDetails implements Serializable {
 
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalAfterAdjustmentValue;
+    // ------------------ STOCK VALUATIONS END------------------
 
     // ------------------ QUANTITIES ------------------
     // Total quantity of all BillItems (excluding free)

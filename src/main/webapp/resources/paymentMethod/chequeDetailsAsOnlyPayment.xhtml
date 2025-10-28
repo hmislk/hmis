@@ -16,20 +16,20 @@
     <cc:implementation>
         <h:panelGrid columns="2" class="w-100" >
             <p:outputLabel for="chequeNo" value="Cheque Number:"/>
-            <p:inputText id="chequeNo" placeholder="Cheque No" value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off">
+            <p:inputText id="chequeNo" placeholder="Cheque No" value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off" required="#{cc.attrs.valueRequired}" requiredMessage="Please enter the cheque number">
                 <p:tooltip value="Enter the cheque number."/>
                 <p:ajax process="@this"/>
             </p:inputText>
 
             <p:outputLabel for="bankSelect" value="Bank:"/>
-            <p:selectOneMenu id="bankSelect" value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: auto; max-width: 200px;" class="form-control" filter="true" filterMatchMode="contains">
+            <p:selectOneMenu id="bankSelect" value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: auto; max-width: 200px;" class="form-control" filter="true" filterMatchMode="contains" required="#{cc.attrs.valueRequired}" requiredMessage="Please select a bank">
                 <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:tooltip value="Select the bank for the cheque."/>
                 <p:ajax process="@this"/>
             </p:selectOneMenu>
             <p:outputLabel for="ChequeDate" value="Cheque Date:"/>
-            <p:calendar id="ChequeDate" placeholder="Cheque Date" value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
+            <p:calendar id="ChequeDate" placeholder="Cheque Date" value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" required="#{cc.attrs.valueRequired}" requiredMessage="Please select the cheque date">
                 <p:tooltip value="Select the date of the cheque."/>
                 <p:ajax process="@this"/>
             </p:calendar>

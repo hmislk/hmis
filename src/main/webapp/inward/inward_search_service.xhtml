@@ -60,6 +60,8 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100"/>
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
                                 <h:outputLabel value="Patient Phone"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class="w-100"/>
                                 <h:outputLabel value="Item Name"/>
@@ -93,7 +95,7 @@
                                         <p:commandLink
                                             value="#{bill.deptId}"
                                             ajax="false"
-                                            action="inward_reprint_bill_service" >
+                                            action="inward_reprint_bill_service?faces-redirect=true" >
                                             <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>

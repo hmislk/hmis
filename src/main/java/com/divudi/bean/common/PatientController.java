@@ -861,6 +861,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setPrintPreview(false);
         admissionController.setAdmittingProcessStarted(false);
         admissionController.setPatientRoom(new PatientRoom());
+        quickSearchPhoneNumber = null;
         return "/inward/inward_admission?faces-redirect=true";
 
     }

@@ -179,7 +179,7 @@
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue returnTotal" listener="#{directPurchaseReturnWorkflowController.onReturnRateChange(ph)}" />
+                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnWorkflowController.onReturnRateChange(ph)}" />
                                         </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
@@ -199,7 +199,7 @@
                                         <p:ajax 
                                             event="keyup" 
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal messages" 
+                                            update="txtLineReturnValue messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{directPurchaseReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
@@ -220,7 +220,7 @@
                                         <p:ajax 
                                             process="@this"
                                             event="blur" 
-                                            update="txtLineReturnValue returnTotal messages @form" 
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId} messages @form" 
                                             listener="#{directPurchaseReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
@@ -239,7 +239,7 @@
                                         <p:ajax
                                             event="blur" 
                                             process="@this" 
-                                            update="txtLineReturnValue returnTotal messages @form"
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId} messages @form"
                                             listener="#{directPurchaseReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
                                     <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
@@ -260,7 +260,7 @@
                                         action="#{directPurchaseReturnWorkflowController.deleteReturnItem(ph)}"
                                         ajax="true"
                                         process="@this"
-                                        update="itemList returnTotal messages"
+                                        update="itemList :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId} messages"
                                         style="padding: 0.2rem 0.4rem;">
                                         <p:confirm header="Confirm Delete" 
                                                    message="Are you sure you want to remove this item from the return?" 

@@ -24,6 +24,8 @@
                                 <p:commandButton
                                     id="btnSettle"
                                     value="Settle"
+                                    onclick="if (!confirm('Are you sure?'))
+                                                return false"
                                     action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
                                     styleClass="ui-button-success"
                                     ajax="false"
@@ -112,9 +114,7 @@
                                             id="txtQty"
                                             class="w-100 m-1 text-end"
                                             autocomplete="off"
-                                            onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
-                                            <!--<f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />-->
                                             <p:ajax
                                                 event="blur"
                                                 process="@this"
@@ -134,7 +134,6 @@
                                             autocomplete="off"
                                             id="txtFreeQty"
                                             class="w-100 m-1 text-end"
-                                            onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.freeQuantity}">
                                             <!--<f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />-->
                                             <p:ajax
@@ -154,7 +153,6 @@
                                         <p:inputText
                                             id="txtPrate"
                                             autocomplete="off"
-                                            onfocus="this.select()"
                                             class="w-100 m-1 text-end"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <p:ajax 

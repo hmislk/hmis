@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
@@ -51,16 +52,23 @@
 
                             <!-- Patient Details and Bill Details Panels -->
                             <div class="row">
-                                <div class="col-3">
+                                <div class="col-4">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <common:patient patient="#{requestController.patient}" class="w-100"/>
+                                        <h:panelGroup rendered="#{requestController.patientEncounter eq null}">
+                                            <common:patient patient="#{requestController.patient}" class="w-100"/>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{requestController.patientEncounter ne null}">
+                                            <in:bhtDetail admission="#{requestController.patientEncounter}"/>
+                                        </h:panelGroup>
+                                        
                                     </p:panel>
                                 </div>
-                                <div class="col-5">
+                                <div class="col-4">
                                     <p:panel class="mb-2" id="payment">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> 

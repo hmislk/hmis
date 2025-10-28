@@ -781,8 +781,9 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getCreditCompany());
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
                     getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getReturnBill().getNetTotal()));
                     getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
@@ -865,14 +866,15 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                         break;
                     case Slip:
                         cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
-                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate() != null ? originalPayment.getPaymentDate() : originalPayment.getRealizedAt());
                         cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getCreditCompany());
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
                         cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
                         cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
@@ -1178,7 +1180,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             }
         }
 
-        return total - multiplePaymentMethodTotalValue;
+        // Use absolute value to handle both sales (positive) and refunds (negative)
+        // For refunds: abs(-12) - 8 = 4 (remaining to refund)
+        // For sales: abs(100) - 80 = 20 (remaining to pay)
+        return Math.abs(total) - multiplePaymentMethodTotalValue;
     }
 
     /**
@@ -1233,6 +1238,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 }
             } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
             }
         }
     }

@@ -405,10 +405,18 @@ public class PaymentService {
         if (p.getBill() == null) {
             return;
         }
-        if (p.getBill().getToStaff() == null) {
+
+        // Get staff from payment first (for multiple payment scenarios)
+        // If not available, get from bill (for single payment scenarios)
+        Staff toStaff = p.getToStaff();
+        if (toStaff == null) {
+            toStaff = p.getBill().getToStaff();
+        }
+
+        if (toStaff == null) {
             return;
         }
-        Staff toStaff = p.getBill().getToStaff();
+
         staffService.updateStaffWelfare(toStaff, p.getPaidValue());
     }
 
@@ -904,19 +912,81 @@ public class PaymentService {
             }
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                if (cd == null || cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
+                    continue;
+                }
+                // Only add the value from the selected payment method for this ComponentDetail
+                switch (cd.getPaymentMethod()) {
+                    case Cash:
+                        if (cd.getPaymentMethodData().getCash() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                        }
+                        break;
+                    case Card:
+                        if (cd.getPaymentMethodData().getCreditCard() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                        }
+                        break;
+                    case Cheque:
+                        if (cd.getPaymentMethodData().getCheque() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                        }
+                        break;
+                    case ewallet:
+                        if (cd.getPaymentMethodData().getEwallet() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                        }
+                        break;
+                    case PatientDeposit:
+                        if (cd.getPaymentMethodData().getPatient_deposit() != null) {
+                            // Only include if patient is selected
+                            if (cd.getPaymentMethodData().getPatient_deposit().getPatient() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            }
+                        }
+                        break;
+                    case Slip:
+                        if (cd.getPaymentMethodData().getSlip() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                        }
+                        break;
+                    case Staff:
+                        if (cd.getPaymentMethodData().getStaffCredit() != null) {
+                            // Only include if staff is selected
+                            if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            }
+                        }
+                        break;
+                    case Staff_Welfare:
+                        if (cd.getPaymentMethodData().getStaffWelfare() != null) {
+                            // Only include if staff is selected
+                            if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            }
+                        }
+                        break;
+                    case Credit:
+                        if (cd.getPaymentMethodData().getCredit() != null) {
+                            // Only include if credit company is selected
+                            if (cd.getPaymentMethodData().getCredit().getInstitution() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            }
+                        }
+                        break;
+                    case OnlineSettlement:
+                        if (cd.getPaymentMethodData().getOnlineSettlement() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total [PaymentService]");
                 return true;
             }
         }

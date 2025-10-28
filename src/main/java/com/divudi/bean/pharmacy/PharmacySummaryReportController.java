@@ -28,6 +28,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.core.data.BillCategory;
 
@@ -134,6 +135,8 @@ public class PharmacySummaryReportController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private StockFacade stockFacade;
+    @EJB
+    private StockHistoryFacade stockHistoryFacade;
     @EJB
     private PatientFacade patientFacade;
     @EJB
@@ -312,6 +315,15 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public String navigateToDailyStockValuesReport() {
+        if(institution==null){
+            institution = sessionController.getInstitution();
+        }
+        if(site==null){
+            site = sessionController.getLoggedSite();
+        }
+        if(department==null){
+            department=sessionController.getDepartment();
+        }
         return "/pharmacy/reports/summary_reports/daily_stock_values_report?faces-redirect=true";
     }
 
@@ -341,20 +353,21 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        Date today = new Date();
-        if (!fromDate.before(today)) {
-            JsfUtil.addErrorMessage("Selected date must be earlier than today");
-            return;
-        }
+        
+//        Report can be generated for today as well
+//        Date today = new Date();
+//        if (!fromDate.before(today)) {
+//            JsfUtil.addErrorMessage("Selected date must be earlier than today");
+//            return;
+//        }
 
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, fromDate);
-        if (openingBalance != null) {
-            dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
-        }
+        // Calculate Opening Stock Value at Retail Rate
+        double openingStockValueAtRetailRate = calculateStockValueAtRetailRate(fromDate, department);
+        dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
         // Calculate toDate as fromDate + 1 day
         Calendar cal = Calendar.getInstance();
@@ -362,26 +375,126 @@ public class PharmacySummaryReportController implements Serializable {
         cal.add(Calendar.DATE, 1);
         toDate = cal.getTime();
 
-        Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
+        Date startOfTheDay = CommonFunctions.getStartOfDay(fromDate);
         Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
 
         PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
-        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
 
-        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
 
-        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
-        HistoricalRecord closingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, toDate);
-        if (closingBalance != null) {
-            dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
-        }
+        // Calculate Closing Stock Value at Retail Rate
+        double closingStockValueAtRetailRate = calculateStockValueAtRetailRate(toDate, department);
+        dailyStockBalanceReport.setClosingStockValue(closingStockValueAtRetailRate);
 //        }, SummaryReports.DAILY_STOCK_BALANCE_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Calculates the stock value at retail rate for a given date and department.
+     * This method queries the StockHistory to find the latest stock quantities
+     * before the specified date and multiplies them by the retail sale rate.
+     *
+     * @param date The date for which to calculate stock value
+     * @param dept The department for which to calculate stock value
+     * @return The total stock value at retail rate, or 0.0 if calculation fails
+     */
+    private double calculateStockValueAtRetailRate(Date date, Department dept) {
+        try {
+            Map<String, Object> params = new HashMap<>();
+            StringBuilder jpql = new StringBuilder();
+
+            // Query to calculate total retail value of stock
+            jpql.append("SELECT SUM(sh.stockQty * COALESCE(sh.itemBatch.retailsaleRate, 0.0)) ")
+                .append("FROM StockHistory sh ")
+                .append("WHERE sh.retired = :ret ")
+                .append("AND sh.id IN (")
+                .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                .append("WHERE sh2.retired = :ret ")
+                .append("AND sh2.createdAt < :et ");
+
+            params.put("ret", false);
+            params.put("et", date);
+
+            // Add department filter to subquery
+            if (dept != null) {
+                jpql.append("AND sh2.department = :dep ");
+                params.put("dep", dept);
+            }
+
+            jpql.append("GROUP BY sh2.department, sh2.itemBatch ")
+                .append("HAVING MAX(sh2.id) IN (")
+                .append("SELECT sh3.id FROM StockHistory sh3 ")
+                .append("WHERE sh3.retired = :ret ");
+
+            // Add department filter to innermost query
+            if (dept != null) {
+                jpql.append("AND sh3.department = :dep2 ");
+                params.put("dep2", dept);
+            }
+
+            jpql.append("AND sh3.createdAt < :et2)) ");
+            params.put("et2", date);
+
+            // Add department filter to main query
+            if (dept != null) {
+                jpql.append("AND sh.department = :dep3 ");
+                params.put("dep3", dept);
+            }
+
+            // Filter to include only items with positive stock quantities
+            jpql.append("AND sh.itemBatch.item.id IN (")
+                .append("SELECT sh4.itemBatch.item.id FROM StockHistory sh4 ")
+                .append("WHERE sh4.retired = :ret ")
+                .append("AND sh4.id IN (")
+                .append("SELECT MAX(sh5.id) FROM StockHistory sh5 ")
+                .append("WHERE sh5.retired = :ret ")
+                .append("AND sh5.createdAt < :et3 ");
+
+            params.put("et3", date);
+
+            // Add department filter to item filtering subqueries
+            if (dept != null) {
+                jpql.append("AND sh5.department = :dep4 ");
+                params.put("dep4", dept);
+            }
+
+            jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
+
+            if (dept != null) {
+                jpql.append("AND sh4.department = :dep5 ");
+                params.put("dep5", dept);
+            }
+
+            jpql.append("GROUP BY sh4.itemBatch.item.id ")
+                .append("HAVING SUM(sh4.stockQty) > 0)");
+
+            // Execute the query
+            List<Object[]> results = stockHistoryFacade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                Object result = results.get(0);
+                // Since we're selecting a single SUM value, it comes as a single Object, not an array
+                if (result instanceof Object[]) {
+                    Object[] resultArray = (Object[]) result;
+                    return resultArray[0] != null ? ((Number) resultArray[0]).doubleValue() : 0.0;
+                } else {
+                    return result != null ? ((Number) result).doubleValue() : 0.0;
+                }
+            } else {
+                return 0.0;
+            }
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock value at retail rate for date: " + date);
+            return 0.0;
+        }
     }
 
     public void listBillTypes() {

@@ -19,18 +19,18 @@
                                     ajax="false" 
                                     icon="fa fa-arrow-left"
                                     value="Back to List"
-                                    action="/opd/opd_batch_bill_print?faces-redirect=true" 
+                                    action="#{requestController.navigateToBackSearchBillList()}"
                                     styleClass="ui-button-warning">
                                 </p:commandButton>
                             </div>
                         </f:facet>
 
-                        <h:panelGroup rendered="#{billController.currentRequest ne null and billController.currentRequest.status eq 'PENDING'}" >
-                            <na:ststus_pending />
+                        <h:panelGroup rendered="#{requestController.currentRequest ne null and requestController.currentRequest.status eq 'PENDING'}" >
+                            <na:status_pending />
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{billController.currentRequest ne null and billController.currentRequest.status eq 'UNDER_REVIEW'}" >
-                            <na:ststus_underReview/>
+                        <h:panelGroup rendered="#{requestController.currentRequest ne null and requestController.currentRequest.status eq 'UNDER_REVIEW'}" >
+                            <na:status_underReview />
                         </h:panelGroup>
 
                     </p:panel>
