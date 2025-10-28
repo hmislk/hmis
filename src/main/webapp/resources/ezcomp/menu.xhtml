@@ -1082,17 +1082,19 @@
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                     icon="fas fa-tasks"></p:menuitem>
                         <p:menuitem ajax="false"
-                                    action="#{searchController.navigateToTransferRequestFinalize()}"
+                                    id="mnuItemNavigateToDisbursementRequestApproval"
+                                    action="#{searchController.navigateToTransferRequestApprove()}"
                                     value="Approve Requests"
                                     actionListener="#{searchController.makeListNull()}"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                     icon="fas fa-tasks"></p:menuitem>
-                        <p:menuitem ajax="false" 
-                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
-                                    value="Approve Requests"
+                        <p:menuitem ajax="false"
+                                    id="mnuItemNavigateToDisbursementRequestApproved"
+                                    action="/pharmacy/pharmacy_transfer_request_list_approved?faces-redirect=true"
+                                    value="Approved Requests"
                                     actionListener="#{searchController.makeListNull()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}"
-                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
+                                    icon="fas fa-check-double"></p:menuitem>
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
                                     value="Issue for Requests" 

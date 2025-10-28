@@ -5950,14 +5950,14 @@ public class SearchController implements Serializable {
                 + " and b.fromDepartment = :fromDep "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
-                + " and b.billType= :bTp";
+                + " and b.billTypeAtomic= :bTp";
 
         sql += " order by b.createdAt desc  ";
         tmp.put("toDate", getToDate());
         tmp.put("fromDate", getFromDate());
         tmp.put("ins", sessionController.getInstitution());
         tmp.put("fromDep", sessionController.getDepartment());
-        tmp.put("bTp", BillType.PharmacyTransferRequest);
+        tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
 
         bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
 
@@ -5968,7 +5968,31 @@ public class SearchController implements Serializable {
         HashMap tmp = new HashMap();
         String sql;
         sql = "Select b From Bill b where "
-                + " (b.completed = false or b.completed is null) "
+                + " b.checkedBy is not null "
+                + " and (b.completed = false or b.completed is null) "
+                + " and b.institution = :ins "
+                + " and b.fromDepartment = :fromDep "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billTypeAtomic= :bTp";
+
+        sql += " order by b.createdAt desc  ";
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("ins", sessionController.getInstitution());
+        tmp.put("fromDep", sessionController.getDepartment());
+        tmp.put("bTp", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+
+    }
+
+    public void fillApprovedPharmacyTransferRequests() {
+        bills = null;
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "Select b From Bill b where "
+                + " b.completed = true "
                 + " and b.institution = :ins "
                 + " and b.fromDepartment = :fromDep "
                 + " and b.createdAt between :fromDate and :toDate "
