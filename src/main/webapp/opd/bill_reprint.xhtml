@@ -119,7 +119,7 @@
                                 </div>
 
                                 <div class="d-flex col-6 justify-content-end m-1">
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Users To Modify Reffering Doctor For Opd Bills')}">
+                                    <h:panelGroup  rendered="#{webUserController.hasPrivilege('EditData')}" >
                                         <p:commandButton 
                                             class="ui-button-info m-1 w-25"
                                             icon="fas fa-pen"

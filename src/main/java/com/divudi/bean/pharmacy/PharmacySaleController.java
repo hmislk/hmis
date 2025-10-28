@@ -2973,18 +2973,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 case Staff:
                     p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
-                    if (paymentMethodData.getStaffCredit().getToStaff() != null) {
-                        staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
-                        JsfUtil.addSuccessMessage("Staff Credit Updated");
-                    }
                     break;
                 case Staff_Welfare:
                     p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
-                    if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
-                        staffBean.updateStaffWelfare(paymentMethodData.getStaffWelfare().getToStaff(), paymentMethodData.getStaffWelfare().getTotalValue());
-                        JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                    }
                     break;
                 case YouOweMe:
                 case MultiplePaymentMethods:
