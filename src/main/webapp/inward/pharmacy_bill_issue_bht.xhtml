@@ -22,7 +22,7 @@
                     <h:outputLabel value="Type Patient Name or BHT : " style="margin-right: 10px"/>
                     <p:autoComplete
                         widgetVar="aPt2" 
-                       id="acPt2"
+                        id="acPt2"
                         forceSelection="true"
                         required="true"
                         requiredMessage="Please select a patient"
@@ -33,14 +33,21 @@
                         itemValue="#{apt2}"
                         size="30"
                         class="mx-2">
-                        <p:column style="padding: 6px;">
+                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{apt2.patient.phn}"/>
+                        </p:column>
+                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
                             <h:outputLabel value="#{apt2.bhtNo}"/>
                         </p:column>
-                        <p:column style="padding: 6px;">
+                        <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
                             <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
                         </p:column>
-                        <p:column style="padding: 6px;">
+                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
                             <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                        </p:column>
+                        <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                            <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
+                            <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
                         </p:column>
                     </p:autoComplete>
 
@@ -266,7 +273,7 @@
                             </p:panel>
 
                             <p:panel header="Bill Items" id="pBis" class="my-1">
-                                
+
                                 <p:dataTable
                                     id="tblBillItem"
                                     value="#{pharmacySaleBhtController.preBill.billItems}"
