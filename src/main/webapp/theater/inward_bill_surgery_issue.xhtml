@@ -27,30 +27,50 @@
                             <h:outputLabel value="Direct Issue of Pharmaceuticals for Surgeries" class="m-2"></h:outputLabel>
                         </f:facet>
                         <h:outputLabel value="Type Surgery Name or BHT : "/>
-                        <p:autoComplete forceSelection="true"
-                                        value="#{pharmacySaleBhtController.batchBill}"
-                                        completeMethod="#{billController.completeSurgeryBills}"
-                                        var="apt2" itemLabel="#{apt2.patientEncounter.bhtNo}"
-                                        itemValue="#{apt2}" size="40" required="true" class="m-2"
-                                        requiredMessage="Please enter patient details" >
+                        <p:autoComplete 
+                            forceSelection="true"
+                            value="#{pharmacySaleBhtController.batchBill}"
+                            completeMethod="#{billController.completeSurgeryBills}"
+                            var="apt2" 
+                            itemLabel="#{apt2.patientEncounter.bhtNo}"
+                            itemValue="#{apt2}" 
+                            size="40" 
+                            required="true" 
+                            class="m-2"
+                            requiredMessage="Please enter patient details" >
+                            
                             <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2"
                                     listener="#{pharmacySaleBhtController.selectSurgeryBillListener()}"/>
-                            <p:column headerText="Surgery Name">
+                            <p:column headerText="Surgery Name" style="padding: 6px; width: 200px;">
                                 <h:outputLabel value="#{apt2.procedure.item.name}"/>
                             </p:column>
-                            <p:column headerText="BHT NO">
-                                <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/>
+                            <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{apt2.patient.phn}"/>
                             </p:column>
-                            <p:column headerText="From Time" >
+                            <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{apt2.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
+                                <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                            <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
+                                <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
+                            </p:column>
+                            <p:column headerText="From Time" style="padding: 6px; width: 16em;">
                                 <h:outputLabel value="#{apt2.procedure.fromTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="To Time" >
+                            <p:column headerText="To Time" style="padding: 6px; width: 16em;">
                                 <h:outputLabel value="#{apt2.procedure.toTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
+
                         </p:autoComplete>
                         <p:commandButton
                             id="btnSelect"
