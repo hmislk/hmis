@@ -539,9 +539,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
-        if (current == null) {
-            current = new Admission();
-        }
+
+        current = new Admission();
         bhtEditController.setCurrent(current);
         bhtEditController.getCurrent().getPatient().setEditingMode(true);
         return bhtEditController.navigateToEditAdmissionDetails();
@@ -909,7 +908,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " or ((c.patient.phn =:phn ))) order by c.bhtNo";
 
             h.put("q", "%" + query.toUpperCase() + "%");
-            h.put("phn",query.toUpperCase());
+            h.put("phn", query.toUpperCase());
             suggestions = getFacade().findByJpql(sql, h, 20);
             System.out.println("sql = " + sql);
             System.out.println("h = " + h);
