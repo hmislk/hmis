@@ -27,30 +27,30 @@
                                 widgetVar="aPt2"  
                                 id="acPt2" 
                                 forceSelection="true" 
-                                            value="#{inwardProfessionalBillController.current.patientEncounter}" 
-                                            completeMethod="#{admissionController.completePatient}"
-                                            var="apt2" 
-                                            itemLabel="#{apt2.bhtNo}"
-                                            itemValue="#{apt2}" 
-                                            size="30"  
-                                            class="mx-2">
-                                
+                                value="#{inwardProfessionalBillController.current.patientEncounter}" 
+                                completeMethod="#{admissionController.completePatient}"
+                                var="apt2" 
+                                itemLabel="#{apt2.bhtNo}"
+                                itemValue="#{apt2}" 
+                                size="30"  
+                                class="mx-2">
+
                                 <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{apt2.patient.phn}"/>
-                                    </p:column>
-                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{apt2.bhtNo}"/>
-                                    </p:column>
-                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
-                                        <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
-                                    </p:column>
-                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
-                                        <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
-                                    </p:column>
+                                    <h:outputLabel value="#{apt2.patient.phn}"/>
+                                </p:column>
+                                <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{apt2.bhtNo}"/>
+                                </p:column>
+                                <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
+                                    <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                    <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
+                                    <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
+                                </p:column>
                             </p:autoComplete>
 
                             <p:commandButton
@@ -212,13 +212,13 @@
                                         </div>
                                         <div class="col-8">
                                             <p:datePicker styleClass="dateTimePicker" 
-                                                        id="feeAt" 
-                                                        value="#{inwardProfessionalBillController.currentBillFee.feeAt}" 
-                                                        size="50"
-                                                        showTime="true"
-                                                        showButtonBar="true"
-                                                        timeInput="true"
-                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                                          id="feeAt" 
+                                                          value="#{inwardProfessionalBillController.currentBillFee.feeAt}" 
+                                                          size="50"
+                                                          showTime="true"
+                                                          showButtonBar="true"
+                                                          timeInput="true"
+                                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                                 <f:ajax event="dateSelect"  render="feeAt"/>
                                             </p:datePicker>
                                         </div>
