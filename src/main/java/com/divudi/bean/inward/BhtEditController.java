@@ -115,7 +115,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private List<ClinicalFindingValue> patientAllergies;
 
     public void addPatientAllergy() {
-        if (currentPatientAllergy == null) {
+        if (currentPatientAllergy == null || currentPatientAllergy.getItemValue() == null) {
+            JsfUtil.addErrorMessage("Please select the allergy drug.");
             return;
         }
         patientAllergies.add(currentPatientAllergy);

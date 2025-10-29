@@ -22,7 +22,7 @@
 
             <p:growl id="msg"/>
             <f:facet name="header">
-               
+
                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                     <!-- Left aligned content -->
                     <h:panelGroup id="headerFacet">
@@ -431,6 +431,7 @@
                 <div>
                     <div class="row">
                         <div class="col-6">
+
                             <p:autoComplete 
                                 id="acAllergy"
                                 placeholder="Search Patient Allergies"
@@ -442,14 +443,16 @@
                                 value="#{cc.attrs.controller.currentPatientAllergy.itemValue}"
                                 inputStyleClass="form-control w-100"
                                 class="w-100"/>
-                            <p:inputText class="my-1 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
+
+                            <p:inputText placeholder="Remark" class="my-1 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
+
                         </div>
                         <div class="col-6">
                             <p:commandButton 
                                 id="btnAddAllergy" 
                                 value="Add" 
                                 process="btnAddAllergy acAllergy txtAllergy" 
-                                update="ptAl txtAllergy acAllergy" 
+                                update="ptAl txtAllergy acAllergy msg" 
                                 action="#{cc.attrs.controller.addPatientAllergy()}"/>
 
                         </div>
