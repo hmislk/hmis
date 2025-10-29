@@ -1249,6 +1249,28 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
 
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No patient Select.");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+
+            List<ClinicalFindingValue> allergyListOfPatient = pharmacyService.getAllergyListForPatient(patientEncounter.getPatient());
+            List<BillItem> billItems = new ArrayList<>();
+            billItems.add(billItem);
+
+            if (allergyListOfPatient != null && !allergyListOfPatient.isEmpty()) {
+                String allergyMsg = pharmacyService.isAllergyForPatient(patientEncounter.getPatient(), billItems, allergyListOfPatient);
+
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+
+        }
+
         // Create a new billItem for the collection to avoid entity state issues
         BillItem newBillItem = new BillItem();
         newBillItem.setItem(billItem.getItem());
