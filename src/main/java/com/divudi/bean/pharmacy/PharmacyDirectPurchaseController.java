@@ -952,17 +952,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 getBillItemFacade().edit(i);
             }
 
-            // CRITICAL: Calculate all item totals before final persistence
-            System.out.println("\n### SETTLE LOOP - Before calculateItemTotals ###");
+            // Items are already correctly calculated with expenses when added to bill
+            // DO NOT recalculate here as it will overwrite the correct totalCostRate
+            System.out.println("\n### SETTLE LOOP - Item Processing ###");
             System.out.println("Item: " + (i.getItem() != null ? i.getItem().getName() : "null"));
-            System.out.println("Current totalCostRate: " + (i.getBillItemFinanceDetails() != null ? i.getBillItemFinanceDetails().getTotalCostRate() : "null"));
+            System.out.println("totalCostRate (includes expenses): " + (i.getBillItemFinanceDetails() != null ? i.getBillItemFinanceDetails().getTotalCostRate() : "null"));
 
-            calculateItemTotals(i);
-
-            System.out.println("### SETTLE LOOP - After calculateItemTotals ###");
-            System.out.println("totalCostRate: " + (i.getBillItemFinanceDetails() != null ? i.getBillItemFinanceDetails().getTotalCostRate() : "null"));
-
-            // Save updated BillItem and PharmaceuticalBillItem with calculated values
+            // Save BillItem with already-calculated values
             getBillItemFacade().edit(i);
 
             saveBillFee(i);
