@@ -73,17 +73,21 @@
                                         class="col-md-12"
                                         inputStyleClass="form-control"
                                         >
-                                        <p:column >
-                                            <h:outputLabel value="#{apt2.bhtNo}"/>
-                                        </p:column>
-                                        <p:column >
-                                            <h:outputLabel value="#{apt2.patient.person.name}"/>
-                                        </p:column>
-                                        <p:column >
+                                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
                                             <h:outputLabel value="#{apt2.patient.phn}"/>
                                         </p:column>
-                                        <p:column>
+                                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                            <h:outputLabel value="#{apt2.bhtNo}"/>
+                                        </p:column>
+                                        <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
+                                            <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
+                                        </p:column>
+                                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
                                             <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                            <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
+                                            <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
                                         </p:column>
                                         <p:ajax event="itemSelect" process="acPt2" />
                                     </p:autoComplete>
@@ -204,171 +208,171 @@
                                             </f:facet>
 
 
-                                        <div class="row mt-1">
-                                            <div class="col-md-8">
-                                                <p:autoComplete
-                                                    class= "w-100"
-                                                    accesskey="i"
-                                                    forceSelection="true"
-                                                    id="acMedicine"
-                                                    value="#{pharmacyRequestForBhtController.billItem.prescription.item}"
-                                                    completeMethod="#{itemController.completeMedicine}"
-                                                    var="i"
-                                                    inputStyleClass="form-control"
-                                                    itemLabel="#{i.name}"
-                                                    itemValue="#{i}"
-                                                    maxResults="10"
-                                                    >
-                                                    <p:ajax event="focus" process="acMedicine" ></p:ajax>
-                                                    <p:ajax event="query" process="acMedicine"></p:ajax>
-                                                    <p:ajax event="itemSelect"
-                                                            listener="#{pharmacyRequestForBhtController.handleMedicineSelect}"
-                                                            update="focusQty doseUnitPanel" ></p:ajax>
-                                                    <p:ajax event="itemSelect"
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty"
-                                                            process="@this txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
-                                                </p:autoComplete>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mt-1">
-                                            <div class="col-md-2">
-                                                <p:outputLabel value="Dose" />
-                                                <p:inputText id="txtDose" value="#{pharmacyRequestForBhtController.billItem.prescription.dose}" class="w-100">
-                                                    <p:ajax event="blur" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
-                                                            update="prescribedTo"
-                                                            process="@this prescribedFrom txtDuration cmbDuration" />
-                                                    <p:ajax event="keyup" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty"
-                                                            process="acMedicine @this doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
-                                                </p:inputText>
+                                            <div class="row mt-1">
+                                                <div class="col-md-8">
+                                                    <p:autoComplete
+                                                        class= "w-100"
+                                                        accesskey="i"
+                                                        forceSelection="true"
+                                                        id="acMedicine"
+                                                        value="#{pharmacyRequestForBhtController.billItem.prescription.item}"
+                                                        completeMethod="#{itemController.completeMedicine}"
+                                                        var="i"
+                                                        inputStyleClass="form-control"
+                                                        itemLabel="#{i.name}"
+                                                        itemValue="#{i}"
+                                                        maxResults="10"
+                                                        >
+                                                        <p:ajax event="focus" process="acMedicine" ></p:ajax>
+                                                        <p:ajax event="query" process="acMedicine"></p:ajax>
+                                                        <p:ajax event="itemSelect"
+                                                                listener="#{pharmacyRequestForBhtController.handleMedicineSelect}"
+                                                                update="focusQty doseUnitPanel" ></p:ajax>
+                                                        <p:ajax event="itemSelect"
+                                                                listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                update="acItem txtQty"
+                                                                process="@this txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                    </p:autoComplete>
+                                                </div>
                                             </div>
 
-                                            <div class="col-md-2">
-                                                <p:outputLabel value="Dose Unit" />
-                                                <h:panelGroup id="doseUnitPanel">
-                                                    <!-- Show label for Amp/Vmp items (no user selection) -->
-                                                    <h:outputText id="lblDose" 
-                                                                 value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit.name}" 
-                                                                 class="form-control d-block"
-                                                                 style="background-color: #f8f9fa; border: 1px solid #ced4da; padding: 0.375rem 0.75rem;"
-                                                                 rendered="#{pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName eq 'Amp' or pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName eq 'Vmp'}" />
-                                                    <!-- Show dropdown for Vtm/Atm items (user can select) -->
-                                                    <p:selectOneMenu id="cmbDose" 
-                                                                    value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit}" 
-                                                                    class="w-100"
-                                                                    rendered="#{pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName ne 'Amp' and pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName ne 'Vmp'}">
+                                            <div class="row mt-1">
+                                                <div class="col-md-2">
+                                                    <p:outputLabel value="Dose" />
+                                                    <p:inputText id="txtDose" value="#{pharmacyRequestForBhtController.billItem.prescription.dose}" class="w-100">
+                                                        <p:ajax event="blur" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
+                                                                update="prescribedTo"
+                                                                process="@this prescribedFrom txtDuration cmbDuration" />
+                                                        <p:ajax event="keyup" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                update="acItem txtQty"
+                                                                process="acMedicine @this doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                    </p:inputText>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <p:outputLabel value="Dose Unit" />
+                                                    <h:panelGroup id="doseUnitPanel">
+                                                        <!-- Show label for Amp/Vmp items (no user selection) -->
+                                                        <h:outputText id="lblDose" 
+                                                                      value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit.name}" 
+                                                                      class="form-control d-block"
+                                                                      style="background-color: #f8f9fa; border: 1px solid #ced4da; padding: 0.375rem 0.75rem;"
+                                                                      rendered="#{pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName eq 'Amp' or pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName eq 'Vmp'}" />
+                                                        <!-- Show dropdown for Vtm/Atm items (user can select) -->
+                                                        <p:selectOneMenu id="cmbDose" 
+                                                                         value="#{pharmacyRequestForBhtController.billItem.prescription.doseUnit}" 
+                                                                         class="w-100"
+                                                                         rendered="#{pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName ne 'Amp' and pharmacyRequestForBhtController.billItem.prescription.item.class.simpleName ne 'Vmp'}">
+                                                            <f:selectItem itemLabel="Select" />
+                                                            <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(pharmacyRequestForBhtController.billItem.prescription.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                            <p:ajax event="change" 
+                                                                    listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                    update="acItem txtQty"
+                                                                    process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                        </p:selectOneMenu>
+                                                    </h:panelGroup>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <p:outputLabel value="Frequency" />
+                                                    <p:selectOneMenu id="cmbFrequency" value="#{pharmacyRequestForBhtController.billItem.prescription.frequencyUnit}" class="w-100">
                                                         <f:selectItem itemLabel="Select" />
-                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(pharmacyRequestForBhtController.billItem.prescription.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                        <f:selectItems value="#{measurementUnitController.frequencyUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                        <p:ajax event="change" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
+                                                                update="prescribedTo"
+                                                                process="@this prescribedFrom txtDuration cmbDuration" />
                                                         <p:ajax event="change" 
                                                                 listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
                                                                 update="acItem txtQty"
-                                                                process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo" />
+                                                                process="acMedicine txtDose doseUnitPanel @this txtDuration cmbDuration prescribedFrom prescribedTo" />
                                                     </p:selectOneMenu>
-                                                </h:panelGroup>
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <p:outputLabel value="Frequency" />
-                                                <p:selectOneMenu id="cmbFrequency" value="#{pharmacyRequestForBhtController.billItem.prescription.frequencyUnit}" class="w-100">
-                                                    <f:selectItem itemLabel="Select" />
-                                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
-                                                    <p:ajax event="change" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
-                                                            update="prescribedTo"
-                                                            process="@this prescribedFrom txtDuration cmbDuration" />
-                                                    <p:ajax event="change" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty"
-                                                            process="acMedicine txtDose doseUnitPanel @this txtDuration cmbDuration prescribedFrom prescribedTo" />
-                                                </p:selectOneMenu>
-                                            </div>
+                                                </div>
 
 
-                                            <div class="col-md-2">
-                                                <p:outputLabel value="Duration" />
-                                                <p:inputText id="txtDuration" value="#{pharmacyRequestForBhtController.billItem.prescription.duration}" class="w-100">
-                                                    <p:ajax event="blur" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
-                                                            update="prescribedTo"
-                                                            process="@this prescribedFrom cmbDuration" />
-                                                    <p:ajax event="keyup" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty"
-                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency @this cmbDuration prescribedFrom prescribedTo" />
-                                                </p:inputText>
+                                                <div class="col-md-2">
+                                                    <p:outputLabel value="Duration" />
+                                                    <p:inputText id="txtDuration" value="#{pharmacyRequestForBhtController.billItem.prescription.duration}" class="w-100">
+                                                        <p:ajax event="blur" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
+                                                                update="prescribedTo"
+                                                                process="@this prescribedFrom cmbDuration" />
+                                                        <p:ajax event="keyup" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                update="acItem txtQty"
+                                                                process="acMedicine txtDose doseUnitPanel cmbFrequency @this cmbDuration prescribedFrom prescribedTo" />
+                                                    </p:inputText>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <p:outputLabel value="Duration Unit" />
+                                                    <p:selectOneMenu id="cmbDuration" value="#{pharmacyRequestForBhtController.billItem.prescription.durationUnit}" class="w-100">
+                                                        <f:selectItem itemLabel="Select" />
+                                                        <f:selectItems value="#{measurementUnitController.durationUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                        <p:ajax event="change" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
+                                                                update="prescribedTo"
+                                                                process="@this prescribedFrom txtDuration" />
+                                                        <p:ajax event="change" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                update="acItem txtQty"
+                                                                process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration @this prescribedFrom prescribedTo" />
+                                                    </p:selectOneMenu>
+                                                </div>
                                             </div>
 
-                                            <div class="col-md-2">
-                                                <p:outputLabel value="Duration Unit" />
-                                                <p:selectOneMenu id="cmbDuration" value="#{pharmacyRequestForBhtController.billItem.prescription.durationUnit}" class="w-100">
-                                                    <f:selectItem itemLabel="Select" />
-                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" />
-                                                    <p:ajax event="change" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateToDateFromDuration}"
-                                                            update="prescribedTo"
-                                                            process="@this prescribedFrom txtDuration" />
-                                                    <p:ajax event="change" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty"
-                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration @this prescribedFrom prescribedTo" />
-                                                </p:selectOneMenu>
+                                            <div class="row mt-1">
+                                                <div class="col-md-3">
+                                                    <p:outputLabel value="Prescribed From" />
+                                                    <p:calendar
+                                                        id="prescribedFrom"
+                                                        value="#{pharmacyRequestForBhtController.billItem.prescription.prescribedFrom}"
+                                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                        class="w-100"
+                                                        inputStyleClass="form-control"
+                                                        >
+                                                        <p:ajax event="dateSelect" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateDurationFromDates}"
+                                                                update="txtDuration prescribedTo"
+                                                                process="@this prescribedTo txtDuration cmbDuration" />
+                                                        <p:ajax event="dateSelect" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                update="acItem txtQty"
+                                                                process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration @this prescribedTo" />
+                                                    </p:calendar>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <p:outputLabel value="Prescribed To" />
+                                                    <p:calendar
+                                                        id="prescribedTo"
+                                                        value="#{pharmacyRequestForBhtController.billItem.prescription.prescribedTo}"
+                                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                                        class="w-100"
+                                                        inputStyleClass="form-control"
+                                                        >
+                                                        <p:ajax event="dateSelect" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateDurationFromDates}"
+                                                                update="txtDuration prescribedFrom"
+                                                                process="@this prescribedFrom txtDuration cmbDuration" />
+                                                        <p:ajax event="dateSelect" 
+                                                                listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
+                                                                update="acItem txtQty"
+                                                                process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom @this" />
+                                                    </p:calendar>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div class="row mt-1">
-                                            <div class="col-md-3">
-                                                <p:outputLabel value="Prescribed From" />
-                                                <p:calendar
-                                                    id="prescribedFrom"
-                                                    value="#{pharmacyRequestForBhtController.billItem.prescription.prescribedFrom}"
-                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                                    class="w-100"
-                                                    inputStyleClass="form-control"
-                                                    >
-                                                    <p:ajax event="dateSelect" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateDurationFromDates}"
-                                                            update="txtDuration prescribedTo"
-                                                            process="@this prescribedTo txtDuration cmbDuration" />
-                                                    <p:ajax event="dateSelect" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty"
-                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration @this prescribedTo" />
-                                                </p:calendar>
+                                            <div class="row mt-1">
+                                                <div class="col-md-12">
+                                                    <p:outputLabel value="Comment" />
+                                                    <p:inputTextarea id="txtComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
+                                                </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <p:outputLabel value="Prescribed To" />
-                                                <p:calendar
-                                                    id="prescribedTo"
-                                                    value="#{pharmacyRequestForBhtController.billItem.prescription.prescribedTo}"
-                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                                    class="w-100"
-                                                    inputStyleClass="form-control"
-                                                    >
-                                                    <p:ajax event="dateSelect" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateDurationFromDates}"
-                                                            update="txtDuration prescribedFrom"
-                                                            process="@this prescribedFrom txtDuration cmbDuration" />
-                                                    <p:ajax event="dateSelect" 
-                                                            listener="#{pharmacyRequestForBhtController.calculateItemAndQuantityFromPrescription}"
-                                                            update="acItem txtQty"
-                                                            process="acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom @this" />
-                                                </p:calendar>
-                                            </div>
-                                        </div>
 
-                                        <div class="row mt-1">
-                                            <div class="col-md-12">
-                                                <p:outputLabel value="Comment" />
-                                                <p:inputTextarea id="txtComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
-                                            </div>
-                                        </div>
-                                        
-                                       
-                                        
+
+
                                         </p:panel>
                                     </h:panelGroup>
 
@@ -549,7 +553,7 @@
 
                         </f:facet>
 
-                       
+
 
                         <h:panelGroup id="gpBillPreview">
                             <ph:pharmacy_bht_issue_request_receipt 
