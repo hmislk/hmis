@@ -1267,6 +1267,7 @@ public class PharmacySaleBhtController implements Serializable {
 
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
+                    clearBillItem();
                     return;
                 }
             }
@@ -1921,6 +1922,7 @@ public class PharmacySaleBhtController implements Serializable {
         editingBillItem = null;
         qty = null;
         stock = null;
+        stockDto = null;
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
