@@ -1715,6 +1715,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 BigDecimal updatedCostRate = BigDecimalUtil.multiply(updatedTotalCostRate, unitsPerPack);
                 f.setCostRate(updatedCostRate);
 
+                // Update valueAtCostRate (totalQtyByUnits × updatedTotalCostRate)
+                BigDecimal updatedValueAtCostRate = BigDecimalUtil.multiply(totalQtyByUnits, updatedTotalCostRate);
+                f.setValueAtCostRate(updatedValueAtCostRate);
+
                 // Also update PharmaceuticalBillItem with the correct costRate
                 if (bi.getPharmaceuticalBillItem() != null) {
                     double oldPbiCostRate = bi.getPharmaceuticalBillItem().getCostRate();
@@ -1735,6 +1739,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
                     System.out.println("unitsPerPack: " + unitsPerPack);
                     System.out.println("New totalCostRate (per unit): " + updatedTotalCostRate);
                     System.out.println("New costRate (per pack/unit): " + updatedCostRate);
+                    System.out.println("New valueAtCostRate: " + updatedValueAtCostRate);
                     System.out.println("New PharmaceuticalBillItem.costRate: " + updatedTotalCostRate.doubleValue());
                     System.out.println("New PharmaceuticalBillItem.costValue: " + updatedCostValue.doubleValue());
                     System.out.println("Distributed Expense: " + distributedExpense);
@@ -1743,6 +1748,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             } else {
                 f.setTotalCostRate(BigDecimal.ZERO);
                 f.setCostRate(BigDecimal.ZERO);
+                f.setValueAtCostRate(BigDecimal.ZERO);
                 if (bi.getPharmaceuticalBillItem() != null) {
                     bi.getPharmaceuticalBillItem().setCostRate(0.0);
                     bi.getPharmaceuticalBillItem().setCostValue(0.0);
