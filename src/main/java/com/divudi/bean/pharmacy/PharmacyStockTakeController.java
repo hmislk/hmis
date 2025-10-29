@@ -12,10 +12,12 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -26,6 +28,8 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.service.pharmacy.StockTakeApprovalService;
 import com.divudi.service.pharmacy.ApprovalProgressTracker;
+import com.divudi.service.pharmacy.StockCountGenerationService;
+import com.divudi.service.pharmacy.StockCountGenerationTracker;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -88,6 +92,10 @@ public class PharmacyStockTakeController implements Serializable {
     @EJB
     private ApprovalProgressTracker approvalProgressTracker;
     @EJB
+    private StockCountGenerationService stockCountGenerationService;
+    @EJB
+    private StockCountGenerationTracker stockCountGenerationTracker;
+    @EJB
     private com.divudi.core.facade.CategoryFacade categoryFacade;
 
     private Bill snapshotBill;
@@ -110,6 +118,13 @@ public class PharmacyStockTakeController implements Serializable {
     private String comments;
     private boolean printPreview;
     private Bill adjustmentBill; // stores the adjustment bill created during approval for printing
+
+    // Configuration for including zero-stock batches in stock count
+    private boolean includeZeroStockBatches;
+    private int zeroStockBatchLimit = 5; // default limit of 5 zero-stock batches per item
+
+    // Stock count generation job tracking
+    private String generationJobId;
 
     /**
      * Generate stock count bill preview without persisting.
@@ -146,18 +161,58 @@ public class PharmacyStockTakeController implements Serializable {
 
         Department dept = department;
 
-        // Fetch stocks
-        String jpql = "select s from Stock s "
+        // Fetch stocks using DTO projection for performance (avoids N+1 queries)
+        String jpql = "select new com.divudi.core.data.dto.StockDTO("
+                + "s.id, ib.id, i.id, "
+                + "c.name, i.name, ib.batchNo, "
+                + "ib.dateOfExpire, s.stock, ib.costRate) "
+                + "from Stock s "
+                + "join s.itemBatch ib "
+                + "join ib.item i "
+                + "left join i.category c "
                 + "where s.department=:d and s.stock>0 "
-                + "order by coalesce(s.itemBatch.item.category.name, '') asc, "
-                + "coalesce(s.itemBatch.item.name, '') asc, "
-                + "coalesce(s.itemBatch.dateOfExpire, current_date) asc";
+                + "order by coalesce(c.name, '') asc, "
+                + "coalesce(i.name, '') asc, "
+                + "coalesce(ib.dateOfExpire, current_date) asc";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
-        List<Stock> stocks = stockFacade.findByJpql(jpql, params);
-        if (stocks == null || stocks.isEmpty()) {
+        @SuppressWarnings("unchecked")
+        List<StockDTO> stockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(jpql, params);
+
+        // Only return early if no stocks AND we're not including zero-stock batches
+        if ((stockDTOs == null || stockDTOs.isEmpty()) && !includeZeroStockBatches) {
             JsfUtil.addErrorMessage("No stock available");
             return null;
+        }
+
+        // Fetch all Stock and ItemBatch entities in bulk with JOIN FETCH for bill item creation
+        // Initialize collections first (will remain empty if no stockDTOs)
+        List<Stock> stocks = new java.util.ArrayList<>();
+        java.util.Map<Long, Stock> stockMap = new java.util.HashMap<>();
+
+        // Only fetch entities if we have stock DTOs with IDs
+        if (stockDTOs != null && !stockDTOs.isEmpty()) {
+            java.util.List<Long> stockIds = stockDTOs.stream()
+                    .map(StockDTO::getStockId)
+                    .collect(java.util.stream.Collectors.toList());
+
+            // Only execute query if we have stock IDs
+            if (!stockIds.isEmpty()) {
+                String entityJpql = "select s from Stock s "
+                        + "join fetch s.itemBatch ib "
+                        + "join fetch ib.item "
+                        + "where s.id in :ids";
+                HashMap<String, Object> entityParams = new HashMap<>();
+                entityParams.put("ids", stockIds);
+                stocks = stockFacade.findByJpql(entityJpql, entityParams);
+
+                // Create map for quick lookup
+                for (Stock s : stocks) {
+                    if (s != null) {
+                        stockMap.put(s.getId(), s);
+                    }
+                }
+            }
         }
 
         // Initialize snapshot bill
@@ -179,36 +234,32 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         double total = 0.0;
-        for (Stock s : stocks) {
-            // Null check for stock
-            if (s == null) {
+        for (StockDTO dto : stockDTOs) {
+            // Null check for DTO
+            if (dto == null || dto.getStockId() == null) {
                 continue;
             }
 
-            // Null check for item batch
+            // Get stock entity from map
+            Stock s = stockMap.get(dto.getStockId());
+            if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
+                LOGGER.log(Level.WARNING, "Stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
+                continue;
+            }
+
             ItemBatch itemBatch = s.getItemBatch();
-            if (itemBatch == null) {
-                LOGGER.log(Level.WARNING, "Stock with null itemBatch found. Stock ID: {0}", s.getId());
-                continue;
-            }
-
-            // Null check for item
-            if (itemBatch.getItem() == null) {
-                LOGGER.log(Level.WARNING, "ItemBatch with null item found. ItemBatch ID: {0}", itemBatch.getId());
-                continue;
-            }
 
             // Create bill item
             BillItem bi = new BillItem();
             bi.setBill(snapshotBill);
             bi.setItem(itemBatch.getItem());
 
-            // Set description safely
-            String itemName = itemBatch.getItem().getName();
+            // Use DTO data (already fetched, no lazy loading)
+            String itemName = dto.getItemName();
             bi.setDescreption(itemName != null ? itemName : "");
 
-            // Set quantity safely
-            Double stockQty = s.getStock();
+            // Set quantity from DTO
+            Double stockQty = dto.getStockQty();
             bi.setQty(stockQty != null ? stockQty : 0.0);
 
             bi.setCreatedAt(new Date());
@@ -225,22 +276,20 @@ public class PharmacyStockTakeController implements Serializable {
             pbi.setQty(stockQty != null ? stockQty : 0.0);
             pbi.setStock(s);
 
-            // Set batch number safely
-            String batchNo = itemBatch.getBatchNo();
+            // Set batch number from DTO
+            String batchNo = dto.getBatchNo();
             if (batchNo != null) {
                 pbi.setStringValue(batchNo);
             }
 
-            // Set cost rate safely
-            Double costRate = itemBatch.getCostRate();
+            // Set cost rate from DTO
+            Double costRate = dto.getCostRate();
             double safeCostRate = (costRate != null) ? costRate : 0.0;
             pbi.setCostRate(safeCostRate);
 
-            // Calculate line value safely
+            // Calculate line value
             double safeQty = (bi.getQty() != null) ? bi.getQty() : 0.0;
-            Double pbiCostRate = pbi.getCostRate();
-            double safePbiCostRate = (pbiCostRate != null) ? pbiCostRate : 0.0;
-            double lineValue = safePbiCostRate * safeQty;
+            double lineValue = safeCostRate * safeQty;
 
             bi.setNetValue(lineValue);
             total += lineValue;
@@ -253,9 +302,217 @@ public class PharmacyStockTakeController implements Serializable {
             snapshotBill.getBillItems().add(bi);
         }
 
+        // Handle zero-stock batches if configured
+        if (includeZeroStockBatches && zeroStockBatchLimit > 0) {
+            // Fetch zero-stock batches using DTO projection, ordered by expiry date descending
+            String zeroStockJpql = "select new com.divudi.core.data.dto.StockDTO("
+                    + "s.id, ib.id, i.id, "
+                    + "c.name, i.name, ib.batchNo, "
+                    + "ib.dateOfExpire, s.stock, ib.costRate) "
+                    + "from Stock s "
+                    + "join s.itemBatch ib "
+                    + "join ib.item i "
+                    + "left join i.category c "
+                    + "where s.department=:d and (s.stock is null or s.stock = 0) "
+                    + "order by coalesce(c.name, '') asc, "
+                    + "coalesce(i.name, '') asc, "
+                    + "coalesce(ib.dateOfExpire, current_date) desc";
+            @SuppressWarnings("unchecked")
+            List<StockDTO> zeroStockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(zeroStockJpql, params);
+
+            if (zeroStockDTOs != null && !zeroStockDTOs.isEmpty()) {
+                // Fetch zero-stock Stock entities in bulk
+                java.util.List<Long> zeroStockIds = zeroStockDTOs.stream()
+                        .map(StockDTO::getStockId)
+                        .collect(java.util.stream.Collectors.toList());
+                String zeroEntityJpql = "select s from Stock s "
+                        + "join fetch s.itemBatch ib "
+                        + "join fetch ib.item "
+                        + "where s.id in :ids";
+                HashMap<String, Object> zeroEntityParams = new HashMap<>();
+                zeroEntityParams.put("ids", zeroStockIds);
+                List<Stock> zeroStocks = stockFacade.findByJpql(zeroEntityJpql, zeroEntityParams);
+
+                // Create map for quick lookup
+                java.util.Map<Long, Stock> zeroStockMap = new java.util.HashMap<>();
+                for (Stock zs : zeroStocks) {
+                    if (zs != null) {
+                        zeroStockMap.put(zs.getId(), zs);
+                    }
+                }
+
+                // Group zero-stock batches by item ID and limit per item
+                java.util.Map<Long, java.util.List<StockDTO>> zeroStocksByItemId = new java.util.LinkedHashMap<>();
+                for (StockDTO dto : zeroStockDTOs) {
+                    if (dto == null || dto.getId() == null) {
+                        continue;
+                    }
+                    Long itemId = dto.getId(); // StockDTO.id holds itemId in our constructor
+                    zeroStocksByItemId.computeIfAbsent(itemId, k -> new java.util.ArrayList<>()).add(dto);
+                }
+
+                // Process zero-stock batches with limit per item
+                for (java.util.List<StockDTO> itemZeroStockDTOs : zeroStocksByItemId.values()) {
+                    int limit = Math.min(zeroStockBatchLimit, itemZeroStockDTOs.size());
+
+                    for (int i = 0; i < limit; i++) {
+                        StockDTO dto = itemZeroStockDTOs.get(i);
+
+                        // Get stock entity from map
+                        Stock zs = zeroStockMap.get(dto.getStockId());
+                        if (zs == null || zs.getItemBatch() == null || zs.getItemBatch().getItem() == null) {
+                            LOGGER.log(Level.WARNING, "Zero-stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
+                            continue;
+                        }
+
+                        ItemBatch itemBatch = zs.getItemBatch();
+
+                        // Create bill item for zero-stock batch
+                        BillItem bi = new BillItem();
+                        bi.setBill(snapshotBill);
+                        bi.setItem(itemBatch.getItem());
+
+                        String itemName = dto.getItemName();
+                        bi.setDescreption(itemName != null ? itemName : "");
+                        bi.setQty(0.0);
+                        bi.setCreatedAt(new Date());
+
+                        if (sessionController.getLoggedUser() != null) {
+                            bi.setCreater(sessionController.getLoggedUser());
+                        }
+
+                        // Create pharmaceutical bill item
+                        PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+                        pbi.setBillItem(bi);
+                        pbi.setItemBatch(itemBatch);
+                        pbi.setQty(0.0);
+                        pbi.setStock(zs);
+
+                        String batchNo = dto.getBatchNo();
+                        if (batchNo != null) {
+                            pbi.setStringValue(batchNo);
+                        }
+
+                        Double costRate = dto.getCostRate();
+                        double safeCostRate = (costRate != null) ? costRate : 0.0;
+                        pbi.setCostRate(safeCostRate);
+
+                        bi.setNetValue(0.0);
+                        bi.setPharmaceuticalBillItem(pbi);
+
+                        if (snapshotBill.getBillItems() == null) {
+                            snapshotBill.setBillItems(new java.util.ArrayList<>());
+                        }
+                        snapshotBill.getBillItems().add(bi);
+                    }
+                }
+            }
+        }
+
         snapshotBill.setNetTotal(total);
         JsfUtil.addSuccessMessage("Preview generated. Please review and settle.");
         return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+    }
+
+    /**
+     * Start async stock count bill generation with progress tracking.
+     * This is the recommended method for large departments to avoid timeouts.
+     */
+    public String generateStockCountBillAsync() {
+        // Check privilege
+        if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
+            return null;
+        }
+
+        // Check department
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return null;
+        }
+
+        // Generate unique job ID
+        generationJobId = "stock-count-" + department.getId() + "-" + System.currentTimeMillis();
+
+        // Initialize progress tracker
+        stockCountGenerationTracker.start(generationJobId, 0, "Starting stock count generation...");
+
+        // Start async generation
+        stockCountGenerationService.generateStockCountBillAsync(
+            generationJobId,
+            department,
+            includeZeroStockBatches,
+            zeroStockBatchLimit,
+            sessionController.getLoggedUser()
+        );
+
+        JsfUtil.addSuccessMessage("Stock count generation started. Please wait...");
+        return "/pharmacy/pharmacy_stock_take_progress?faces-redirect=true";
+    }
+
+    /**
+     * Check progress of async stock count generation.
+     * Called by polling mechanism on progress page.
+     */
+    public void checkGenerationProgress() {
+        // This method is called by p:poll, no action needed
+        // Progress is retrieved via getGenerationProgress()
+    }
+
+    /**
+     * Get current generation progress.
+     * @return Progress object or null if no job in progress
+     */
+    public StockCountGenerationTracker.Progress getGenerationProgress() {
+        if (generationJobId == null) {
+            return null;
+        }
+        return stockCountGenerationTracker.get(generationJobId);
+    }
+
+    /**
+     * Complete the generation process and load the generated bill.
+     * Called when progress indicates completion.
+     */
+    public String completeGeneration() {
+        if (generationJobId == null) {
+            JsfUtil.addErrorMessage("No generation job found");
+            return null;
+        }
+
+        StockCountGenerationTracker.Progress progress = stockCountGenerationTracker.get(generationJobId);
+
+        if (progress == null) {
+            JsfUtil.addErrorMessage("Generation progress not found");
+            return null;
+        }
+
+        if (progress.failed) {
+            JsfUtil.addErrorMessage("Generation failed: " + progress.errorMessage);
+            stockCountGenerationTracker.remove(generationJobId);
+            generationJobId = null;
+            return null;
+        }
+
+        if (!progress.completed) {
+            JsfUtil.addErrorMessage("Generation not yet completed");
+            return null;
+        }
+
+        // Get the in-memory bill (NOT persisted yet - like sync method)
+        snapshotBill = progress.getGeneratedBill();
+
+        if (snapshotBill != null) {
+            JsfUtil.addSuccessMessage("Stock count bill generated successfully with " +
+                snapshotBill.getBillItems().size() + " items");
+            stockCountGenerationTracker.remove(generationJobId);
+            generationJobId = null;
+            // User can now review and click "Record/Settle Stock Count" to persist
+            return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+        }
+
+        JsfUtil.addErrorMessage("Failed to retrieve generated bill");
+        return null;
     }
 
     /**
@@ -1270,8 +1527,8 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Check if there's an ongoing (incomplete) stock taking for the given department.
-     * An ongoing stock taking is one where bill.completed = false.
+     * Check if there's an ongoing (incomplete) stock taking for the given
+     * department. An ongoing stock taking is one where bill.completed = false.
      */
     private boolean hasOngoingStockTaking(Department dept) {
         if (dept == null) {
@@ -1286,8 +1543,8 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Complete/close the current stock taking session.
-     * This marks the snapshot bill as completed.
+     * Complete/close the current stock taking session. This marks the snapshot
+     * bill as completed.
      */
     public void completeStockTaking() {
         LOGGER.log(Level.INFO, "[StockTake] completeStockTaking() called. snapshotBillId={0}",
@@ -2158,9 +2415,35 @@ public class PharmacyStockTakeController implements Serializable {
         this.adjustmentBill = adjustmentBill;
     }
 
+    public boolean isIncludeZeroStockBatches() {
+        return includeZeroStockBatches;
+    }
+
+    public void setIncludeZeroStockBatches(boolean includeZeroStockBatches) {
+        this.includeZeroStockBatches = includeZeroStockBatches;
+    }
+
+    public int getZeroStockBatchLimit() {
+        return zeroStockBatchLimit;
+    }
+
+    public void setZeroStockBatchLimit(int zeroStockBatchLimit) {
+        this.zeroStockBatchLimit = zeroStockBatchLimit;
+    }
+
+    public String getGenerationJobId() {
+        return generationJobId;
+    }
+
+    public void setGenerationJobId(String generationJobId) {
+        this.generationJobId = generationJobId;
+    }
+
     /**
-     * Generate a sanitized filename for variance report Excel export.
-     * Includes the snapshot bill number, sanitized to remove invalid filename characters.
+     * Generate a sanitized filename for variance report Excel export. Includes
+     * the snapshot bill number, sanitized to remove invalid filename
+     * characters.
+     *
      * @return sanitized filename with .xlsx extension
      */
     public String getVarianceExcelFilename() {
@@ -2171,7 +2454,41 @@ public class PharmacyStockTakeController implements Serializable {
         String sanitized = snapshotBill.getDeptId()
                 .replaceAll("[/\\\\:*?\"<>|,.-]", "_")
                 .trim();
-        return "pharmacy_stock_take_variance_" + sanitized ;
+        return "pharmacy_stock_take_variance_" + sanitized;
+    }
+
+    // Navigation methods
+    /**
+     * Navigate to the Start New Stock Taking page
+     *
+     * @return navigation outcome
+     */
+    public String navigateToStartNewStockTaking() {
+        institution = sessionController.getInstitution();
+        site = sessionController.getLoggedSite();
+        department = sessionController.getDepartment();
+        return "/pharmacy/pharmacy_stock_take?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the Manage Stock Takings page
+     *
+     * @return navigation outcome
+     */
+    public String navigateToManageStockTakings() {
+        institution = sessionController.getInstitution();
+        site = sessionController.getLoggedSite();
+        department = sessionController.getDepartment();
+        return "/pharmacy/pharmacy_stock_take_list?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the Pending Physical Count Approvals page
+     *
+     * @return navigation outcome
+     */
+    public String navigateToPendingPhysicalCountApprovals() {
+        return "/pharmacy/pharmacy_physical_count_pending?faces-redirect=true";
     }
 
     // DTO for variance report
