@@ -45,17 +45,21 @@
                             </p:panelGrid>
 
                             <!-- Completion Status -->
-                            <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress.completed}">
-                                <p:messages severity="info">
-                                    <p:message severity="info" summary="Success!"
-                                              detail="Stock count bill generated successfully. Click Continue to proceed."/>
-                                </p:messages>
-                                <p:commandButton
-                                    value="Continue to Review"
-                                    action="#{pharmacyStockTakeController.completeGeneration}"
-                                    ajax="false"
-                                    icon="fa fa-arrow-right"
-                                    styleClass="ui-button-success mt-3"/>
+                            <h:panelGroup id="completionPanel" rendered="#{pharmacyStockTakeController.generationProgress.completed}">
+                                <div class="alert alert-success text-center mb-3">
+                                    <i class="fa fa-check-circle fa-3x text-success mb-2"></i>
+                                    <h4>Stock Count Bill Generated Successfully!</h4>
+                                    <p>Total items processed: #{pharmacyStockTakeController.generationProgress.totalItems}</p>
+                                </div>
+
+                                <div class="text-center">
+                                    <p:commandButton
+                                        value="Continue to Settle &amp; Record Stock Count"
+                                        action="#{pharmacyStockTakeController.completeGeneration}"
+                                        ajax="false"
+                                        icon="fa fa-arrow-right"
+                                        styleClass="ui-button-success ui-button-lg"/>
+                                </div>
                             </h:panelGroup>
 
                             <!-- Failure Status -->

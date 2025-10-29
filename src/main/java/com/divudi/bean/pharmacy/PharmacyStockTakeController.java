@@ -487,19 +487,19 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
-        // Load the generated bill
-        if (progress.billId != null) {
-            snapshotBill = billFacade.find(progress.billId);
-            if (snapshotBill != null) {
-                JsfUtil.addSuccessMessage("Stock count bill generated successfully with " +
-                    snapshotBill.getBillItems().size() + " items");
-                stockCountGenerationTracker.remove(generationJobId);
-                generationJobId = null;
-                return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
-            }
+        // Get the in-memory bill (NOT persisted yet - like sync method)
+        snapshotBill = progress.getGeneratedBill();
+
+        if (snapshotBill != null) {
+            JsfUtil.addSuccessMessage("Stock count bill generated successfully with " +
+                snapshotBill.getBillItems().size() + " items");
+            stockCountGenerationTracker.remove(generationJobId);
+            generationJobId = null;
+            // User can now review and click "Record/Settle Stock Count" to persist
+            return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
         }
 
-        JsfUtil.addErrorMessage("Failed to load generated bill");
+        JsfUtil.addErrorMessage("Failed to retrieve generated bill");
         return null;
     }
 

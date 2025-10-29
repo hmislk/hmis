@@ -6,12 +6,15 @@ import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,6 +25,8 @@ import java.util.logging.Logger;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
  * Async service for generating stock count bills in the background.
@@ -33,6 +38,10 @@ public class StockCountGenerationService {
 
     @EJB
     private StockFacade stockFacade;
+    @EJB
+    private ItemBatchFacade itemBatchFacade;
+    @EJB
+    private ItemFacade itemFacade;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -50,6 +59,7 @@ public class StockCountGenerationService {
      * @param user User who initiated the generation
      */
     @Asynchronous
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void generateStockCountBillAsync(String jobId, Department department,
                                             boolean includeZeroStock, int zeroStockLimit,
                                             WebUser user) {
@@ -59,6 +69,7 @@ public class StockCountGenerationService {
 
             // Step 1: Fetch stock DTOs with optimized query
             progressTracker.updateProgress(jobId, 0, "Fetching stock data...");
+            LOGGER.log(Level.INFO, "[StockCountGen] Updated progress to: Fetching stock data...");
 
             String jpql = "select new com.divudi.core.data.dto.StockDTO("
                     + "s.id, ib.id, i.id, "
@@ -76,44 +87,53 @@ public class StockCountGenerationService {
             HashMap<String, Object> params = new HashMap<>();
             params.put("d", department);
 
+            LOGGER.log(Level.INFO, "[StockCountGen] Executing DTO query...");
+
+            // Give time for log to flush
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
             @SuppressWarnings("unchecked")
             List<StockDTO> stockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(jpql, params);
+            LOGGER.log(Level.INFO, "[StockCountGen] DTO query completed. Found {0} stocks", stockDTOs != null ? stockDTOs.size() : 0);
+
+            // Give time for log to flush
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
 
             if (stockDTOs == null || stockDTOs.isEmpty()) {
+                LOGGER.log(Level.WARNING, "[StockCountGen] No stocks found for department: {0}", department.getName());
                 progressTracker.fail(jobId, "No stock available in the selected department");
                 return;
             }
 
             int totalItems = stockDTOs.size();
             progressTracker.start(jobId, totalItems, "Processing stock items...");
+            LOGGER.log(Level.INFO, "[StockCountGen] Started progress tracking with {0} total items", totalItems);
 
-            // Step 2: Fetch Stock entities in bulk
-            progressTracker.updateProgress(jobId, 0, "Loading stock entities...");
-
-            List<Long> stockIds = new java.util.ArrayList<>();
-            for (StockDTO dto : stockDTOs) {
-                if (dto != null && dto.getStockId() != null) {
-                    stockIds.add(dto.getStockId());
-                }
+            // Give time for progress update to flush
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
 
-            String entityJpql = "select s from Stock s "
-                    + "join fetch s.itemBatch ib "
-                    + "join fetch ib.item "
-                    + "where s.id in :ids";
-            HashMap<String, Object> entityParams = new HashMap<>();
-            entityParams.put("ids", stockIds);
-            List<Stock> stocks = stockFacade.findByJpql(entityJpql, entityParams);
+            // Step 2: Create entity references (proxies) - NO database queries!
+            progressTracker.updateProgress(jobId, 0, "Creating entity references...");
+            LOGGER.log(Level.INFO, "[StockCountGen] Creating entity proxies using getReference()...");
 
-            Map<Long, Stock> stockMap = new HashMap<>();
-            for (Stock s : stocks) {
-                if (s != null) {
-                    stockMap.put(s.getId(), s);
-                }
-            }
+            // No entity fetching needed - we have all data in DTOs!
+            // We only need entity references for JPA relationships
 
             // Step 3: Create snapshot bill
             progressTracker.updateProgress(jobId, 0, "Creating snapshot bill...");
+            LOGGER.log(Level.INFO, "[StockCountGen] Creating snapshot bill...");
 
             Bill snapshotBill = new Bill();
             snapshotBill.setBillType(BillType.PharmacySnapshotBill);
@@ -133,22 +153,19 @@ public class StockCountGenerationService {
             int processed = 0;
 
             for (StockDTO dto : stockDTOs) {
-                if (dto == null || dto.getStockId() == null) {
+                if (dto == null || dto.getStockId() == null || dto.getItemBatchId() == null || dto.getId() == null) {
                     continue;
                 }
 
-                Stock s = stockMap.get(dto.getStockId());
-                if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
-                    LOGGER.log(Level.WARNING, "Stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
-                    continue;
-                }
-
-                ItemBatch itemBatch = s.getItemBatch();
+                // Use getReference() to create proxies - NO database queries!
+                Stock stockProxy = stockFacade.getReference(dto.getStockId());
+                ItemBatch itemBatchProxy = itemBatchFacade.getReference(dto.getItemBatchId());
+                Item itemProxy = itemFacade.getReference(dto.getId());
 
                 // Create bill item
                 BillItem bi = new BillItem();
                 bi.setBill(snapshotBill);
-                bi.setItem(itemBatch.getItem());
+                bi.setItem(itemProxy);  // Use proxy reference
                 bi.setDescreption(dto.getItemName() != null ? dto.getItemName() : "");
                 bi.setQty(dto.getStockQty() != null ? dto.getStockQty() : 0.0);
                 bi.setCreatedAt(new Date());
@@ -157,9 +174,9 @@ public class StockCountGenerationService {
                 // Create pharmaceutical bill item
                 PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                 pbi.setBillItem(bi);
-                pbi.setItemBatch(itemBatch);
+                pbi.setItemBatch(itemBatchProxy);  // Use proxy reference
                 pbi.setQty(dto.getStockQty() != null ? dto.getStockQty() : 0.0);
-                pbi.setStock(s);
+                pbi.setStock(stockProxy);  // Use proxy reference
 
                 if (dto.getBatchNo() != null) {
                     pbi.setStringValue(dto.getBatchNo());
@@ -182,8 +199,17 @@ public class StockCountGenerationService {
                 if (processed % 50 == 0) {
                     progressTracker.updateProgress(jobId, processed,
                         String.format("Processed %d of %d items...", processed, totalItems));
+
+                    // Give time for progress update to flush
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
+
+            LOGGER.log(Level.INFO, "[StockCountGen] Finished processing {0} stock items", processed);
 
             // Step 5: Handle zero-stock batches if configured
             if (includeZeroStock && zeroStockLimit > 0) {
@@ -206,28 +232,7 @@ public class StockCountGenerationService {
                 List<StockDTO> zeroStockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(zeroStockJpql, params);
 
                 if (zeroStockDTOs != null && !zeroStockDTOs.isEmpty()) {
-                    // Fetch zero-stock entities
-                    List<Long> zeroStockIds = new java.util.ArrayList<>();
-                    for (StockDTO dto : zeroStockDTOs) {
-                        if (dto != null && dto.getStockId() != null) {
-                            zeroStockIds.add(dto.getStockId());
-                        }
-                    }
-
-                    String zeroEntityJpql = "select s from Stock s "
-                            + "join fetch s.itemBatch ib "
-                            + "join fetch ib.item "
-                            + "where s.id in :ids";
-                    HashMap<String, Object> zeroEntityParams = new HashMap<>();
-                    zeroEntityParams.put("ids", zeroStockIds);
-                    List<Stock> zeroStocks = stockFacade.findByJpql(zeroEntityJpql, zeroEntityParams);
-
-                    Map<Long, Stock> zeroStockMap = new HashMap<>();
-                    for (Stock zs : zeroStocks) {
-                        if (zs != null) {
-                            zeroStockMap.put(zs.getId(), zs);
-                        }
-                    }
+                    LOGGER.log(Level.INFO, "[StockCountGen] Processing {0} zero-stock items (using proxy references)...", zeroStockDTOs.size());
 
                     // Group by item ID and apply limit
                     Map<Long, List<StockDTO>> zeroStocksByItemId = new java.util.LinkedHashMap<>();
@@ -245,17 +250,19 @@ public class StockCountGenerationService {
 
                         for (int i = 0; i < limit; i++) {
                             StockDTO dto = itemZeroStockDTOs.get(i);
-                            Stock zs = zeroStockMap.get(dto.getStockId());
 
-                            if (zs == null || zs.getItemBatch() == null || zs.getItemBatch().getItem() == null) {
+                            if (dto == null || dto.getStockId() == null || dto.getItemBatchId() == null || dto.getId() == null) {
                                 continue;
                             }
 
-                            ItemBatch itemBatch = zs.getItemBatch();
+                            // Use getReference() to create proxies - NO database queries!
+                            Stock stockProxy = stockFacade.getReference(dto.getStockId());
+                            ItemBatch itemBatchProxy = itemBatchFacade.getReference(dto.getItemBatchId());
+                            Item itemProxy = itemFacade.getReference(dto.getId());
 
                             BillItem bi = new BillItem();
                             bi.setBill(snapshotBill);
-                            bi.setItem(itemBatch.getItem());
+                            bi.setItem(itemProxy);  // Use proxy reference
                             bi.setDescreption(dto.getItemName() != null ? dto.getItemName() : "");
                             bi.setQty(0.0);
                             bi.setCreatedAt(new Date());
@@ -263,9 +270,9 @@ public class StockCountGenerationService {
 
                             PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                             pbi.setBillItem(bi);
-                            pbi.setItemBatch(itemBatch);
+                            pbi.setItemBatch(itemBatchProxy);  // Use proxy reference
                             pbi.setQty(0.0);
-                            pbi.setStock(zs);
+                            pbi.setStock(stockProxy);  // Use proxy reference
 
                             if (dto.getBatchNo() != null) {
                                 pbi.setStringValue(dto.getBatchNo());
@@ -283,21 +290,50 @@ public class StockCountGenerationService {
                 }
             }
 
-            // Step 6: Persist the bill
-            progressTracker.updateProgress(jobId, totalItems, "Saving snapshot bill...");
+            // Step 6: Finalize the bill (NOT persisted yet - user will review and record)
+            progressTracker.updateProgress(jobId, totalItems, "Finalizing snapshot bill...");
+            LOGGER.log(Level.INFO, "[StockCountGen] Finalizing snapshot bill with {0} items...", snapshotBill.getBillItems().size());
+
+            // Give time for progress update to flush
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
 
             snapshotBill.setNetTotal(total);
-            billFacade.create(snapshotBill);
+            // NOTE: Bill is NOT persisted here - stored in memory like sync method
+            // User will review and click "Record/Settle Stock Count" to persist
 
-            // Step 7: Complete
-            progressTracker.complete(jobId, snapshotBill.getId());
+            LOGGER.log(Level.INFO, "[StockCountGen] Bill generated successfully in memory (not persisted yet). Items: {0}", snapshotBill.getBillItems().size());
 
-            LOGGER.log(Level.INFO, "[StockCountGen] Completed successfully. JobId: {0}, BillId: {1}, Items: {2}",
-                      new Object[]{jobId, snapshotBill.getId(), snapshotBill.getBillItems().size()});
+            // Give time for log to flush
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // Step 7: Complete - pass the in-memory bill to tracker
+            progressTracker.complete(jobId, snapshotBill);
+
+            LOGGER.log(Level.INFO, "[StockCountGen] Completed successfully. JobId: {0}, Items: {1}",
+                      new Object[]{jobId, snapshotBill.getBillItems().size()});
+
+            // Final sleep to ensure completion is visible
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[StockCountGen] Failed. JobId: " + jobId, e);
-            progressTracker.fail(jobId, "Error: " + e.getMessage());
+            String errorMsg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            LOGGER.log(Level.SEVERE, "[StockCountGen] Failed. JobId: " + jobId + ", Error: " + errorMsg, e);
+            progressTracker.fail(jobId, "Error: " + errorMsg);
+
+            // Print stack trace to help debugging
+            e.printStackTrace();
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.divudi.service.pharmacy;
 
+import com.divudi.core.entity.Bill;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +25,49 @@ public class StockCountGenerationTracker implements Serializable {
         public String errorMessage;
         public Date startedAt;
         public Date finishedAt;
-        public Long billId; // ID of the generated snapshot bill
+        public Long billId; // ID of the generated snapshot bill (deprecated - not used)
+        public Bill generatedBill; // The in-memory bill (NOT persisted yet - like sync method)
+
+        // Getters required for JSF EL
+        public int getTotalItems() {
+            return totalItems;
+        }
+
+        public int getProcessedItems() {
+            return processedItems;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public boolean isCompleted() {
+            return completed;
+        }
+
+        public boolean isFailed() {
+            return failed;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public Date getStartedAt() {
+            return startedAt;
+        }
+
+        public Date getFinishedAt() {
+            return finishedAt;
+        }
+
+        public Long getBillId() {
+            return billId;
+        }
+
+        public Bill getGeneratedBill() {
+            return generatedBill;
+        }
     }
 
     private final ConcurrentHashMap<String, Progress> jobs = new ConcurrentHashMap<>();
@@ -49,12 +92,12 @@ public class StockCountGenerationTracker implements Serializable {
         }
     }
 
-    public void complete(String jobId, Long billId) {
+    public void complete(String jobId, Bill generatedBill) {
         Progress p = jobs.get(jobId);
         if (p == null) return;
         p.completed = true;
         p.finishedAt = new Date();
-        p.billId = billId;
+        p.generatedBill = generatedBill; // Store the in-memory bill (NOT persisted)
         p.status = "Stock count bill generated successfully";
     }
 
