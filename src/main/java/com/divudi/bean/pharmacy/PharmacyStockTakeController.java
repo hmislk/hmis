@@ -178,28 +178,40 @@ public class PharmacyStockTakeController implements Serializable {
         params.put("d", dept);
         @SuppressWarnings("unchecked")
         List<StockDTO> stockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(jpql, params);
-        if (stockDTOs == null || stockDTOs.isEmpty()) {
+
+        // Only return early if no stocks AND we're not including zero-stock batches
+        if ((stockDTOs == null || stockDTOs.isEmpty()) && !includeZeroStockBatches) {
             JsfUtil.addErrorMessage("No stock available");
             return null;
         }
 
         // Fetch all Stock and ItemBatch entities in bulk with JOIN FETCH for bill item creation
-        java.util.List<Long> stockIds = stockDTOs.stream()
-                .map(StockDTO::getStockId)
-                .collect(java.util.stream.Collectors.toList());
-        String entityJpql = "select s from Stock s "
-                + "join fetch s.itemBatch ib "
-                + "join fetch ib.item "
-                + "where s.id in :ids";
-        HashMap<String, Object> entityParams = new HashMap<>();
-        entityParams.put("ids", stockIds);
-        List<Stock> stocks = stockFacade.findByJpql(entityJpql, entityParams);
-
-        // Create map for quick lookup
+        // Initialize collections first (will remain empty if no stockDTOs)
+        List<Stock> stocks = new java.util.ArrayList<>();
         java.util.Map<Long, Stock> stockMap = new java.util.HashMap<>();
-        for (Stock s : stocks) {
-            if (s != null) {
-                stockMap.put(s.getId(), s);
+
+        // Only fetch entities if we have stock DTOs with IDs
+        if (stockDTOs != null && !stockDTOs.isEmpty()) {
+            java.util.List<Long> stockIds = stockDTOs.stream()
+                    .map(StockDTO::getStockId)
+                    .collect(java.util.stream.Collectors.toList());
+
+            // Only execute query if we have stock IDs
+            if (!stockIds.isEmpty()) {
+                String entityJpql = "select s from Stock s "
+                        + "join fetch s.itemBatch ib "
+                        + "join fetch ib.item "
+                        + "where s.id in :ids";
+                HashMap<String, Object> entityParams = new HashMap<>();
+                entityParams.put("ids", stockIds);
+                stocks = stockFacade.findByJpql(entityJpql, entityParams);
+
+                // Create map for quick lookup
+                for (Stock s : stocks) {
+                    if (s != null) {
+                        stockMap.put(s.getId(), s);
+                    }
+                }
             }
         }
 
