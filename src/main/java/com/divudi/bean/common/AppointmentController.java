@@ -206,7 +206,23 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         Date startTime = new Date();
         Date fromDate = new Date();
         Date toDate = new Date();
+        
         if (errorCheck()) {
+            return;
+        }
+        
+        if(reservation == null || reservation.getRoom() == null){
+            JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
+            return;
+        }
+        
+        if(reservation.getReservedFrom() == null){
+            JsfUtil.addErrorMessage("Please select a Reservation date for the appoiment.");
+            return;
+        }
+        
+        if(!reservation.getReservedFrom().after(new Date())){
+            JsfUtil.addErrorMessage("Please select a valid Reservation date today onwards.");
             return;
         }
 
@@ -312,6 +328,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         //}
         if (getCurrentBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please Select a Payment Method");
             return true;
         }
 
