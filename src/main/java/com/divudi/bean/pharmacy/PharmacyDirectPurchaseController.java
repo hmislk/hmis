@@ -1673,6 +1673,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setNetTotal(finalNetTotal);
             f.setTotalCost(finalNetTotal);
 
+            // Recalculate totalCostRate to include distributed bill-level expenses
+            // This ensures that ItemBatch gets the correct cost rate when settled
+            BigDecimal totalQtyByUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
+            if (totalQtyByUnits.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal updatedTotalCostRate = finalNetTotal.divide(totalQtyByUnits, 6, RoundingMode.HALF_UP);
+                f.setTotalCostRate(updatedTotalCostRate);
+            } else {
+                f.setTotalCostRate(BigDecimal.ZERO);
+            }
+
             // Calculate bill cost (the additional cost from bill-level adjustments)
             BigDecimal lineNetTotal = BigDecimalUtil.valueOrZero(f.getLineNetTotal());
             BigDecimal billCost = finalNetTotal.subtract(lineNetTotal);
