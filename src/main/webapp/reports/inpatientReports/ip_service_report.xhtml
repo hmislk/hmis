@@ -45,16 +45,16 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="Report Type" class="m-3">
+                                <p:outputLabel value="Report Type" for="reportType" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="reportType"
-                                value="#"
+                                value="#{reportController.reportType}"
                                 required="true"
                                 class="w-100 ">
-                                <f:selectItem itemLabel="Detail" itemValue="detailReport"/>
-                                <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
+                                <f:selectItem itemLabel="Detail" itemValue="detail"/>
+                                <f:selectItem itemLabel="Summary" itemValue="summery"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -232,6 +232,7 @@
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     rendered="#{searchController.category eq null}"
+                                    value="#{searchController.item}"
                                     completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
                                     var="acitem"
                                     itemLabel="#{acitem.name}"
@@ -239,8 +240,9 @@
                                 </p:autoComplete>
                                 <p:selectOneMenu
                                     rendered="#{searchController.category ne null}" 
-                                    class="w-100">
-                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    class="w-100"
+                                    value="#{searchController.item}">
+                                    <f:selectItem itemLabel="Select" itemValue="#{null}" noSelectionOption="true"/>
                                     <f:selectItems 
                                         value="#{itemController.getItems(searchController.category)}" 
                                         var="item"
@@ -261,7 +263,7 @@
                                 action="#">
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button- mx-1"
+                            <p:commandButton class="ui-button-secondary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
                                              value="Print All">
@@ -270,7 +272,7 @@
 
                             <p:commandButton
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="itemWise" fileName="Item Wise Report"/>
+                                <p:dataExporter type="xlsx" target="detailWise" fileName="Inpatient_Service_Detail.xlsx"/>
                             </p:commandButton>
 
                             <p:commandButton
