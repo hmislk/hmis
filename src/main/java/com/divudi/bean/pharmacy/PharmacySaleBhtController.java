@@ -1241,6 +1241,38 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void addBillItem() {
+        
+        if (getPreBill() == null) {
+            JsfUtil.addErrorMessage("No Prebill");
+            return;
+        }
+        if (getBillItem() == null) {
+            JsfUtil.addErrorMessage("No Bill Item");
+            return;
+        }
+        if (getBillItem().getPharmaceuticalBillItem() == null) {
+            JsfUtil.addErrorMessage("No Pharmaceutical Bill Item");
+            return;
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+
+            List<ClinicalFindingValue> allergyListOfPatient = pharmacyService.getAllergyListForPatient(patientEncounter.getPatient());
+            List<BillItem> billItems = new ArrayList<>();
+            billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+            billItems.add(billItem);
+
+            if (allergyListOfPatient != null && !allergyListOfPatient.isEmpty()) {
+                String allergyMsg = pharmacyService.isAllergyForPatient(patientEncounter.getPatient(), billItems, allergyListOfPatient);
+
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+
+        }
+        
         if (getStock() == null) {
             JsfUtil.addErrorMessage("No Stock");
             return;
@@ -1267,18 +1299,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
             return;
         }
-        if (getPreBill() == null) {
-            JsfUtil.addErrorMessage("No Prebill");
-            return;
-        }
-        if (getBillItem() == null) {
-            JsfUtil.addErrorMessage("No Bill Item");
-            return;
-        }
-        if (getBillItem().getPharmaceuticalBillItem() == null) {
-            JsfUtil.addErrorMessage("No Pharmaceutical Bill Item");
-            return;
-        }
+        
 
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
