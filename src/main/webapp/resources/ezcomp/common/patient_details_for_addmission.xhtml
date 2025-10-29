@@ -390,15 +390,15 @@
 
                             <h:outputLabel value="Email " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.email}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.email ? 'N/A' : cc.attrs.controller.patient.person.email}" />
 
                             <h:outputLabel value="National ID No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nic}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.nic ? 'N/A' : cc.attrs.controller.patient.person.nic}" />
 
                             <h:outputLabel value="Address " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.address ? 'N/A' : cc.attrs.controller.patient.person.address}" />
 
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
@@ -406,19 +406,19 @@
 
                             <h:outputLabel value="Religion " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.religion.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.religion.name ? 'N/A' : cc.attrs.controller.patient.person.religion.name}" />
 
                             <h:outputLabel value="Occupation " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.occupation.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.occupation.name ? 'N/A' : cc.attrs.controller.patient.person.occupation.name}" />
 
                             <h:outputLabel value="Civil Status " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.civilStatus.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.civilStatus.name ? 'N/A' : cc.attrs.controller.patient.person.civilStatus.name}" />
 
                             <h:outputLabel value="Blood Group" class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.bloodGroup.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.bloodGroup.name ? 'N/A' : cc.attrs.controller.patient.person.bloodGroup.name}" />
 
 
                         </h:panelGrid>
