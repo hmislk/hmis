@@ -895,6 +895,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //        return suggestions;
 //    }
     public List<Admission> completePatientDishcargedNotFinalized(String query) {
+        System.out.println("completePatientDishcargedNotFinalized");
         List<Admission> suggestions;
         String sql;
         HashMap h = new HashMap();
@@ -903,12 +904,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         } else {
             sql = "select c from Admission c where c.retired=false and "
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
-                    + " and ( ((c.bhtNo) like :q )or ((c.patient.person.name)"
-                    + " like :q) ) order by c.bhtNo";
-            ////// // System.out.println(sql);
-            //      h.put("btp", BillType.InwardPaymentBill);
+                    + " and ( ((c.bhtNo) like :q )"
+                    + " or ((c.patient.person.name) like :q ) "
+                    + " or ((c.patient.phn =:phn ))) order by c.bhtNo";
+
             h.put("q", "%" + query.toUpperCase() + "%");
+            h.put("phn",query.toUpperCase());
             suggestions = getFacade().findByJpql(sql, h, 20);
+            System.out.println("sql = " + sql);
+            System.out.println("h = " + h);
+            System.out.println("suggestions = " + suggestions);
         }
         return suggestions;
     }

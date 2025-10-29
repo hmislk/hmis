@@ -298,12 +298,21 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public List<Admission> completePatient(String query) {
         List<Admission> suggestions;
         String sql;
+        HashMap h = new HashMap();
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Admission c where c.retired=false and c.discharged=false and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
+            sql = "select c from Admission c "
+                    + " where c.retired=false "
+                    + " and c.discharged=false "
+                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' "
+                    + " or (c.patient.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " or (c.patient.phn) =:q )"
+                    + " order by c.bhtNo";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            
+            h.put("q",  query.toUpperCase());
+            suggestions = getFacade().findByJpql(sql,h,20);
         }
         return suggestions;
     }
@@ -393,6 +402,18 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void saveCurrent() {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("No admission record to save");
+            return;
+        }
+        
+        if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            if (!getCurrent().isClaimable()) {
+                JsfUtil.addErrorMessage("Please mark as Claimable");
+                return;
+
+            }
+        }
         // Apply patient name capitalization based on configuration settings
         patientController.applyPatientNameCapitalization(getCurrent().getPatient());
 
