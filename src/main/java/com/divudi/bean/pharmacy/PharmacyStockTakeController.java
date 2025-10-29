@@ -12,10 +12,12 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -150,18 +152,45 @@ public class PharmacyStockTakeController implements Serializable {
 
         Department dept = department;
 
-        // Fetch stocks
-        String jpql = "select s from Stock s "
+        // Fetch stocks using DTO projection for performance (avoids N+1 queries)
+        String jpql = "select new com.divudi.core.data.dto.StockDTO("
+                + "s.id, ib.id, i.id, "
+                + "c.name, i.name, ib.batchNo, "
+                + "ib.dateOfExpire, s.stock, ib.costRate) "
+                + "from Stock s "
+                + "join s.itemBatch ib "
+                + "join ib.item i "
+                + "left join i.category c "
                 + "where s.department=:d and s.stock>0 "
-                + "order by coalesce(s.itemBatch.item.category.name, '') asc, "
-                + "coalesce(s.itemBatch.item.name, '') asc, "
-                + "coalesce(s.itemBatch.dateOfExpire, current_date) asc";
+                + "order by coalesce(c.name, '') asc, "
+                + "coalesce(i.name, '') asc, "
+                + "coalesce(ib.dateOfExpire, current_date) asc";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
-        List<Stock> stocks = stockFacade.findByJpql(jpql, params);
-        if (stocks == null || stocks.isEmpty()) {
+        List<StockDTO> stockDTOs = stockFacade.findByJpql(jpql, params);
+        if (stockDTOs == null || stockDTOs.isEmpty()) {
             JsfUtil.addErrorMessage("No stock available");
             return null;
+        }
+
+        // Fetch all Stock and ItemBatch entities in bulk with JOIN FETCH for bill item creation
+        java.util.List<Long> stockIds = stockDTOs.stream()
+                .map(StockDTO::getStockId)
+                .collect(java.util.stream.Collectors.toList());
+        String entityJpql = "select s from Stock s "
+                + "join fetch s.itemBatch ib "
+                + "join fetch ib.item "
+                + "where s.id in :ids";
+        HashMap<String, Object> entityParams = new HashMap<>();
+        entityParams.put("ids", stockIds);
+        List<Stock> stocks = stockFacade.findByJpql(entityJpql, entityParams);
+
+        // Create map for quick lookup
+        java.util.Map<Long, Stock> stockMap = new java.util.HashMap<>();
+        for (Stock s : stocks) {
+            if (s != null) {
+                stockMap.put(s.getId(), s);
+            }
         }
 
         // Initialize snapshot bill
@@ -183,36 +212,32 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         double total = 0.0;
-        for (Stock s : stocks) {
-            // Null check for stock
-            if (s == null) {
+        for (StockDTO dto : stockDTOs) {
+            // Null check for DTO
+            if (dto == null || dto.getStockId() == null) {
                 continue;
             }
 
-            // Null check for item batch
+            // Get stock entity from map
+            Stock s = stockMap.get(dto.getStockId());
+            if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
+                LOGGER.log(Level.WARNING, "Stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
+                continue;
+            }
+
             ItemBatch itemBatch = s.getItemBatch();
-            if (itemBatch == null) {
-                LOGGER.log(Level.WARNING, "Stock with null itemBatch found. Stock ID: {0}", s.getId());
-                continue;
-            }
-
-            // Null check for item
-            if (itemBatch.getItem() == null) {
-                LOGGER.log(Level.WARNING, "ItemBatch with null item found. ItemBatch ID: {0}", itemBatch.getId());
-                continue;
-            }
 
             // Create bill item
             BillItem bi = new BillItem();
             bi.setBill(snapshotBill);
             bi.setItem(itemBatch.getItem());
 
-            // Set description safely
-            String itemName = itemBatch.getItem().getName();
+            // Use DTO data (already fetched, no lazy loading)
+            String itemName = dto.getItemName();
             bi.setDescreption(itemName != null ? itemName : "");
 
-            // Set quantity safely
-            Double stockQty = s.getStock();
+            // Set quantity from DTO
+            Double stockQty = dto.getStockQty();
             bi.setQty(stockQty != null ? stockQty : 0.0);
 
             bi.setCreatedAt(new Date());
@@ -229,22 +254,20 @@ public class PharmacyStockTakeController implements Serializable {
             pbi.setQty(stockQty != null ? stockQty : 0.0);
             pbi.setStock(s);
 
-            // Set batch number safely
-            String batchNo = itemBatch.getBatchNo();
+            // Set batch number from DTO
+            String batchNo = dto.getBatchNo();
             if (batchNo != null) {
                 pbi.setStringValue(batchNo);
             }
 
-            // Set cost rate safely
-            Double costRate = itemBatch.getCostRate();
+            // Set cost rate from DTO
+            Double costRate = dto.getCostRate();
             double safeCostRate = (costRate != null) ? costRate : 0.0;
             pbi.setCostRate(safeCostRate);
 
-            // Calculate line value safely
+            // Calculate line value
             double safeQty = (bi.getQty() != null) ? bi.getQty() : 0.0;
-            Double pbiCostRate = pbi.getCostRate();
-            double safePbiCostRate = (pbiCostRate != null) ? pbiCostRate : 0.0;
-            double lineValue = safePbiCostRate * safeQty;
+            double lineValue = safeCostRate * safeQty;
 
             bi.setNetValue(lineValue);
             total += lineValue;
@@ -259,32 +282,66 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Handle zero-stock batches if configured
         if (includeZeroStockBatches && zeroStockBatchLimit > 0) {
-            // Fetch zero-stock batches, ordered by expiry date descending
-            String zeroStockJpql = "select s from Stock s "
+            // Fetch zero-stock batches using DTO projection, ordered by expiry date descending
+            String zeroStockJpql = "select new com.divudi.core.data.dto.StockDTO("
+                    + "s.id, ib.id, i.id, "
+                    + "c.name, i.name, ib.batchNo, "
+                    + "ib.dateOfExpire, s.stock, ib.costRate) "
+                    + "from Stock s "
+                    + "join s.itemBatch ib "
+                    + "join ib.item i "
+                    + "left join i.category c "
                     + "where s.department=:d and (s.stock is null or s.stock = 0) "
-                    + "order by coalesce(s.itemBatch.item.category.name, '') asc, "
-                    + "coalesce(s.itemBatch.item.name, '') asc, "
-                    + "coalesce(s.itemBatch.dateOfExpire, current_date) desc";
-            List<Stock> zeroStocks = stockFacade.findByJpql(zeroStockJpql, params);
+                    + "order by coalesce(c.name, '') asc, "
+                    + "coalesce(i.name, '') asc, "
+                    + "coalesce(ib.dateOfExpire, current_date) desc";
+            List<StockDTO> zeroStockDTOs = stockFacade.findByJpql(zeroStockJpql, params);
 
-            if (zeroStocks != null && !zeroStocks.isEmpty()) {
-                // Group zero-stock batches by item and limit per item
-                java.util.Map<Item, java.util.List<Stock>> zeroStocksByItem = new java.util.LinkedHashMap<>();
+            if (zeroStockDTOs != null && !zeroStockDTOs.isEmpty()) {
+                // Fetch zero-stock Stock entities in bulk
+                java.util.List<Long> zeroStockIds = zeroStockDTOs.stream()
+                        .map(StockDTO::getStockId)
+                        .collect(java.util.stream.Collectors.toList());
+                String zeroEntityJpql = "select s from Stock s "
+                        + "join fetch s.itemBatch ib "
+                        + "join fetch ib.item "
+                        + "where s.id in :ids";
+                HashMap<String, Object> zeroEntityParams = new HashMap<>();
+                zeroEntityParams.put("ids", zeroStockIds);
+                List<Stock> zeroStocks = stockFacade.findByJpql(zeroEntityJpql, zeroEntityParams);
+
+                // Create map for quick lookup
+                java.util.Map<Long, Stock> zeroStockMap = new java.util.HashMap<>();
                 for (Stock zs : zeroStocks) {
-                    if (zs == null || zs.getItemBatch() == null || zs.getItemBatch().getItem() == null) {
+                    if (zs != null) {
+                        zeroStockMap.put(zs.getId(), zs);
+                    }
+                }
+
+                // Group zero-stock batches by item ID and limit per item
+                java.util.Map<Long, java.util.List<StockDTO>> zeroStocksByItemId = new java.util.LinkedHashMap<>();
+                for (StockDTO dto : zeroStockDTOs) {
+                    if (dto == null || dto.getId() == null) {
                         continue;
                     }
-                    Item item = zs.getItemBatch().getItem();
-                    zeroStocksByItem.computeIfAbsent(item, k -> new java.util.ArrayList<>()).add(zs);
+                    Long itemId = dto.getId(); // StockDTO.id holds itemId in our constructor
+                    zeroStocksByItemId.computeIfAbsent(itemId, k -> new java.util.ArrayList<>()).add(dto);
                 }
 
                 // Process zero-stock batches with limit per item
-                for (java.util.Map.Entry<Item, java.util.List<Stock>> entry : zeroStocksByItem.entrySet()) {
-                    java.util.List<Stock> itemZeroStocks = entry.getValue();
-                    int limit = Math.min(zeroStockBatchLimit, itemZeroStocks.size());
+                for (java.util.List<StockDTO> itemZeroStockDTOs : zeroStocksByItemId.values()) {
+                    int limit = Math.min(zeroStockBatchLimit, itemZeroStockDTOs.size());
 
                     for (int i = 0; i < limit; i++) {
-                        Stock zs = itemZeroStocks.get(i);
+                        StockDTO dto = itemZeroStockDTOs.get(i);
+
+                        // Get stock entity from map
+                        Stock zs = zeroStockMap.get(dto.getStockId());
+                        if (zs == null || zs.getItemBatch() == null || zs.getItemBatch().getItem() == null) {
+                            LOGGER.log(Level.WARNING, "Zero-stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
+                            continue;
+                        }
+
                         ItemBatch itemBatch = zs.getItemBatch();
 
                         // Create bill item for zero-stock batch
@@ -292,7 +349,7 @@ public class PharmacyStockTakeController implements Serializable {
                         bi.setBill(snapshotBill);
                         bi.setItem(itemBatch.getItem());
 
-                        String itemName = itemBatch.getItem().getName();
+                        String itemName = dto.getItemName();
                         bi.setDescreption(itemName != null ? itemName : "");
                         bi.setQty(0.0);
                         bi.setCreatedAt(new Date());
@@ -308,12 +365,12 @@ public class PharmacyStockTakeController implements Serializable {
                         pbi.setQty(0.0);
                         pbi.setStock(zs);
 
-                        String batchNo = itemBatch.getBatchNo();
+                        String batchNo = dto.getBatchNo();
                         if (batchNo != null) {
                             pbi.setStringValue(batchNo);
                         }
 
-                        Double costRate = itemBatch.getCostRate();
+                        Double costRate = dto.getCostRate();
                         double safeCostRate = (costRate != null) ? costRate : 0.0;
                         pbi.setCostRate(safeCostRate);
 
