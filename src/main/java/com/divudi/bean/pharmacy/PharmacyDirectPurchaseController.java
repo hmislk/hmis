@@ -1700,20 +1700,53 @@ public class PharmacyDirectPurchaseController implements Serializable {
             // This ensures that ItemBatch gets the correct cost rate when settled
             BigDecimal totalQtyByUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
             BigDecimal oldTotalCostRate = f.getTotalCostRate();
+            BigDecimal oldCostRate = f.getCostRate();
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+
             if (totalQtyByUnits.compareTo(BigDecimal.ZERO) > 0) {
+                // Update totalCostRate (per unit)
                 BigDecimal updatedTotalCostRate = finalNetTotal.divide(totalQtyByUnits, 6, RoundingMode.HALF_UP);
                 f.setTotalCostRate(updatedTotalCostRate);
 
-                System.out.println("=== distributeProportionalBillValuesToItems() ===");
-                System.out.println("Item: " + (bi.getItem() != null ? bi.getItem().getName() : "null"));
-                System.out.println("Old totalCostRate: " + oldTotalCostRate);
-                System.out.println("finalNetTotal (includes expenses): " + finalNetTotal);
-                System.out.println("totalQtyByUnits: " + totalQtyByUnits);
-                System.out.println("New totalCostRate: " + updatedTotalCostRate);
-                System.out.println("Distributed Expense: " + distributedExpense);
-                System.out.println("==================================================");
+                // Update costRate (per pack for AMPP, per unit for AMP)
+                BigDecimal updatedCostRate = BigDecimalUtil.multiply(updatedTotalCostRate, unitsPerPack);
+                f.setCostRate(updatedCostRate);
+
+                // Also update PharmaceuticalBillItem with the correct costRate
+                if (bi.getPharmaceuticalBillItem() != null) {
+                    double oldPbiCostRate = bi.getPharmaceuticalBillItem().getCostRate();
+                    bi.getPharmaceuticalBillItem().setCostRate(updatedTotalCostRate.doubleValue());
+
+                    // Update costValue as well (qty × costRate)
+                    BigDecimal qtyByUnits = BigDecimalUtil.valueOrZero(f.getQuantityByUnits());
+                    BigDecimal updatedCostValue = BigDecimalUtil.multiply(qtyByUnits, updatedTotalCostRate);
+                    bi.getPharmaceuticalBillItem().setCostValue(updatedCostValue.doubleValue());
+
+                    System.out.println("=== distributeProportionalBillValuesToItems() ===");
+                    System.out.println("Item: " + (bi.getItem() != null ? bi.getItem().getName() : "null"));
+                    System.out.println("Old totalCostRate (per unit): " + oldTotalCostRate);
+                    System.out.println("Old costRate (per pack/unit): " + oldCostRate);
+                    System.out.println("Old PharmaceuticalBillItem.costRate: " + oldPbiCostRate);
+                    System.out.println("finalNetTotal (includes expenses): " + finalNetTotal);
+                    System.out.println("totalQtyByUnits: " + totalQtyByUnits);
+                    System.out.println("unitsPerPack: " + unitsPerPack);
+                    System.out.println("New totalCostRate (per unit): " + updatedTotalCostRate);
+                    System.out.println("New costRate (per pack/unit): " + updatedCostRate);
+                    System.out.println("New PharmaceuticalBillItem.costRate: " + updatedTotalCostRate.doubleValue());
+                    System.out.println("New PharmaceuticalBillItem.costValue: " + updatedCostValue.doubleValue());
+                    System.out.println("Distributed Expense: " + distributedExpense);
+                    System.out.println("==================================================");
+                }
             } else {
                 f.setTotalCostRate(BigDecimal.ZERO);
+                f.setCostRate(BigDecimal.ZERO);
+                if (bi.getPharmaceuticalBillItem() != null) {
+                    bi.getPharmaceuticalBillItem().setCostRate(0.0);
+                    bi.getPharmaceuticalBillItem().setCostValue(0.0);
+                }
             }
 
             // Calculate bill cost (the additional cost from bill-level adjustments)
