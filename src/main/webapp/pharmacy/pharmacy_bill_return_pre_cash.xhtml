@@ -83,14 +83,53 @@
                                         styleClass="table table-sm"
                                         emptyMessage="No original payments found">
 
-                                        <p:column headerText="Method">
+                                        <p:column headerText="Method" width="120">
                                             <h:outputText value="#{op.paymentMethod}" />
                                         </p:column>
 
-                                        <p:column headerText="Amount" styleClass="text-end">
+                                        <p:column headerText="Amount" styleClass="text-end" width="100">
                                             <h:outputText value="#{op.paidValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Bank" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                            <h:outputText value="#{op.bank.name}" rendered="#{op.bank ne null}"/>
+                                            <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Ref/Card No" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                            <h:outputText value="#{op.referenceNo}" rendered="#{op.referenceNo ne null and op.referenceNo ne ''}"/>
+                                            <h:outputText value="#{op.chequeRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.chequeRefNo ne null and op.chequeRefNo ne ''}"/>
+                                            <h:outputText value="#{op.creditCardRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.creditCardRefNo ne null and op.creditCardRefNo ne ''}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Date" rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
+                                            <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                            <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                            <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Credit Company" rendered="#{op.paymentMethod eq 'Credit'}">
+                                            <h:outputText value="#{op.creditCompany.name}" rendered="#{op.creditCompany ne null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Policy No" rendered="#{op.paymentMethod eq 'Credit'}">
+                                            <h:outputText value="#{op.policyNo}" />
+                                        </p:column>
+
+                                        <p:column headerText="Staff" rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare'}">
+                                            <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Comments">
+                                            <h:outputText value="#{op.comments}" styleClass="text-muted small"/>
                                         </p:column>
 
                                     </p:dataTable>
@@ -130,14 +169,16 @@
                                         <h:panelGroup
                                             layout="block"
                                             rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Credit'}" >
-                                            <pa:credit paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            <div class="my-2">
+                                                <pa:creditDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup
                                             layout="block"
                                             rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Staff'}" >
                                             <div class="my-2">
-                                                <pa:staff_credit paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                                <pa:staff_credit valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
 
@@ -145,37 +186,37 @@
                                             layout="block"
                                             rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Staff_Welfare'}" >
                                             <div class="my-2">
-                                                <pa:staff_welfare_asOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                                <pa:staff_welfare_asOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup layout="block" id="creditCard" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Card'}" >
                                             <div class="my-2">
-                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                                <pa:creditCardDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup layout="block" id="ptdeposit" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'PatientDeposit'}">
                                             <div class="my-2">
-                                                <pa:patient_deposit paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}" valueRequired="false"/>
+                                                <pa:patient_deposit valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup layout="block" id="ewallet" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'ewallet'}" >
                                             <div class="my-2">
-                                                <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                                <pa:ewalletDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup layout="block" id="cheque" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Cheque'}" >
                                             <div class="my-2">
-                                                <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                                <pa:chequeDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
 
                                         <h:panelGroup layout="block" id="slip" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Slip'}">
                                             <div class="my-2">
-                                                <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                                <pa:slipDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
                                             </div>
                                         </h:panelGroup>
 

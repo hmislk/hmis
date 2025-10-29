@@ -29,7 +29,7 @@
                 itemLabel="#{ix.name}"
                 itemValue="#{ix}"
                 size="10"
-                required="#{cc.attrs.valueRequired}"
+                required="true"
                 requiredMessage="Please select a credit company">
                 <p:ajax process="@this" ></p:ajax>
             </p:autoComplete>
@@ -38,6 +38,8 @@
             <p:inputText
                 id="polNo"
                 class="w-100"
+                required="true"
+                requiredMessage="Please enter the policy number"
                 value="#{cc.attrs.paymentMethodData.credit.referralNo}"
                 placeholder="Policy NO" >
                 <p:ajax process="@this" ></p:ajax>
@@ -47,6 +49,8 @@
             <p:inputText
                 id="refNo"
                 class="w-100"
+                required="true"
+                requiredMessage="Please enter the reference number"
                 value="#{cc.attrs.paymentMethodData.credit.referenceNo}"
                 placeholder="Reference NO" >
                 <p:ajax process="@this" ></p:ajax>
@@ -56,6 +60,8 @@
             <p:inputTextarea
                 id="memo"
                 class="w-100"
+                required="true"
+                requiredMessage="Please enter a comment"
                 value="#{cc.attrs.paymentMethodData.credit.comment}"
                 placeholder="Memo" >
                 <p:ajax process="@this" ></p:ajax>
