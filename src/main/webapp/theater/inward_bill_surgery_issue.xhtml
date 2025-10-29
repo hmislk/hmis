@@ -27,11 +27,16 @@
                             <h:outputLabel value="Direct Issue of Pharmaceuticals for Surgeries" class="m-2"></h:outputLabel>
                         </f:facet>
                         <h:outputLabel value="Type Surgery Name or BHT : "/>
-                        <p:autoComplete forceSelection="true"
+                        <p:autoComplete 
+                            forceSelection="true"
                                         value="#{pharmacySaleBhtController.batchBill}"
                                         completeMethod="#{billController.completeSurgeryBills}"
-                                        var="apt2" itemLabel="#{apt2.patientEncounter.bhtNo}"
-                                        itemValue="#{apt2}" size="40" required="true" class="m-2"
+                                        var="apt2" 
+                                        itemLabel="#{apt2.patientEncounter.bhtNo}"
+                                        itemValue="#{apt2}" 
+                                        size="40" 
+                                        required="true" 
+                                        class="m-2"
                                         requiredMessage="Please enter patient details" >
                             <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2"
                                     listener="#{pharmacySaleBhtController.selectSurgeryBillListener()}"/>
