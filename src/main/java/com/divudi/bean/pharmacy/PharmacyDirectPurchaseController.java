@@ -953,14 +953,28 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
 
             // CRITICAL: Calculate all item totals before final persistence
+            System.out.println("\n### SETTLE LOOP - Before calculateItemTotals ###");
+            System.out.println("Item: " + (i.getItem() != null ? i.getItem().getName() : "null"));
+            System.out.println("Current totalCostRate: " + (i.getBillItemFinanceDetails() != null ? i.getBillItemFinanceDetails().getTotalCostRate() : "null"));
+
             calculateItemTotals(i);
+
+            System.out.println("### SETTLE LOOP - After calculateItemTotals ###");
+            System.out.println("totalCostRate: " + (i.getBillItemFinanceDetails() != null ? i.getBillItemFinanceDetails().getTotalCostRate() : "null"));
 
             // Save updated BillItem and PharmaceuticalBillItem with calculated values
             getBillItemFacade().edit(i);
 
             saveBillFee(i);
 
+            System.out.println("### SETTLE LOOP - Before saveItemBatchWithCosting ###");
+            System.out.println("totalCostRate being passed: " + (i.getBillItemFinanceDetails() != null ? i.getBillItemFinanceDetails().getTotalCostRate() : "null"));
+
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
+
+            System.out.println("### SETTLE LOOP - After saveItemBatchWithCosting ###");
+            System.out.println("ItemBatch costRate: " + (itemBatch != null ? itemBatch.getCostRate() : "null"));
+            System.out.println("######################################\n");
 
             double addingQty = BigDecimalUtil.valueOrZero(i.getBillItemFinanceDetails().getTotalQuantityByUnits()).doubleValue();
 
@@ -979,11 +993,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Distribute bill-level adjustments proportionally to items if needed
         if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            System.out.println("\n*** AFTER ALL ITEMS PROCESSED - Before distributeProportionalBillValuesToItems ***");
             distributeProportionalBillValuesToItems();
+            System.out.println("*** AFTER distributeProportionalBillValuesToItems ***");
 
             for (BillItem item : getBillItems()) {
+                System.out.println("Saving updated BillItem: " + (item.getItem() != null ? item.getItem().getName() : "null"));
+                System.out.println("  Updated totalCostRate: " + (item.getBillItemFinanceDetails() != null ? item.getBillItemFinanceDetails().getTotalCostRate() : "null"));
+                System.out.println("  ItemBatch costRate (ALREADY CREATED): " + (item.getPharmaceuticalBillItem() != null && item.getPharmaceuticalBillItem().getItemBatch() != null ? item.getPharmaceuticalBillItem().getItemBatch().getCostRate() : "null"));
                 getBillItemFacade().edit(item);
             }
+            System.out.println("*** END distributeProportionalBillValuesToItems section ***\n");
         }
 
         //check and calculate expenses separately
@@ -1235,6 +1255,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 ? itemNet.divide(totalQtyByUnits, 6, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
         f.setTotalCostRate(totalCostRate);
+
+        System.out.println("=== calculateItemTotals() ===");
+        System.out.println("Item: " + (billItem.getItem() != null ? billItem.getItem().getName() : "null"));
+        System.out.println("itemNet (lineNetTotal): " + itemNet);
+        System.out.println("totalQtyByUnits: " + totalQtyByUnits);
+        System.out.println("totalCostRate SET TO: " + totalCostRate);
+        System.out.println("================================");
 
         // CRITICAL: Set missing BIFD fields identified by code reviewer
         // 1. Set gross total (main field, not just lineGrossTotal)
@@ -1676,9 +1703,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
             // Recalculate totalCostRate to include distributed bill-level expenses
             // This ensures that ItemBatch gets the correct cost rate when settled
             BigDecimal totalQtyByUnits = BigDecimalUtil.valueOrZero(f.getTotalQuantityByUnits());
+            BigDecimal oldTotalCostRate = f.getTotalCostRate();
             if (totalQtyByUnits.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal updatedTotalCostRate = finalNetTotal.divide(totalQtyByUnits, 6, RoundingMode.HALF_UP);
                 f.setTotalCostRate(updatedTotalCostRate);
+
+                System.out.println("=== distributeProportionalBillValuesToItems() ===");
+                System.out.println("Item: " + (bi.getItem() != null ? bi.getItem().getName() : "null"));
+                System.out.println("Old totalCostRate: " + oldTotalCostRate);
+                System.out.println("finalNetTotal (includes expenses): " + finalNetTotal);
+                System.out.println("totalQtyByUnits: " + totalQtyByUnits);
+                System.out.println("New totalCostRate: " + updatedTotalCostRate);
+                System.out.println("Distributed Expense: " + distributedExpense);
+                System.out.println("==================================================");
             } else {
                 f.setTotalCostRate(BigDecimal.ZERO);
             }

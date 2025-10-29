@@ -860,7 +860,16 @@ public class PharmacyCalculation implements Serializable {
             retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
             costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
 
+            System.out.println("@@@ PharmacyCalculation.saveItemBatchWithCosting @@@");
+            System.out.println("Item: " + (inputBillItem.getItem() != null ? inputBillItem.getItem().getName() : "null"));
+            System.out.println("costRatePerUnit FROM BillItemFinanceDetails.getTotalCostRate(): " + costRatePerUnit);
+            System.out.println("purchaseRatePerUnit: " + purchaseRatePerUnit);
+            System.out.println("retailRatePerUnit: " + retailRatePerUnit);
+
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
+
+            System.out.println("ItemBatch fetched/created with costRate: " + (itemBatch != null ? itemBatch.getCostRate() : "null"));
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         } else {
             // Use values from PharmaceuticalBillItem when costing is not enabled
             purchaseRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getPurchaseRate();
