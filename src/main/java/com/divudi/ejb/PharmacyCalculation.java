@@ -843,7 +843,7 @@ public class PharmacyCalculation implements Serializable {
                 return null;
             }
 
-            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineGrossRate();
+            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineNetRate();
 
             BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
             if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
