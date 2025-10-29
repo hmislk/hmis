@@ -1085,10 +1085,17 @@ public class PharmacyStockTakeController implements Serializable {
                 bi.setCreatedAt(new Date());
                 bi.setCreater(sessionController.getLoggedUser());
                 bi.setReferanceBillItem(snapItem);
-                bi.setAdjustedValue(physical - snapItem.getQty());
+
+                // Calculate variance against current stock (not starting count)
+                Stock currentStock = snapItem.getPharmaceuticalBillItem().getStock();
+                double currentStockQty = (currentStock != null && currentStock.getStock() != null)
+                    ? currentStock.getStock() : 0.0;
+                bi.setAdjustedValue(physical - currentStockQty);
+
                 PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                 pbi.setBillItem(bi);
                 pbi.setItemBatch(snapItem.getPharmaceuticalBillItem().getItemBatch());
+                pbi.setStock(currentStock); // Store stock reference for approval process
                 pbi.setQty(physical);
                 bi.setPharmaceuticalBillItem(pbi);
                 physicalCountBill.getBillItems().add(bi);
