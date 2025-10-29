@@ -107,10 +107,20 @@
                             <p:spacer/>
 
                             <p:commandButton
-                                value="Generate Stock Count Bill"
+                                value="Generate (Async - Recommended)"
+                                action="#{pharmacyStockTakeController.generateStockCountBillAsync}"
+                                ajax="false"
+                                icon="fa fa-rocket"
+                                styleClass="ui-button-success"
+                                title="Recommended for large departments - no timeout"/>
+
+                            <p:commandButton
+                                value="Generate (Sync)"
                                 action="#{pharmacyStockTakeController.generateStockCountBill}"
                                 ajax="false"
-                                icon="fa fa-calculator"/>
+                                icon="fa fa-calculator"
+                                styleClass="ui-button-secondary"
+                                title="Direct generation - may timeout for large departments"/>
 
                         </p:panelGrid>
                     </p:panel>

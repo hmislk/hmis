@@ -28,6 +28,8 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.service.pharmacy.StockTakeApprovalService;
 import com.divudi.service.pharmacy.ApprovalProgressTracker;
+import com.divudi.service.pharmacy.StockCountGenerationService;
+import com.divudi.service.pharmacy.StockCountGenerationTracker;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -90,6 +92,10 @@ public class PharmacyStockTakeController implements Serializable {
     @EJB
     private ApprovalProgressTracker approvalProgressTracker;
     @EJB
+    private StockCountGenerationService stockCountGenerationService;
+    @EJB
+    private StockCountGenerationTracker stockCountGenerationTracker;
+    @EJB
     private com.divudi.core.facade.CategoryFacade categoryFacade;
 
     private Bill snapshotBill;
@@ -116,6 +122,9 @@ public class PharmacyStockTakeController implements Serializable {
     // Configuration for including zero-stock batches in stock count
     private boolean includeZeroStockBatches;
     private int zeroStockBatchLimit = 5; // default limit of 5 zero-stock batches per item
+
+    // Stock count generation job tracking
+    private String generationJobId;
 
     /**
      * Generate stock count bill preview without persisting.
@@ -391,6 +400,107 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill.setNetTotal(total);
         JsfUtil.addSuccessMessage("Preview generated. Please review and settle.");
         return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+    }
+
+    /**
+     * Start async stock count bill generation with progress tracking.
+     * This is the recommended method for large departments to avoid timeouts.
+     */
+    public String generateStockCountBillAsync() {
+        // Check privilege
+        if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
+            return null;
+        }
+
+        // Check department
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return null;
+        }
+
+        // Generate unique job ID
+        generationJobId = "stock-count-" + department.getId() + "-" + System.currentTimeMillis();
+
+        // Initialize progress tracker
+        stockCountGenerationTracker.start(generationJobId, 0, "Starting stock count generation...");
+
+        // Start async generation
+        stockCountGenerationService.generateStockCountBillAsync(
+            generationJobId,
+            department,
+            includeZeroStockBatches,
+            zeroStockBatchLimit,
+            sessionController.getLoggedUser()
+        );
+
+        JsfUtil.addSuccessMessage("Stock count generation started. Please wait...");
+        return "/pharmacy/pharmacy_stock_take_progress?faces-redirect=true";
+    }
+
+    /**
+     * Check progress of async stock count generation.
+     * Called by polling mechanism on progress page.
+     */
+    public void checkGenerationProgress() {
+        // This method is called by p:poll, no action needed
+        // Progress is retrieved via getGenerationProgress()
+    }
+
+    /**
+     * Get current generation progress.
+     * @return Progress object or null if no job in progress
+     */
+    public StockCountGenerationTracker.Progress getGenerationProgress() {
+        if (generationJobId == null) {
+            return null;
+        }
+        return stockCountGenerationTracker.get(generationJobId);
+    }
+
+    /**
+     * Complete the generation process and load the generated bill.
+     * Called when progress indicates completion.
+     */
+    public String completeGeneration() {
+        if (generationJobId == null) {
+            JsfUtil.addErrorMessage("No generation job found");
+            return null;
+        }
+
+        StockCountGenerationTracker.Progress progress = stockCountGenerationTracker.get(generationJobId);
+
+        if (progress == null) {
+            JsfUtil.addErrorMessage("Generation progress not found");
+            return null;
+        }
+
+        if (progress.failed) {
+            JsfUtil.addErrorMessage("Generation failed: " + progress.errorMessage);
+            stockCountGenerationTracker.remove(generationJobId);
+            generationJobId = null;
+            return null;
+        }
+
+        if (!progress.completed) {
+            JsfUtil.addErrorMessage("Generation not yet completed");
+            return null;
+        }
+
+        // Load the generated bill
+        if (progress.billId != null) {
+            snapshotBill = billFacade.find(progress.billId);
+            if (snapshotBill != null) {
+                JsfUtil.addSuccessMessage("Stock count bill generated successfully with " +
+                    snapshotBill.getBillItems().size() + " items");
+                stockCountGenerationTracker.remove(generationJobId);
+                generationJobId = null;
+                return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+            }
+        }
+
+        JsfUtil.addErrorMessage("Failed to load generated bill");
+        return null;
     }
 
     /**
@@ -2307,6 +2417,14 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setZeroStockBatchLimit(int zeroStockBatchLimit) {
         this.zeroStockBatchLimit = zeroStockBatchLimit;
+    }
+
+    public String getGenerationJobId() {
+        return generationJobId;
+    }
+
+    public void setGenerationJobId(String generationJobId) {
+        this.generationJobId = generationJobId;
     }
 
     /**

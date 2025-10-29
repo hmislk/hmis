@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="progressForm">
+                    <p:panel id="progressPanel" header="Stock Count Bill Generation Progress">
+                        <p:messages id="messages"/>
+
+                        <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress ne null}">
+                            <!-- Progress Bar -->
+                            <p:outputLabel value="Progress:" styleClass="font-weight-bold"/>
+                            <p:progressBar
+                                value="#{pharmacyStockTakeController.generationProgress.totalItems > 0 ? (pharmacyStockTakeController.generationProgress.processedItems * 100 / pharmacyStockTakeController.generationProgress.totalItems) : 0}"
+                                labelTemplate="{value}%"
+                                displayOnly="true"
+                                styleClass="mb-3"/>
+
+                            <!-- Status Information -->
+                            <p:panelGrid columns="2" styleClass="w-100 mb-3" layout="grid">
+                                <h:outputText value="Status:"/>
+                                <h:outputText value="#{pharmacyStockTakeController.generationProgress.status}"
+                                             styleClass="font-weight-bold"/>
+
+                                <h:outputText value="Items Processed:"/>
+                                <h:outputText value="#{pharmacyStockTakeController.generationProgress.processedItems} of #{pharmacyStockTakeController.generationProgress.totalItems}"/>
+
+                                <h:outputText value="Started At:"/>
+                                <h:outputText value="#{pharmacyStockTakeController.generationProgress.startedAt}">
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                </h:outputText>
+
+                                <h:outputText value="Finished At:"
+                                             rendered="#{pharmacyStockTakeController.generationProgress.completed or pharmacyStockTakeController.generationProgress.failed}"/>
+                                <h:outputText value="#{pharmacyStockTakeController.generationProgress.finishedAt}"
+                                             rendered="#{pharmacyStockTakeController.generationProgress.completed or pharmacyStockTakeController.generationProgress.failed}">
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                </h:outputText>
+                            </p:panelGrid>
+
+                            <!-- Completion Status -->
+                            <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress.completed}">
+                                <p:messages severity="info">
+                                    <p:message severity="info" summary="Success!"
+                                              detail="Stock count bill generated successfully. Click Continue to proceed."/>
+                                </p:messages>
+                                <p:commandButton
+                                    value="Continue to Review"
+                                    action="#{pharmacyStockTakeController.completeGeneration}"
+                                    ajax="false"
+                                    icon="fa fa-arrow-right"
+                                    styleClass="ui-button-success mt-3"/>
+                            </h:panelGroup>
+
+                            <!-- Failure Status -->
+                            <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress.failed}">
+                                <p:messages severity="error">
+                                    <p:message severity="error" summary="Generation Failed"
+                                              detail="#{pharmacyStockTakeController.generationProgress.errorMessage}"/>
+                                </p:messages>
+                                <p:commandButton
+                                    value="Back to Stock Take"
+                                    action="/pharmacy/pharmacy_stock_take?faces-redirect=true"
+                                    ajax="false"
+                                    icon="fa fa-arrow-left"
+                                    styleClass="ui-button-danger mt-3"/>
+                            </h:panelGroup>
+
+                            <!-- Loading Indicator -->
+                            <h:panelGroup rendered="#{!pharmacyStockTakeController.generationProgress.completed and !pharmacyStockTakeController.generationProgress.failed}">
+                                <div class="text-center mt-3">
+                                    <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+                                    <p class="mt-2 text-muted">Please wait while the stock count bill is being generated...</p>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- No Progress Found -->
+                        <h:panelGroup rendered="#{pharmacyStockTakeController.generationProgress eq null}">
+                            <p:messages severity="warn">
+                                <p:message severity="warn" summary="No Generation in Progress"
+                                          detail="No stock count generation job found."/>
+                            </p:messages>
+                            <p:commandButton
+                                value="Back to Stock Take"
+                                action="/pharmacy/pharmacy_stock_take?faces-redirect=true"
+                                ajax="false"
+                                icon="fa fa-arrow-left"
+                                styleClass="ui-button-secondary mt-3"/>
+                        </h:panelGroup>
+                    </p:panel>
+
+                    <!-- Poll for Progress Updates -->
+                    <p:poll
+                        interval="2"
+                        update="progressPanel messages"
+                        listener="#{pharmacyStockTakeController.checkGenerationProgress}"
+                        rendered="#{pharmacyStockTakeController.generationProgress ne null and !pharmacyStockTakeController.generationProgress.completed and !pharmacyStockTakeController.generationProgress.failed}"/>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
