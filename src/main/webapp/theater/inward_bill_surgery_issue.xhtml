@@ -60,13 +60,13 @@
                                 <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
                                 <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
                             </p:column>
-                            <p:column headerText="From Time"  style="padding: 6px; width: 16em;">
+                            <p:column headerText="From Time" style="padding: 6px; width: 16em;">
                                 <h:outputLabel value="#{apt2.procedure.fromTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="To Time" >
-                                <h:outputLabel value="#{apt2.procedure.toTime}" style="padding: 6px; width: 16em;">
+                            <p:column headerText="To Time" style="padding: 6px; width: 16em;">
+                                <h:outputLabel value="#{apt2.procedure.toTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
