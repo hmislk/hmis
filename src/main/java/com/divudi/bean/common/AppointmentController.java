@@ -202,6 +202,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public void settleBill() {
+        
         Date startTime = new Date();
         Date fromDate = new Date();
         Date toDate = new Date();
