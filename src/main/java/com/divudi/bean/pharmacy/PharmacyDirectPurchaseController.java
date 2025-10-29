@@ -999,6 +999,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 System.out.println("  ItemBatch costRate (ALREADY CREATED): " + (item.getPharmaceuticalBillItem() != null && item.getPharmaceuticalBillItem().getItemBatch() != null ? item.getPharmaceuticalBillItem().getItemBatch().getCostRate() : "null"));
                 getBillItemFacade().edit(item);
             }
+
+            // Recalculate BillFinanceDetails cost aggregates after distribution
+            // This ensures bill-level totals reflect the updated cost rates with expenses
+            System.out.println("*** Recalculating BillFinanceDetails cost aggregates ***");
+            recalculateBillFinanceDetailsCostAggregates();
+
             System.out.println("*** END distributeProportionalBillValuesToItems section ***\n");
         }
 
@@ -1760,6 +1766,58 @@ public class PharmacyDirectPurchaseController implements Serializable {
             BigDecimal billCost = finalNetTotal.subtract(lineNetTotal);
             f.setBillCost(billCost);
         }
+    }
+
+    /**
+     * Recalculates BillFinanceDetails cost aggregates after expense distribution.
+     * This ensures bill-level totals reflect the updated cost rates with expenses included.
+     */
+    private void recalculateBillFinanceDetailsCostAggregates() {
+        if (getBill() == null || getBill().getBillFinanceDetails() == null || getBillItems() == null || getBillItems().isEmpty()) {
+            return;
+        }
+
+        BillFinanceDetails bfd = getBill().getBillFinanceDetails();
+
+        // Recalculate cost aggregates from updated line items
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalCostValueFree = BigDecimal.ZERO;
+        BigDecimal totalCostValueNonFree = BigDecimal.ZERO;
+
+        for (BillItem bi : getBillItems()) {
+            BillItemFinanceDetails f = (bi != null) ? bi.getBillItemFinanceDetails() : null;
+            if (f == null) {
+                continue;
+            }
+
+            // Sum up the updated valueAtCostRate (which now includes distributed expenses)
+            BigDecimal itemCostValue = BigDecimalUtil.valueOrZero(f.getValueAtCostRate());
+            totalCostValue = totalCostValue.add(itemCostValue);
+
+            // Calculate free/non-free breakdown
+            BigDecimal qtyByUnits = BigDecimalUtil.valueOrZero(f.getQuantityByUnits());
+            BigDecimal freeQtyByUnits = BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits());
+            BigDecimal costRatePerUnit = BigDecimalUtil.valueOrZero(f.getTotalCostRate());
+
+            BigDecimal costValueNonFree = BigDecimalUtil.multiply(qtyByUnits, costRatePerUnit);
+            BigDecimal costValueFree = BigDecimalUtil.multiply(freeQtyByUnits, costRatePerUnit);
+
+            totalCostValueNonFree = totalCostValueNonFree.add(costValueNonFree);
+            totalCostValueFree = totalCostValueFree.add(costValueFree);
+        }
+
+        // Update BillFinanceDetails with recalculated values
+        BigDecimal oldTotalCostValue = bfd.getTotalCostValue();
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalCostValueFree(totalCostValueFree);
+        bfd.setTotalCostValueNonFree(totalCostValueNonFree);
+
+        System.out.println("=== BillFinanceDetails Cost Aggregates Recalculated ===");
+        System.out.println("Old totalCostValue: " + oldTotalCostValue);
+        System.out.println("New totalCostValue: " + totalCostValue);
+        System.out.println("New totalCostValueFree: " + totalCostValueFree);
+        System.out.println("New totalCostValueNonFree: " + totalCostValueNonFree);
+        System.out.println("========================================================");
     }
 
     /**

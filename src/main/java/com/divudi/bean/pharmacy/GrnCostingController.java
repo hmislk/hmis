@@ -1640,8 +1640,9 @@ public class GrnCostingController implements Serializable {
             // recalculateFinancialsBeforeAddingBillItem already set correct values, don't overwrite
             // pbi.purchaseRate and purchaseRatePack already set correctly by recalculate method
             // Set cost rate (ALWAYS per unit per HMIS standard)
-            BigDecimal lineCostRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
-            pbi.setCostRate(lineCostRate.doubleValue());
+            // Use totalCostRate which includes distributed bill-level expenses
+            BigDecimal totalCostRate = Optional.ofNullable(f.getTotalCostRate()).orElse(BigDecimal.ZERO);
+            pbi.setCostRate(totalCostRate.doubleValue());
 
             pbi.setRetailRate(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setRetailRatePack(Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue());
@@ -1665,8 +1666,9 @@ public class GrnCostingController implements Serializable {
             // CRITICAL FIX: recalculateFinancialsBeforeAddingBillItem already set correct values, don't overwrite
             // pbi.purchaseRate and purchaseRatePack already set correctly by recalculate method
             // Set cost rate (ALWAYS per unit per HMIS standard)
-            BigDecimal lineCostRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
-            pbi.setCostRate(lineCostRate.doubleValue());
+            // Use totalCostRate which includes distributed bill-level expenses
+            BigDecimal totalCostRate = Optional.ofNullable(f.getTotalCostRate()).orElse(BigDecimal.ZERO);
+            pbi.setCostRate(totalCostRate.doubleValue());
 
             double r = Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue();
             pbi.setRetailRate(r);
@@ -2915,6 +2917,12 @@ public class GrnCostingController implements Serializable {
             requestWithSaveApprove(); // Save first if not already saved
         }
 
+        // Ensure bill discount distribution and calculate totals BEFORE processing items
+        // This ensures totalCostRate includes bill-level expenses when ItemBatch is created
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+
         // Process bill items for finalization with full stock management
         for (BillItem grnBillItem : getBillItems()) {
             BillItemFinanceDetails f = grnBillItem.getBillItemFinanceDetails();
@@ -2924,6 +2932,7 @@ public class GrnCostingController implements Serializable {
             }
 
             // Apply standardized finance details conversion
+            // Items already have correct totalCostRate from distribution above
             applyFinanceDetailsToPharmaceutical(grnBillItem);
 
             // Create/update item batch for stock management with costing respect
@@ -3025,10 +3034,7 @@ public class GrnCostingController implements Serializable {
         // Change bill type from PRE to final GRN
         getCurrentGrnBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
 
-        // Ensure bill discount distribution before final calculations (even if 0 to clear previous distributions)
-        ensureBillDiscountSynchronization();
-        calculateBillTotalsFromItems();
-        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        // Note: Bill discount distribution and totals already calculated before item loop above
         // Recompute totals/margins before first render
         calDifference();
         calculateRetailSaleValueAndFreeValueAtPurchaseRate(getCurrentGrnBillPre());
@@ -3208,6 +3214,28 @@ public class GrnCostingController implements Serializable {
             f.setLineCostRate(lineCostRate.setScale(4, RoundingMode.HALF_UP));
             f.setBillCostRate(billCostRate.setScale(4, RoundingMode.HALF_UP));
             f.setTotalCostRate(totalCostRate.setScale(4, RoundingMode.HALF_UP));
+
+            // Update costRate (per pack for AMPP, per unit for AMP)
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+            BigDecimal costRate = BigDecimalUtil.multiply(totalCostRate, unitsPerPack);
+            f.setCostRate(costRate);
+
+            // Update valueAtCostRate (totalQtyByUnits × totalCostRate)
+            BigDecimal valueAtCostRate = BigDecimalUtil.multiply(qtyUnits, totalCostRate);
+            f.setValueAtCostRate(valueAtCostRate);
+
+            // Update PharmaceuticalBillItem with the correct costRate and costValue
+            if (bi.getPharmaceuticalBillItem() != null) {
+                bi.getPharmaceuticalBillItem().setCostRate(totalCostRate.doubleValue());
+
+                // Update costValue (qty × costRate)
+                BigDecimal qtyByUnits = BigDecimalUtil.valueOrZero(f.getQuantityByUnits());
+                BigDecimal costValue = BigDecimalUtil.multiply(qtyByUnits, totalCostRate);
+                bi.getPharmaceuticalBillItem().setCostValue(costValue.doubleValue());
+            }
 
             f.setLineGrossRate(lineGrossRate);
             f.setBillGrossRate(BigDecimal.ZERO);
@@ -3471,12 +3499,32 @@ public class GrnCostingController implements Serializable {
         BigDecimal totalNetTotal = BigDecimal.ZERO;
         BigDecimal totalLineNetTotal = BigDecimal.ZERO; // Sum of line net totals for "Gross Total" display
 
+        // Recalculate cost aggregates from updated line items
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalCostValueFree = BigDecimal.ZERO;
+        BigDecimal totalCostValueNonFree = BigDecimal.ZERO;
+
         // Sum up all line item totals (these already include distributed expenses "considered for costing")
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
             if (f != null) {
                 totalNetTotal = totalNetTotal.add(Optional.ofNullable(f.getNetTotal()).orElse(BigDecimal.ZERO));
                 totalLineNetTotal = totalLineNetTotal.add(Optional.ofNullable(f.getLineNetTotal()).orElse(BigDecimal.ZERO));
+
+                // Sum up the updated valueAtCostRate (which now includes distributed expenses)
+                BigDecimal itemCostValue = BigDecimalUtil.valueOrZero(f.getValueAtCostRate());
+                totalCostValue = totalCostValue.add(itemCostValue);
+
+                // Calculate free/non-free breakdown
+                BigDecimal qtyByUnits = BigDecimalUtil.valueOrZero(f.getQuantityByUnits());
+                BigDecimal freeQtyByUnits = BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits());
+                BigDecimal costRatePerUnit = BigDecimalUtil.valueOrZero(f.getTotalCostRate());
+
+                BigDecimal costValueNonFree = BigDecimalUtil.multiply(qtyByUnits, costRatePerUnit);
+                BigDecimal costValueFree = BigDecimalUtil.multiply(freeQtyByUnits, costRatePerUnit);
+
+                totalCostValueNonFree = totalCostValueNonFree.add(costValueNonFree);
+                totalCostValueFree = totalCostValueFree.add(costValueFree);
             }
         }
 
@@ -3485,6 +3533,14 @@ public class GrnCostingController implements Serializable {
         // Expenses "NOT considered for costing" should NOT be included in net total.
         bill.setNetTotal(totalNetTotal.doubleValue());
         bill.setTotal(totalLineNetTotal.doubleValue()); // Total should be sum of line net totals for "Gross Total" display
+
+        // Update BillFinanceDetails with recalculated cost values
+        if (bill.getBillFinanceDetails() != null) {
+            BillFinanceDetails bfd = bill.getBillFinanceDetails();
+            bfd.setTotalCostValue(totalCostValue);
+            bfd.setTotalCostValueFree(totalCostValueFree);
+            bfd.setTotalCostValueNonFree(totalCostValueNonFree);
+        }
     }
 
     public void calculateBillTotalsFromItemsForPurchases(Bill bill, List<BillItem> billItems) {
