@@ -66,6 +66,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     SessionController sessionController;
     @Inject
     BillBeanController billBean;
+    @Inject
+    private AdmissionController admissionController;
     /////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -479,6 +481,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Admission to edit");
             return "";
         }
+        
+        admissionController.setCurrent(current);
         createPatientRoom();
         fillCreditCompaniesByPatient();
         fillCurrentPatientAllergies(current.getPatient());
