@@ -1255,6 +1255,11 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         
+         if (getStock() == null) {
+            JsfUtil.addErrorMessage("No Stock");
+            return;
+        }
+        
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
 
             List<ClinicalFindingValue> allergyListOfPatient = pharmacyService.getAllergyListForPatient(patientEncounter.getPatient());
@@ -1273,11 +1278,7 @@ public class PharmacySaleBhtController implements Serializable {
             }
 
         }
-        
-        if (getStock() == null) {
-            JsfUtil.addErrorMessage("No Stock");
-            return;
-        }
+
         if (getQty() == null) {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Please enter a Quantity?");
