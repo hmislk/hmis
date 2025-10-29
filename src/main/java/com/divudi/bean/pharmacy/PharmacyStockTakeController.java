@@ -167,7 +167,8 @@ public class PharmacyStockTakeController implements Serializable {
                 + "coalesce(ib.dateOfExpire, current_date) asc";
         HashMap<String, Object> params = new HashMap<>();
         params.put("d", dept);
-        List<StockDTO> stockDTOs = stockFacade.findByJpql(jpql, params);
+        @SuppressWarnings("unchecked")
+        List<StockDTO> stockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(jpql, params);
         if (stockDTOs == null || stockDTOs.isEmpty()) {
             JsfUtil.addErrorMessage("No stock available");
             return null;
@@ -295,7 +296,8 @@ public class PharmacyStockTakeController implements Serializable {
                     + "order by coalesce(c.name, '') asc, "
                     + "coalesce(i.name, '') asc, "
                     + "coalesce(ib.dateOfExpire, current_date) desc";
-            List<StockDTO> zeroStockDTOs = stockFacade.findByJpql(zeroStockJpql, params);
+            @SuppressWarnings("unchecked")
+            List<StockDTO> zeroStockDTOs = (List<StockDTO>) (List<?>) stockFacade.findByJpql(zeroStockJpql, params);
 
             if (zeroStockDTOs != null && !zeroStockDTOs.isEmpty()) {
                 // Fetch zero-stock Stock entities in bulk
