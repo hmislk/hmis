@@ -391,21 +391,33 @@
                             action="#{bhtSummeryController.navigateToIntrimBill()}"
                             value="Interim Bill"
                             icon="fa fa-file-invoice-dollar"
-                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{bhtSummeryController.navigateToIntrimBillEstimate}"
                             value="Interim Bill - Estimated Professional Fees"
                             icon="fa fa-file-invoice-dollar"
-                            actionListener="#{bhtSummeryController.clear}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/inward/inward_search_intrim" value="Interim Bill Search" icon="fas fa-search-dollar" actionListener="#{searchController.makeNull()}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBillSearch')}" ></p:menuitem>
+                            actionListener="#{bhtSummeryController.clear}" 
+                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" >
+                        </p:menuitem>
+                        <p:menuitem  
+                            ajax="false"  
+                            action="/inward/inward_search_intrim?faces-redirect=true" 
+                            value="Interim Bill Search" icon="fas fa-search-dollar" 
+                            actionListener="#{searchController.makeNull()}" 
+                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBillSearch')}" >
+                        </p:menuitem>
                     </p:submenu>
+
                     <p:submenu label="Search " icon="fa fa-search" rendered="#{webUserController.hasPrivilege('InwardSearch')}">
-                        <p:menuitem  ajax="false"
-                                     action="#{admissionController.navigateToListAdmissions}"
-                                     value="Admissions"
-                                     icon="fa fa-search"
-                                     rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false"
+                            action="#{admissionController.navigateToListAdmissions}"
+                            value="Admissions"
+                            icon="fa fa-search"
+                            rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" >
+                        </p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_service?faces-redirect=true" value="Service Bill" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional?faces-redirect=true" value="Professional Bill" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional_estimate?faces-redirect=true" value="Estimated Professional Bill" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill')}" ></p:menuitem>
