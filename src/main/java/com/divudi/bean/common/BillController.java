@@ -982,10 +982,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         sql += " or  ((b.patientEncounter.bhtNo) like :q )";
         sql += " or  ((b.insId) like :q )";
         sql += " or  ((b.procedure.item.name) like :q ))";
+        sql += " or  ((b.patient.phn) =:q ))";
         sql += " order by b.insId desc  ";
 
         temMap.put("billType", BillType.SurgeryBill);
-        temMap.put("q", "%" + qry.toUpperCase() + "%");
+        temMap.put("q",qry.toUpperCase());
         List<Bill> tmps = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 20);
 
         return tmps;
