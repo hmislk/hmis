@@ -2724,6 +2724,18 @@ public class GrnCostingController implements Serializable {
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
 
+        // Save bill items again after distribution to persist updated costRate in PharmaceuticalBillItem
+        for (BillItem i : getCurrentGrnBillPre().getBillItems()) {
+            BillItemFinanceDetails f = i.getBillItemFinanceDetails();
+            if (f == null || ((f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) == 0)
+                    && (f.getFreeQuantity() == null || f.getFreeQuantity().compareTo(BigDecimal.ZERO) == 0))) {
+                continue;
+            }
+            if (i.getId() != null) {
+                getBillItemFacade().edit(i);
+            }
+        }
+
         getBillFacade().edit(getCurrentGrnBillPre());
 
         JsfUtil.addSuccessMessage("GRN Saved");
