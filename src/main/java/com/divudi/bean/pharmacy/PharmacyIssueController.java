@@ -542,6 +542,10 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setToDepartment(toDepartment);
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        
+        getPreBill().setCompleted(true);
+        getPreBill().setCompletedAt(new Date());
+        getPreBill().setCompletedBy(sessionController.getLoggedUser());
 
         // Handle Department ID generation (independent)
         String deptId;

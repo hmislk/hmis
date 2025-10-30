@@ -630,6 +630,188 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Updates historical StockHistory records with missing rate and value data
+     * from their associated ItemBatch records.
+     *
+     * Fills in:
+     * - purchaseRate, retailRate, costRate from ItemBatch
+     * - stockPurchaseValue, stockSaleValue, stockCostValue (calculated from rates * stockQty)
+     *
+     * Only updates fields when existing values are null or zero (does not overwrite curated data).
+     * Only persists to database when changes are actually made.
+     * Uses the date range filter (fromDate/toDate) based on record creation timestamp.
+     */
+    public void updateHistoricalStockData() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            // Build JPQL query with JOIN FETCH to prevent N+1 queries
+            // Filter on createdAt (audit timestamp)
+            // Pre-filter to only records with missing data
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            StringBuilder jpql = new StringBuilder(
+                "SELECT sh FROM StockHistory sh JOIN FETCH sh.itemBatch ib WHERE sh.retired = :ret"
+            );
+
+            if (fromDate != null) {
+                jpql.append(" AND sh.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND sh.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            // Only fetch records where at least one target field needs updating
+            jpql.append(" AND (sh.purchaseRate IS NULL OR sh.purchaseRate <= 0")
+                .append(" OR sh.retailRate IS NULL OR sh.retailRate <= 0")
+                .append(" OR sh.costRate IS NULL OR sh.costRate <= 0")
+                .append(" OR sh.stockPurchaseValue IS NULL OR sh.stockPurchaseValue <= 0")
+                .append(" OR sh.stockSaleValue IS NULL OR sh.stockSaleValue <= 0")
+                .append(" OR sh.stockCostValue IS NULL OR sh.stockCostValue <= 0)");
+
+            List<StockHistory> stockHistories = stockHistoryFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (stockHistories == null || stockHistories.isEmpty()) {
+                executionFeedback = "No stock history records found for the selected date range.";
+                return;
+            }
+
+            int recordsProcessed = 0;
+            int recordsUpdated = 0;
+            int recordsSkipped = 0;
+
+            for (StockHistory sh : stockHistories) {
+                if (sh == null) {
+                    continue;
+                }
+
+                recordsProcessed++;
+
+                // Get the referenced ItemBatch
+                ItemBatch ib = sh.getItemBatch();
+                if (ib == null) {
+                    recordsSkipped++;
+                    continue;
+                }
+
+                // Check if any fields need updating and apply changes
+                boolean changed = markIfChanged(sh, ib);
+
+                // Only persist if changes were made
+                if (changed) {
+                    stockHistoryFacade.edit(sh);
+                    recordsUpdated++;
+                }
+            }
+
+            output.append("Historical Stock Data Update Results:\n");
+            output.append("Total records processed: ").append(recordsProcessed).append("\n");
+            output.append("Records updated: ").append(recordsUpdated).append("\n");
+            output.append("Records skipped (no ItemBatch): ").append(recordsSkipped).append("\n");
+
+            if (fromDate != null || toDate != null) {
+                output.append("\nDate range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+            }
+
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error updating historical stock data: " + e.getMessage();
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to check if a numeric field should be updated.
+     * Returns true if the existing value is null or <= 0.
+     *
+     * @param existing The current value in the database
+     * @param candidate The new value from ItemBatch (not used in check, but kept for API clarity)
+     * @return true if the field needs updating
+     */
+    private boolean shouldUpdate(Number existing, Number candidate) {
+        if (existing == null) {
+            return true;
+        }
+        double value = existing.doubleValue();
+        return value <= 0.0;
+    }
+
+    /**
+     * Applies selective updates to StockHistory from ItemBatch.
+     * Only updates fields when existing values are null or zero.
+     * Recomputes stock values only when underlying rates or stockQty changed.
+     *
+     * @param sh The StockHistory record to potentially update
+     * @param ib The ItemBatch containing source data
+     * @return true if any changes were made, false otherwise
+     */
+    private boolean markIfChanged(StockHistory sh, ItemBatch ib) {
+        boolean changed = false;
+
+        // Track if rates were updated (will trigger value recalculation)
+        boolean ratesUpdated = false;
+
+        // Update purchaseRate if missing
+        if (shouldUpdate(sh.getPurchaseRate(), ib.getPurcahseRate())) {
+            sh.setPurchaseRate(ib.getPurcahseRate());  // Note: typo in ItemBatch field name
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Update retailRate if missing
+        if (shouldUpdate(sh.getRetailRate(), ib.getRetailsaleRate())) {
+            sh.setRetailRate(ib.getRetailsaleRate());
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Update costRate if missing (handle null properly)
+        if (shouldUpdate(sh.getCostRate(), null)) {
+            Double costRate = ib.getCostRate();
+            sh.setCostRate(costRate != null ? costRate : 0.0);
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Recalculate stock values only if rates were updated or values are missing
+        double stockQty = sh.getStockQty();
+
+        if (ratesUpdated || shouldUpdate(sh.getStockPurchaseValue(), null)) {
+            sh.setStockPurchaseValue(sh.getPurchaseRate() * stockQty);
+            changed = true;
+        }
+
+        if (ratesUpdated || shouldUpdate(sh.getStockSaleValue(), null)) {
+            sh.setStockSaleValue(sh.getRetailRate() * stockQty);
+            changed = true;
+        }
+
+        if (ratesUpdated || shouldUpdate(sh.getStockCostValue(), null)) {
+            sh.setStockCostValue(sh.getCostRate() * stockQty);
+            changed = true;
+        }
+
+        return changed;
+    }
+
     public void addCompletedStateToBills() {
         billController.setOutput("");
 

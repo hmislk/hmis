@@ -145,7 +145,7 @@ public class PharmacyService {
                     || (atm != null && a.equals(atm))
                     || (vmp != null && a.equals(vmp))
                     || (vtm != null && a.equals(vtm))) {
-                return item.getName() + " is not allowed as patient is allergic to " + a.getName();
+                return item.getName() + " is not allowed as patient has allergic to " + a.getName();
             }
         }
 

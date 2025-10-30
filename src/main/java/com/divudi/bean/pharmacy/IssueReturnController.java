@@ -138,6 +138,9 @@ public class IssueReturnController implements Serializable {
         saveSettlingBillComponents();
 
         getReturnBill().setReferenceBill(getOriginalBill());
+        getReturnBill().setCompleted(true);
+        getReturnBill().setCompletedAt(new Date());
+        getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
         getBillFacade().edit(getReturnBill());
 
         getOriginalBill().setRefundedBill(getReturnBill());
@@ -492,10 +495,32 @@ public class IssueReturnController implements Serializable {
             financeDetailsOfReturn.setCostRate(BigDecimal.valueOf(Math.abs(costRate)));
             financeDetailsOfReturn.setRetailSaleRate(BigDecimal.valueOf(Math.abs(retailRate)));
 
+            // Set line-level rates (per unit rates)
+            financeDetailsOfReturn.setLineCostRate(BigDecimal.valueOf(Math.abs(costRate)));
+            financeDetailsOfReturn.setLineGrossRate(BigDecimal.valueOf(Math.abs(retailRate)));
+            financeDetailsOfReturn.setLineNetRate(BigDecimal.valueOf(Math.abs(retailRate)));
+
+            // Set bill-level rates (zero for returns - no additional bill-level costs)
+            financeDetailsOfReturn.setBillCostRate(BigDecimal.ZERO);
+            financeDetailsOfReturn.setBillGrossRate(BigDecimal.ZERO);
+            financeDetailsOfReturn.setBillNetRate(BigDecimal.ZERO);
+
+            // Set total-level rates (same as line-level for returns)
+            financeDetailsOfReturn.setTotalCostRate(BigDecimal.valueOf(Math.abs(costRate)));
+            financeDetailsOfReturn.setGrossRate(BigDecimal.valueOf(Math.abs(retailRate)));
+            financeDetailsOfReturn.setNetRate(BigDecimal.valueOf(Math.abs(retailRate)));
+
+            // Set cost values (positive - stock measure)
+            financeDetailsOfReturn.setLineCost(BigDecimal.valueOf(Math.abs(costValue)));
+            financeDetailsOfReturn.setBillCost(BigDecimal.ZERO);
+            financeDetailsOfReturn.setTotalCost(BigDecimal.valueOf(Math.abs(costValue)));
+
             // All monetary totals are NEGATIVE (money going out/refunded)
             // Use Math.abs() to ensure correct sign
             financeDetailsOfReturn.setLineGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
             financeDetailsOfReturn.setLineNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setBillGrossTotal(BigDecimal.ZERO);
+            financeDetailsOfReturn.setBillNetTotal(BigDecimal.ZERO);
             financeDetailsOfReturn.setGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
             financeDetailsOfReturn.setNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
 
