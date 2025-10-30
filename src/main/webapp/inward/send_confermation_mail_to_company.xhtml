@@ -1,0 +1,345 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
+                >
+
+
+    <ui:define name="content">
+        <h:panelGroup id="panSearch2">
+            <h:form>
+
+                <h:panelGroup  class="row" rendered="#{bhtEditController.current.bhtNo eq null}"> 
+                    <div class="col-12">
+                        <h:panelGroup>
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
+                                    <p:outputLabel value="Edit Admission Details" class="m-2"/>
+                                </f:facet>
+                                <h:outputLabel value="Type Patient Name or BHT : "/>
+
+                                <p:autoComplete 
+                                    widgetVar="aPt" 
+                                    id="acPt" 
+                                    forceSelection="true" 
+                                    required="true" 
+                                    requiredMessage="Please select a patient"
+                                    value="#{bhtEditController.current}"
+                                    completeMethod="#{bhtEditController.completePatient}" 
+                                    var="myItem" 
+                                    itemValue="#{myItem}" 
+                                    itemLabel="#{myItem.bhtNo}" 
+                                    class="mx-2" 
+                                    size="30">
+                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{myItem.patient.phn}"/>
+                                    </p:column>
+                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{myItem.bhtNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
+                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                        <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                                    </p:column>
+                                </p:autoComplete> 
+
+                                <p:commandButton
+                                    id="btnSelect"
+                                    ajax="false"
+                                    value="Select"
+                                    action="#{bhtEditController.navigateToEditAdmissionDetails()}">
+                                </p:commandButton>
+
+                            </p:panel>
+                        </h:panelGroup>
+                    </div>
+
+                </h:panelGroup>
+
+
+                <h:panelGroup  rendered="#{bhtEditController.current.bhtNo ne null}"> 
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-hospital"></h:outputText>
+                                    <h:outputLabel value="Send Confermation Mail to Company" class="mx-4"></h:outputLabel>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-5">
+
+                                <p:panel class="mb-2">  
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-building"></h:outputText>
+                                        <h:outputLabel value="Company Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+
+                                    <div style="line-height: 2; font-size: 22px; font-weight: 600;">
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel value="Company Name " />  </div>
+                                            <div class="col-9"><h:outputLabel value="#{bhtEditController.current.creditCompany.name}" />  </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel value="Credit Limit "  /></div>
+                                            <div class="col-9">
+                                                <h:outputLabel  value="#{bhtEditController.current.creditLimit}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel value="Credit Used "  /></div>
+                                            <div class="col-9">
+                                                <h:outputLabel  value="#{bhtEditController.current.creditUsedAmount}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel value="Description "  rendered="#{bhtEditController.current.creditCompany ne null}" />          </div>
+                                            <div class="col-9">
+                                                <h:outputLabel
+                                                    id="panelCompanyDesc"
+                                                    value="#{bhtEditController.current.creditCompany.descreption}" />
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel value="Policy Number "/></div>
+                                            <div class="col-9"><h:outputLabel value="#{bhtEditController.current.policyNo}" /></div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel value="Reference Number "/></div>
+                                            <div class="col-9"><h:outputLabel value="#{bhtEditController.current.referanceNo}" /></div>
+                                        </div>
+
+                                    </div>
+
+                                </p:panel>
+
+                                <common:patient_details_for_addmission 
+                                    controller="#{bhtEditController}" 
+                                    editable="false">
+                                </common:patient_details_for_addmission>
+
+                                <p:panel class="my-2">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
+                                        <h:outputLabel value="Admission" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="2" class="w-100" >
+
+                                        <p:outputLabel  value="Date of Admission"  />
+                                        <p:datePicker 
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            value="#{bhtEditController.current.dateOfAdmission}"
+                                            pattern="dd/MM/yyyy hh mm ss a" 
+                                            showTime="true"
+                                            yearNavigator="true"
+                                            monthNavigator="true"
+                                            showButtonBar="true"
+                                            timeInput="true">
+                                            <f:ajax event="dateSelect" execute="@this" />
+                                        </p:datePicker>
+
+                                        <p:outputLabel  value="BHT No(full)"  />
+                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.bhtNo}" ></p:inputText>
+
+                                        <p:outputLabel  value="Consultant"  />
+                                        <p:autoComplete 
+                                            forceSelection="true" 
+                                            value="#{bhtEditController.current.referringConsultant}" 
+                                            id="refCon"
+                                            completeMethod="#{consultantController.completeConsultant}" 
+                                            var="mysp" 
+                                            itemLabel="#{mysp.person.name}" 
+                                            itemValue="#{mysp}"
+                                            styleClass="form-control w-100"
+                                            class="w-100" 
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
+
+                                        <p:outputLabel  value="Medical Officer"  />
+                                        <p:autoComplete 
+                                            forceSelection="true" 
+                                            id="scStaff" 
+                                            placeholder="OPD Doctor"
+                                            value="#{bhtEditController.current.opdDoctor}" 
+                                            completeMethod="#{doctorController.completeDoctor}"
+                                            var="mys" 
+                                            itemLabel="#{mys.person.name}" 
+                                            itemValue="#{mys}"
+                                            styleClass="form-control w-100"
+                                            class="w-100" 
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
+
+                                        <p:outputLabel  value="Doctor who referred patient"  />
+                                        <p:autoComplete 
+                                            forceSelection="true"
+                                            value="#{bhtEditController.current.referringDoctor}"
+                                            completeMethod="#{doctorController.completeDoctor}" 
+                                            var="ix"
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}" 
+                                            styleClass="form-control w-100"
+                                            class="w-100" 
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
+
+                                        <p:outputLabel  value="Staff who referred patient"  />
+                                        <p:autoComplete 
+                                            forceSelection="true"
+                                            value="#{bhtEditController.current.referringStaff}"
+                                            completeMethod="#{staffController.completeStaff}" 
+                                            var="ix"
+                                            class="w-100 form-control" 
+                                            styleClass="w-100" 
+                                            inputStyleClass="w-100"
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}">
+                                        </p:autoComplete>
+
+                                        <p:outputLabel  value="Referral Institution"  />
+                                        <p:autoComplete 
+                                            forceSelection="true" 
+                                            value="#{bhtEditController.current.referredByInstitution}"
+                                            completeMethod="#{institutionController.completeIns}" 
+                                            var="refi"
+                                            itemLabel="#{refi.name}" 
+                                            itemValue="#{refi}" 
+                                            class="w-100 form-control" 
+                                            styleClass="w-100" 
+                                            inputStyleClass="w-100">
+                                            <p:column headerText="Name">#{refi.name}</p:column>
+                                            <p:column headerText="Code">#{refi.institutionCode}</p:column>
+                                            <p:column headerText="Institution Type">#{refi.institutionType}</p:column>
+                                        </p:autoComplete>
+
+                                        <p:outputLabel  value="Workplace"  />
+                                        <p:autoComplete  
+                                            forceSelection="true" 
+                                            value="#{bhtEditController.current.workplace}"
+                                            completeMethod="#{institutionController.completeIns}" 
+                                            var="mysp"
+                                            itemLabel="#{mysp.name}" 
+                                            itemValue="#{mysp}" 
+                                            class="w-100 form-control" 
+                                            styleClass="w-100" 
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
+
+                                        <p:outputLabel  value="Referral Number"  />
+                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.referralId}" ></p:inputText>
+
+                                        <p:outputLabel  value="Local/Foreigner"  />
+                                        <p:selectBooleanCheckbox 
+                                            value="#{bhtEditController.current.foriegner}" 
+                                            itemLabel="Foreigner">
+                                        </p:selectBooleanCheckbox>
+
+                                        <p:outputLabel  class="w-100"  value="Claimable/Non-Claimable"  />
+                                        <p:selectBooleanCheckbox 
+                                            value="#{bhtEditController.current.claimable}" 
+                                            itemLabel="Claimable">
+                                        </p:selectBooleanCheckbox>
+
+                                    </h:panelGrid>
+                                </p:panel>  
+
+                            </div>
+                            <div class="col-7">
+
+                                <p:panel>  
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex gap-2 mt-2" style="font-size: 22px;">
+                                                <h:outputText styleClass="fa fa-envelope mt-2"></h:outputText>
+                                                <h:outputLabel value="Massage" class="mx-2"></h:outputLabel>
+                                            </div>
+
+                                            <p:commandButton 
+                                                ajax="false"
+                                                value="Send Mail"
+                                                title="Send confermation mail to Company"
+                                                action="#{bhtEditController.sendEmailToCompany()}"
+                                                icon="fa fa-paper-plane"
+                                                class="ui-button-stores" >
+                                            </p:commandButton>
+                                        </div>
+
+                                    </f:facet>
+
+                                    <div class="row my-3">
+                                        <div class="col-2" style="font-weight: 600;">
+                                            <p:outputLabel
+                                                class="mt-1"
+                                                for="emailSubject"
+                                                rendered="true"
+                                                value="Email Subject"
+                                                style="font-weight: 600; font-size: 22px;">
+                                            </p:outputLabel>
+                                        </div>
+                                        <div class="col-10">
+                                            <p:inputText 
+                                                id="emailSubject"
+                                                required="true"
+                                                class="w-100" 
+                                                value="#{bhtEditController.subject}"
+                                                placeholder="Email Subject" >
+                                            </p:inputText>
+                                        </div>
+                                    </div>
+
+                                    <hr/>
+
+                                    <div>
+                                        <p:textEditor 
+                                            style="zoom: 1.4;"
+                                            value="#{bhtEditController.emailBoday}"
+                                            secure="false" 
+                                            height="500"
+                                            >
+                                        </p:textEditor>
+                                    </div>
+
+                                </p:panel>
+
+                            </div>
+                        </div>
+
+
+                    </p:panel>
+
+                </h:panelGroup>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
