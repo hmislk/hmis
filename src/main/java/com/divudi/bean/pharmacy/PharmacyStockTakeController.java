@@ -1822,9 +1822,16 @@ public class PharmacyStockTakeController implements Serializable {
             apbi.setQty(variance);
             if (stock != null) {
                 double before = stock.getStock();
-                double target = bi.getQty() == null ? before : bi.getQty();
+                // Always use the physical count qty as target (including zero)
+                // getQty() never returns null, it converts null to 0.0
+                double target = bi.getQty();
                 apbi.setBeforeAdjustmentValue(before);
                 apbi.setAfterAdjustmentValue(target);
+                LOGGER.log(Level.INFO, "[StockTake] Setting target for adjustment: itemCode={0}, batch={1}, before={2}, physicalQty={3}, target={4}, variance={5}",
+                        new Object[]{bi.getItem() != null ? bi.getItem().getCode() : "null",
+                                   bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null ? bi.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "null",
+                                   before, bi.getQty(), target, variance}
+                );
             }
             abi.setPharmaceuticalBillItem(apbi);
             // Persist only BillItem; PharmaceuticalBillItem is cascaded
