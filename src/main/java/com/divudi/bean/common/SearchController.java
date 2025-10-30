@@ -9897,6 +9897,16 @@ public class SearchController implements Serializable {
 
     }
 
+    public void searchOpdCancellationBills() {
+        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+        checkLabReportsApproved(bills);
+
+    }
+
     @Deprecated
     public void listPaymentsExtra() {
         String jpql = "select p "
