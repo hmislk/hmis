@@ -1605,6 +1605,15 @@ public class GrnCostingController implements Serializable {
     }
 
     private void applyFinanceDetailsToPharmaceutical(BillItem bi) {
+        applyFinanceDetailsToPharmaceutical(bi, false);
+    }
+
+    /**
+     * Apply finance details to pharmaceutical bill item
+     * @param bi BillItem to process
+     * @param preserveDistributedCosts If true, preserve costRate/valueAtCostRate that include bill-level costs
+     */
+    private void applyFinanceDetailsToPharmaceutical(BillItem bi, boolean preserveDistributedCosts) {
         if (bi == null) {
             return;
         }
@@ -1616,7 +1625,11 @@ public class GrnCostingController implements Serializable {
             return;
         }
 
-        recalculateFinancialsBeforeAddingBillItem(f);
+        if (preserveDistributedCosts) {
+            recalculateFinancialsBeforeAddingBillItemPreservingDistributedCosts(f);
+        } else {
+            recalculateFinancialsBeforeAddingBillItem(f);
+        }
 
         if (bi.getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack())
@@ -2931,7 +2944,8 @@ public class GrnCostingController implements Serializable {
 
             // Apply standardized finance details conversion
             // Items already have correct totalCostRate from distribution above
-            applyFinanceDetailsToPharmaceutical(grnBillItem);
+            // Use preserveDistributedCosts=true to keep costRate/valueAtCostRate that include bill-level costs
+            applyFinanceDetailsToPharmaceutical(grnBillItem, true);
 
             // Create/update item batch for stock management with costing respect
             ItemBatch itemBatch;
@@ -3446,6 +3460,36 @@ public class GrnCostingController implements Serializable {
 
         pbi.setQty(qtyInUnits.doubleValue());
         pbi.setFreeQty(freeQtyInUnits.doubleValue());
+    }
+
+    /**
+     * Recalculate line-level financial values while preserving distributed bill-level costs.
+     * This method is used during settlement/finalization after distributeProportionalBillValuesToItems
+     * has already been called. It preserves the costRate and valueAtCostRate that include bill-level costs.
+     *
+     * @param billItemFinanceDetails
+     */
+    public void recalculateFinancialsBeforeAddingBillItemPreservingDistributedCosts(BillItemFinanceDetails billItemFinanceDetails) {
+        // First call the normal recalculation to set all line-level values
+        recalculateFinancialsBeforeAddingBillItem(billItemFinanceDetails);
+
+        // Then restore the costRate and valueAtCostRate from totalCostRate which includes bill-level costs
+        BigDecimal totalCostRate = billItemFinanceDetails.getTotalCostRate();
+        if (totalCostRate != null && totalCostRate.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+
+            // Restore costRate (per pack for AMPP, per unit for AMP)
+            BigDecimal costRate = BigDecimalUtil.multiply(totalCostRate, unitsPerPack);
+            billItemFinanceDetails.setCostRate(costRate);
+
+            // Restore valueAtCostRate (totalQtyByUnits × totalCostRate)
+            BigDecimal totalQtyByUnits = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getTotalQuantityByUnits());
+            BigDecimal valueAtCostRate = BigDecimalUtil.multiply(totalQtyByUnits, totalCostRate);
+            billItemFinanceDetails.setValueAtCostRate(valueAtCostRate);
+        }
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {
