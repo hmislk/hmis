@@ -250,6 +250,26 @@
                                         <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
                                     </p:commandButton>
                                     <p:commandButton 
+                                        value="Blacklist Patient"
+                                        action="#{patientController.toggleBlacklistPatient(patientController.current, true)}"
+                                        ajax="false"
+                                        rendered="#{!patientController.current.blacklisted}"
+                                        styleClass="mx-2 ui-button-danger"
+                                        icon="fa fa-ban"
+                                        onclick="return confirm('Are you sure you want to blacklist this patient?');">
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        value="Revert Blacklist Patient"
+                                        action="#{patientController.toggleBlacklistPatient(patientController.current, false)}"
+                                        ajax="false"
+                                        rendered="#{patientController.current.blacklisted}"
+                                        styleClass="mx-2 ui-button-danger"
+                                        icon="fa fa-ban"
+                                        onclick="return confirm('Are you sure you want to blacklist this patient?');">
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
                                         value="Delete Patient"
                                         action="#{patientController.deletePatient()}"
                                         ajax="false"
