@@ -550,7 +550,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return;
         }
         
-        if (getCurrentCompany().getEmail() == null || getCurrentCompany().getEmail().trim().equalsIgnoreCase("")) {
+        if (getCurrentCompany().getContactPerson().getEmail() == null || getCurrentCompany().getContactPerson().getEmail().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Company Email is Missing");
             return;
         }
@@ -558,7 +558,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
         email.setCreater(sessionController.getLoggedUser());
-        email.setReceipientEmail(getCurrentCompany().getEmail());
+        email.setReceipientEmail(getCurrentCompany().getContactPerson().getEmail());
         email.setMessageSubject(getSubject());
         email.setMessageBody(getEmailBoday());
         email.setDepartment(sessionController.getLoggedUser().getDepartment());
