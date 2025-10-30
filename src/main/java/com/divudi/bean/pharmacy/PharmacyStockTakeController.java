@@ -133,17 +133,17 @@ public class PharmacyStockTakeController implements Serializable {
         // Null check for injected dependencies
         if (webUserController == null) {
             JsfUtil.addErrorMessage("System error: Web user controller not available");
-            LOGGER.log(Level.SEVERE, "webUserController is null in generateStockCountBill");
+            //LOGGER.log(Level.SEVERE, "webUserController is null in generateStockCountBill");
             return null;
         }
         if (sessionController == null) {
             JsfUtil.addErrorMessage("System error: Session controller not available");
-            LOGGER.log(Level.SEVERE, "sessionController is null in generateStockCountBill");
+            //LOGGER.log(Level.SEVERE, "sessionController is null in generateStockCountBill");
             return null;
         }
         if (stockFacade == null) {
             JsfUtil.addErrorMessage("System error: Stock facade not available");
-            LOGGER.log(Level.SEVERE, "stockFacade is null in generateStockCountBill");
+            //LOGGER.log(Level.SEVERE, "stockFacade is null in generateStockCountBill");
             return null;
         }
 
@@ -243,7 +243,7 @@ public class PharmacyStockTakeController implements Serializable {
             // Get stock entity from map
             Stock s = stockMap.get(dto.getStockId());
             if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
-                LOGGER.log(Level.WARNING, "Stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
+                //LOGGER.log(Level.WARNING, "Stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
                 continue;
             }
 
@@ -361,7 +361,7 @@ public class PharmacyStockTakeController implements Serializable {
                         // Get stock entity from map
                         Stock zs = zeroStockMap.get(dto.getStockId());
                         if (zs == null || zs.getItemBatch() == null || zs.getItemBatch().getItem() == null) {
-                            LOGGER.log(Level.WARNING, "Zero-stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
+                            //LOGGER.log(Level.WARNING, "Zero-stock entity not found or incomplete. Stock ID: {0}", dto.getStockId());
                             continue;
                         }
 
@@ -415,8 +415,8 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Start async stock count bill generation with progress tracking.
-     * This is the recommended method for large departments to avoid timeouts.
+     * Start async stock count bill generation with progress tracking. This is
+     * the recommended method for large departments to avoid timeouts.
      */
     public String generateStockCountBillAsync() {
         // Check privilege
@@ -439,11 +439,11 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Start async generation
         stockCountGenerationService.generateStockCountBillAsync(
-            generationJobId,
-            department,
-            includeZeroStockBatches,
-            zeroStockBatchLimit,
-            sessionController.getLoggedUser()
+                generationJobId,
+                department,
+                includeZeroStockBatches,
+                zeroStockBatchLimit,
+                sessionController.getLoggedUser()
         );
 
         JsfUtil.addSuccessMessage("Stock count generation started. Please wait...");
@@ -451,8 +451,8 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Check progress of async stock count generation.
-     * Called by polling mechanism on progress page.
+     * Check progress of async stock count generation. Called by polling
+     * mechanism on progress page.
      */
     public void checkGenerationProgress() {
         // This method is called by p:poll, no action needed
@@ -461,6 +461,7 @@ public class PharmacyStockTakeController implements Serializable {
 
     /**
      * Get current generation progress.
+     *
      * @return Progress object or null if no job in progress
      */
     public StockCountGenerationTracker.Progress getGenerationProgress() {
@@ -471,8 +472,8 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Complete the generation process and load the generated bill.
-     * Called when progress indicates completion.
+     * Complete the generation process and load the generated bill. Called when
+     * progress indicates completion.
      */
     public String completeGeneration() {
         if (generationJobId == null) {
@@ -503,8 +504,8 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill = progress.getGeneratedBill();
 
         if (snapshotBill != null) {
-            JsfUtil.addSuccessMessage("Stock count bill generated successfully with " +
-                snapshotBill.getBillItems().size() + " items");
+            JsfUtil.addSuccessMessage("Stock count bill generated successfully with "
+                    + snapshotBill.getBillItems().size() + " items");
             stockCountGenerationTracker.remove(generationJobId);
             generationJobId = null;
             // User can now review and click "Record/Settle Stock Count" to persist
@@ -533,7 +534,7 @@ public class PharmacyStockTakeController implements Serializable {
         Department deptFromBill = snapshotBill.getDepartment();
         if (deptFromBill != null && hasOngoingStockTaking(deptFromBill)) {
             JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department. Please complete the existing session first.");
-            LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
+            //LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
             return null;
         }
         // Ensure fresh persistence for a new bill: null out IDs if bill is new
@@ -588,13 +589,13 @@ public class PharmacyStockTakeController implements Serializable {
     private StreamedContent generateSheet(boolean includeSystemQty, String fileName) {
         // Null check for required parameters
         if (snapshotBill == null) {
-            LOGGER.log(Level.WARNING, "Cannot generate sheet. snapshotBill is null");
+//                    //LOGGER.log(Level.WARNING, "Cannot generate sheet. snapshotBill is null");
             return null;
         }
 
         // Null check for billItemFacade
         if (billItemFacade == null) {
-            LOGGER.log(Level.SEVERE, "billItemFacade is null in generateSheet");
+//                    //LOGGER.log(Level.SEVERE, "billItemFacade is null in generateSheet");
             return null;
         }
 
@@ -606,20 +607,20 @@ public class PharmacyStockTakeController implements Serializable {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             XSSFSheet sheet = wb.createSheet("Stock");
             if (sheet == null) {
-                LOGGER.log(Level.SEVERE, "Failed to create Excel sheet");
+//                //LOGGER.log(Level.SEVERE, "Failed to create Excel sheet");
                 return null;
             }
 
             // Helpers and formats
             CreationHelper creationHelper = wb.getCreationHelper();
             if (creationHelper == null) {
-                LOGGER.log(Level.SEVERE, "Failed to get CreationHelper");
+//                //LOGGER.log(Level.SEVERE, "Failed to get CreationHelper");
                 return null;
             }
 
             DataFormat dataFormat = wb.createDataFormat();
             if (dataFormat == null) {
-                LOGGER.log(Level.SEVERE, "Failed to get DataFormat");
+//                //LOGGER.log(Level.SEVERE, "Failed to get DataFormat");
                 return null;
             }
 
@@ -671,7 +672,7 @@ public class PharmacyStockTakeController implements Serializable {
             // Header
             Row header = sheet.createRow(0);
             if (header == null) {
-                LOGGER.log(Level.SEVERE, "Failed to create header row");
+                //LOGGER.log(Level.SEVERE, "Failed to create header row");
                 return null;
             }
 
@@ -959,7 +960,7 @@ public class PharmacyStockTakeController implements Serializable {
                 try {
                     sheet.autoSizeColumn(i);
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Failed to autosize column " + i, e);
+                    //LOGGER.log(Level.WARNING, "Failed to autosize column " + i, e);
                 }
             }
 
@@ -967,7 +968,7 @@ public class PharmacyStockTakeController implements Serializable {
             wb.write(out);
             byte[] bytes = out.toByteArray();
             if (bytes == null || bytes.length == 0) {
-                LOGGER.log(Level.SEVERE, "Failed to generate Excel file bytes");
+                //LOGGER.log(Level.SEVERE, "Failed to generate Excel file bytes");
                 return null;
             }
 
@@ -978,11 +979,11 @@ public class PharmacyStockTakeController implements Serializable {
                     .stream(() -> in)
                     .build();
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error generating sheet", e);
+            //LOGGER.log(Level.SEVERE, "Error generating sheet", e);
             JsfUtil.addErrorMessage("Error generating sheet: " + e.getMessage());
             return null;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error generating sheet", e);
+            //LOGGER.log(Level.SEVERE, "Unexpected error generating sheet", e);
             JsfUtil.addErrorMessage("Unexpected error: " + e.getMessage());
             return null;
         }
@@ -994,10 +995,22 @@ public class PharmacyStockTakeController implements Serializable {
     public void parseUploadedSheet() {
         LOGGER.log(Level.INFO, "[StockTake] parseUploadedSheet() called. snapshotBillId={0}, fileName={1}",
                 new Object[]{snapshotBill != null ? snapshotBill.getId() : null, file != null ? file.getFileName() : null});
+
+        System.out.println("=== DEBUG: parseUploadedSheet() START ===");
+
         if (snapshotBill == null) {
             JsfUtil.addErrorMessage("No snapshot available");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. snapshotBill is null");
+            System.out.println("DEBUG: snapshotBill is NULL!");
             return;
+        }
+
+        System.out.println("DEBUG: snapshotBill.id = " + snapshotBill.getId());
+        System.out.println("DEBUG: snapshotBill.billItems = " + (snapshotBill.getBillItems() != null ? snapshotBill.getBillItems().size() : "NULL"));
+        if (snapshotBill.getBillItems() != null && !snapshotBill.getBillItems().isEmpty()) {
+            BillItem firstItem = snapshotBill.getBillItems().iterator().next();
+            System.out.println("DEBUG: First billItem.id = " + firstItem.getId());
+            System.out.println("DEBUG: First billItem.pharmaceuticalBillItem = " + (firstItem.getPharmaceuticalBillItem() != null ? "NOT NULL" : "NULL"));
         }
 
         // Check if the stock taking is already completed
@@ -1034,12 +1047,12 @@ public class PharmacyStockTakeController implements Serializable {
 //            if (colRealStock < 0) {
 //                // User 
 //                JsfUtil.addErrorMessage("Column 'Real Stock Qty' not found in the uploaded file. Please use the exported template and fill quantities.");
-//                LOGGER.log(Level.WARNING, "[StockTake] Missing required column: Real Stock Qty");
+//                //LOGGER.log(Level.WARNING, "[StockTake] Missing required column: Real Stock Qty");
 //                return;
 //            }
 //            if (colBillItemId < 0 && (colCode < 0 || colBatch < 0)) {
 //                JsfUtil.addErrorMessage("Unable to identify items. Ensure either 'BillItem ID' or both 'Code' and 'Batch' columns exist.");
-//                LOGGER.log(Level.WARNING, "[StockTake] Unable to match items. Missing BillItem ID and/or Code+Batch");
+//                //LOGGER.log(Level.WARNING, "[StockTake] Unable to match items. Missing BillItem ID and/or Code+Batch");
 //                return;
 //            }
 
@@ -1047,6 +1060,9 @@ public class PharmacyStockTakeController implements Serializable {
             int matched = 0;
             int skippedNoQty = 0;
             int skippedNoMatch = 0;
+
+            System.out.println("DEBUG: Starting to process rows. Total rows: " + sheet.getLastRowNum());
+
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) {
@@ -1056,8 +1072,12 @@ public class PharmacyStockTakeController implements Serializable {
                 String batch = colBatch >= 0 ? getString(row, colBatch) : null;
                 // If Real Stock is blank, skip the row (do not treat as zero)
                 Double physicalObj = colRealStock >= 0 ? getDoubleNullable(row, colRealStock) : null;
+
+                System.out.println("DEBUG: Row " + i + " - code=" + code + ", batch=" + batch + ", physical=" + physicalObj);
+
                 if (physicalObj == null) {
                     skippedNoQty++;
+                    System.out.println("DEBUG: Row " + i + " - SKIPPED (No Qty)");
                     continue;
                 }
                 double physical = physicalObj;
@@ -1066,15 +1086,20 @@ public class PharmacyStockTakeController implements Serializable {
                 BillItem snapItem = null;
                 if (colBillItemId >= 0) {
                     Long bid = getLongNullable(row, colBillItemId);
+                    System.out.println("DEBUG: Row " + i + " - Trying to find by BillItem ID: " + bid);
                     if (bid != null && bid > 0) {
                         snapItem = findSnapshotBillItemById(bid);
+                        System.out.println("DEBUG: Row " + i + " - Found by ID? " + (snapItem != null));
                     }
                 }
                 if (snapItem == null && code != null && batch != null) {
+                    System.out.println("DEBUG: Row " + i + " - Trying to find by Code+Batch: " + code + " / " + batch);
                     snapItem = findSnapshotBillItem(code, batch);
+                    System.out.println("DEBUG: Row " + i + " - Found by Code+Batch? " + (snapItem != null));
                 }
                 if (snapItem == null) {
                     skippedNoMatch++;
+                    System.out.println("DEBUG: Row " + i + " - SKIPPED (No Match)");
                     continue;
                 }
                 matched++;
@@ -1087,19 +1112,30 @@ public class PharmacyStockTakeController implements Serializable {
                 bi.setReferanceBillItem(snapItem);
 
                 // Calculate variance against current stock (not starting count)
-                Stock currentStock = snapItem.getPharmaceuticalBillItem().getStock();
+                PharmaceuticalBillItem snapPbi = snapItem.getPharmaceuticalBillItem();
+                Stock currentStock = (snapPbi != null) ? snapPbi.getStock() : null;
                 double currentStockQty = (currentStock != null && currentStock.getStock() != null)
-                    ? currentStock.getStock() : 0.0;
+                        ? currentStock.getStock() : snapItem.getQty();
                 bi.setAdjustedValue(physical - currentStockQty);
 
                 PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                 pbi.setBillItem(bi);
-                pbi.setItemBatch(snapItem.getPharmaceuticalBillItem().getItemBatch());
-                pbi.setStock(currentStock); // Store stock reference for approval process
+                if (snapPbi != null) {
+                    pbi.setItemBatch(snapPbi.getItemBatch());
+                    pbi.setStock(currentStock); // Store stock reference for approval process
+                }
                 pbi.setQty(physical);
                 bi.setPharmaceuticalBillItem(pbi);
                 physicalCountBill.getBillItems().add(bi);
             }
+
+            System.out.println("=== DEBUG: parseUploadedSheet() SUMMARY ===");
+            System.out.println("DEBUG: Processed rows: " + processed);
+            System.out.println("DEBUG: Matched items: " + matched);
+            System.out.println("DEBUG: Skipped (no qty): " + skippedNoQty);
+            System.out.println("DEBUG: Skipped (no match): " + skippedNoMatch);
+            System.out.println("=== DEBUG: parseUploadedSheet() END ===");
+
             LOGGER.log(Level.INFO, "[StockTake] Parse completed. processedRows={0}, matchedItems={1}, skippedNoQty={2}, skippedNoMatch={3}",
                     new Object[]{processed, matched, skippedNoQty, skippedNoMatch});
             if (matched == 0) {
@@ -1123,9 +1159,19 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
         parseUploadedSheet();
-        if (physicalCountBill == null || physicalCountBill.getBillItems() == null || physicalCountBill.getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Could not process the upload. Please verify the file and try again.");
-            LOGGER.log(Level.WARNING, "[StockTake] Persist aborted. physicalCountBill is null or no items parsed");
+        if (physicalCountBill == null) {
+            JsfUtil.addErrorMessage("Could not process the upload. physicalCountBill is null.");
+            LOGGER.log(Level.WARNING, "[StockTake] Persist aborted. physicalCountBill is null");
+            return null;
+        }
+        if (physicalCountBill.getBillItems() == null) {
+            JsfUtil.addErrorMessage("Could not process the upload. physicalCountBill.getBillItems() == null.");
+            LOGGER.log(Level.WARNING, "[StockTake] Persist aborted. physicalCountBill.getBillItems() == null");
+            return null;
+        }
+        if (physicalCountBill.getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Could not process the upload. physicalCountBill.getBillItems().isEmpty()");
+            LOGGER.log(Level.WARNING, "[StockTake] Persist aborted. physicalCountBill.getBillItems().isEmpty()");
             return null;
         }
         if (physicalCountBill.getId() == null) {
@@ -1156,6 +1202,7 @@ public class PharmacyStockTakeController implements Serializable {
                 billItemFacade.edit(bi);
             }
         }
+        printPreview=false;
         JsfUtil.addSuccessMessage("Upload processed successfully. Items parsed: " + physicalCountBill.getBillItems().size());
         return "/pharmacy/pharmacy_stock_take_review?faces-redirect=true";
     }
@@ -1348,14 +1395,19 @@ public class PharmacyStockTakeController implements Serializable {
 
     // Navigate to upload adjustments page with the selected snapshot
     public String gotoUploadAdjustments(Bill b) {
+        System.out.println("=== DEBUG: gotoUploadAdjustments() called ===");
         if (b == null) {
+            System.out.println("DEBUG: Bill parameter is NULL");
             return null;
         }
+
+        System.out.println("DEBUG: Bill.id = " + b.getId());
+        System.out.println("DEBUG: Bill.billItems = " + (b.getBillItems() != null ? b.getBillItems().size() : "NULL"));
 
         // Check if the stock taking is already completed
         if (b.isCompleted()) {
             JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session. This stock taking has already been closed.");
-            LOGGER.log(Level.WARNING, "[StockTake] Attempted to upload to completed stock taking. billId={0}", b.getId());
+            //LOGGER.log(Level.WARNING, "[StockTake] Attempted to upload to completed stock taking. billId={0}", b.getId());
             return null;
         }
 
@@ -1364,15 +1416,45 @@ public class PharmacyStockTakeController implements Serializable {
         this.department = b.getDepartment();
         this.file = null;
         this.physicalCountBill = null;
+
+        System.out.println("DEBUG: After assignment, snapshotBill.billItems = " + (this.snapshotBill.getBillItems() != null ? this.snapshotBill.getBillItems().size() : "NULL"));
+
         return "/pharmacy/pharmacy_stock_take_upload?faces-redirect=true";
     }
 
     // Overload: navigate using id (for DTO rows)
     public String gotoUploadAdjustmentsById(Long billId) {
+        System.out.println("=== DEBUG: gotoUploadAdjustmentsById() called with billId=" + billId + " ===");
         if (billId == null) {
             return null;
         }
-        Bill b = billFacade.find(billId);
+        // Eagerly fetch bill with items and pharmaceutical bill items for upload matching
+        // Step 1: Fetch bill with billItems
+        String jpql = "select distinct b from Bill b "
+                + "left join fetch b.billItems "
+                + "where b.id = :billId";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        System.out.println("DEBUG: Executing eager fetch query for Bill...");
+        Bill b = billFacade.findFirstByJpql(jpql, params);
+        System.out.println("DEBUG: After Step 1, billItems = " + (b != null && b.getBillItems() != null ? b.getBillItems().size() : "NULL"));
+
+        if (b != null && b.getBillItems() != null) {
+            // Step 2: Fetch PharmaceuticalBillItems for each BillItem
+            String jpql2 = "select bi from BillItem bi "
+                    + "left join fetch bi.pharmaceuticalBillItem pbi "
+                    + "left join fetch pbi.stock "
+                    + "left join fetch pbi.itemBatch "
+                    + "where bi.bill.id = :billId";
+            System.out.println("DEBUG: Executing eager fetch query for PharmaceuticalBillItems...");
+            billItemFacade.findByJpql(jpql2, params);
+            System.out.println("DEBUG: After Step 2 (eager fetch), billItems size = " + b.getBillItems().size());
+        }
+
+        if (b == null) {
+            System.out.println("DEBUG: Bill was null after eager fetch, falling back to billFacade.find()");
+            b = billFacade.find(billId); // Fallback to regular find
+        }
         return gotoUploadAdjustments(b);
     }
 
@@ -1589,7 +1671,7 @@ public class PharmacyStockTakeController implements Serializable {
                 new Object[]{snapshotBill != null ? snapshotBill.getId() : null, physicalCountBill != null ? physicalCountBill.getId() : null});
         if (physicalCountBill == null || physicalCountBill.getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No physical counts to save");
-            LOGGER.log(Level.WARNING, "[StockTake] No physical counts to save. physicalCountBill is null or items empty");
+            //LOGGER.log(Level.WARNING, "[StockTake] No physical counts to save. physicalCountBill is null or items empty");
             return;
         }
 
@@ -1640,15 +1722,15 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     public void approvePhysicalCount() {
-        LOGGER.log(Level.INFO, "[StockTake] approvePhysicalCount() called. pcBillId={0}", new Object[]{physicalCountBill != null ? physicalCountBill.getId() : null});
+        //LOGGER.log(Level.INFO, "[StockTake] approvePhysicalCount() called. pcBillId={0}", new Object[]{physicalCountBill != null ? physicalCountBill.getId() : null});
         if (physicalCountBill == null) {
             JsfUtil.addErrorMessage("No physical count available");
-            LOGGER.log(Level.WARNING, "[StockTake] Approve failed. physicalCountBill is null");
+            //LOGGER.log(Level.WARNING, "[StockTake] Approve failed. physicalCountBill is null");
             return;
         }
         if (!webUserController.hasPrivilege(Privileges.PharmacyStockTakeApprove.toString())) {
             JsfUtil.addErrorMessage("Not authorized");
-            LOGGER.log(Level.WARNING, "[StockTake] Approve failed. User lacks privilege PharmacyStockTakeApprove");
+            //LOGGER.log(Level.WARNING, "[StockTake] Approve failed. User lacks privilege PharmacyStockTakeApprove");
             return;
         }
         Department dept = physicalCountBill.getDepartment();
@@ -1716,11 +1798,11 @@ public class PharmacyStockTakeController implements Serializable {
         adjustmentBill.setBackwardReferenceBill(physicalCountBill);
         physicalCountBill.setForwardReferenceBill(adjustmentBill);
         billFacade.create(adjustmentBill);
-        LOGGER.log(Level.INFO, "[StockTake] Created Adjustment bill. id={0}, deptId={1}", new Object[]{adjustmentBill.getId(), adjustmentBill.getDeptId()});
+        //LOGGER.log(Level.INFO, "[StockTake] Created Adjustment bill. id={0}, deptId={1}", new Object[]{adjustmentBill.getId(), adjustmentBill.getDeptId()});
         for (BillItem bi : physicalCountBill.getBillItems()) {
             double variance = bi.getAdjustedValue();
             if (variance == 0) {
-                LOGGER.log(Level.FINE, "[StockTake] Skipping zero variance. refItemId={0}", new Object[]{bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null});
+                //LOGGER.log(Level.FINE, "[StockTake] Skipping zero variance. refItemId={0}", new Object[]{bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null});
                 continue;
             }
             BillItem abi = new BillItem();
@@ -1753,9 +1835,10 @@ public class PharmacyStockTakeController implements Serializable {
                 double targetQty = apbi.getAfterAdjustmentValue();
                 boolean ok = pharmacyBean.resetStock(apbi, stock, targetQty, dept);
                 LOGGER.log(Level.INFO, "[StockTake] Posted adjustment line. adjItemId={0}, refItemId={1}, stockId={2}, before={3}, after={4}, variance={5}, resetOk={6}",
-                        new Object[]{abi.getId(), bi.getId(), stock.getId(), apbi.getBeforeAdjustmentValue(), apbi.getAfterAdjustmentValue(), variance, ok});
+                        new Object[]{abi.getId(), bi.getId(), stock.getId(), apbi.getBeforeAdjustmentValue(), apbi.getAfterAdjustmentValue(), variance, ok}
+                );
             } else {
-                LOGGER.log(Level.WARNING, "[StockTake] No stock linked to snapshot item. refItemId={0}", new Object[]{bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null});
+                //LOGGER.log(Level.WARNING, "[StockTake] No stock linked to snapshot item. refItemId={0}", new Object[]{bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null});
             }
         }
         physicalCountBill.setApproveUser(sessionController.getLoggedUser());
@@ -1763,7 +1846,8 @@ public class PharmacyStockTakeController implements Serializable {
         billFacade.edit(physicalCountBill);
         billFacade.edit(adjustmentBill);
         LOGGER.log(Level.INFO, "[StockTake] Approval completed. pcBillId={0}, adjBillId={1}, adjItems={2}",
-                new Object[]{physicalCountBill.getId(), adjustmentBill.getId(), adjustmentBill.getBillItems() != null ? adjustmentBill.getBillItems().size() : 0});
+                new Object[]{physicalCountBill.getId(), adjustmentBill.getId(), adjustmentBill.getBillItems() != null ? adjustmentBill.getBillItems().size() : 0}
+        );
 
         // Set printPreview to true to show the print section
         this.printPreview = true;
@@ -1913,13 +1997,13 @@ public class PharmacyStockTakeController implements Serializable {
     private StreamedContent generateCategorySheet(boolean includeSystemQty, String fileName) {
         // Null check for required parameters
         if (snapshotBill == null || selectedCategory == null) {
-            LOGGER.log(Level.WARNING, "Cannot generate category sheet. snapshotBill or selectedCategory is null");
+            //LOGGER.log(Level.WARNING, "Cannot generate category sheet. snapshotBill or selectedCategory is null");
             return null;
         }
 
         // Null check for billItemFacade
         if (billItemFacade == null) {
-            LOGGER.log(Level.SEVERE, "billItemFacade is null in generateCategorySheet");
+            //LOGGER.log(Level.SEVERE, "billItemFacade is null in generateCategorySheet");
             return null;
         }
 
@@ -1931,20 +2015,20 @@ public class PharmacyStockTakeController implements Serializable {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             XSSFSheet sheet = wb.createSheet("Stock");
             if (sheet == null) {
-                LOGGER.log(Level.SEVERE, "Failed to create Excel sheet");
+                //LOGGER.log(Level.SEVERE, "Failed to create Excel sheet");
                 return null;
             }
 
             // Helpers and formats
             CreationHelper creationHelper = wb.getCreationHelper();
             if (creationHelper == null) {
-                LOGGER.log(Level.SEVERE, "Failed to get CreationHelper");
+                //LOGGER.log(Level.SEVERE, "Failed to get CreationHelper");
                 return null;
             }
 
             DataFormat dataFormat = wb.createDataFormat();
             if (dataFormat == null) {
-                LOGGER.log(Level.SEVERE, "Failed to get DataFormat");
+                //LOGGER.log(Level.SEVERE, "Failed to get DataFormat");
                 return null;
             }
 
@@ -1996,7 +2080,7 @@ public class PharmacyStockTakeController implements Serializable {
             // Header
             Row header = sheet.createRow(0);
             if (header == null) {
-                LOGGER.log(Level.SEVERE, "Failed to create header row");
+                //LOGGER.log(Level.SEVERE, "Failed to create header row");
                 return null;
             }
 
@@ -2292,7 +2376,7 @@ public class PharmacyStockTakeController implements Serializable {
                 try {
                     sheet.autoSizeColumn(i);
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Failed to autosize column " + i, e);
+                    //LOGGER.log(Level.WARNING, "Failed to autosize column " + i, e);
                 }
             }
 
@@ -2301,7 +2385,7 @@ public class PharmacyStockTakeController implements Serializable {
             wb.write(baos);
             byte[] bytes = baos.toByteArray();
             if (bytes == null || bytes.length == 0) {
-                LOGGER.log(Level.SEVERE, "Failed to generate Excel file bytes");
+                //LOGGER.log(Level.SEVERE, "Failed to generate Excel file bytes");
                 return null;
             }
 
@@ -2313,11 +2397,11 @@ public class PharmacyStockTakeController implements Serializable {
                     .build();
 
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error generating category sheet", e);
+            //LOGGER.log(Level.SEVERE, "Error generating category sheet", e);
             JsfUtil.addErrorMessage("Error generating sheet: " + e.getMessage());
             return null;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error generating category sheet", e);
+            //LOGGER.log(Level.SEVERE, "Unexpected error generating category sheet", e);
             JsfUtil.addErrorMessage("Unexpected error: " + e.getMessage());
             return null;
         }
@@ -2332,15 +2416,16 @@ public class PharmacyStockTakeController implements Serializable {
     public void startApprovePhysicalCountAsync() {
         LOGGER.log(Level.INFO, "[StockTake] startApprovePhysicalCountAsync() called. pcBillId={0}, items={1}",
                 new Object[]{physicalCountBill != null ? physicalCountBill.getId() : null,
-                    physicalCountBill != null && physicalCountBill.getBillItems() != null ? physicalCountBill.getBillItems().size() : 0});
+                    physicalCountBill != null && physicalCountBill.getBillItems() != null ? physicalCountBill.getBillItems().size() : 0}
+        );
         if (physicalCountBill == null || physicalCountBill.getBillItems() == null || physicalCountBill.getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No physical count available");
-            LOGGER.log(Level.WARNING, "[StockTake] Async approval aborted. No physical count or items.");
+            //LOGGER.log(Level.WARNING, "[StockTake] Async approval aborted. No physical count or items.");
             return;
         }
         if (!webUserController.hasPrivilege(Privileges.PharmacyStockTakeApprove.toString())) {
             JsfUtil.addErrorMessage("Not authorized");
-            LOGGER.log(Level.WARNING, "[StockTake] Async approval aborted. Missing privilege PharmacyStockTakeApprove");
+            //LOGGER.log(Level.WARNING, "[StockTake] Async approval aborted. Missing privilege PharmacyStockTakeApprove");
             return;
         }
         String jobId = java.util.UUID.randomUUID().toString();
@@ -2348,7 +2433,8 @@ public class PharmacyStockTakeController implements Serializable {
         approvalProgressTracker.start(jobId, physicalCountBill.getBillItems().size(), "Queued");
         Long approverId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
         LOGGER.log(Level.INFO, "[StockTake] Dispatching async approval. jobId={0}, approverId={1}, items={2}",
-                new Object[]{jobId, approverId, physicalCountBill.getBillItems().size()});
+                new Object[]{jobId, approverId, physicalCountBill.getBillItems().size()}
+        );
         stockTakeApprovalService.approvePhysicalCountAsync(physicalCountBill.getId(), approverId, jobId);
         JsfUtil.addSuccessMessage("Approval started in background. You may continue working.");
     }
