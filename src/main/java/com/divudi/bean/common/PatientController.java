@@ -2952,6 +2952,34 @@ public class PatientController implements Serializable, ControllerWithPatient {
         saveSelectedPatient();
         return toViewPatient();
     }
+    
+    public void toggleBlacklistPatient(Patient patient, boolean blacklist){
+        if(patient != null && patient.getId() != null){
+            return;   
+        }
+        
+        if(blacklist && !patient.isBlacklisted()){
+            patient.setBlacklisted(true);
+            patient.setBlacklistedAt(new Date());
+            patient.setBlacklistedBy(sessionController.getWebUser());
+            patient.setReasonForBlacklist(patient.getReasonForBlacklist() != null ? patient.getReasonForBlacklist() + " / " +searchText  : searchText);
+            
+            getFacade().edit(patient);
+            JsfUtil.addSuccessMessage("Patient is blacklisted.");
+        }else if(!blacklist && patient.isBlacklisted()){
+            patient.setBlacklisted(false);
+            patient.setReasonForBlacklist(patient.getReasonForBlacklist() +" at " 
+                    + patient.getBlacklistedAt() + " by " 
+                    + patient.getBlacklistedBy() 
+                    + " / revert by " + sessionController.getWebUser() 
+                    + " at "+new Date());
+            patient.setBlacklistedAt(null);
+            patient.setBlacklistedBy(null);
+            
+            getFacade().edit(patient);
+            JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
+        }
+    }
 
     public String deletePatient() {
         if (current != null) {
