@@ -295,6 +295,9 @@ public class SearchController implements Serializable {
     private Long selectedRequestId;
     private Bill selectedRequest;
     String settledBillType;
+    private int activeIndexForDisbursement;
+    
+    
 
     public String getSettledBillType() {
         return settledBillType;
@@ -2782,6 +2785,14 @@ public class SearchController implements Serializable {
 
     public void setManageCreditCompanyPaymentIndex(int manageCreditCompanyPaymentIndex) {
         this.manageCreditCompanyPaymentIndex = manageCreditCompanyPaymentIndex;
+    }
+
+    public int getActiveIndexForDisbursement() {
+        return activeIndexForDisbursement;
+    }
+
+    public void setActiveIndexForDisbursement(int activeIndexForDisbursement) {
+        this.activeIndexForDisbursement = activeIndexForDisbursement;
     }
 
     public class billsWithbill {
