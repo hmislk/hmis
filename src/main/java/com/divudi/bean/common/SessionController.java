@@ -1229,7 +1229,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     loggableInstitutions = fillLoggableInstitutions();
 
                     // Load recently used departments
-                    recentDepartments = fillRecentDepartmentsForUser(u);
+                    //recentDepartments = fillRecentDepartmentsForUser(u);
                     userIcons = userIconController.fillUserIcons(u, department);
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
@@ -2727,7 +2727,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public List<Department> getRecentDepartments() {
         if (recentDepartments == null) {
-            recentDepartments = fillRecentDepartmentsForUser(getLoggedUser());
+            recentDepartments = new ArrayList<>();
+            //recentDepartments = fillRecentDepartmentsForUser(getLoggedUser());
         }
         return recentDepartments;
     }
