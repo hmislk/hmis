@@ -66,7 +66,16 @@ public class Patient implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-    private boolean blackListed;
+    
+    private boolean blacklisted;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private String reasonForBlacklist;
+
+    @ManyToOne
+    private WebUser blacklistedBy;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date blacklistedAt;
 
     @Transient
     String age;
@@ -128,13 +137,13 @@ public class Patient implements Serializable, RetirableEntity {
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
-
-    public boolean isBlackListed() {
-        return blackListed;
+ 
+    public Date getBlacklistedAt() {
+        return blacklistedAt;
     }
 
-    public void setBlackListed(boolean blackListed) {
-        this.blackListed = blackListed;
+    public void setBlacklistedAt(Date blacklistedAt) {
+        this.blacklistedAt = blacklistedAt;
     }
 
     public Patient() {
@@ -666,5 +675,29 @@ public class Patient implements Serializable, RetirableEntity {
 
         }
         return m;
+    }
+
+    public boolean isBlacklisted() {
+        return blacklisted;
+    }
+
+    public void setBlacklisted(boolean blacklisted) {
+        this.blacklisted = blacklisted;
+    }
+
+    public String getReasonForBlacklist() {
+        return reasonForBlacklist;
+    }
+
+    public void setReasonForBlacklist(String reasonForBlacklist) {
+        this.reasonForBlacklist = reasonForBlacklist;
+    }
+
+    public WebUser getBlacklistedBy() {
+        return blacklistedBy;
+    }
+
+    public void setBlacklistedBy(WebUser blacklistedBy) {
+        this.blacklistedBy = blacklistedBy;
     }
 }
