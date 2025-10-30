@@ -31,5 +31,6 @@ public enum MessageType {
     ChannelStatusUpdate,
     DoctorPayment,
     BulkPatientSms,
-    BulkNumberSms
+    BulkNumberSms,
+    ConfirmationEmail
 }
