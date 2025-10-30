@@ -129,6 +129,7 @@ public class PharmacyStockTakeController implements Serializable {
     /**
      * Generate stock count bill preview without persisting.
      */
+    @Deprecated
     public String generateStockCountBill() {
         // Null check for injected dependencies
         if (webUserController == null) {
@@ -2487,7 +2488,9 @@ public class PharmacyStockTakeController implements Serializable {
      *
      * @return navigation outcome
      */
+    @Deprecated
     public String navigateToPendingPhysicalCountApprovals() {
+        printPreview=false;
         return "/pharmacy/pharmacy_physical_count_pending?faces-redirect=true";
     }
 
