@@ -66,6 +66,7 @@ public class Patient implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    private boolean blackListed;
 
     @Transient
     String age;
@@ -127,6 +128,14 @@ public class Patient implements Serializable, RetirableEntity {
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
+
+    public boolean isBlackListed() {
+        return blackListed;
+    }
+
+    public void setBlackListed(boolean blackListed) {
+        this.blackListed = blackListed;
+    }
 
     public Patient() {
         editingMode = true;
