@@ -4123,66 +4123,88 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateReportAsSummary(BillType billType) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT b.department.name, SUM(b.netTotal), SUM(b.billFinanceDetails.totalCostValue) ");
-        if ("issue".equals(transferType)) {
-            sql.append(", SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ");
+        transferBreakdownGroups = new ArrayList<>();
+        transferBreakdownTotals = new TransferBreakdownTotals();
+        summaries = new ArrayList<>();
+
+        if (billType == null) {
+            return;
         }
-        sql.append("FROM Bill b ")
+
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+
+        // First get the basic totals by department (for departmentSummaries)
+        sql.append("SELECT b.toDepartment.name, ")
+                .append("SUM(b.netTotal) ")
+                .append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billType = :billType ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
-        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
         parameters.put("billType", billType);
-        parameters.put("fromDate", getFromDate());
-        parameters.put("toDate", getToDate());
 
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        sql.append(" GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC");
+        sql.append(" GROUP BY b.toDepartment.name ");
+        sql.append(" ORDER BY SUM(b.netTotal) DESC");
 
         try {
             List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
-            Map<String, PharmacySummery> departmentMap = new HashMap<>();
-            departmentSummaries = new ArrayList<>();
-            double costTotal = 0.0;
-            double grandTotal = 0.0;
-            double goodInTransistTotal = 0.0;
 
+            departmentSummaries = new ArrayList<>();
+            double grandTotal = 0.0;
+
+            // Create departmentSummaries with store names and net totals
             for (Object[] result : results) {
                 String departmentName = (String) result[0];
-                double netTotal = (double) result[1];
-                double costValue = 0.0;
-                if (result[2] != null) {
-                    costValue = netTotal < 0
-                            ? -Math.abs(((BigDecimal) result[2]).doubleValue())
-                            : Math.abs(((BigDecimal) result[2]).doubleValue());
+                Double netTotal = (Double) result[1];
+
+                if (departmentName == null) {
+                    departmentName = "Unspecified Department";
                 }
-                grandTotal += netTotal;
-                costTotal += costValue;
-                if ("issue".equals(transferType)) {
-                    double goodInTransist = (double) result[3];
-                    goodInTransistTotal += goodInTransist;
-                    departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist, costValue));
-                } else {
-                    PharmacySummery summary = new PharmacySummery(departmentName, netTotal);
-                    summary.setTotalCost(costValue);
-                    departmentSummaries.add(summary);
-                    departmentMap.put(departmentName, summary);
-                }
+
+                PharmacySummery summary = new PharmacySummery();
+                summary.setDepartmentName(departmentName);
+                summary.setNetTotal(netTotal != null ? netTotal : 0.0);
+
+                departmentSummaries.add(summary);
+                grandTotal += (netTotal != null ? netTotal : 0.0);
             }
 
-            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal, costTotal));
-
-            if ("receive".equals(transferType)) {
-                generateReportAsSummaryWithGiT(BillType.PharmacyTransferIssue, departmentMap);
+            // Now calculate Good In Transit amounts by department
+            Map<String, PharmacySummery> departmentMap = new HashMap<>();
+            for (PharmacySummery summary : departmentSummaries) {
+                departmentMap.put(summary.getDepartmentName(), summary);
             }
+
+            // Call the existing method to add GIT values
+            generateReportAsSummaryWithGiT(billType, departmentMap);
+
+            // Add grand total row
+            if (!departmentSummaries.isEmpty()) {
+                PharmacySummery grandTotalSummary = new PharmacySummery();
+                grandTotalSummary.setDepartmentName("Total");
+                grandTotalSummary.setNetTotal(grandTotal);
+
+                // Calculate total GIT amount
+                double totalGitAmount = 0.0;
+                for (PharmacySummery summary : departmentSummaries) {
+                    totalGitAmount += summary.getGoodInTransistAmount();
+                }
+                grandTotalSummary.setGoodInTransistAmount(totalGitAmount);
+
+                departmentSummaries.add(grandTotalSummary);
+            }
+
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating summary report", e);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate summary report."));
         }
     }
-
     private List<PharmacySummery> summaries;
 
     public void generateReportAsSummaryWithGiT(BillType billType, Map<String, PharmacySummery> departmentMap) {
@@ -6078,8 +6100,6 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION); // GRN Cancelled
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        
-        
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
                 + "bi.bill.deptId, "
@@ -6170,8 +6190,6 @@ public class PharmacyController implements Serializable {
 //        BillItem b = new BillItem();
 //        b.getNetValue();
 //        b.getBillItemFinanceDetails().getFreeQuantity();
-        
-        
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPurchaseDTO("
                 + "b.bill.id, "
                 + "b.bill.deptId, "
@@ -6183,8 +6201,8 @@ public class PharmacyController implements Serializable {
                 + "b.billItemFinanceDetails.retailSaleRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
                 + "b.billItemFinanceDetails.quantity, " //  b.getBillItemFinanceDetails().getQuantity()
                 + "b.billItemFinanceDetails.freeQuantity, " // b.getBillItemFinanceDetails().getFreeQuantity();
-                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), "  // Use BigDecimal netTotal from finance details, handle null for legacy data
-                + "b.item.name) "  // item name
+                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), " // Use BigDecimal netTotal from finance details, handle null for legacy data
+                + "b.item.name) " // item name
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
@@ -6426,7 +6444,7 @@ public class PharmacyController implements Serializable {
         }
 
         jpql += " ORDER BY bi.bill.createdAt DESC ";
-        
+
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets
