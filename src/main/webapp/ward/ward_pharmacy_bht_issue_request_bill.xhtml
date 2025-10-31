@@ -388,6 +388,8 @@
                                             <div class="col-md-2"><p:outputLabel value="Quantity" ></p:outputLabel></div>
                                             <div class="col-md-2"></div>
                                         </div>
+                                        
+                                        <p:growl id="growl" showDetail="false" life="5500" />
 
                                         <div class="row mt-1">
                                             <div class="col-md-8">
@@ -431,7 +433,7 @@
                                                     class="ui-button-success w-100"
                                                     action="#{pharmacyRequestForBhtController.addBillItem}"
                                                     process="@this acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
+                                                    update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
                                                 </p:commandButton>
                                             </div>
 

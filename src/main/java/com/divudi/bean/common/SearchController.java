@@ -295,6 +295,9 @@ public class SearchController implements Serializable {
     private Long selectedRequestId;
     private Bill selectedRequest;
     String settledBillType;
+    private int activeIndexForDisbursement;
+    
+    
 
     public String getSettledBillType() {
         return settledBillType;
@@ -2782,6 +2785,14 @@ public class SearchController implements Serializable {
 
     public void setManageCreditCompanyPaymentIndex(int manageCreditCompanyPaymentIndex) {
         this.manageCreditCompanyPaymentIndex = manageCreditCompanyPaymentIndex;
+    }
+
+    public int getActiveIndexForDisbursement() {
+        return activeIndexForDisbursement;
+    }
+
+    public void setActiveIndexForDisbursement(int activeIndexForDisbursement) {
+        this.activeIndexForDisbursement = activeIndexForDisbursement;
     }
 
     public class billsWithbill {
@@ -9894,6 +9905,16 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
 
         createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+
+    }
+
+    public void searchOpdCancellationBills() {
+        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+        checkLabReportsApproved(bills);
 
     }
 

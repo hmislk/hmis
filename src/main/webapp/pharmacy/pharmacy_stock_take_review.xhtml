@@ -92,12 +92,12 @@
                                             <p:column headerText="Batch" style="width: 120px; text-align:center;">
                                                 <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                                             </p:column>
-                                            <p:column headerText="System Qty" style="width: 120px; text-align:right;">
+                                            <p:column headerText="Starting Qty" style="width: 120px; text-align:right;">
                                                 <h:outputText value="#{bi.referanceBillItem.qty}">
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Physical Qty" style="width: 120px; text-align:right;">
+                                            <p:column headerText="Uploaded Physical Qty" style="width: 120px; text-align:right;">
                                                 <h:outputText value="#{bi.qty}">
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>

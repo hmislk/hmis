@@ -28,13 +28,13 @@
                             <p>Select Department</p>
                         </div>
                         <div>
-                            <h:panelGroup rendered="#{not empty sessionController.recentDepartments}">
+<!--                            <h:panelGroup rendered="#{not empty sessionController.recentDepartments}">
                                 <div class="d-flex flex-wrap justify-content-center mb-3">
                                     <ui:repeat value="#{sessionController.recentDepartments}" var="rd">
                                         <p:commandButton value="#{rd.name}" action="#{sessionController.selectDepartmentFromHistory(rd)}" ajax="false" class="m-1"/>
                                     </ui:repeat>
                                 </div>
-                            </h:panelGroup>
+                            </h:panelGroup>-->
                             <p:selectOneMenu
                                 value="#{sessionController.department}"
                                 filter="true"
