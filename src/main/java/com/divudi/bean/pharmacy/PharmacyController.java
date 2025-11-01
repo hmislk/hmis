@@ -3685,6 +3685,8 @@ public class PharmacyController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             } else {
                 bt = BillType.PharmacyTransferReceive;
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
             }
 
             if ("summeryReport".equals(reportType)) {
