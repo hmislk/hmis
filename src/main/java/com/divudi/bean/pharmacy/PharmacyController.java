@@ -3624,14 +3624,18 @@ public class PharmacyController implements Serializable {
                 return;
             }
 
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             if ("issue".equals(transferType)) {
                 bt = BillType.PharmacyTransferIssue;
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             } else {
                 bt = BillType.PharmacyTransferReceive;
             }
 
             if ("summeryReport".equals(reportType)) {
-                generateReportAsSummary(bt);
+                generateReportAsSummary(billTypeAtomics);
 
             } else if ("detailReport".equals(reportType)) {
                 generateReportByBillItems(bt);
@@ -4122,79 +4126,113 @@ public class PharmacyController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    public void generateReportAsSummary(BillType billType) {
-        transferBreakdownGroups = new ArrayList<>();
-        transferBreakdownTotals = new TransferBreakdownTotals();
-        summaries = new ArrayList<>();
+    public void generateReportAsSummary(List<BillTypeAtomic> billTypeAtomics) {
+        departmentSummaries = new ArrayList<>();
 
-        if (billType == null) {
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
             return;
         }
 
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder();
 
-        // First get the basic totals by department (for departmentSummaries)
-        sql.append("SELECT b.toDepartment.name, ")
-                .append("SUM(b.netTotal) ")
+        // Select all department information plus aggregate values
+        sql.append("SELECT ")
+                .append("b.department.name, ")
+                .append("b.fromDepartment.name, ")
+                .append("b.toDepartment.name, ")
+                .append("SUM(b.billFinanceDetails.totalPurchaseValue), ")
+                .append("SUM(b.billFinanceDetails.totalCostValue), ")
+                .append("SUM(b.billFinanceDetails.totalRetailSaleValue) ")
                 .append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
-                .append("AND b.billType = :billType ")
+                .append("AND b.billTypeAtomic IN :btAtomics ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
         parameters.put("fromDate", fromDate);
         parameters.put("toDate", toDate);
-        parameters.put("billType", billType);
+        parameters.put("btAtomics", billTypeAtomics);
 
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        sql.append(" GROUP BY b.toDepartment.name ");
-        sql.append(" ORDER BY SUM(b.netTotal) DESC");
+        // Group by all three department fields to satisfy MySQL ONLY_FULL_GROUP_BY
+        sql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
+        sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
 
         try {
             List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
-            departmentSummaries = new ArrayList<>();
-            double grandTotal = 0.0;
+            if (results != null && !results.isEmpty()) {
+                // Calculate grand total values
+                double grandTotalPurchase = 0.0;
+                double grandTotalCost = 0.0;
+                double grandTotalRetail = 0.0;
 
-            // Create departmentSummaries with store names and net totals
-            for (Object[] result : results) {
-                String departmentName = (String) result[0];
-                Double netTotal = (Double) result[1];
+                for (Object[] result : results) {
+                    String departmentName = (String) result[0];
+                    String fromDepartmentName = (String) result[1];
+                    String toDepartmentName = (String) result[2];
+                    BigDecimal purchaseValueBD = (BigDecimal) result[3];
+                    BigDecimal costValueBD = (BigDecimal) result[4];
+                    BigDecimal retailValueBD = (BigDecimal) result[5];
 
-                if (departmentName == null) {
-                    departmentName = "Unspecified Department";
+                    // Convert BigDecimal to double safely
+                    double purchaseValue = purchaseValueBD != null ? purchaseValueBD.doubleValue() : 0.0;
+                    double costValue = costValueBD != null ? costValueBD.doubleValue() : 0.0;
+                    double retailValue = retailValueBD != null ? retailValueBD.doubleValue() : 0.0;
+
+                    // Handle null department names
+                    if (departmentName == null || departmentName.trim().isEmpty()) {
+                        departmentName = "Unspecified Department";
+                    }
+                    if (fromDepartmentName == null || fromDepartmentName.trim().isEmpty()) {
+                        fromDepartmentName = "Unspecified From Department";
+                    }
+                    if (toDepartmentName == null || toDepartmentName.trim().isEmpty()) {
+                        toDepartmentName = "Unspecified To Department";
+                    }
+
+                    // Use the existing constructor that takes department names and BigDecimal values
+                    PharmacySummery summary = new PharmacySummery(
+                            departmentName,
+                            fromDepartmentName,
+                            toDepartmentName,
+                            purchaseValueBD,
+                            costValueBD,
+                            retailValueBD
+                    );
+
+                    Map<String, List<PharmacySummery>> summeriesMap = new HashMap<>();
+                    List<PharmacySummery> issuedOrReceivedDeptDetails = createIssuedOrReceivedDepartmentdetails(departmentName, billTypeAtomics);
+                    summary.setSummeriesMap(summeriesMap);
+                    summary.getSummeriesMap().put(departmentName, issuedOrReceivedDeptDetails);
+                    departmentSummaries.add(summary);
+
+                    // Add to grand totals
+                    grandTotalPurchase += purchaseValue;
+                    grandTotalCost += costValue;
+                    grandTotalRetail += retailValue;
                 }
 
-                PharmacySummery summary = new PharmacySummery();
-                summary.setDepartmentName(departmentName);
-                summary.setNetTotal(netTotal != null ? netTotal : 0.0);
+                // Calculate Good In Transit amounts for each department combination
+                calculateGoodInTransitAmounts(billTypeAtomics);
 
-                departmentSummaries.add(summary);
-                grandTotal += (netTotal != null ? netTotal : 0.0);
-            }
-
-            // Now calculate Good In Transit amounts by department
-            Map<String, PharmacySummery> departmentMap = new HashMap<>();
-            for (PharmacySummery summary : departmentSummaries) {
-                departmentMap.put(summary.getDepartmentName(), summary);
-            }
-
-            // Call the existing method to add GIT values
-            generateReportAsSummaryWithGiT(billType, departmentMap);
-
-            // Add grand total row
-            if (!departmentSummaries.isEmpty()) {
-                PharmacySummery grandTotalSummary = new PharmacySummery();
-                grandTotalSummary.setDepartmentName("Total");
-                grandTotalSummary.setNetTotal(grandTotal);
+                // Add grand total row
+                PharmacySummery grandTotalSummary = new PharmacySummery(
+                        "Total",
+                        "All From Departments",
+                        "All To Departments",
+                        BigDecimal.valueOf(grandTotalPurchase),
+                        BigDecimal.valueOf(grandTotalCost),
+                        BigDecimal.valueOf(grandTotalRetail)
+                );
 
                 // Calculate total GIT amount
-                double totalGitAmount = 0.0;
+                double grandTotalGIT = 0.0;
                 for (PharmacySummery summary : departmentSummaries) {
-                    totalGitAmount += summary.getGoodInTransistAmount();
+                    grandTotalGIT += summary.getGoodInTransistAmount();
                 }
-                grandTotalSummary.setGoodInTransistAmount(totalGitAmount);
+                grandTotalSummary.setGoodInTransistAmount(grandTotalGIT);
 
                 departmentSummaries.add(grandTotalSummary);
             }
@@ -4205,6 +4243,101 @@ public class PharmacyController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate summary report."));
         }
     }
+
+    private List<PharmacySummery> createIssuedOrReceivedDepartmentdetails(String dept, List<BillTypeAtomic> billTypeAtomics) {
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+
+        // Select all department information plus aggregate values
+        sql.append("SELECT ")
+                .append("b.department.name, ")
+                .append("b.fromDepartment.name, ")
+                .append("b.toDepartment.name, ")
+                .append("b.billFinanceDetails.totalPurchaseValue, ")
+                .append("b.billFinanceDetails.totalCostValue, ")
+                .append("b.billFinanceDetails.totalRetailSaleValue ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billTypeAtomic IN :btAtomics ")
+                .append("AND b.department.name = :dpt ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("btAtomics", billTypeAtomics);
+        parameters.put("dpt", dept);
+
+        additionalCommonFilltersForBillEntity(sql, parameters);
+
+        List<PharmacySummery> results = (List<PharmacySummery>) getBillFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+        return results;
+
+    }
+
+    private void calculateGoodInTransitAmounts(List<BillTypeAtomic> billTypeAtomics) {
+        // Create a map for quick lookup using combination of all three department names
+        Map<String, PharmacySummery> departmentMap = new HashMap<>();
+        for (PharmacySummery summary : departmentSummaries) {
+            if (!"Total".equals(summary.getDepartmentName())) {
+                String key = summary.getDepartmentName() + "|"
+                        + summary.getIssuedDeptName() + "|"
+                        + summary.getReceivedDeptName();
+                departmentMap.put(key, summary);
+            }
+        }
+
+        // Calculate GIT amounts
+        StringBuilder gitSql = new StringBuilder();
+        gitSql.append("SELECT ")
+                .append("b.department.name, ")
+                .append("b.fromDepartment.name, ")
+                .append("b.toDepartment.name, ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalRetailSaleValue ELSE 0 END) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billTypeAtomic IN :btAtomics ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        Map<String, Object> gitParameters = new HashMap<>();
+        gitParameters.put("fromDate", fromDate);
+        gitParameters.put("toDate", toDate);
+        gitParameters.put("btAtomics", billTypeAtomics);
+
+        additionalCommonFilltersForBillEntity(gitSql, gitParameters);
+        gitSql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
+
+        try {
+            List<Object[]> gitResults = getBillFacade().findObjectsArrayByJpql(gitSql.toString(), gitParameters, TemporalType.TIMESTAMP);
+
+            for (Object[] result : gitResults) {
+                String departmentName = (String) result[0];
+                String fromDepartmentName = (String) result[1];
+                String toDepartmentName = (String) result[2];
+                BigDecimal gitAmountBD = (BigDecimal) result[3];
+                double gitAmount = gitAmountBD != null ? gitAmountBD.doubleValue() : 0.0;
+
+                // Handle null department names
+                if (departmentName == null || departmentName.trim().isEmpty()) {
+                    departmentName = "Unspecified Department";
+                }
+                if (fromDepartmentName == null || fromDepartmentName.trim().isEmpty()) {
+                    fromDepartmentName = "Unspecified From Department";
+                }
+                if (toDepartmentName == null || toDepartmentName.trim().isEmpty()) {
+                    toDepartmentName = "Unspecified To Department";
+                }
+
+                String key = departmentName + "|" + fromDepartmentName + "|" + toDepartmentName;
+                PharmacySummery summary = departmentMap.get(key);
+                if (summary != null) {
+                    summary.setGoodInTransistAmount(gitAmount);
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error calculating GIT amounts", e);
+        }
+    }
+
     private List<PharmacySummery> summaries;
 
     public void generateReportAsSummaryWithGiT(BillType billType, Map<String, PharmacySummery> departmentMap) {
