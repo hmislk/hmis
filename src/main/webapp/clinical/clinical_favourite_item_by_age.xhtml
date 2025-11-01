@@ -23,10 +23,10 @@
                         <h:panelGrid columns="4" >
                             <p:outputLabel value="Select Medicine" ></p:outputLabel>
 
-                            <p:autoComplete id="acItem" 
-                                            value="#{favouriteController.item}" 
+                            <p:autoComplete id="acItem"
+                                            value="#{favouriteController.item}"
                                             forceSelection="true" class="mx-4 w-100" inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeMedicine}" 
+                                            completeMethod="#{itemController.completeMedicineByTypePriority}"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                 <p:column headerText="Item" >
                                     <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -40,7 +40,9 @@
                                              action="#{favouriteController.prepareAddingFavouriteItem()}" >
                             </p:commandButton>
                         </h:panelGrid>
-                        <p:dialog header="Add Favourite Medicine" widgetVar="dlg2" modal="true" height="50%" width="30%">
+                        <p:dialog
+                            id="dlgFavioriteMedicines"
+                            header="Add Favourite Medicine" widgetVar="dlg2" modal="true" height="50%" width="30%">
                             <h:panelGrid id="tab" columns="3" class="w-75" >
                                 <h:outputText value="Selected Medicine" ></h:outputText>
                                 <h:outputText value=":" ></h:outputText>
