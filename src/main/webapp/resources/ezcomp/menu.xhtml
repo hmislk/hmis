@@ -391,21 +391,33 @@
                             action="#{bhtSummeryController.navigateToIntrimBill()}"
                             value="Interim Bill"
                             icon="fa fa-file-invoice-dollar"
-                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{bhtSummeryController.navigateToIntrimBillEstimate}"
                             value="Interim Bill - Estimated Professional Fees"
                             icon="fa fa-file-invoice-dollar"
-                            actionListener="#{bhtSummeryController.clear}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/inward/inward_search_intrim" value="Interim Bill Search" icon="fas fa-search-dollar" actionListener="#{searchController.makeNull()}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBillSearch')}" ></p:menuitem>
+                            actionListener="#{bhtSummeryController.clear}" 
+                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" >
+                        </p:menuitem>
+                        <p:menuitem  
+                            ajax="false"  
+                            action="/inward/inward_search_intrim?faces-redirect=true" 
+                            value="Interim Bill Search" icon="fas fa-search-dollar" 
+                            actionListener="#{searchController.makeNull()}" 
+                            rendered="#{webUserController.hasPrivilege('InwardBillingInterimBillSearch')}" >
+                        </p:menuitem>
                     </p:submenu>
+
                     <p:submenu label="Search " icon="fa fa-search" rendered="#{webUserController.hasPrivilege('InwardSearch')}">
-                        <p:menuitem  ajax="false"
-                                     action="#{admissionController.navigateToListAdmissions}"
-                                     value="Admissions"
-                                     icon="fa fa-search"
-                                     rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false"
+                            action="#{admissionController.navigateToListAdmissions}"
+                            value="Admissions"
+                            icon="fa fa-search"
+                            rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" >
+                        </p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_service?faces-redirect=true" value="Service Bill" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional?faces-redirect=true" value="Professional Bill" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_professional_estimate?faces-redirect=true" value="Estimated Professional Bill" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchProfessionalBill')}" ></p:menuitem>
@@ -1069,53 +1081,12 @@
                                      value="Unit Issue Margin" icon="fas fa-percentage" rendered="#{webUserController.hasPrivilege('PharmacyDisposalUnitIssueMargin')}" />
                     </p:submenu>
 
-                    <p:submenu label="Disbursement" icon="fas fa-share-square" rendered="#{webUserController.hasPrivilege('PharmacyDisburesementMenu')}">
-                        <p:menuitem ajax="false" 
-                                    action="#{transferRequestController.navigateToCreateANewTransferRequest()}"  
-                                    value="Request" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" 
-                                    icon="fas fa-hand-holding-medical"></p:menuitem>
-                        <p:menuitem ajax="false"
-                                    action="#{searchController.navigateToTransferRequestFinalize}"
-                                    value="To Finalize Transfer Requests"
-                                    actionListener="#{searchController.makeListNull()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
-                                    icon="fas fa-tasks"></p:menuitem>
-                        <p:menuitem ajax="false" 
-                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
-                                    value="Approve Requests"
-                                    actionListener="#{searchController.makeListNull()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}"
-                                    icon="fas fa-hand-holding-medical"></p:menuitem>
-                        <p:menuitem ajax="false" 
-                                    action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
-                                    value="Issue for Requests" 
-                                    actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}" 
-                                    icon="fas fa-prescription-bottle-alt"></p:menuitem>
-
-                        <p:menuitem ajax="false" 
-                                    action="#{transferIssueDirectController.navigateToDirectPharmacyIssue}"  
-                                    value="Direct Issue" 
-                                    actionListener="#{transferIssueController.makeNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" 
-                                    icon="fas fa-pills"></p:menuitem>
-
-                        <p:menuitem ajax="false" 
-                                    action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  
-                                    value="Receive" 
-                                    actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}"
-                                    icon="fas fa-truck-loading"></p:menuitem>
-
-
-                        <p:menuitem 
-                            ajax="false"
-                            action="#{reportsTransfer.navigateToPharmacyTransferReports()}"  
-                            value="Reports" 
-                            rendered="#{webUserController.hasPrivilege('PharmacyDisbursementReports')}" 
-                            icon="fas fa-file-alt"></p:menuitem>
-                    </p:submenu>
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/disbursement_index?faces-redirect=true"
+                        value="Disbursement"
+                        rendered="#{webUserController.hasPrivilege('PharmacyDisburesementMenu')}"
+                        icon="fas fa-share-square"></p:menuitem>
 
                     <p:menuitem 
                         ajax="false"

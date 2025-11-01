@@ -10,7 +10,7 @@
         <h:form>
             <p:panel>
                 <f:facet name="header">
-                    <p:outputLabel value="Finalize Transfer Requests"/>
+                    <p:outputLabel value="Approved Transfer Requests"/>
                 </f:facet>
                 <div class="row">
                     <div class="col-md-2">
@@ -24,7 +24,7 @@
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                         <p:commandButton id="btnSearch" ajax="false" value="Search"
                                          icon="fas fa-search" class="ui-button-warning w-100 my-2"
-                                         action="#{searchController.fillOnlySavedPharmacyTransferRequest()}"/>
+                                         action="#{searchController.fillApprovedPharmacyTransferRequests()}"/>
                         <h:outputLabel value="Request No"/>
                         <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.billNo}"/>
                         <h:outputLabel value="To Department"/>
@@ -63,20 +63,28 @@
                                                    value="#{b.cancelledBill.creater.webUserPerson.name}"/>
                                 </h:panelGroup>
                             </p:column>
+                            <p:column headerText="Approved At" >
+                                <h:outputLabel value="#{b.completedAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Approved By" >
+                                <h:outputLabel value="#{b.completedBy.webUserPerson.name}"/>
+                            </p:column>
                             <p:column headerText="Requested Value" class="text-end">
                                 <h:outputLabel value="#{b.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Actions" >
-                                <p:commandButton 
-                                    id="finalize"
-                                    ajax="false" 
-                                    value="Edit and Finalize Request"
-                                    title="Edit and Finalize Request"
-                                    icon="fas fa-check-circle" class="ui-button-success mx-2"
+                                <p:commandButton
+                                    id="view"
+                                    ajax="false"
+                                    value="View Request"
+                                    title="View Request Details"
+                                    icon="fas fa-eye" class="ui-button-info mx-2"
                                     action="#{transferRequestController.navigateToEditRequest}"
-                                    disabled="#{b.checkedBy ne null or b.cancelled eq true}">
+                                    disabled="#{b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>

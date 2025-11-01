@@ -314,7 +314,8 @@ public class MdInwardReportController implements Serializable {
             m.put("fd", fromDate);
             m.put("td", toDate);
 
-            admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP, 100);
+            admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+            
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
         }
@@ -586,7 +587,7 @@ public void fillAdmissionsByConsultants() {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -598,7 +599,7 @@ public void fillAdmissionsByConsultants() {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = CommonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

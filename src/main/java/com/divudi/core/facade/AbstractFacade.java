@@ -382,6 +382,25 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    /**
+     * Get a reference (proxy) to an entity without loading it from database.
+     * Use this when you only need the entity reference for relationships,
+     * not the entity's data. Much faster than find() as it doesn't query the database.
+     *
+     * @param id The entity ID
+     * @return Proxy reference to the entity
+     */
+    public T getReference(Object id) {
+        if (id == null) {
+            return null;
+        }
+        try {
+            return getEntityManager().getReference(entityClass, id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     public T findWithoutCache(Object id) {
         Map<String, Object> props = new HashMap<>();
         props.put("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS);

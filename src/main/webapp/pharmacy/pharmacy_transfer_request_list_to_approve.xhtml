@@ -24,7 +24,7 @@
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                         <p:commandButton id="btnSearch" ajax="false" value="Search"
                                          icon="fas fa-search" class="ui-button-warning w-100 my-2"
-                                         action="#{searchController.fillOnlySavedPharmacyTransferRequest()}"/>
+                                         action="#{searchController.fillPharmacyTransferRequestsToApprove()}"/>
                         <h:outputLabel value="Request No"/>
                         <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.billNo}"/>
                         <h:outputLabel value="To Department"/>
@@ -69,14 +69,14 @@
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Actions" >
-                                <p:commandButton 
-                                    id="finalize"
-                                    ajax="false" 
-                                    value="Edit and Finalize Request"
-                                    title="Edit and Finalize Request"
-                                    icon="fas fa-check-circle" class="ui-button-success mx-2"
-                                    action="#{transferRequestController.navigateToEditRequest}"
-                                    disabled="#{b.checkedBy ne null or b.cancelled eq true}">
+                                <p:commandButton
+                                    id="approve"
+                                    ajax="false"
+                                    value="Approve Request"
+                                    title="Approve Request"
+                                    icon="fas fa-check-double" class="ui-button-success mx-2"
+                                    action="#{transferRequestController.navigateToApproveRequest}"
+                                    disabled="#{b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>
