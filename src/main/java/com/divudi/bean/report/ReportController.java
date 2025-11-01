@@ -3111,6 +3111,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
     }
+    
+    
 
     public String navigateToIncomeBillCountReport() {
         reportViewTypes = new ArrayList<>();
