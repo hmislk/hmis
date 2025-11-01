@@ -71,17 +71,29 @@
                                 </p:selectOneMenu>
                                 <h:outputText value="Frequency" ></h:outputText>
                                 <h:outputText value=":" ></h:outputText>
-                                <p:selectOneMenu    
-                                    value="#{favouriteController.current.frequencyUnit}" class="mx-4 w-75" >
+                                <p:selectOneMenu
+                                    value="#{favouriteController.current.frequencyUnit}" class="mx-4 w-75" autoWidth="false" >
                                     <f:selectItem itemLabel="Select Frequency" ></f:selectItem>
-                                    <f:selectItems  value="#{frequencyUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:selectItems  value="#{measurementUnitController.frequencyUnits}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 </p:selectOneMenu>
                                 <h:outputText value="Duration" ></h:outputText>
                                 <h:outputText value=":" ></h:outputText>
                                 <p:inputText  class="mx-4 w-75" value="#{favouriteController.current.duration}" ></p:inputText>
                                 <h:outputText value="Duration Unit" ></h:outputText>
                                 <h:outputText value=":" ></h:outputText>
-                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.durationUnit}" ></p:inputText>
+                                <p:selectOneMenu  class="mx-4 w-75" autoWidth="false" value="#{favouriteController.current.durationUnit}" >
+                                    <f:selectItem itemLabel="Select Duration Unit" ></f:selectItem>
+                                    <f:selectItems value="#{measurementUnitController.durationUnits}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <h:outputText value="Issue Quantity" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:inputText  class="mx-4 w-75" value="#{favouriteController.current.issue}" ></p:inputText>
+                                <h:outputText value="Issue Unit" ></h:outputText>
+                                <h:outputText value=":" ></h:outputText>
+                                <p:selectOneMenu  class="mx-4 w-75" autoWidth="false" value="#{favouriteController.current.issueUnit}" >
+                                    <f:selectItem itemLabel="Select Issue Unit" ></f:selectItem>
+                                    <f:selectItems value="#{measurementUnitController.issueUnits}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                </p:selectOneMenu>
                             </h:panelGrid>
                             <f:facet name="footer">
                                 <p:commandButton class="ui-button-success" ajax="false" icon="fas fa-plus" value="Add Favourite" action="#{favouriteController.saveFavMedicine}" style="width: 10rem" />
@@ -137,7 +149,7 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Frequency" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.frequencyUnit}" ></h:outputText>
+                                <h:outputText value="#{fi.frequencyUnit.name}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
@@ -152,7 +164,21 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Duration Unit" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.durationUnit}" ></h:outputText>
+                                <h:outputText value="#{fi.durationUnit.name}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Issue Quantity" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.issue}" >
+                                 <f:convertNumber pattern="0.#" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Issue Unit" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.issueUnit.name}" ></h:outputText>
                             </p:column>
 
                         </p:dataTable>
