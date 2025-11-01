@@ -4292,9 +4292,7 @@ public class PharmacyController implements Serializable {
         Map<String, PharmacySummery> departmentMap = new HashMap<>();
         for (PharmacySummery summary : departmentSummaries) {
             if (!"Total".equals(summary.getDepartmentName())) {
-                String key = summary.getDepartmentName() + "|"
-                        + summary.getIssuedDeptName() + "|"
-                        + summary.getReceivedDeptName();
+                String key = summary.getDepartmentName();
                 departmentMap.put(key, summary);
             }
         }
@@ -4303,8 +4301,8 @@ public class PharmacyController implements Serializable {
         StringBuilder gitSql = new StringBuilder();
         gitSql.append("SELECT ")
                 .append("b.department.name, ")
-                .append("b.fromDepartment.name, ")
-                .append("b.toDepartment.name, ")
+//                .append("b.fromDepartment.name, ")
+//                .append("b.toDepartment.name, ")
                 .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalRetailSaleValue ELSE 0 END) ")
                 .append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
@@ -4317,30 +4315,22 @@ public class PharmacyController implements Serializable {
         gitParameters.put("btAtomics", billTypeAtomics);
 
         additionalCommonFilltersForBillEntity(gitSql, gitParameters);
-        gitSql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
+        gitSql.append(" GROUP BY b.department.name ");
 
         try {
             List<Object[]> gitResults = getBillFacade().findObjectsArrayByJpql(gitSql.toString(), gitParameters, TemporalType.TIMESTAMP);
 
             for (Object[] result : gitResults) {
                 String departmentName = (String) result[0];
-                String fromDepartmentName = (String) result[1];
-                String toDepartmentName = (String) result[2];
-                BigDecimal gitAmountBD = (BigDecimal) result[3];
+                BigDecimal gitAmountBD = (BigDecimal) result[1];
                 double gitAmount = gitAmountBD != null ? gitAmountBD.doubleValue() : 0.0;
 
                 // Handle null department names
                 if (departmentName == null || departmentName.trim().isEmpty()) {
                     departmentName = "Unspecified Department";
                 }
-                if (fromDepartmentName == null || fromDepartmentName.trim().isEmpty()) {
-                    fromDepartmentName = "Unspecified From Department";
-                }
-                if (toDepartmentName == null || toDepartmentName.trim().isEmpty()) {
-                    toDepartmentName = "Unspecified To Department";
-                }
 
-                String key = departmentName + "|" + fromDepartmentName + "|" + toDepartmentName;
+                String key = departmentName;
                 PharmacySummery summary = departmentMap.get(key);
                 if (summary != null) {
                     summary.setGoodInTransistAmount(gitAmount);
