@@ -473,7 +473,7 @@
                             </h:panelGroup>
                         </h:panelGroup>
 
-                                                <h:panelGroup class="mt-5" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                        <h:panelGroup class="mt-5" rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                             <h5>
                                 <h:outputText
                                     value="#{pharmacyController.transferType eq 'issue'
@@ -546,80 +546,80 @@
                                 <p:rowExpansion>
                                     <div style="padding: 15px; background-color: #fafafa;" 
                                          rendered="#{s.departmentName ne 'Total'}">
-                                        
+
                                         <!-- Check if summaries map exists and has data -->
                                         <h:panelGroup rendered="#{not empty s.summeriesMap}">
                                             <h6 style="margin-bottom: 15px; color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 5px;">
                                                 <h:outputText value="Breakdown Details for #{s.issuedDeptName}"/>
                                             </h6>
 
-                                            <!-- Iterate through summaries map entries -->
+                                            <!-- Card-based layout for better readability -->
                                             <div class="row">
-                                                <ui:repeat value="#{s.summeriesMap.entrySet()}" var="mapEntry">
-                                                    <div class="col-md-6 mb-3">
-                                                        <div style="background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px;">
-                                                            <!-- Category Header -->
-                                                            <h:outputText value="#{mapEntry.key}" 
-                                                                         style="font-weight: bold; color: #495057; display: block; margin-bottom: 10px;"/>
-                                                            
-                                                            <!-- Check if entry value (list) has items -->
-                                                            <h:panelGroup rendered="#{not empty mapEntry.value}">
-                                                                <!-- Iterate through PharmacySummery objects in the list -->
-                                                                <ui:repeat value="#{mapEntry.value}" var="summaryDetail">
-                                                                    <div style="margin-bottom: 8px; padding: 8px; background-color: #f8f9fa; border-left: 3px solid #28a745; border-radius: 3px;">
-                                                                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                                                            <!-- Department Info -->
-                                                                            <div style="flex: 1; margin-right: 10px;">
-                                                                                <h:outputText value="#{summaryDetail.departmentName}" 
-                                                                                             style="font-weight: bold;"/>
-                                                                                <br/>
-                                                                                <small style="color: #6c757d;">
-                                                                                    <h:outputText value="#{summaryDetail.issuedDeptName}"/>
-                                                                                    <span> → </span>
-                                                                                    <h:outputText value="#{summaryDetail.receivedDeptName}"/>
-                                                                                </small>
-                                                                            </div>
-                                                                            
-                                                                            <!-- Financial Data -->
-                                                                            <div style="text-align: right; white-space: nowrap;">
-                                                                                <div style="margin-bottom: 3px;">
-                                                                                    <small style="color: #6c757d;">Purchase: </small>
-                                                                                    <h:outputText value="#{summaryDetail.totalPurchaseValue}">
-                                                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                                                    </h:outputText>
-                                                                                </div>
-                                                                                
-                                                                                <div style="margin-bottom: 3px;" 
-                                                                                     rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                                                                    <small style="color: #6c757d;">Cost: </small>
-                                                                                    <h:outputText value="#{summaryDetail.totalCostValue}">
-                                                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                                                    </h:outputText>
-                                                                                </div>
-                                                                                
-                                                                                <div style="margin-bottom: 3px;">
-                                                                                    <small style="color: #6c757d;">Retail: </small>
-                                                                                    <h:outputText value="#{summaryDetail.totalRetailSaleValue}">
-                                                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                                                    </h:outputText>
-                                                                                </div>
-                                                                                
-                                                                                <div>
-                                                                                    <small style="color: #6c757d;">GIT: </small>
-                                                                                    <h:outputText value="#{summaryDetail.goodInTransistAmount}">
-                                                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                                                    </h:outputText>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
+                                                <ui:repeat value="#{s.summeriesMap.entrySet()}" var="categoryEntry">
+                                                    <div class="col-md-12 mb-3">
+                                                        <div class="card">
+                                                            <div class="card-header" style="background-color: #e9ecef;">
+                                                                <h:outputText value="#{categoryEntry.key}" 
+                                                                              style="font-weight: bold; color: #495057;"/>
+                                                            </div>
+                                                            <div class="card-body" style="padding: 10px;">
+                                                                <h:panelGroup rendered="#{not empty categoryEntry.value}">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-sm table-striped">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>From Department</th>
+                                                                                    <th>To Department</th>
+                                                                                    <th style="text-align: right;">Purchase Value</th>
+                                                                                    <th style="text-align: right;" 
+                                                                                        rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                                                                        Cost Value
+                                                                                    </th>
+                                                                                    <th style="text-align: right;">Retail Value</th>
+                                                                                    <th style="text-align: right;">GIT Amount</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <ui:repeat value="#{categoryEntry.value}" var="transferDetail">
+                                                                                    <tr>
+                                                                                        <td>
+                                                                                            <h:outputText value="#{transferDetail.issuedDeptName}"/>
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <h:outputText value="#{transferDetail.receivedDeptName}"/>
+                                                                                        </td>
+                                                                                        <td style="text-align: right;">
+                                                                                            <h:outputText value="#{transferDetail.totalPurchaseValue}">
+                                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                                            </h:outputText>
+                                                                                        </td>
+                                                                                        <td style="text-align: right;" 
+                                                                                            rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
+                                                                                            <h:outputText value="#{transferDetail.totalCostValue}">
+                                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                                            </h:outputText>
+                                                                                        </td>
+                                                                                        <td style="text-align: right;">
+                                                                                            <h:outputText value="#{transferDetail.totalRetailSaleValue}">
+                                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                                            </h:outputText>
+                                                                                        </td>
+                                                                                        <td style="text-align: right;">
+                                                                                            <h:outputText value="#{transferDetail.goodInTransistAmount}">
+                                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                                            </h:outputText>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                </ui:repeat>
+                                                                            </tbody>
+                                                                        </table>
                                                                     </div>
-                                                                </ui:repeat>
-                                                            </h:panelGroup>
-                                                            
-                                                            <!-- Empty state for category -->
-                                                            <h:panelGroup rendered="#{empty mapEntry.value}">
-                                                                <em style="color: #6c757d;">No details available for this category</em>
-                                                            </h:panelGroup>
+                                                                </h:panelGroup>
+
+                                                                <h:panelGroup rendered="#{empty categoryEntry.value}">
+                                                                    <em style="color: #6c757d;">No transfers for this category</em>
+                                                                </h:panelGroup>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </ui:repeat>
@@ -634,7 +634,7 @@
                                             </div>
                                         </h:panelGroup>
                                     </div>
-                                    
+
                                     <!-- Total row - no expansion content -->
                                     <div style="padding: 15px; text-align: center; color: #6c757d;" 
                                          rendered="#{s.departmentName eq 'Total'}">

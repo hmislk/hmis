@@ -4160,118 +4160,131 @@ public class PharmacyController implements Serializable {
         sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
 
         try {
-            List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+            List<Object[]> results = getBillFacade().findAggregates(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
-            if (results != null && !results.isEmpty()) {
-                // Calculate grand total values
-                double grandTotalPurchase = 0.0;
-                double grandTotalCost = 0.0;
-                double grandTotalRetail = 0.0;
+            // Create a map to group by main department (issued department)
+            Map<String, PharmacySummery> departmentMap = new LinkedHashMap<>();
+            Map<String, Map<String, List<PharmacySummery>>> departmentDetailsMap = new HashMap<>();
 
-                for (Object[] result : results) {
-                    String departmentName = (String) result[0];
-                    String fromDepartmentName = (String) result[1];
-                    String toDepartmentName = (String) result[2];
-                    BigDecimal purchaseValueBD = (BigDecimal) result[3];
-                    BigDecimal costValueBD = (BigDecimal) result[4];
-                    BigDecimal retailValueBD = (BigDecimal) result[5];
+            for (Object[] result : results) {
+                String mainDepartment = (String) result[0];        // department.name (main issuing dept)
+                String fromDepartment = (String) result[1];        // fromDepartment.name
+                String toDepartment = (String) result[2];          // toDepartment.name
+                BigDecimal purchaseValue = (BigDecimal) result[3];
+                BigDecimal costValue = (BigDecimal) result[4];
+                BigDecimal retailValue = (BigDecimal) result[5];
 
-                    // Convert BigDecimal to double safely
-                    double purchaseValue = purchaseValueBD != null ? purchaseValueBD.doubleValue() : 0.0;
-                    double costValue = costValueBD != null ? costValueBD.doubleValue() : 0.0;
-                    double retailValue = retailValueBD != null ? retailValueBD.doubleValue() : 0.0;
+                // Use the appropriate department based on transfer type
+                String keyDepartment = "issue".equals(transferType) ? fromDepartment : toDepartment;
+                if (keyDepartment == null) {
+                    keyDepartment = mainDepartment;
+                }
 
-                    // Handle null department names
-                    if (departmentName == null || departmentName.trim().isEmpty()) {
-                        departmentName = "Unspecified Department";
-                    }
-                    if (fromDepartmentName == null || fromDepartmentName.trim().isEmpty()) {
-                        fromDepartmentName = "Unspecified From Department";
-                    }
-                    if (toDepartmentName == null || toDepartmentName.trim().isEmpty()) {
-                        toDepartmentName = "Unspecified To Department";
-                    }
+                // Create or update main summary entry
+                PharmacySummery mainSummary = departmentMap.get(keyDepartment);
+                if (mainSummary == null) {
+                    mainSummary = new PharmacySummery();
+                    mainSummary.setDepartmentName(keyDepartment);
+                    mainSummary.setIssuedDeptName(keyDepartment);
+                    mainSummary.setTotalPurchaseValue(BigDecimal.ZERO);
+                    mainSummary.setTotalCostValue(BigDecimal.ZERO);
+                    mainSummary.setTotalRetailSaleValue(BigDecimal.ZERO);
+                    mainSummary.setSummeriesMap(new LinkedHashMap<>());
+                    departmentMap.put(keyDepartment, mainSummary);
+                    departmentDetailsMap.put(keyDepartment, new HashMap<>());
+                }
 
-                    // Use the existing constructor that takes department names and BigDecimal values
-                    PharmacySummery summary = new PharmacySummery(
-                            departmentName,
-                            fromDepartmentName,
-                            toDepartmentName,
-                            purchaseValueBD,
-                            costValueBD,
-                            retailValueBD
+                // Add to main totals
+                if (purchaseValue != null) {
+                    mainSummary.setTotalPurchaseValue(
+                            mainSummary.getTotalPurchaseValue().add(purchaseValue)
                     );
-
-                    Map<String, List<PharmacySummery>> summeriesMap = new HashMap<>();
-                    List<PharmacySummery> issuedOrReceivedDeptDetails = createIssuedOrReceivedDepartmentdetails(departmentName, billTypeAtomics);
-                    summary.setSummeriesMap(summeriesMap);
-                    summary.getSummeriesMap().put(departmentName, issuedOrReceivedDeptDetails);
-                    departmentSummaries.add(summary);
-
-                    // Add to grand totals
-                    grandTotalPurchase += purchaseValue;
-                    grandTotalCost += costValue;
-                    grandTotalRetail += retailValue;
+                }
+                if (costValue != null) {
+                    mainSummary.setTotalCostValue(
+                            mainSummary.getTotalCostValue().add(costValue)
+                    );
+                }
+                if (retailValue != null) {
+                    mainSummary.setTotalRetailSaleValue(
+                            mainSummary.getTotalRetailSaleValue().add(retailValue)
+                    );
                 }
 
-                // Calculate Good In Transit amounts for each department combination
-                calculateGoodInTransitAmounts(billTypeAtomics);
+                // Create detail entry for breakdown
+                PharmacySummery detailSummary = new PharmacySummery();
+                detailSummary.setDepartmentName(mainDepartment);
+                detailSummary.setIssuedDeptName(fromDepartment);
+                detailSummary.setReceivedDeptName(toDepartment);
+                detailSummary.setTotalPurchaseValue(purchaseValue != null ? purchaseValue : BigDecimal.ZERO);
+                detailSummary.setTotalCostValue(costValue != null ? costValue : BigDecimal.ZERO);
+                detailSummary.setTotalRetailSaleValue(retailValue != null ? retailValue : BigDecimal.ZERO);
 
-                // Add grand total row
-                PharmacySummery grandTotalSummary = new PharmacySummery(
-                        "Total",
-                        "All From Departments",
-                        "All To Departments",
-                        BigDecimal.valueOf(grandTotalPurchase),
-                        BigDecimal.valueOf(grandTotalCost),
-                        BigDecimal.valueOf(grandTotalRetail)
-                );
-
-                // Calculate total GIT amount
-                double grandTotalGIT = 0.0;
-                for (PharmacySummery summary : departmentSummaries) {
-                    grandTotalGIT += summary.getGoodInTransistAmount();
+                // Determine category for grouping details
+                String category;
+                if ("issue".equals(transferType)) {
+                    category = toDepartment != null ? "To: " + toDepartment : "Unknown Destination";
+                } else {
+                    category = fromDepartment != null ? "From: " + fromDepartment : "Unknown Source";
                 }
-                grandTotalSummary.setGoodInTransistAmount(grandTotalGIT);
 
-                departmentSummaries.add(grandTotalSummary);
+                // Add to details map
+                Map<String, List<PharmacySummery>> categoryMap = departmentDetailsMap.get(keyDepartment);
+                List<PharmacySummery> categoryList = categoryMap.get(category);
+                if (categoryList == null) {
+                    categoryList = new ArrayList<>();
+                    categoryMap.put(category, categoryList);
+                }
+                categoryList.add(detailSummary);
             }
 
+            // Set the summeries map for each main summary
+            for (Map.Entry<String, PharmacySummery> entry : departmentMap.entrySet()) {
+                String dept = entry.getKey();
+                PharmacySummery summary = entry.getValue();
+                summary.setSummeriesMap(departmentDetailsMap.get(dept));
+            }
+
+            // Convert to list and add totals row
+            departmentSummaries = new ArrayList<>(departmentMap.values());
+
+            // Calculate and add total row
+            if (!departmentSummaries.isEmpty()) {
+                PharmacySummery totalRow = new PharmacySummery();
+                totalRow.setDepartmentName("Total");
+                totalRow.setIssuedDeptName("Total");
+
+                BigDecimal totalPurchase = BigDecimal.ZERO;
+                BigDecimal totalCost = BigDecimal.ZERO;
+                BigDecimal totalRetail = BigDecimal.ZERO;
+
+                for (PharmacySummery summary : departmentSummaries) {
+                    if (summary.getTotalPurchaseValue() != null) {
+                        totalPurchase = totalPurchase.add(summary.getTotalPurchaseValue());
+                    }
+                    if (summary.getTotalCostValue() != null) {
+                        totalCost = totalCost.add(summary.getTotalCostValue());
+                    }
+                    if (summary.getTotalRetailSaleValue() != null) {
+                        totalRetail = totalRetail.add(summary.getTotalRetailSaleValue());
+                    }
+                }
+
+                totalRow.setTotalPurchaseValue(totalPurchase);
+                totalRow.setTotalCostValue(totalCost);
+                totalRow.setTotalRetailSaleValue(totalRetail);
+                totalRow.setSummeriesMap(new HashMap<>()); // Empty map for total row
+
+                departmentSummaries.add(totalRow);
+            }
+
+            // Calculate GIT amounts
+            calculateGoodInTransitAmounts(billTypeAtomics);
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating summary report", e);
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate summary report."));
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error generating summary report: " + e.getMessage());
         }
-    }
-
-    private List<PharmacySummery> createIssuedOrReceivedDepartmentdetails(String dept, List<BillTypeAtomic> billTypeAtomics) {
-        Map<String, Object> parameters = new HashMap<>();
-        StringBuilder sql = new StringBuilder();
-
-        // Select all department information plus aggregate values
-        sql.append("SELECT ")
-                .append("b.department.name, ")
-                .append("b.fromDepartment.name, ")
-                .append("b.toDepartment.name, ")
-                .append("b.billFinanceDetails.totalPurchaseValue, ")
-                .append("b.billFinanceDetails.totalCostValue, ")
-                .append("b.billFinanceDetails.totalRetailSaleValue ")
-                .append("FROM Bill b ")
-                .append("WHERE b.retired = false ")
-                .append("AND b.billTypeAtomic IN :btAtomics ")
-                .append("AND b.department.name = :dpt ")
-                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
-
-        parameters.put("fromDate", fromDate);
-        parameters.put("toDate", toDate);
-        parameters.put("btAtomics", billTypeAtomics);
-        parameters.put("dpt", dept);
-
-        additionalCommonFilltersForBillEntity(sql, parameters);
-
-        List<PharmacySummery> results = (List<PharmacySummery>) getBillFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
-        return results;
-
     }
 
     private void calculateGoodInTransitAmounts(List<BillTypeAtomic> billTypeAtomics) {
