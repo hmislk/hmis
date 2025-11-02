@@ -477,13 +477,13 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
     }
 
-    public String navigateToVariantCategoryStockByItem() {
-        return "/pharmacy/pharmacy_variant_category_stock_by_item?faces-redirect=true";
-    }
+//    public String navigateToVariantCategoryStockByItem() {
+//        return "/pharmacy/pharmacy_variant_category_stock_by_item?faces-redirect=true";
+//    }
 
-    public String navigateToVariantAdjustmentPreList() {
-        return "/pharmacy/pharmacy_variant_ajustment_pre_list?faces-redirect=true";
-    }
+//    public String navigateToVariantAdjustmentPreList() {
+//        return "/pharmacy/pharmacy_variant_ajustment_pre_list?faces-redirect=true";
+//    }
 
     public String navigateToImporters() {
         importerController.getItems();
