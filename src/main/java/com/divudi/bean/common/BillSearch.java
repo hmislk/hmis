@@ -4487,8 +4487,9 @@ public class BillSearch implements Serializable {
             case PHARMACY_ADJUSTMENT:
                 return navigateToPharmacyStockAdjustmentReprint();
             case PHARMACY_ADJUSTMENT_CANCELLED:
-            case PHARMACY_TRANSFER_REQUEST:
             case PHARMACY_TRANSFER_REQUEST_PRE:
+                return navigateToViewPharmacyTransferRequest();
+            case PHARMACY_TRANSFER_REQUEST:
             case PHARMACY_TRANSFER_REQUEST_CANCELLED:
 //            case PHARMACY_ISSUE:
 //            case PHARMACY_ISSUE_CANCELLED:
