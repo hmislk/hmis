@@ -192,6 +192,9 @@ public class FavouriteController implements Serializable {
                 break;
             default:
         }
+
+        // Pre-populate fields from AMP/VMP properties
+        onItemSelected();
     }
 
     public void prepareAddingFavouriteDiagnosis() {
@@ -450,6 +453,121 @@ public class FavouriteController implements Serializable {
         this.itemadd = itemadd;
     }
 
+    /**
+     * Helper methods for AMP/VMP property extraction
+     */
 
+    /**
+     * Checks if the selected item is AMP or VMP type
+     */
+    public boolean isSelectedItemAmpOrVmp() {
+        if (item == null) {
+            return false;
+        }
+        return isAmp(item) || isVmp(item);
+    }
+
+    /**
+     * Checks if item is AMP type
+     */
+    public boolean isAmp(Item checkItem) {
+        if (checkItem == null) {
+            return false;
+        }
+        return checkItem.getMedicineType() != null &&
+               checkItem.getMedicineType().toString().equals("Amp");
+    }
+
+    /**
+     * Checks if item is VMP type
+     */
+    public boolean isVmp(Item checkItem) {
+        if (checkItem == null) {
+            return false;
+        }
+        return checkItem.getMedicineType() != null &&
+               checkItem.getMedicineType().toString().equals("Vmp");
+    }
+
+    /**
+     * Gets the medicine category/dosage form from AMP or VMP
+     */
+    public Category getItemMedicineCategory() {
+        if (item == null) {
+            return null;
+        }
+
+        if (isVmp(item)) {
+            // VMP has direct dosageForm property
+            return item.getCategory(); // Assuming dosageForm is mapped to category
+        } else if (isAmp(item)) {
+            // AMP gets dosageForm from parent VMP
+            if (item.getVmp() != null) {
+                return item.getVmp().getCategory();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the dose unit from AMP or VMP
+     */
+    public MeasurementUnit getItemDoseUnit() {
+        if (item == null) {
+            return null;
+        }
+
+        if (isVmp(item)) {
+            return item.getStrengthUnit();
+        } else if (isAmp(item)) {
+            if (item.getVmp() != null) {
+                return item.getVmp().getStrengthUnit();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the issue unit from AMP or VMP
+     */
+    public MeasurementUnit getItemIssueUnit() {
+        if (item == null) {
+            return null;
+        }
+
+        if (isVmp(item)) {
+            return item.getIssueUnit();
+        } else if (isAmp(item)) {
+            if (item.getVmp() != null) {
+                return item.getVmp().getIssueUnit();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Pre-populates fields from AMP/VMP properties when item is selected
+     */
+    public void onItemSelected() {
+        if (current != null && isSelectedItemAmpOrVmp()) {
+            // Pre-populate category if available
+            Category medicineCategory = getItemMedicineCategory();
+            if (medicineCategory != null) {
+                current.setCategory(medicineCategory);
+            }
+
+            // Pre-populate dose unit if available
+            MeasurementUnit doseUnit = getItemDoseUnit();
+            if (doseUnit != null) {
+                current.setDoseUnit(doseUnit);
+            }
+
+            // Pre-populate issue unit if available
+            MeasurementUnit issueUnit = getItemIssueUnit();
+            if (issueUnit != null) {
+                current.setIssueUnit(issueUnit);
+            }
+        }
+    }
 
 }
