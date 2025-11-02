@@ -119,6 +119,7 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.pharmacy.PreReturnController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
@@ -3984,14 +3985,16 @@ public class BillSearch implements Serializable {
     }
 
     /**
-     * Navigates to view the Purchase Order (PO) related to the given bill.
-     * The method dynamically determines which reference bill contains the PO
-     * based on the bill's BillTypeAtomic.
+     * Navigates to view the Purchase Order (PO) related to the given bill. The
+     * method dynamically determines which reference bill contains the PO based
+     * on the bill's BillTypeAtomic.
      *
-     * For GRN Returns and Direct Purchase Returns, the PO is at referenceBill.referenceBill
-     * For GRN and Direct Purchase, the PO is at referenceBill
+     * For GRN Returns and Direct Purchase Returns, the PO is at
+     * referenceBill.referenceBill For GRN and Direct Purchase, the PO is at
+     * referenceBill
      *
-     * @param billId The ID of the bill for which to find and navigate to the related PO
+     * @param billId The ID of the bill for which to find and navigate to the
+     * related PO
      * @return Navigation string to view the PO, or null if PO not found
      */
     public String navigateToViewPo(Long billId) {
@@ -4020,7 +4023,7 @@ public class BillSearch implements Serializable {
             case PHARMACY_DIRECT_PURCHASE_REFUND:
                 // For returns, PO is at referenceBill.referenceBill
                 if (grnBill.getReferenceBill() != null
-                    && grnBill.getReferenceBill().getReferenceBill() != null) {
+                        && grnBill.getReferenceBill().getReferenceBill() != null) {
                     poBill = grnBill.getReferenceBill().getReferenceBill();
                 }
                 break;
@@ -4211,13 +4214,14 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyExpiryDateAdjustmentReprint();
             case PHARMACY_STOCK_ADJUSTMENT_BILL:
                 return navigateToPharmacyStockAdjustmentBillReprint();
-
+            case PHARMACY_TRANSFER_REQUEST_PRE:
+                return navigateToViewPharmacyTransferRequest();
             // General Pharmacy Adjustment (fallback)
             case PHARMACY_ADJUSTMENT:
                 return navigateToPharmacyStockAdjustmentReprint();
             case PHARMACY_ADJUSTMENT_CANCELLED:
 //            case PHARMACY_TRANSFER_REQUEST:
-            case PHARMACY_TRANSFER_REQUEST_PRE:
+
             case PHARMACY_TRANSFER_REQUEST_CANCELLED:
 //            case PHARMACY_ISSUE:
 //            case PHARMACY_ISSUE_CANCELLED:
@@ -6432,6 +6436,13 @@ public class BillSearch implements Serializable {
 
     public void setBillItemSize(int billItemSize) {
         this.billItemSize = billItemSize;
+    }
+
+    private String navigateToViewPharmacyTransferRequest() {
+        transferRequestController.setTransferRequestBillPre(bill);
+        transferRequestController.setBillItems(bill.getBillItems());
+        transferRequestController.setBill(bill);
+        return "/pharmacy/pharmacy_transfer_request_approval_view?faces-redirect=true";
     }
 
     public class PaymentSummary {

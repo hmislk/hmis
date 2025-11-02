@@ -78,14 +78,12 @@
                             </p:column>
                             <p:column headerText="Actions" >
                                 <p:commandButton
-                                    id="view"
+                                    id="btnView"
                                     ajax="false"
                                     value="View Request"
                                     title="View Request Details"
                                     icon="fas fa-eye" class="ui-button-info mx-2"
-                                    action="#{transferRequestController.navigateToEditRequest}"
-                                    disabled="#{b.cancelled eq true}">
-                                    <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
+                                    action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.id)}">
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
