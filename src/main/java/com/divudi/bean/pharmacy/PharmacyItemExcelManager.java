@@ -90,6 +90,12 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.Iterator;
 import org.primefaces.model.file.UploadedFile;
 
 /**
@@ -2232,6 +2238,31 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importToExcel() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        // Set column mappings to match the new UI layout (A-N columns)
+        catCol = 1;                   // B - Category
+        ampCol = 2;                   // C - Product
+        codeCol = 3;                  // D - Code
+        barcodeCol = 4;               // E - Bar Code
+        vtmCol = 5;                   // F - Generic Name
+        strengthOfIssueUnitCol = 6;   // G - Strength
+        strengthUnitCol = 7;          // H - Strength Unit
+        issueUnitsPerPackCol = 8;     // I - Pack Size
+        issueUnitCol = 9;             // J - Issue Unit
+        packUnitCol = 10;             // K - Pack Unit
+        distributorCol = 11;          // L - Distributor
+        manufacturerCol = 12;         // M - Manufacturer
+        importerCol = 13;             // N - Importer
+        startRow = 1; // If header is on row 0
+
         String strCat;
         String strAmp;
         String strCode;
@@ -2247,7 +2278,7 @@ public class PharmacyItemExcelManager implements Serializable {
         String strImporter;
 
         PharmaceuticalItemCategory cat;
-        PharmaceuticalItemType phtype;
+        PharmaceuticalItemType phType;
         Vtm vtm;
         Atm atm;
         Vmp vmp;
@@ -2261,137 +2292,112 @@ public class PharmacyItemExcelManager implements Serializable {
         double strengthUnitsPerIssueUnit;
         double issueUnitsPerPack;
         Institution distributor;
-        Institution Manufacturer;
-        Institution Importer;
+        Institution manufacturer;
+        Institution importer;
 
-        File inputWorkbook;
-        Workbook w;
-        Cell cell;
-        InputStream in;
-        JsfUtil.addSuccessMessage(file.getFileName());
-        try {
+        StringBuilder warningMessages = new StringBuilder();
+        int rowCount = 0;
+
+        try (InputStream in = file.getInputStream(); org.apache.poi.ss.usermodel.Workbook workbook = new XSSFWorkbook(in)) {
+            rowCount++;
+            System.out.println("rowCount at Start of a row= " + rowCount);
+            org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
             JsfUtil.addSuccessMessage(file.getFileName());
-            in = file.getInputStream();
-            File f;
-            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
-            FileOutputStream out = new FileOutputStream(f);
-            int read;
-            byte[] bytes = new byte[1024];
-            while ((read = in.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
-            }
-            in.close();
-            out.flush();
-            out.close();
 
-            inputWorkbook = new File(f.getAbsolutePath());
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header or initial rows as per the startRow value
+                }
 
-            JsfUtil.addSuccessMessage("Excel File Opened");
-            w = Workbook.getWorkbook(inputWorkbook);
-            Sheet sheet = w.getSheet(0);
+                Map<String, Object> m = new HashMap<>();
 
-            for (int i = startRow; i < sheet.getRows(); i++) {
-
-                Map m;
-
-                //Category
-                cell = sheet.getCell(catCol, i);
-                strCat = cell.getContents();
-                //System.out.println("strCat is " + strCat);
+                // Category
+                org.apache.poi.ss.usermodel.Cell catCell = row.getCell(catCol);
+                strCat = getStringCellValue(catCell);
+                if (strCat == null || strCat.trim().isEmpty()) {
+                    continue;
+                }
                 cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
                 if (cat == null) {
                     continue;
                 }
-                //System.out.println("cat = " + cat.getName());
+                phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
 
-                phtype = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
-
-                //Strength Unit
-                cell = sheet.getCell(strengthUnitCol, i);
-                strStrengthUnit = cell.getContents();
-                //System.out.println("strStrengthUnit is " + strengthUnitCol);
+                // Strength Unit
+                org.apache.poi.ss.usermodel.Cell strengthUnitCell = row.getCell(strengthUnitCol);
+                strStrengthUnit = getStringCellValue(strengthUnitCell);
+                if (strStrengthUnit == null || strStrengthUnit.trim().isEmpty()) {
+                    continue;
+                }
                 strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
                 if (strengthUnit == null) {
                     continue;
                 }
-                //System.out.println("strengthUnit = " + strengthUnit.getName());
-                //Pack Unit
-                cell = sheet.getCell(packUnitCol, i);
-                strPackUnit = cell.getContents();
-                //System.out.println("strPackUnit = " + strPackUnit);
+
+                // Pack Unit
+                org.apache.poi.ss.usermodel.Cell packUnitCell = row.getCell(packUnitCol);
+                strPackUnit = getStringCellValue(packUnitCell);
+                if (strPackUnit == null || strPackUnit.trim().isEmpty()) {
+                    continue;
+                }
                 packUnit = getPharmacyBean().getUnitByName(strPackUnit);
                 if (packUnit == null) {
                     continue;
                 }
-                //System.out.println("packUnit = " + packUnit.getName());
-                //Issue Unit
-                cell = sheet.getCell(issueUnitCol, i);
-                strIssueUnit = cell.getContents();
-                //System.out.println("strIssueUnit is " + strIssueUnit);
+
+                // Issue Unit
+                org.apache.poi.ss.usermodel.Cell issueUnitCell = row.getCell(issueUnitCol);
+                strIssueUnit = getStringCellValue(issueUnitCell);
+                if (strIssueUnit == null || strIssueUnit.trim().isEmpty()) {
+                    continue;
+                }
                 issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
                 if (issueUnit == null) {
                     continue;
                 }
-                //StrengthOfAnMeasurementUnit
-                cell = sheet.getCell(strengthOfIssueUnitCol, i);
-                strStrength = cell.getContents();
-                //System.out.println("strStrength = " + strStrength);
-                if (!strStrength.isEmpty()) {
-                    try {
-                        strengthUnitsPerIssueUnit = Double.parseDouble(strStrength);
-                    } catch (NumberFormatException e) {
-                        strengthUnitsPerIssueUnit = 0.0;
-                    }
-                } else {
-                    strengthUnitsPerIssueUnit = 0.0;
-                }
 
-                //Issue Units Per Pack
-                cell = sheet.getCell(issueUnitsPerPackCol, i);
-                strPackSize = cell.getContents();
-                //System.out.println("strPackSize = " + strPackSize);
-                if (!strPackSize.isEmpty()) {
-                    try {
-                        issueUnitsPerPack = Double.parseDouble(strPackSize);
-                    } catch (NumberFormatException e) {
-                        issueUnitsPerPack = 0.0;
-                    }
-                } else {
-                    issueUnitsPerPack = 0.0;
-                }
+                // Strength
+                org.apache.poi.ss.usermodel.Cell strengthCell = row.getCell(strengthOfIssueUnitCol);
+                strStrength = getStringCellValue(strengthCell);
+                strengthUnitsPerIssueUnit = parseDouble(strStrength);
 
-                //Vtm
-                cell = sheet.getCell(vtmCol, i);
-                strGenericName = cell.getContents();
-                //System.out.println("strGenericName = " + strGenericName);
+                // Issue Units Per Pack
+                org.apache.poi.ss.usermodel.Cell packSizeCell = row.getCell(issueUnitsPerPackCol);
+                strPackSize = getStringCellValue(packSizeCell);
+                issueUnitsPerPack = parseDouble(strPackSize);
+
+                // VTM (Generic Name)
+                org.apache.poi.ss.usermodel.Cell vtmCell = row.getCell(vtmCol);
+                strGenericName = getStringCellValue(vtmCell);
                 if (!strGenericName.isEmpty()) {
                     vtm = getPharmacyBean().getVtmByName(strGenericName);
                 } else {
                     vtm = null;
                 }
 
-                //Vmp
+                // VMP
                 vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
                 if (vmp == null) {
                     continue;
                 } else {
-                    vmp.setCategory(phtype);
+                    vmp.setCategory(phType);
                     getVmpFacade().edit(vmp);
                 }
-                //System.out.println("vmp = " + vmp.getName());
-                //Amp
-                cell = sheet.getCell(ampCol, i);
-                strAmp = cell.getContents();
-                //System.out.println("strAmp = " + strAmp);
 
-                cell = sheet.getCell(codeCol, i);
-                strCode = cell.getContents();
-                //System.out.println("strCode = " + strCode);
+                // AMP
+                org.apache.poi.ss.usermodel.Cell ampCell = row.getCell(ampCol);
+                strAmp = getStringCellValue(ampCell);
 
-                //System.out.println("strAmp = " + strAmp);
-                m = new HashMap();
+                org.apache.poi.ss.usermodel.Cell codeCell = row.getCell(codeCol);
+                strCode = getStringCellValue(codeCell);
+
+                m = new HashMap<>();
                 m.put("v", vmp);
                 m.put("n", strAmp.trim().toUpperCase());
+
                 if (!strCat.isEmpty()) {
                     amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
@@ -2407,11 +2413,7 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setVmp(vmp);
                         getAmpFacade().create(amp);
                     } else {
-                      
-                        
                         amp.setRetired(false);
-                        amp.setDepartmentType(DepartmentType.Pharmacy);
-                        
                         amp.setCode(strCode);
                         amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setMeasurementUnit(strengthUnit);
@@ -2420,49 +2422,105 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setDblValue(strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
-                        
                         getAmpFacade().edit(amp);
                     }
                 } else {
                     amp = null;
                 }
+
                 if (amp == null) {
                     continue;
                 }
-                //System.out.println("amp = " + amp.getName());
-                //Ampp
+
+                // AMPP
                 if (issueUnitsPerPack > 1) {
                     ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
                 }
-                //Code
-                cell = sheet.getCell(codeCol, i);
-                strCode = cell.getContents();
-                amp.setCode(strCode);
-                getAmpFacade().edit(amp);
-                //Code
-                cell = sheet.getCell(barcodeCol, i);
-                strBarcode = cell.getContents();
+
+                // Barcode
+                org.apache.poi.ss.usermodel.Cell barcodeCell = row.getCell(barcodeCol);
+                strBarcode = getStringCellValue(barcodeCell);
                 amp.setBarcode(strBarcode);
-                getAmpFacade().edit(amp);
-                //Distributor
-                cell = sheet.getCell(distributorCol, i);
-                strDistributor = cell.getContents();
-                distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
-                if (distributor != null) {
-                    ItemsDistributors id = new ItemsDistributors();
-                    id.setInstitution(distributor);
-                    id.setItem(amp);
-                    id.setOrderNo(0);
-                    getItemsDistributorsFacade().create(id);
-                } else {
+
+                // Distributor
+                org.apache.poi.ss.usermodel.Cell distributorCell = row.getCell(distributorCol);
+                strDistributor = getStringCellValue(distributorCell);
+                if (strDistributor != null && !strDistributor.trim().isEmpty()) {
+                    distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
+                    if (distributor != null) {
+                        ItemsDistributors id = new ItemsDistributors();
+                        id.setInstitution(distributor);
+                        id.setItem(amp);
+                        id.setOrderNo(0);
+                        getItemsDistributorsFacade().create(id);
+                    }
                 }
+
+                // Manufacturer - FIX: This was previously incorrectly assigned to importer
+                org.apache.poi.ss.usermodel.Cell manufacturerCell = row.getCell(manufacturerCol);
+                strManufacturer = getStringCellValue(manufacturerCell);
+                if (strManufacturer != null && !strManufacturer.trim().isEmpty()) {
+                    manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Company);
+                    if (manufacturer != null) {
+                        amp.setManufacturer(manufacturer);
+                    }
+                }
+
+                // Importer
+                org.apache.poi.ss.usermodel.Cell importerCell = row.getCell(importerCol);
+                strImporter = getStringCellValue(importerCell);
+                if (strImporter != null && !strImporter.trim().isEmpty()) {
+                    importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Company);
+                    if (importer != null) {
+                        amp.setImporter(importer);
+                    }
+                }
+
+                // Save the amp with all updates
+                getAmpFacade().edit(amp);
             }
 
-            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Successfully imported pharmaceutical items from Excel file to the database");
             return "";
-        } catch (IOException | BiffException ex) {
-            JsfUtil.addErrorMessage(ex.getMessage());
+        } catch (IOException ex) {
+            JsfUtil.addErrorMessage("Error processing Excel file: " + ex.getMessage());
             return "";
+        }
+    }
+
+    // Helper method to safely get string value from Excel cell
+    private String getStringCellValue(org.apache.poi.ss.usermodel.Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                } else {
+                    return String.valueOf((long) cell.getNumericCellValue());
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            default:
+                return "";
+        }
+    }
+
+    // Helper method to parse double values safely
+    private double parseDouble(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            return 0.0;
         }
     }
 
