@@ -49,13 +49,18 @@
                                 <p:outputLabel value="Selected Medicine:" styleClass="font-weight-bold" />
                                 <h:outputText value="#{favouriteController.item.name}" styleClass="text-primary font-weight-bold" />
 
-                                <p:separator colspan="2" />
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Age Range Section -->
                                 <p:outputLabel value="From Age (Days):" for="fromDays" styleClass="font-weight-bold" />
                                 <h:panelGroup>
                                     <p:inputText id="fromDays" value="#{favouriteController.current.fromDays}"
-                                                 styleClass="w-100 mb-1" placeholder="Enter age in days" />
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="fromAgeDisplay" />
+                                        <p:ajax event="blur" update="fromAgeDisplay" />
+                                    </p:inputText>
                                     <h:panelGroup id="fromAgeDisplay" layout="block" styleClass="text-muted small mt-1">
                                         <i class="fas fa-info-circle"></i>
                                         <h:outputText value=" Approximately: " />
@@ -79,7 +84,10 @@
                                 <p:outputLabel value="To Age (Days):" for="toDays" styleClass="font-weight-bold" />
                                 <h:panelGroup>
                                     <p:inputText id="toDays" value="#{favouriteController.current.toDays}"
-                                                 styleClass="w-100 mb-1" placeholder="Enter age in days" />
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="toAgeDisplay" />
+                                        <p:ajax event="blur" update="toAgeDisplay" />
+                                    </p:inputText>
                                     <h:panelGroup id="toAgeDisplay" layout="block" styleClass="text-muted small mt-1">
                                         <i class="fas fa-info-circle"></i>
                                         <h:outputText value=" Approximately: " />
@@ -100,7 +108,9 @@
                                     </h:panelGroup>
                                 </h:panelGroup>
 
-                                <p:separator colspan="2" />
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Category Section -->
                                 <p:outputLabel value="Medicine Category:" for="category" styleClass="font-weight-bold" />
@@ -111,7 +121,9 @@
                                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                 </p:selectOneMenu>
 
-                                <p:separator colspan="2" />
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Dosage Section -->
                                 <p:outputLabel value="Dose:" for="dose" styleClass="font-weight-bold" />
@@ -126,7 +138,9 @@
                                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                 </p:selectOneMenu>
 
-                                <p:separator colspan="2" />
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Frequency Section -->
                                 <p:outputLabel value="Frequency:" for="frequency" styleClass="font-weight-bold" />
@@ -137,7 +151,9 @@
                                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                 </p:selectOneMenu>
 
-                                <p:separator colspan="2" />
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Duration Section -->
                                 <p:outputLabel value="Duration:" for="duration" styleClass="font-weight-bold" />
@@ -152,7 +168,9 @@
                                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                 </p:selectOneMenu>
 
-                                <p:separator colspan="2" />
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Issue Quantity Section -->
                                 <p:outputLabel value="Issue Quantity:" for="issueQty" styleClass="font-weight-bold" />
