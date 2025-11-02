@@ -2295,12 +2295,7 @@ public class PharmacyItemExcelManager implements Serializable {
         Institution manufacturer;
         Institution importer;
 
-        StringBuilder warningMessages = new StringBuilder();
-        int rowCount = 0;
-
         try (InputStream in = file.getInputStream(); org.apache.poi.ss.usermodel.Workbook workbook = new XSSFWorkbook(in)) {
-            rowCount++;
-            System.out.println("rowCount at Start of a row= " + rowCount);
             org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
             JsfUtil.addSuccessMessage(file.getFileName());
@@ -2460,7 +2455,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 org.apache.poi.ss.usermodel.Cell manufacturerCell = row.getCell(manufacturerCol);
                 strManufacturer = getStringCellValue(manufacturerCell);
                 if (strManufacturer != null && !strManufacturer.trim().isEmpty()) {
-                    manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Company);
+                    manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
                     if (manufacturer != null) {
                         amp.setManufacturer(manufacturer);
                     }
@@ -2470,7 +2465,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 org.apache.poi.ss.usermodel.Cell importerCell = row.getCell(importerCol);
                 strImporter = getStringCellValue(importerCell);
                 if (strImporter != null && !strImporter.trim().isEmpty()) {
-                    importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Company);
+                    importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
                     if (importer != null) {
                         amp.setImporter(importer);
                     }
