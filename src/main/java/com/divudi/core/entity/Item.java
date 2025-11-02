@@ -193,6 +193,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private Double strengthOfAnIssueUnit;
     private Double issueMultipliesQuantity;
     private Double minimumIssueQuantity;
+    @Enumerated(EnumType.STRING)
     private MeasurementType issueType;
 
     @Enumerated(EnumType.STRING)
