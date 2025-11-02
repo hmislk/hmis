@@ -92,6 +92,8 @@ import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.util.Iterator;
 import org.primefaces.model.file.UploadedFile;
@@ -2491,23 +2493,12 @@ public class PharmacyItemExcelManager implements Serializable {
         if (cell == null) {
             return "";
         }
-
-        switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue().trim();
-            case NUMERIC:
-                if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();
-                } else {
-                    return String.valueOf((long) cell.getNumericCellValue());
-                }
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            case FORMULA:
-                return cell.getCellFormula();
-            default:
-                return "";
-        }
+        DataFormatter formatter = new DataFormatter(Locale.ENGLISH);
+        FormulaEvaluator evaluator = cell.getSheet()
+                .getWorkbook()
+                .getCreationHelper()
+                .createFormulaEvaluator();
+        return formatter.formatCellValue(cell, evaluator).trim();
     }
 
     // Helper method to parse double values safely
