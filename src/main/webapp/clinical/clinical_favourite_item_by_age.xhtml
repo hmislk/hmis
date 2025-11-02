@@ -37,7 +37,9 @@
 
                             <p:commandButton value="Add New"
                                              class="ui-button-success mx-4" icon="fas fa-plus"
-                                             onclick="PF('dlg2').show();"
+                                             process="@this"
+                                             update="dlgFavioriteMedicines"
+                                             oncomplete="PF('dlg2').show()"
                                              action="#{favouriteController.prepareAddingFavouriteItem()}" >
                             </p:commandButton>
 
