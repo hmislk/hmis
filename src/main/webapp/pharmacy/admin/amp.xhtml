@@ -129,8 +129,8 @@
                                                  class="w-100"
                                                  maxResults="15"
                                                  inputStyleClass="w-100"
-
-                                                 ></p:autoComplete>
+                                                 >
+                                </p:autoComplete>
 
                                 <h:outputText  value="Dosage Form" class="w-100"></h:outputText>
                                 <p:autoComplete  value="#{ampController.current.vmp.dosageForm}"
@@ -141,7 +141,10 @@
                                                  var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                 </p:autoComplete>
 
-                                <h:outputText  value="Dose Unit" class="w-100"></h:outputText>
+                                <p:inputText autocomplete="off"  value="#{ampController.current.strengthOfAnIssueUnit}"  class="w-100"></p:inputText>
+                                <h:outputText  value="Strength" class="w-100"></h:outputText>
+                                
+                                <h:outputText  value="Strength Unit" class="w-100"></h:outputText>
                                 <p:selectOneMenu value="#{ampController.current.strengthUnit}"
                                                  styleClass="w-100" autoWidth="false">
                                     <f:selectItem itemLabel="Select Dose Unit" />

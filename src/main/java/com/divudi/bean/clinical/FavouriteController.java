@@ -4,6 +4,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -225,6 +226,86 @@ public class FavouriteController implements Serializable {
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
         current = null;
         JsfUtil.addSuccessMessage("Saved");
+    }
+
+    /**
+     * Prepares the current object for editing an existing favourite medicine
+     */
+    public void prepareEditFavouriteMedicine(PrescriptionTemplate editingTemplate) {
+        if (editingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite medicine selected for editing");
+            return;
+        }
+        current = editingTemplate;
+        item = editingTemplate.getForItem();
+
+        // Populate available units based on medicine type
+        prepareAvailableUnitsForEdit();
+    }
+
+    /**
+     * Updates an existing favourite medicine
+     */
+    public void updateFavMedicine(){
+        if (current == null) {
+            JsfUtil.addErrorMessage("No favourite medicine to update");
+            return;
+        }
+        current.setType(PrescriptionTemplateType.FavouriteMedicine);
+        favouriteItemFacade.edit(current);
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+        current = null;
+        JsfUtil.addSuccessMessage("Updated successfully");
+    }
+
+    /**
+     * Removes a favourite medicine by setting it as retired
+     */
+    public void removeFavouriteMedicine(PrescriptionTemplate removingTemplate) {
+        if (removingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite medicine selected for removal");
+            return;
+        }
+        removingTemplate.setRetired(true);
+        favouriteItemFacade.edit(removingTemplate);
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+        JsfUtil.addSuccessMessage("Favourite medicine removed successfully");
+    }
+
+    /**
+     * Prepares available units for editing based on the selected medicine type
+     */
+    private void prepareAvailableUnitsForEdit() {
+        if (item == null) {
+            return;
+        }
+
+        availableDoseUnits = new ArrayList<>();
+        availableItems = new ArrayList<>();
+
+        switch (item.getMedicineType()) {
+            case Vmp:
+                availableDoseUnits.add(item.getMeasurementUnit());
+                availableDoseUnits.add(item.getIssueUnit());
+                availableDoseUnits.add(item.getPackUnit());
+                availableItems.add(item);
+                availableItems.addAll(vmpController.ampsOfVmp(item));
+                break;
+            case Amp:
+                availableDoseUnits.add(item.getVmp().getBaseUnit());
+                availableDoseUnits.add(item.getVmp().getIssueUnit());
+                availableItems.add(item);
+                break;
+            case Vtm:
+            case Atm:
+                availableDoseUnits = measurementUnitController.getDoseUnits();
+                availableItems.addAll(vmpController.ampsAndVmpsContainingVtm(item));
+                availableItems.add(item);
+                break;
+            default:
+                availableDoseUnits = measurementUnitController.getDoseUnits();
+                break;
+        }
     }
 
 //    public void removeFavourite() {
