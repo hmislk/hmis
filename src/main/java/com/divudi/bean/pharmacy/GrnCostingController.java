@@ -3282,7 +3282,7 @@ public class GrnCostingController implements Serializable {
 
             if (item instanceof Ampp) {
                 // For AMPP (packs), convert to units
-                BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+                unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
                 if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
                     unitsPerPack = BigDecimal.ONE;
                 }

@@ -7776,6 +7776,22 @@ public class PharmacyController implements Serializable {
         this.totalNetTotal = totalNetTotal;
     }
 
+    public double getTotalCashNetTotal() {
+        return totalCashNetTotal;
+    }
+
+    public void setTotalCashNetTotal(double totalCashNetTotal) {
+        this.totalCashNetTotal = totalCashNetTotal;
+    }
+
+    public double getTotalCreditNetTotal() {
+        return totalCreditNetTotal;
+    }
+
+    public void setTotalCreditNetTotal(double totalCreditNetTotal) {
+        this.totalCreditNetTotal = totalCreditNetTotal;
+    }
+
     public double getTotalCreditCostValue() {
         return totalCreditCostValue;
     }
