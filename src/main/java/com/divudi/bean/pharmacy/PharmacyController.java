@@ -3526,24 +3526,36 @@ public class PharmacyController implements Serializable {
                         : 0.0;
             }
 
-            // Check payment method
-            if (bill.getPaymentMethod() == null) {
+            // Determine the correct payment method to use
+            // For return/refund/cancellation bills, use the original bill's payment method
+            PaymentMethod paymentMethod = null;
+            if (bill.getReferenceBill() != null) {
+                // This is a return/refund/cancellation bill - use reference bill's payment method
+                paymentMethod = bill.getReferenceBill().getPaymentMethod();
+            } else {
+                // Regular bill - use its own payment method
+                paymentMethod = bill.getPaymentMethod();
+            }
+
+            // If payment method is still null, log warning and treat as non-credit (cash/other)
+            if (paymentMethod == null) {
                 Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING,
-                        "Bill {0} has no payment method", bill.getId());
-                continue;
+                        "Bill {0} has no payment method (treating as non-credit)", bill.getId());
             }
 
             // Get net total value
             double netTotal = bill.getNetTotal();
 
             // Separate by Credit vs non-Credit (Cash and others)
-            if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+            // Treat null payment method as non-credit (cash/other)
+            if (paymentMethod == PaymentMethod.Credit) {
                 totalCreditPurchaseValue += purchaseValue;
                 totalCreditSaleValue += saleValue;
                 totalCreditCostValue += costValue;
                 totalCreditNetTotal += netTotal;
             } else {
                 // All non-credit payments (Cash, Card, Cheque, etc.) go to "Cash" totals
+                // This includes null payment methods
                 totalCashPurchaseValue += purchaseValue;
                 totalCashSaleValue += saleValue;
                 totalCashCostValue += costValue;

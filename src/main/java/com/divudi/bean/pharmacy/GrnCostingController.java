@@ -3273,11 +3273,12 @@ public class GrnCostingController implements Serializable {
                     : BigDecimal.ZERO;
             f.setNetRate(netRate);
 
-            // CRITICAL FIX: Recalculate valueAtPurchaseRate using the FINAL netRate (after bill-level discounts)
-            // instead of lineNetRate (before bill-level discounts)
+            // CRITICAL FIX: Recalculate valueAtPurchaseRate using lineNetRate (purchase rate after line discounts)
+            // NOT netRate (which includes bill-level expenses - that's the cost rate, not purchase rate)
             Item item = bi.getItem();
             BigDecimal freeQuantity = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
             BigDecimal totalQuantity = quantity.add(freeQuantity);
+            BigDecimal lineNetRateForCalc = BigDecimalUtil.valueOrZero(f.getLineNetRate());
 
             if (item instanceof Ampp) {
                 // For AMPP (packs), convert to units
@@ -3286,15 +3287,15 @@ public class GrnCostingController implements Serializable {
                     unitsPerPack = BigDecimal.ONE;
                 }
                 BigDecimal totalQuantityInUnits = totalQuantity.multiply(unitsPerPack);
-                BigDecimal netRatePerUnit = netRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP);
+                BigDecimal lineNetRatePerUnit = lineNetRateForCalc.divide(unitsPerPack, 4, RoundingMode.HALF_UP);
 
                 // Recalculate based on configuration
                 if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
-                    // Net Rate Per Unit × Total Quantity in Units (includes free items)
-                    f.setValueAtPurchaseRate(totalQuantityInUnits.multiply(netRatePerUnit));
+                    // Line Net Rate Per Unit × Total Quantity in Units (includes free items)
+                    f.setValueAtPurchaseRate(totalQuantityInUnits.multiply(lineNetRatePerUnit));
                 } else {
-                    // Net Rate × Paid Quantity (excludes free items)
-                    f.setValueAtPurchaseRate(netRate.multiply(quantity));
+                    // Line Net Rate × Paid Quantity (excludes free items)
+                    f.setValueAtPurchaseRate(lineNetRateForCalc.multiply(quantity));
                 }
             } else {
                 // For AMP (units), use directly
@@ -3302,11 +3303,11 @@ public class GrnCostingController implements Serializable {
 
                 // Recalculate based on configuration
                 if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
-                    // Net Rate × Total Quantity (includes free items)
-                    f.setValueAtPurchaseRate(totalQuantityInUnits.multiply(netRate));
+                    // Line Net Rate × Total Quantity (includes free items)
+                    f.setValueAtPurchaseRate(totalQuantityInUnits.multiply(lineNetRateForCalc));
                 } else {
-                    // Net Rate × Paid Quantity (excludes free items)
-                    f.setValueAtPurchaseRate(netRate.multiply(quantity));
+                    // Line Net Rate × Paid Quantity (excludes free items)
+                    f.setValueAtPurchaseRate(lineNetRateForCalc.multiply(quantity));
                 }
             }
         }
@@ -3507,26 +3508,67 @@ public class GrnCostingController implements Serializable {
      * @param billItemFinanceDetails
      */
     public void recalculateFinancialsBeforeAddingBillItemPreservingDistributedCosts(BillItemFinanceDetails billItemFinanceDetails) {
-        // First call the normal recalculation to set all line-level values
-        recalculateFinancialsBeforeAddingBillItem(billItemFinanceDetails);
+        // CRITICAL FIX: Do NOT call recalculateFinancialsBeforeAddingBillItem() here!
+        // That method recalculates using lineNetRate (before bill-level discounts),
+        // but at this point we need to use the final netRate (after bill-level discounts)
+        // that was calculated by distributeProportionalBillValuesToItems().
 
-        // Then restore the costRate and valueAtCostRate from totalCostRate which includes bill-level costs
+        // Instead, update PBI values using the FINAL distributed rates
+        BillItem billItem = billItemFinanceDetails.getBillItem();
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
+        Item item = billItem.getItem();
+
+        // Use lineNetRate (purchase rate after line discounts, BEFORE bill-level expenses)
+        // Note: netRate includes expenses, but purchase rate should NOT include expenses
+        BigDecimal lineNetRate = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getLineNetRate());
+        BigDecimal quantity = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getQuantity());
+        BigDecimal freeQuantity = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getFreeQuantity());
+        BigDecimal totalQuantity = quantity.add(freeQuantity);
+        BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getUnitsPerPack());
+        if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+            unitsPerPack = BigDecimal.ONE;
+        }
+
+        BigDecimal totalQtyByUnits = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getTotalQuantityByUnits());
         BigDecimal totalCostRate = billItemFinanceDetails.getTotalCostRate();
-        if (totalCostRate != null && totalCostRate.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getUnitsPerPack());
-            if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
-                unitsPerPack = BigDecimal.ONE;
-            }
 
+        // Calculate purchase rate per unit from lineNetRate
+        Double prPerUnit;
+        if (item instanceof Ampp) {
+            prPerUnit = lineNetRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP).doubleValue();
+        } else {
+            prPerUnit = lineNetRate.doubleValue();
+        }
+
+        // Set PBI purchase rates using lineNetRate (NOT netRate which includes expenses)
+        pbi.setPurchaseRate(prPerUnit);
+        pbi.setPurchaseRatePack(lineNetRate.doubleValue());
+
+        // Set PBI purchase values
+        BigDecimal purchaseValue = BigDecimal.valueOf(prPerUnit).multiply(totalQtyByUnits);
+        pbi.setPurchaseRatePackValue(purchaseValue.doubleValue());
+        pbi.setPurchaseValue(purchaseValue.doubleValue());
+
+        // Restore costRate from totalCostRate (which includes bill-level costs)
+        if (totalCostRate != null && totalCostRate.compareTo(BigDecimal.ZERO) > 0) {
             // Restore costRate (per pack for AMPP, per unit for AMP)
             BigDecimal costRate = BigDecimalUtil.multiply(totalCostRate, unitsPerPack);
             billItemFinanceDetails.setCostRate(costRate);
 
             // Restore valueAtCostRate (totalQtyByUnits × totalCostRate)
-            BigDecimal totalQtyByUnits = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getTotalQuantityByUnits());
             BigDecimal valueAtCostRate = BigDecimalUtil.multiply(totalQtyByUnits, totalCostRate);
             billItemFinanceDetails.setValueAtCostRate(valueAtCostRate);
+
+            // Set PBI cost rate
+            pbi.setCostRate(totalCostRate.doubleValue());
         }
+
+        // Update BIFD.valueAtPurchaseRate with final netRate
+        // Note: BIFD.purchaseRate is already correctly set to lineNetRate by distributeProportionalBillValuesToItems
+        billItemFinanceDetails.setValueAtPurchaseRate(purchaseValue);
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {
