@@ -1124,7 +1124,7 @@ public class DataUploadController implements Serializable {
             try (InputStream inputStream = file.getInputStream()) {
                 atms = readAtmsFromExcel(inputStream);
                 for (Atm v : atms) {
-                    atmController.findAndSaveAtmByNameAndCode(v, v.getVtm());
+                    atmController.findAndSaveAtmByNameAndCode(v, (Vtm) v.getVtm());
                 }
             } catch (IOException e) {
                 e.printStackTrace();

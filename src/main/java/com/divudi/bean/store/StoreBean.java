@@ -1690,7 +1690,7 @@ public class StoreBean implements Serializable {
         m.put("s", strength);
         m.put("su", strengthUnit);
         m.put("c", cat);
-        sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
+        sql = "select v from VirtualProductIngredient v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
         VirtualProductIngredient v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
         Vmp vmp;
         if (v == null) {

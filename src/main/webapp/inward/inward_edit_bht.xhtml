@@ -15,9 +15,6 @@
 
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
-
-
-
             <h:form>
 
                 <h:panelGroup  class="row" rendered="#{bhtEditController.current.bhtNo eq null}"> 
@@ -127,7 +124,8 @@
                         <div class="row">
                             <div class="col-6">
                                 <common:patient_details_for_addmission controller="#{bhtEditController}" editable="true"></common:patient_details_for_addmission>
-                                <p:panel>
+
+                                <p:panel class="my-2">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
                                         <h:outputLabel value="Admission" class="mx-4"></h:outputLabel>
@@ -253,7 +251,7 @@
                                     </h:panelGrid>
                                 </p:panel>  
 
-                                <p:panel>
+                                <p:panel >
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-hospital"></h:outputText>
                                         <h:outputLabel value="Hospital" class="mx-4"></h:outputLabel>
@@ -294,70 +292,81 @@
                                             <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                             <p:ajax process="@this" update="crd" event="change" />
                                         </p:selectOneMenu>
+                                        
                                     </h:panelGrid>
 
-                                    <h:panelGroup id="crd" style="display: #{bhtEditController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; " >
+                                    <h:panelGroup id="crd" rendered="#{bhtEditController.current.paymentMethod eq 'Credit'}" >
                                         <credit:inputCredit  patientEncounter="#{bhtEditController.current}"/>
                                     </h:panelGroup>
 
                                 </p:panel>
 
-                                <p:panel header="Credit Company">
-                                    <p:commandButton 
-                                        value="load Patient's Credit Companies"
-                                        id="btnLoad"
-                                        icon="fas fa-spinner"
-                                        action="#{bhtEditController.fillCreditCompaniesByPatient()}"
-                                        process="btnLoad"
-                                        update="tblCom"
-                                        class="my-1">
-                                    </p:commandButton>
+                                <p:panel header="Credit Company" class="mt-2">
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between">
+                                            <h:outputLabel value="Credit Company" class="mt-2"></h:outputLabel>
+                                            <p:commandButton 
+                                                value="load Patient's Credit Companies"
+                                                id="btnLoad"
+                                                icon="fas fa-spinner"
+                                                class="ui-button-warning"
+                                                action="#{bhtEditController.fillCreditCompaniesByPatient()}"
+                                                process="btnLoad"
+                                                update="tblCom">
+                                            </p:commandButton>
+                                        </div>
 
-                                    <p:dataTable id="tblCom" value="#{bhtEditController.encounterCreditCompanys}" var="ecc" >
-                                        #{bhtEditController.encounterCreditCompanys.size()}
-                                        <f:facet name="header">
-                                            <h:outputText value="Companies" />
-                                        </f:facet>
-                                        <p:column>
+                                    </f:facet>
+
+                                    <p:dataTable 
+                                        id="tblCom"
+                                        value="#{bhtEditController.encounterCreditCompanys}" 
+                                        var="ecc"
+                                        rowIndexVar="i">
+                                        <p:column headerText="#" width="2em;">
+                                            <h:outputText value="#{i+1}" ></h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Credit Company">
                                             <h:outputText value="#{ecc.institution.name}" ></h:outputText>
                                         </p:column>
-                                        <p:column style="text-align: right">
-                                            <p:commandButton
-                                                id="btnSelect"
-                                                value='Select'
-                                                icon="fas fa-check-circle"
-                                                ajax="false"
-                                                class="ui-button-success"
-                                                action="#{bhtEditController.setSelectedCompany(ecc)}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <p:commandButton  
-                                                id="btnRemove"
-                                                ajax="false"
-                                                icon="fas fa-trash" 
-                                                action="#{bhtEditController.removeCreditCompany(ecc)}"
-                                                styleClass="rounded-button ui-button-danger" />
+
+                                        <p:column headerText="Action" width="23em;">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    id="btnSelect"
+                                                    value='Select'
+                                                    icon="fas fa-check-circle"
+                                                    ajax="false"
+                                                    class="ui-button-success"
+                                                    action="#{bhtEditController.setSelectedCompany(ecc)}">
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    value="To Send Mail"
+                                                    title="Send confermation mail to Company"
+                                                    action="#{bhtEditController.navigateToSendMailToCompany(ecc)}"
+                                                    icon="fa fa-paper-plane"
+                                                    class="ui-button-secondary" >
+                                                </p:commandButton>
+                                                <p:commandButton  
+                                                    id="btnRemove"
+                                                    ajax="false"
+                                                    value="Remove"
+                                                    icon="fas fa-trash" 
+                                                    action="#{bhtEditController.removeCreditCompany(ecc)}"
+                                                    styleClass="ui-button-danger" >
+                                                </p:commandButton>
+                                            </div>
+
                                         </p:column>
                                     </p:dataTable>
                                 </p:panel>
 
-                                <p:panel header="Cancel Admission">
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-ban"/>
-                                        <h:outputText class="mx-4" value="Cancel Admission"/>
-                                    </f:facet>
-                                    <p:inputTextarea value="#{bhtEditController.comment}" id="com" class="w-100">
-                                    </p:inputTextarea>
-
-                                    <p:commandButton class="my-1 ui-button-danger" icon="fas fa-ban"
-                                                     value="Cancel Admission" action="#{bhtEditController.cancelBht}"
-                                                     ajax="false"
-                                                     disabled="#{!webUserController.hasPrivilege('InwardAdmissionCancel')}">
-                                    </p:commandButton>
-                                </p:panel>
                             </div>
 
                             <div class="col-6">
+
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-person-shelter"></h:outputText>
@@ -385,7 +394,7 @@
                                     </p:dataTable>
                                 </p:panel>
 
-                                <p:panel>
+                                <p:panel class="mt-2">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                         <h:outputLabel value="Guardian Details" class="mx-4"></h:outputLabel>
@@ -417,7 +426,7 @@
                                     </h:panelGrid>
                                 </p:panel>
 
-                                <h:panelGroup id="grpBill">
+                                <h:panelGroup id="grpBill" class="mt-2">
                                     <p:panel id="panPrint" class="w-100" >
                                         <f:facet name="header">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -443,6 +452,31 @@
                                         </h:panelGroup>
                                     </p:panel>
                                 </h:panelGroup>
+
+                                <p:panel header="Cancel Admission" class="mt-2">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-ban"/>
+                                        <h:outputText class="mx-4" value="Cancel Admission"/>
+                                    </f:facet>
+
+                                    <p:inputTextarea 
+                                        value="#{bhtEditController.comment}" 
+                                        id="com" 
+                                        class="w-100">
+                                    </p:inputTextarea>
+
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <p:commandButton 
+                                            class="ui-button-danger" 
+                                            icon="fas fa-ban"
+                                            value="Cancel Admission" 
+                                            action="#{bhtEditController.cancelBht}"
+                                            ajax="false"
+                                            disabled="#{!webUserController.hasPrivilege('InwardAdmissionCancel')}">
+                                        </p:commandButton>
+                                    </div>
+
+                                </p:panel>
 
                             </div>
                         </div>
