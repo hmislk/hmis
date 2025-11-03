@@ -27,9 +27,9 @@
         </div>
 
         <div class="scroll-wrapper" id="tableScroll" style="width:100%;">
-            <div style="width:300em;">
+            <div style="width:306em;">
                 <p:dataTable id="tbl1"
-                             style="width:295em;"
+                             style="width:301em;"
                              value="#{pharmacyController.bills}"
                              var="b"
                              rowKey="#{b.id}"
@@ -220,6 +220,18 @@
                     <!-- Remark -->
                     <p:column headerText="Remark" width="6em">
                         <h:outputLabel value="#{b.comments}"/>
+                    </p:column>
+
+                    <!-- Net Total -->
+                    <p:column headerText="Net Total" width="6em" style="text-align: right;">
+                        <h:outputLabel value="#{b.netTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacyController.totalNetTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
                     </p:column>
 
                     <!-- Purchase Details (Row Expansion) -->
