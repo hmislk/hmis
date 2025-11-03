@@ -57,6 +57,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     private String returnBillcomment;
     private PaymentMethod returnPaymentMethod;
     private Staff toStaff;
+    private List<Payment> originalBillPayments;
     ////////
 
     private List<BillItem> billItems;
@@ -109,6 +110,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         finalReturnBill = null;
         printPreview = false;
         billItems = null;
+        originalBillPayments = null;
         paymentMethodData = new PaymentMethodData();
 
         // Copy patient from original bill to return bill BEFORE generating components
@@ -155,6 +157,9 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         // Fetch and initialize payment data from original bill
         originalPayments = billService.fetchBillPayments(paymentBill);
+
+        // Store the fetched payments so they can be displayed on the return page
+        this.originalBillPayments = originalPayments;
 
         if (originalPayments != null && !originalPayments.isEmpty()) {
             // Initialize payment method data based on original payments
@@ -226,6 +231,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         finalReturnBill = null;
         printPreview = false;
         billItems = null;
+        originalBillPayments = null;
 
     }
 
@@ -1119,8 +1125,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
      * list if not available
      */
     public List<Payment> getOriginalBillPayments() {
-        if (bill != null && bill.getPayments() != null && !bill.getPayments().isEmpty()) {
-            return bill.getPayments();
+        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+            return originalBillPayments;
         }
         return new ArrayList<>();
     }

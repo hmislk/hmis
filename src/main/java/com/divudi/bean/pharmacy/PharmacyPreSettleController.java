@@ -957,11 +957,32 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 case PatientDeposit:
                     p.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
                     break;
-                case Agent:
                 case Slip:
-                case OnCall:
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    p.setPaymentDate(paymentMethodData.getSlip().getDate());
+                    p.setComments(paymentMethodData.getSlip().getComment());
+                    p.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
+                    break;
                 case OnlineSettlement:
+                    p.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    p.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
+                    p.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                    break;
                 case Staff:
+                    p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+                    p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
+                    break;
+                case Staff_Welfare:
+                    p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
+                    p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
+                    break;
+                case Agent:
+                case OnCall:
                 case YouOweMe:
                 case MultiplePaymentMethods:
             }
@@ -1505,6 +1526,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         getBillFacade().editAndCommit(getPreBill());
 
+        // Edit and flush the sale bill to ensure payments are properly persisted to database
+        getBillFacade().edit(getSaleBill());
+
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleBill().getId()));
@@ -1590,6 +1614,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         saveSaleBillItems();
 
         getBillFacade().editAndCommit(getPreBill());
+
+        // Edit and flush the sale bill to ensure payments are properly persisted to database
+        getBillFacade().edit(getSaleBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -2338,6 +2365,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     getPaymentMethodData().getCheque().setTotalValue(Math.abs(getPreBill().getNetTotal()));
                     break;
                 case Slip:
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getRealizedAt());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getPreBill().getNetTotal()));
                     break;
                 case ewallet:
@@ -2399,6 +2430,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                         cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
                         break;
                     case Slip:
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getRealizedAt());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
