@@ -3691,7 +3691,9 @@ public class GrnCostingController implements Serializable {
                 BigDecimal qtyTotal = qty.add(freeQty);
 
                 BigDecimal costRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
-                BigDecimal purchaseRate = Optional.ofNullable(f.getLineGrossRate()).orElse(BigDecimal.ZERO);
+                // CRITICAL FIX: Use lineNetRate (after discount) instead of lineGrossRate (before discount)
+                // This ensures purchase value calculations use the actual net purchase rate
+                BigDecimal purchaseRate = Optional.ofNullable(f.getLineNetRate()).orElse(BigDecimal.ZERO);
                 BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO);
                 BigDecimal wholesaleRate = Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO);
 
