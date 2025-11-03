@@ -3526,6 +3526,21 @@ public class PharmacyReportController implements Serializable {
 
         dtoList = (List<DirectPurchaseReportDto>) billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
+        totalPurchaseValue = 0.0;
+        totalRetailValue = 0.0;
+
+        totalPurchaseValue = dtoList.stream()
+                .filter(DirectPurchaseReportDto.class::isInstance)
+                .map(DirectPurchaseReportDto.class::cast)
+                .mapToDouble(DirectPurchaseReportDto::getPurchaseValue)
+                .sum();
+
+        totalRetailValue = dtoList.stream()
+                .filter(DirectPurchaseReportDto.class::isInstance)
+                .map(DirectPurchaseReportDto.class::cast)
+                .mapToDouble(DirectPurchaseReportDto::getSaleValue)
+                .sum();
+
     }
 
     public List<DirectPurchaseReportDto> getDtoList() {

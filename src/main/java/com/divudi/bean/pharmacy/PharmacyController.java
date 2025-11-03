@@ -477,13 +477,13 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
     }
 
-    public String navigateToVariantCategoryStockByItem() {
-        return "/pharmacy/pharmacy_variant_category_stock_by_item?faces-redirect=true";
-    }
+//    public String navigateToVariantCategoryStockByItem() {
+//        return "/pharmacy/pharmacy_variant_category_stock_by_item?faces-redirect=true";
+//    }
 
-    public String navigateToVariantAdjustmentPreList() {
-        return "/pharmacy/pharmacy_variant_ajustment_pre_list?faces-redirect=true";
-    }
+//    public String navigateToVariantAdjustmentPreList() {
+//        return "/pharmacy/pharmacy_variant_ajustment_pre_list?faces-redirect=true";
+//    }
 
     public String navigateToImporters() {
         importerController.getItems();
@@ -3677,14 +3677,20 @@ public class PharmacyController implements Serializable {
                 return;
             }
 
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             if ("issue".equals(transferType)) {
                 bt = BillType.PharmacyTransferIssue;
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             } else {
                 bt = BillType.PharmacyTransferReceive;
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
             }
 
             if ("summeryReport".equals(reportType)) {
-                generateReportAsSummary(bt);
+                generateReportAsSummary(billTypeAtomics);
 
             } else if ("detailReport".equals(reportType)) {
                 generateReportByBillItems(bt);
@@ -4175,64 +4181,218 @@ public class PharmacyController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    public void generateReportAsSummary(BillType billType) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT b.department.name, SUM(b.netTotal), SUM(b.billFinanceDetails.totalCostValue) ");
-        if ("issue".equals(transferType)) {
-            sql.append(", SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ");
+    public void generateReportAsSummary(List<BillTypeAtomic> billTypeAtomics) {
+        departmentSummaries = new ArrayList<>();
+
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
+            return;
         }
-        sql.append("FROM Bill b ")
-                .append("WHERE b.retired = false ")
-                .append("AND b.billType = :billType ")
-                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("billType", billType);
-        parameters.put("fromDate", getFromDate());
-        parameters.put("toDate", getToDate());
+        StringBuilder sql = new StringBuilder();
+
+        // Select all department information plus aggregate values
+        sql.append("SELECT ")
+                .append("b.department.name, ")
+                .append("b.fromDepartment.name, ")
+                .append("b.toDepartment.name, ")
+                .append("SUM(b.billFinanceDetails.totalPurchaseValue), ")
+                .append("SUM(b.billFinanceDetails.totalCostValue), ")
+                .append("SUM(b.billFinanceDetails.totalRetailSaleValue) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billTypeAtomic IN :btAtomics ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("btAtomics", billTypeAtomics);
 
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        sql.append(" GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC");
+        // Group by all three department fields to satisfy MySQL ONLY_FULL_GROUP_BY
+        sql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
+        sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
 
         try {
-            List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
-            Map<String, PharmacySummery> departmentMap = new HashMap<>();
-            departmentSummaries = new ArrayList<>();
-            double costTotal = 0.0;
-            double grandTotal = 0.0;
-            double goodInTransistTotal = 0.0;
+            List<Object[]> results = getBillFacade().findAggregates(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            // Create a map to group by main department (issued department)
+            Map<String, PharmacySummery> departmentMap = new LinkedHashMap<>();
+            Map<String, Map<String, List<PharmacySummery>>> departmentDetailsMap = new HashMap<>();
 
             for (Object[] result : results) {
-                String departmentName = (String) result[0];
-                double netTotal = (double) result[1];
-                double costValue = 0.0;
-                if (result[2] != null) {
-                    costValue = netTotal < 0
-                            ? -Math.abs(((BigDecimal) result[2]).doubleValue())
-                            : Math.abs(((BigDecimal) result[2]).doubleValue());
+                String mainDepartment = (String) result[0];        // department.name (main issuing dept)
+                String fromDepartment = (String) result[1];        // fromDepartment.name
+                String toDepartment = (String) result[2];          // toDepartment.name
+                BigDecimal purchaseValue = (BigDecimal) result[3];
+                BigDecimal costValue = (BigDecimal) result[4];
+                BigDecimal retailValue = (BigDecimal) result[5];
+
+                // Use the appropriate department based on transfer type
+                String keyDepartment = "issue".equals(transferType) ? fromDepartment : toDepartment;
+                if (keyDepartment == null) {
+                    keyDepartment = mainDepartment;
                 }
-                grandTotal += netTotal;
-                costTotal += costValue;
+
+                // Create or update main summary entry
+                PharmacySummery mainSummary = departmentMap.get(keyDepartment);
+                if (mainSummary == null) {
+                    mainSummary = new PharmacySummery();
+                    mainSummary.setDepartmentName(keyDepartment);
+                    mainSummary.setIssuedDeptName(keyDepartment);
+                    mainSummary.setTotalPurchaseValue(BigDecimal.ZERO);
+                    mainSummary.setTotalCostValue(BigDecimal.ZERO);
+                    mainSummary.setTotalRetailSaleValue(BigDecimal.ZERO);
+                    mainSummary.setSummeriesMap(new LinkedHashMap<>());
+                    departmentMap.put(keyDepartment, mainSummary);
+                    departmentDetailsMap.put(keyDepartment, new HashMap<>());
+                }
+
+                // Add to main totals
+                if (purchaseValue != null) {
+                    mainSummary.setTotalPurchaseValue(
+                            mainSummary.getTotalPurchaseValue().add(purchaseValue)
+                    );
+                }
+                if (costValue != null) {
+                    mainSummary.setTotalCostValue(
+                            mainSummary.getTotalCostValue().add(costValue)
+                    );
+                }
+                if (retailValue != null) {
+                    mainSummary.setTotalRetailSaleValue(
+                            mainSummary.getTotalRetailSaleValue().add(retailValue)
+                    );
+                }
+
+                // Create detail entry for breakdown
+                PharmacySummery detailSummary = new PharmacySummery();
+                detailSummary.setDepartmentName(mainDepartment);
+                detailSummary.setIssuedDeptName(fromDepartment);
+                detailSummary.setReceivedDeptName(toDepartment);
+                detailSummary.setTotalPurchaseValue(purchaseValue != null ? purchaseValue : BigDecimal.ZERO);
+                detailSummary.setTotalCostValue(costValue != null ? costValue : BigDecimal.ZERO);
+                detailSummary.setTotalRetailSaleValue(retailValue != null ? retailValue : BigDecimal.ZERO);
+
+                // Determine category for grouping details
+                String category;
                 if ("issue".equals(transferType)) {
-                    double goodInTransist = (double) result[3];
-                    goodInTransistTotal += goodInTransist;
-                    departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist, costValue));
+                    category = toDepartment != null ? "To: " + toDepartment : "Unknown Destination";
                 } else {
-                    PharmacySummery summary = new PharmacySummery(departmentName, netTotal);
-                    summary.setTotalCost(costValue);
-                    departmentSummaries.add(summary);
-                    departmentMap.put(departmentName, summary);
+                    category = fromDepartment != null ? "From: " + fromDepartment : "Unknown Source";
                 }
+
+                // Add to details map
+                Map<String, List<PharmacySummery>> categoryMap = departmentDetailsMap.get(keyDepartment);
+                List<PharmacySummery> categoryList = categoryMap.get(category);
+                if (categoryList == null) {
+                    categoryList = new ArrayList<>();
+                    categoryMap.put(category, categoryList);
+                }
+                categoryList.add(detailSummary);
             }
 
-            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal, costTotal));
+            // Set the summeries map for each main summary
+            for (Map.Entry<String, PharmacySummery> entry : departmentMap.entrySet()) {
+                String dept = entry.getKey();
+                PharmacySummery summary = entry.getValue();
+                summary.setSummeriesMap(departmentDetailsMap.get(dept));
+            }
 
-            if ("receive".equals(transferType)) {
-                generateReportAsSummaryWithGiT(BillType.PharmacyTransferIssue, departmentMap);
+            // Convert to list and add totals row
+            departmentSummaries = new ArrayList<>(departmentMap.values());
+
+            // Calculate and add total row
+            if (!departmentSummaries.isEmpty()) {
+                PharmacySummery totalRow = new PharmacySummery();
+                totalRow.setDepartmentName("Total");
+                totalRow.setIssuedDeptName("Total");
+
+                BigDecimal totalPurchase = BigDecimal.ZERO;
+                BigDecimal totalCost = BigDecimal.ZERO;
+                BigDecimal totalRetail = BigDecimal.ZERO;
+
+                for (PharmacySummery summary : departmentSummaries) {
+                    if (summary.getTotalPurchaseValue() != null) {
+                        totalPurchase = totalPurchase.add(summary.getTotalPurchaseValue());
+                    }
+                    if (summary.getTotalCostValue() != null) {
+                        totalCost = totalCost.add(summary.getTotalCostValue());
+                    }
+                    if (summary.getTotalRetailSaleValue() != null) {
+                        totalRetail = totalRetail.add(summary.getTotalRetailSaleValue());
+                    }
+                }
+
+                totalRow.setTotalPurchaseValue(totalPurchase);
+                totalRow.setTotalCostValue(totalCost);
+                totalRow.setTotalRetailSaleValue(totalRetail);
+                totalRow.setSummeriesMap(new HashMap<>()); // Empty map for total row
+
+                departmentSummaries.add(totalRow);
+            }
+
+            // Calculate GIT amounts
+            calculateGoodInTransitAmounts(billTypeAtomics);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error generating summary report: " + e.getMessage());
+        }
+    }
+
+    private void calculateGoodInTransitAmounts(List<BillTypeAtomic> billTypeAtomics) {
+        // Create a map for quick lookup using combination of all three department names
+        Map<String, PharmacySummery> departmentMap = new HashMap<>();
+        for (PharmacySummery summary : departmentSummaries) {
+            if (!"Total".equals(summary.getDepartmentName())) {
+                String key = summary.getDepartmentName();
+                departmentMap.put(key, summary);
+            }
+        }
+
+        // Calculate GIT amounts
+        StringBuilder gitSql = new StringBuilder();
+        gitSql.append("SELECT ")
+                .append("b.department.name, ")
+//                .append("b.fromDepartment.name, ")
+//                .append("b.toDepartment.name, ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalRetailSaleValue ELSE 0 END) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billTypeAtomic IN :btAtomics ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        Map<String, Object> gitParameters = new HashMap<>();
+        gitParameters.put("fromDate", fromDate);
+        gitParameters.put("toDate", toDate);
+        gitParameters.put("btAtomics", billTypeAtomics);
+
+        additionalCommonFilltersForBillEntity(gitSql, gitParameters);
+        gitSql.append(" GROUP BY b.department.name ");
+
+        try {
+            List<Object[]> gitResults = getBillFacade().findObjectsArrayByJpql(gitSql.toString(), gitParameters, TemporalType.TIMESTAMP);
+
+            for (Object[] result : gitResults) {
+                String departmentName = (String) result[0];
+                BigDecimal gitAmountBD = (BigDecimal) result[1];
+                double gitAmount = gitAmountBD != null ? gitAmountBD.doubleValue() : 0.0;
+
+                // Handle null department names
+                if (departmentName == null || departmentName.trim().isEmpty()) {
+                    departmentName = "Unspecified Department";
+                }
+
+                String key = departmentName;
+                PharmacySummery summary = departmentMap.get(key);
+                if (summary != null) {
+                    summary.setGoodInTransistAmount(gitAmount);
+                }
             }
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error calculating GIT amounts", e);
         }
     }
 
@@ -6152,8 +6312,6 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION); // GRN Cancelled
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        
-        
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
                 + "bi.bill.deptId, "
@@ -6244,8 +6402,6 @@ public class PharmacyController implements Serializable {
 //        BillItem b = new BillItem();
 //        b.getNetValue();
 //        b.getBillItemFinanceDetails().getFreeQuantity();
-        
-        
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPurchaseDTO("
                 + "b.bill.id, "
                 + "b.bill.deptId, "
@@ -6257,8 +6413,8 @@ public class PharmacyController implements Serializable {
                 + "b.billItemFinanceDetails.retailSaleRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
                 + "b.billItemFinanceDetails.quantity, " //  b.getBillItemFinanceDetails().getQuantity()
                 + "b.billItemFinanceDetails.freeQuantity, " // b.getBillItemFinanceDetails().getFreeQuantity();
-                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), "  // Use BigDecimal netTotal from finance details, handle null for legacy data
-                + "b.item.name) "  // item name
+                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), " // Use BigDecimal netTotal from finance details, handle null for legacy data
+                + "b.item.name) " // item name
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
@@ -6500,7 +6656,7 @@ public class PharmacyController implements Serializable {
         }
 
         jpql += " ORDER BY bi.bill.createdAt DESC ";
-        
+
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets

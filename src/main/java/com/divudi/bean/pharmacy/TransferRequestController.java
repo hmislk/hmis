@@ -631,6 +631,8 @@ public class TransferRequestController implements Serializable {
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
+    
+    
 
     public String navigateToApproveRequest() {
         Bill transferRequestBillTemp = transferRequestBillPre;
