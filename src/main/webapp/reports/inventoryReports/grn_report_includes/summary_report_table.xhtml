@@ -49,6 +49,14 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
+                    <p:column style="font-weight: bold;text-align:right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Net Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{s.value4}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
                 </p:dataTable>
             </h:panelGroup>
 </ui:composition>

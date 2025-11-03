@@ -13,10 +13,34 @@
                     <p:panel header="Service Report" class="w-100 my-2">
 
                         <h:panelGrid columns="8" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf252;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Time Range" for="timeFilter" class="m-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu
+                                id="timeFilter"
+                                value="#{searchController.timeRange}"
+                                class="w-100">
+                                <f:selectItem itemLabel="Please Select" itemValue="" />
+                                <f:selectItem itemLabel="Hourly" itemValue="hourly" />
+                                <f:selectItem itemLabel="Daily" itemValue="daily" />
+                                <f:selectItem itemLabel="Weekly" itemValue="weekly" />
+                                <f:selectItem itemLabel="Monthly" itemValue="monthly" />
+                                <f:selectItem itemLabel="Quarterly" itemValue="quarterly" />
+                                <f:selectItem itemLabel="Bi-Annually" itemValue="biannual" />
+                                <f:selectItem itemLabel="Annually" itemValue="annual" />
+                                <f:selectItem itemLabel="Custom" itemValue="custom" />
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;"
                                               styleClass="fa mr-2"/> 
-                                <p:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                <p:outputLabel value="From" for="fromDate" class="m-3"/>
                             </h:panelGroup>
                             <p:calendar
                                 styleClass="w-100"
@@ -31,7 +55,7 @@
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;"
                                               styleClass="fa mr-2"/> 
-                                <p:outputLabel value="To" for="toDate" class="mx-3"/>
+                                <p:outputLabel value="To" for="toDate" class="m-3"/>
                             </h:panelGroup>
                             <p:calendar
                                 styleClass="w-100"
@@ -41,21 +65,7 @@
                                 navigator="false"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
-                            <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="Report Type" for="reportType" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="reportType"
-                                value="#{reportController.reportType}"
-                                required="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="Detail" itemValue="detail"/>
-                                <f:selectItem itemLabel="Summary" itemValue="summery"/>
-                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
@@ -161,6 +171,22 @@
                             </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Report Type" for="reportType" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="reportType"
+                                value="#{reportController.reportType}"
+                                required="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Detail" itemValue="detail"/>
+                                <f:selectItem itemLabel="Summary" itemValue="summery"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf2b9;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="Speciality" for="acSpeciality" class="m-3"/>
                             </h:panelGroup>
@@ -194,7 +220,7 @@
                                     itemValue="#{staff}"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c0;" styleClass="fa mr-2" />
@@ -220,7 +246,7 @@
                                 <p:ajax event="itemSelect" process="acCat" update="gpItem" ></p:ajax>
                             </p:autoComplete> 
 
-
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf059;" styleClass="fa mr-2" />
@@ -263,7 +289,7 @@
                                 action="#">
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-secondary mx-1"
+                            <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
                                              value="Print All">
