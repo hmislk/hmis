@@ -133,9 +133,9 @@ public class VtmInVmpController implements Serializable {
         if (items == null) {
             String j;
             j = "select v "
-                    + " from VtmsVmps v "
+                    + " from VirtualProductIngredient v "
                     + " where v.retired=false "
-                    + " order by v.name";
+                    + " order by v.id";
             items = getFacade().findByJpql(j);
         }
         return items;
