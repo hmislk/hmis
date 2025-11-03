@@ -223,6 +223,9 @@ public class PharmacyController implements Serializable {
     private double totalCashSaleValue;
     private double totalCostValue;
     private double totalRetailValue;
+    private double totalNetTotal;
+    private double totalCashNetTotal;
+    private double totalCreditNetTotal;
     private double billTablePurchaseTotal;
     private double billTableRetailTotal;
     private double billTableCostTotal;
@@ -3498,6 +3501,9 @@ public class PharmacyController implements Serializable {
         totalCashSaleValue = 0.0;
         totalCashCostValue = 0.0;
         totalCreditCostValue = 0.0;
+        totalNetTotal = 0.0;
+        totalCashNetTotal = 0.0;
+        totalCreditNetTotal = 0.0;
 
         for (Bill bill : billList) {
             // Get values directly from bill - use as-is from database
@@ -3527,39 +3533,50 @@ public class PharmacyController implements Serializable {
                 continue;
             }
 
+            // Get net total value
+            double netTotal = bill.getNetTotal() != null ? bill.getNetTotal() : 0.0;
+
             // Separate by Credit vs non-Credit (Cash and others)
             if (bill.getPaymentMethod() == PaymentMethod.Credit) {
                 totalCreditPurchaseValue += purchaseValue;
                 totalCreditSaleValue += saleValue;
                 totalCreditCostValue += costValue;
+                totalCreditNetTotal += netTotal;
             } else {
                 // All non-credit payments (Cash, Card, Cheque, etc.) go to "Cash" totals
                 totalCashPurchaseValue += purchaseValue;
                 totalCashSaleValue += saleValue;
                 totalCashCostValue += costValue;
+                totalCashNetTotal += netTotal;
             }
 
             // Add to overall totals
             totalPurchase += purchaseValue;
             totalSaleValue += saleValue;
             totalCostValue += costValue;
+            totalNetTotal += netTotal;
         }
 
         // Add summary rows
-        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue, totalCashCostValue);
-        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue, totalCreditCostValue);
-        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue);
+        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue, totalCashCostValue, totalCashNetTotal);
+        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue, totalCreditCostValue, totalCreditNetTotal);
+        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue, totalNetTotal);
 
         return data;
     }
 
     private void addIfNotZero(List<String1Value1> data, String label, double value, double value2, double value3) {
-        if (value != 0 || value2 != 0 || value3 != 0) {
+        addIfNotZero(data, label, value, value2, value3, 0.0);
+    }
+
+    private void addIfNotZero(List<String1Value1> data, String label, double value, double value2, double value3, double value4) {
+        if (value != 0 || value2 != 0 || value3 != 0 || value4 != 0) {
             String1Value1 entry = new String1Value1();
             entry.setString(label);
             entry.setValue(value);
             entry.setValue2(value2);
             entry.setValue3(value3);
+            entry.setValue4(value4);
             data.add(entry);
         }
     }
@@ -7737,6 +7754,14 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCashPurchaseValue(double totalCashPurchaseValue) {
         this.totalCashPurchaseValue = totalCashPurchaseValue;
+    }
+
+    public double getTotalNetTotal() {
+        return totalNetTotal;
+    }
+
+    public void setTotalNetTotal(double totalNetTotal) {
+        this.totalNetTotal = totalNetTotal;
     }
 
     public double getTotalCreditCostValue() {
