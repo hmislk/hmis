@@ -3272,6 +3272,43 @@ public class GrnCostingController implements Serializable {
                     ? netTotal.divide(quantity, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
             f.setNetRate(netRate);
+
+            // CRITICAL FIX: Recalculate valueAtPurchaseRate using the FINAL netRate (after bill-level discounts)
+            // instead of lineNetRate (before bill-level discounts)
+            Item item = bi.getItem();
+            BigDecimal freeQuantity = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
+            BigDecimal totalQuantity = quantity.add(freeQuantity);
+
+            if (item instanceof Ampp) {
+                // For AMPP (packs), convert to units
+                BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+                if (unitsPerPack.compareTo(BigDecimal.ZERO) == 0) {
+                    unitsPerPack = BigDecimal.ONE;
+                }
+                BigDecimal totalQuantityInUnits = totalQuantity.multiply(unitsPerPack);
+                BigDecimal netRatePerUnit = netRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP);
+
+                // Recalculate based on configuration
+                if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+                    // Net Rate Per Unit × Total Quantity in Units (includes free items)
+                    f.setValueAtPurchaseRate(totalQuantityInUnits.multiply(netRatePerUnit));
+                } else {
+                    // Net Rate × Paid Quantity (excludes free items)
+                    f.setValueAtPurchaseRate(netRate.multiply(quantity));
+                }
+            } else {
+                // For AMP (units), use directly
+                BigDecimal totalQuantityInUnits = totalQuantity;
+
+                // Recalculate based on configuration
+                if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+                    // Net Rate × Total Quantity (includes free items)
+                    f.setValueAtPurchaseRate(totalQuantityInUnits.multiply(netRate));
+                } else {
+                    // Net Rate × Paid Quantity (excludes free items)
+                    f.setValueAtPurchaseRate(netRate.multiply(quantity));
+                }
+            }
         }
 
         // After distribution, update bill-level totals by aggregating from distributed line items
