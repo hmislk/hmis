@@ -3547,8 +3547,16 @@ public class GrnCostingController implements Serializable {
         pbi.setPurchaseRate(prPerUnit);
         pbi.setPurchaseRatePack(lineNetRate.doubleValue());
 
-        // Set PBI purchase values
-        BigDecimal purchaseValue = BigDecimal.valueOf(prPerUnit).multiply(totalQtyByUnits);
+        // Set PBI purchase values - respect configuration for free items
+        BigDecimal purchaseValue;
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
+            // Include free items: prPerUnit × totalQtyByUnits
+            purchaseValue = BigDecimal.valueOf(prPerUnit).multiply(totalQtyByUnits);
+        } else {
+            // Exclude free items: prPerUnit × paid quantity in units
+            BigDecimal paidQtyInUnits = quantity.multiply(unitsPerPack);
+            purchaseValue = BigDecimal.valueOf(prPerUnit).multiply(paidQtyInUnits);
+        }
         pbi.setPurchaseRatePackValue(purchaseValue.doubleValue());
         pbi.setPurchaseValue(purchaseValue.doubleValue());
 
@@ -3566,8 +3574,7 @@ public class GrnCostingController implements Serializable {
             pbi.setCostRate(totalCostRate.doubleValue());
         }
 
-        // Update BIFD.valueAtPurchaseRate with final netRate
-        // Note: BIFD.purchaseRate is already correctly set to lineNetRate by distributeProportionalBillValuesToItems
+        // Update BIFD.valueAtPurchaseRate (already calculated above with config respected)
         billItemFinanceDetails.setValueAtPurchaseRate(purchaseValue);
     }
 
