@@ -370,10 +370,24 @@
             <version>2.8.9</version>
             <type>jar</type>
         </dependency>
-        
+
+        <!-- JUnit 5 (Jupiter) dependencies for testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
-    
+
     <build>
         <plugins>
             <!-- Maven Compiler Plugin for JDK 11 with Java 8 Compatibility -->
@@ -384,6 +398,16 @@
                 <configuration>
                     <release>8</release> <!-- Compile with Java 8 compatibility -->
                     <debug>false</debug>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Surefire Plugin for running tests with JUnit 5 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+                <configuration>
+                    <skipTests>false</skipTests>
                 </configuration>
             </plugin>
 

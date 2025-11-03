@@ -41,7 +41,14 @@
       "Bash(mvn compile:*)",
       "Bash(git merge:*)",
       "Bash(gh issue list:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(javap:*)",
+      "Bash(mvn clean:*)",
+      "Bash(\"D:\\Program Files\\NetBeans-18\\netbeans\\java\\maven\\bin\\mvn.cmd\" clean)",
+      "Bash(\"D:\\Program Files\\NetBeans-18\\netbeans\\java\\maven\\bin\\mvn.cmd\" --version)",
+      "Bash(where:*)",
+      "Bash(git tag:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
