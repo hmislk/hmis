@@ -243,18 +243,13 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
-                                        <p:column headerText="Purchase Rate" styleClass="text-end">
+                                        <p:column headerText="Net Purchase Rate" styleClass="text-end">
                                             <h:outputText value="#{bi.billItemFinanceDetails.purchaseRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
                                         <p:column headerText="Cost Rate" styleClass="text-end">
-                                            <h:outputText value="#{bi.billItemFinanceDetails.lineCostRate}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column headerText="Discount Rate" styleClass="text-end">
-                                            <h:outputText value="#{bi.billItemFinanceDetails.lineDiscountRate}">
+                                            <h:outputText value="#{bi.billItemFinanceDetails.totalCostRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
