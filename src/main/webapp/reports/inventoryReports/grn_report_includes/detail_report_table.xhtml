@@ -42,10 +42,10 @@
 
                     <!-- GRN No -->
                     <p:column headerText="Bill No" width="10em" style="text-align: left;">
-                        <p:commandLink 
+                        <p:commandLink
                             id="btnNavigateToViewBill"
-                            ajax="false" 
-                            value="#{b.deptId}" 
+                            ajax="false"
+                            value="#{b.deptId}"
                             action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.id)}">
                         </p:commandLink>
                         <f:facet name="footer">
@@ -58,7 +58,7 @@
                     </p:column>
 
                     <p:column headerText="Bill Type" width="10em" style="text-align: left;">
-                        <h:outputLabel 
+                        <h:outputLabel
                             value="#{b.billTypeAtomic}" >
                         </h:outputLabel>
                     </p:column>
@@ -135,8 +135,8 @@
 
                     <!-- Purchase Value Cash -->
                     <p:column headerText="Purchase Value Cash" width="6em" style="text-align: right;">
-                        <h:outputLabel 
-                            value="#{b.billFinanceDetails.totalPurchaseValue}" 
+                        <h:outputLabel
+                            value="#{b.billFinanceDetails.totalPurchaseValue}"
                             rendered="#{b.paymentMethod ne 'Credit'}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
@@ -149,8 +149,8 @@
 
                     <!-- Purchase Value Credit -->
                     <p:column headerText="Purchase Value Credit" width="6em" style="text-align: right;">
-                        <h:outputLabel 
-                            value="#{b.billFinanceDetails.totalPurchaseValue}" 
+                        <h:outputLabel
+                            value="#{b.billFinanceDetails.totalPurchaseValue}"
                             rendered="#{b.paymentMethod eq 'Credit'}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
@@ -163,8 +163,8 @@
 
                     <!-- Cost Value Cash -->
                     <p:column headerText="Cost Value Cash" width="6em" class="text-end">
-                        <h:outputLabel 
-                            value="#{b.billFinanceDetails.totalCostValue}" 
+                        <h:outputLabel
+                            value="#{b.billFinanceDetails.totalCostValue}"
                             rendered="#{b.paymentMethod ne 'Credit'}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
@@ -177,8 +177,8 @@
 
                     <!-- Cost Value Credit -->
                     <p:column headerText="Cost Value Credit" width="6em" class="text-end">
-                        <h:outputLabel 
-                            value="#{b.billFinanceDetails.totalCostValue}" 
+                        <h:outputLabel
+                            value="#{b.billFinanceDetails.totalCostValue}"
                             rendered="#{b.paymentMethod eq 'Credit'}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
@@ -191,8 +191,8 @@
 
                     <!-- Sale Value Cash -->
                     <p:column headerText="Sale Value Cash" width="6em" style="text-align: right;">
-                        <h:outputLabel 
-                            value="#{b.billFinanceDetails.totalRetailSaleValue}" 
+                        <h:outputLabel
+                            value="#{b.billFinanceDetails.totalRetailSaleValue}"
                             rendered="#{b.paymentMethod ne 'Credit'}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
@@ -205,8 +205,8 @@
 
                     <!-- Sale Value Credit -->
                     <p:column headerText="Sale Value Credit" width="6em" style="text-align: right;">
-                        <h:outputLabel 
-                            value="#{b.billFinanceDetails.totalRetailSaleValue}" 
+                        <h:outputLabel
+                            value="#{b.billFinanceDetails.totalRetailSaleValue}"
                             rendered="#{b.paymentMethod eq 'Credit'}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
