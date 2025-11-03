@@ -3534,7 +3534,7 @@ public class PharmacyController implements Serializable {
             }
 
             // Get net total value
-            double netTotal = bill.getNetTotal() != null ? bill.getNetTotal() : 0.0;
+            double netTotal = bill.getNetTotal();
 
             // Separate by Credit vs non-Credit (Cash and others)
             if (bill.getPaymentMethod() == PaymentMethod.Credit) {
