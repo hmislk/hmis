@@ -828,15 +828,8 @@ public class TransferIssueForRequestsController implements Serializable {
         BigDecimal qty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
 
         // Validate quantity doesn't exceed remaining requested quantity
-        if (bi.getReferanceBillItem() != null) {
-            double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
-
-            if (qty.doubleValue() > remainingQty) {
-                // Cap the quantity to the maximum allowed
-                qty = BigDecimal.valueOf(remainingQty);
-                fd.setQuantity(qty);
-            }
-        }
+        // Note: Validation is handled in onQuantityChangeForTransferIssue method
+        // This method should only update financials, not modify quantities
 
         BigDecimal unitsPerPack = BigDecimal.ONE;
         if (item instanceof Ampp || item instanceof Vmpp) {
@@ -897,8 +890,8 @@ public class TransferIssueForRequestsController implements Serializable {
 
             if (currentIssuingQty > remainingQty) {
                 JsfUtil.addErrorMessage("Cannot issue " + currentIssuingQty + " units of " + bi.getItem().getName() + ". Only " + remainingQty + " units remaining to be issued.");
-                // Reset to maximum allowed quantity
-                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(remainingQty));
+                // Don't auto-reset - let user correct their input
+                return;
             }
         }
 
