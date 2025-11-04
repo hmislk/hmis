@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Online Booking Agent Management">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div></div>
+                                <div style="font-weight: 700; font-size: 28px;">
+                                    <i class="fa fa-id-card-o"></i>
+                                    <h:outputLabel value="Nursing Work Bench" class="mx-2"/>
+                                </div>
+                                <div>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        action="/home?faces-redirect=true" 
+                                        value="Back to Home"
+                                        icon="pi pi-home"
+                                        class="ui-button-warning"
+                                        title="Home">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            
+                            
+                            
+                            
+                            <p:splitter  styleClass="mb-3" widgetVar="splitter" onResizeEnd="">
+                                <p:splitterPanel minSize="15" size="15" styleClass="flex align-items-center justify-content-center" >
+                                    <div class="card m-3">
+                                        <p:tabView  class="m-2">
+                                            <p:tab>
+                                                <f:facet name="title">
+                                                    <span style="width: 150px;">Rooms</span>
+                                                </f:facet>
+
+                                                <ui:repeat value="#{nursingWorkBenchController.roomList}" var="room">
+                                                        <p:commandButton 
+                                                            ajax="false"
+                                                            action="/home?faces-redirect=true" 
+                                                            value="#{room.currentRoomNo}"
+                                                            class="#{room.inPatient ? 'ui-button-warning w-100 mt-2' : 'ui-button-secondary w-100 mt-2'}"
+                                                            disabled="#{! room.inPatient}"
+                                                            title="#{room.currentRoomNo}">
+                                                        </p:commandButton>
+                                                    </ui:repeat>
+                                                
+                                            </p:tab>
+                                            <p:tab>
+                                                <f:facet name="title">
+                                                    <span>BHT</span>
+                                                </f:facet>
+                                                <p class="m-0">
+                                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab
+                                                    illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
+                                                    odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Consectetur, adipisci velit, sed quia non numquam eius modi.
+                                                </p>
+                                            </p:tab>
+
+                                        </p:tabView>
+                                    </div>
+                                </p:splitterPanel>
+                                <p:splitterPanel minSize="85" size="85" styleClass="flex align-items-center justify-content-center">
+                                    <p:panel class="m-3" header="Online Booking Agent Management">
+
+                                    </p:panel>
+                                </p:splitterPanel>
+                            </p:splitter>
+
+
+                        </div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
