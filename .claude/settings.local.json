@@ -59,7 +59,8 @@
       "Bash(gh workflow:*)",
       "Read(/D:\\c/**)",
       "Bash(git checkout:*)",
-      "Bash(javap:*)"
+      "Bash(javap:*)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
