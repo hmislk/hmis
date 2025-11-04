@@ -36,18 +36,17 @@
                                 <p:tabView orientation="left">
                                     <p:tab title="Summary" >
                                         <p:panel header="Bill Summary">
-                                            <div class="mb-3" rendered="#{billSearch.viewingBill.billTypeAtomic eq 'OPD_BILL_WITH_PAYMENT'}">
-                                                <p:commandButton
-                                                    value="Apply Discount"
-                                                    icon="pi pi-percentage"
-                                                    styleClass="ui-button-warning"
-                                                    action="#{adminOpdBillDiscountController.navigateToApplyDiscount()}"
-                                                    ajax="false">
-                                                    <f:setPropertyActionListener
-                                                        value="#{billSearch.viewingBill}"
-                                                        target="#{adminOpdBillDiscountController.selectedBill}" />
-                                                </p:commandButton>
-                                            </div>
+                                            <p:commandButton
+                                                value="Apply Discount"
+                                                icon="pi pi-percentage"
+                                                styleClass="ui-button-warning mb-3"
+                                                action="#{adminOpdBillDiscountController.navigateToApplyDiscount()}"
+                                                ajax="false"
+                                                rendered="#{billSearch.viewingBill.billTypeAtomic eq 'OPD_BILL_WITH_PAYMENT'}">
+                                                <f:setPropertyActionListener
+                                                    value="#{billSearch.viewingBill}"
+                                                    target="#{adminOpdBillDiscountController.selectedBill}" />
+                                            </p:commandButton>
                                             <p:panelGrid
                                                 columns="4"
                                                 styleClass="w-100"
