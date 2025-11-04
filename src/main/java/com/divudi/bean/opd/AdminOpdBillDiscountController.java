@@ -11,6 +11,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.JsfUtil;
+import com.google.gson.Gson;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -231,34 +232,45 @@ public class AdminOpdBillDiscountController implements Serializable {
         );
 
         try {
-            // Store original values in audit
-            Map<String, String> auditData = new HashMap<>();
-            auditData.put("originalPaymentScheme", selectedBill.getPaymentScheme() != null ?
+            // Store original values in audit (beforeJson)
+            Map<String, String> beforeData = new HashMap<>();
+            beforeData.put("paymentScheme", selectedBill.getPaymentScheme() != null ?
                     selectedBill.getPaymentScheme().getName() : "None");
-            auditData.put("newPaymentScheme", newPaymentScheme.getName());
-            auditData.put("originalBillTotal", String.format("%.2f", selectedBill.getTotal()));
-            auditData.put("originalBillDiscount", String.format("%.2f", selectedBill.getDiscount()));
-            auditData.put("originalBillNetTotal", String.format("%.2f", selectedBill.getNetTotal()));
-            auditData.put("newBillTotal", String.format("%.2f", newValues.get("billTotal")));
-            auditData.put("newBillDiscount", String.format("%.2f", newValues.get("billDiscount")));
-            auditData.put("newBillNetTotal", String.format("%.2f", newValues.get("billNetTotal")));
-            auditData.put("adminComment", adminComment);
-            auditData.put("billId", String.valueOf(selectedBill.getId()));
-            auditData.put("billDeptId", selectedBill.getDeptId());
+            beforeData.put("billTotal", String.format("%.2f", selectedBill.getTotal()));
+            beforeData.put("billDiscount", String.format("%.2f", selectedBill.getDiscount()));
+            beforeData.put("billNetTotal", String.format("%.2f", selectedBill.getNetTotal()));
+            beforeData.put("billId", String.valueOf(selectedBill.getId()));
+            beforeData.put("billDeptId", selectedBill.getDeptId());
 
             if (selectedBill.getBackwardReferenceBill() != null) {
                 Bill batchBill = selectedBill.getBackwardReferenceBill();
-                auditData.put("batchBillId", String.valueOf(batchBill.getId()));
-                auditData.put("originalBatchBillTotal", String.format("%.2f", batchBill.getTotal()));
-                auditData.put("originalBatchBillDiscount", String.format("%.2f", batchBill.getDiscount()));
-                auditData.put("originalBatchBillNetTotal", String.format("%.2f", batchBill.getNetTotal()));
-                auditData.put("newBatchBillTotal", String.format("%.2f", newValues.get("batchBillTotal")));
-                auditData.put("newBatchBillDiscount", String.format("%.2f", newValues.get("batchBillDiscount")));
-                auditData.put("newBatchBillNetTotal", String.format("%.2f", newValues.get("batchBillNetTotal")));
+                beforeData.put("batchBillId", String.valueOf(batchBill.getId()));
+                beforeData.put("batchBillTotal", String.format("%.2f", batchBill.getTotal()));
+                beforeData.put("batchBillDiscount", String.format("%.2f", batchBill.getDiscount()));
+                beforeData.put("batchBillNetTotal", String.format("%.2f", batchBill.getNetTotal()));
             }
 
-            auditEvent.setDataMap(auditData);
-            auditEvent.setComments(adminComment);
+            // Store new values in audit (afterJson)
+            Map<String, String> afterData = new HashMap<>();
+            afterData.put("paymentScheme", newPaymentScheme.getName());
+            afterData.put("billTotal", String.format("%.2f", newValues.get("billTotal")));
+            afterData.put("billDiscount", String.format("%.2f", newValues.get("billDiscount")));
+            afterData.put("billNetTotal", String.format("%.2f", newValues.get("billNetTotal")));
+            afterData.put("adminComment", adminComment);
+            afterData.put("billId", String.valueOf(selectedBill.getId()));
+            afterData.put("billDeptId", selectedBill.getDeptId());
+
+            if (selectedBill.getBackwardReferenceBill() != null) {
+                afterData.put("batchBillId", String.valueOf(selectedBill.getBackwardReferenceBill().getId()));
+                afterData.put("batchBillTotal", String.format("%.2f", newValues.get("batchBillTotal")));
+                afterData.put("batchBillDiscount", String.format("%.2f", newValues.get("batchBillDiscount")));
+                afterData.put("batchBillNetTotal", String.format("%.2f", newValues.get("batchBillNetTotal")));
+            }
+
+            // Convert to JSON and store in audit event
+            Gson gson = new Gson();
+            auditEvent.setBeforeJson(gson.toJson(beforeData));
+            auditEvent.setAfterJson(gson.toJson(afterData));
 
             // Apply the discount to all bill fees
             List<BillItem> billItems = getBillItems(selectedBill);
