@@ -295,6 +295,9 @@ public class SearchController implements Serializable {
     private Long selectedRequestId;
     private Bill selectedRequest;
     String settledBillType;
+    private int activeIndexForDisbursement;
+    
+    
 
     public String getSettledBillType() {
         return settledBillType;
@@ -2784,6 +2787,14 @@ public class SearchController implements Serializable {
         this.manageCreditCompanyPaymentIndex = manageCreditCompanyPaymentIndex;
     }
 
+    public int getActiveIndexForDisbursement() {
+        return activeIndexForDisbursement;
+    }
+
+    public void setActiveIndexForDisbursement(int activeIndexForDisbursement) {
+        this.activeIndexForDisbursement = activeIndexForDisbursement;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -4505,14 +4516,10 @@ public class SearchController implements Serializable {
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            jpql += " and ((b.department.name) like :dep)";
-            params.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
-        }
 
         jpql += " order by b.createdAt desc";
 
-        transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50, true);
 
         if (transferRequestDtos != null) {
             for (PharmacyTransferRequestListDTO dto : transferRequestDtos) {

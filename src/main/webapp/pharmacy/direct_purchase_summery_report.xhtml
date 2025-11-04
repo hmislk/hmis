@@ -375,7 +375,7 @@
                                 </h:outputText>
 
                                 <f:facet name="footer">
-                                    <h:outputLabel styleClass="totalPValue" value="0.00">
+                                    <h:outputLabel styleClass="totalPValue" value="#{pharmacyReportController.totalPurchaseValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
@@ -393,7 +393,7 @@
                                 </h:outputText>
 
                                 <f:facet name="footer">
-                                    <h:outputLabel styleClass="totalSValue" value="0.00">
+                                    <h:outputLabel styleClass="totalSValue" value="#{pharmacyReportController.totalRetailValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>

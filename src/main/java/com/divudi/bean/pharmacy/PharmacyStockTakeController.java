@@ -48,7 +48,9 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
@@ -129,6 +131,7 @@ public class PharmacyStockTakeController implements Serializable {
     /**
      * Generate stock count bill preview without persisting.
      */
+    @Deprecated
     public String generateStockCountBill() {
         // Null check for injected dependencies
         if (webUserController == null) {
@@ -1242,14 +1245,23 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     private String getString(Row row, int col) {
-        if (row.getCell(col) == null) {
+        Cell cell = row.getCell(col);
+        if (cell == null) {
             return null;
         }
+
+        // Create DataFormatter and FormulaEvaluator for proper cell value formatting
+        DataFormatter dataFormatter = new DataFormatter();
+        FormulaEvaluator formulaEvaluator = row.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+
         try {
-            return row.getCell(col).getStringCellValue().trim();
+            // Use DataFormatter with FormulaEvaluator to handle formulas and preserve decimal precision
+            String cellValue = dataFormatter.formatCellValue(cell, formulaEvaluator);
+            return cellValue != null ? cellValue.trim() : null;
         } catch (Exception e) {
+            // Fallback: try to get string value directly
             try {
-                return String.valueOf((long) row.getCell(col).getNumericCellValue());
+                return cell.getStringCellValue().trim();
             } catch (Exception ex) {
                 return null;
             }
@@ -1279,6 +1291,9 @@ public class PharmacyStockTakeController implements Serializable {
         if (cell == null) {
             return null;
         }
+
+        FormulaEvaluator formulaEvaluator = row.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+
         try {
             switch (cell.getCellType()) {
                 case NUMERIC:
@@ -1293,6 +1308,20 @@ public class PharmacyStockTakeController implements Serializable {
                     } catch (Exception ignored) {
                         return null;
                     }
+                case FORMULA:
+                    // Handle formula cells by evaluating them
+                    try {
+                        Cell evaluatedCell = formulaEvaluator.evaluateInCell(cell);
+                        if (evaluatedCell.getCellType() == org.apache.poi.ss.usermodel.CellType.NUMERIC) {
+                            return evaluatedCell.getNumericCellValue();
+                        } else if (evaluatedCell.getCellType() == org.apache.poi.ss.usermodel.CellType.STRING) {
+                            String formulaResult = evaluatedCell.getStringCellValue();
+                            return Double.parseDouble(formulaResult.trim());
+                        }
+                    } catch (Exception e) {
+                        return null;
+                    }
+                    return null;
                 case BLANK:
                     return null;
                 default:
@@ -1311,6 +1340,9 @@ public class PharmacyStockTakeController implements Serializable {
         if (cell == null) {
             return null;
         }
+
+        FormulaEvaluator formulaEvaluator = row.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+
         try {
             switch (cell.getCellType()) {
                 case NUMERIC:
@@ -1325,6 +1357,20 @@ public class PharmacyStockTakeController implements Serializable {
                     } catch (Exception ignored) {
                         return null;
                     }
+                case FORMULA:
+                    // Handle formula cells by evaluating them
+                    try {
+                        Cell evaluatedCell = formulaEvaluator.evaluateInCell(cell);
+                        if (evaluatedCell.getCellType() == org.apache.poi.ss.usermodel.CellType.NUMERIC) {
+                            return (long) evaluatedCell.getNumericCellValue();
+                        } else if (evaluatedCell.getCellType() == org.apache.poi.ss.usermodel.CellType.STRING) {
+                            String formulaResult = evaluatedCell.getStringCellValue();
+                            return Long.parseLong(formulaResult.trim());
+                        }
+                    } catch (Exception e) {
+                        return null;
+                    }
+                    return null;
                 case BLANK:
                     return null;
                 default:
@@ -2587,7 +2633,9 @@ public class PharmacyStockTakeController implements Serializable {
      *
      * @return navigation outcome
      */
+    @Deprecated
     public String navigateToPendingPhysicalCountApprovals() {
+        printPreview=false;
         return "/pharmacy/pharmacy_physical_count_pending?faces-redirect=true";
     }
 

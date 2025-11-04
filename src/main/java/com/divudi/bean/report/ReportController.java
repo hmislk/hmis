@@ -3111,6 +3111,16 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
     }
+    
+    public String navigateToAdmissionReport(){
+        return "/reports/inpatientReports/ip_admission_report?faces-redirect=true";
+    }
+    
+    public String navigateToIpServiceReport(){
+        return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
+    }
+    
+    
 
     public String navigateToIncomeBillCountReport() {
         reportViewTypes = new ArrayList<>();
