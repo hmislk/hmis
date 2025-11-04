@@ -491,11 +491,12 @@ public class TransferIssueForRequestsController implements Serializable {
                 // Null-safe handling for issuedPhamaceuticalItemQty to prevent NPE
                 Double currentIssued = originalOrderItem.getIssuedPhamaceuticalItemQty();
                 double currentIssuedValue = (currentIssued != null) ? currentIssued : 0.0;
-                originalOrderItem.setIssuedPhamaceuticalItemQty(currentIssuedValue + billItemsInIssue.getQty());
+                double issuedQtyThisTime = Math.abs(billItemsInIssue.getQty()); // Use absolute value since qty is negative for issues
+                originalOrderItem.setIssuedPhamaceuticalItemQty(currentIssuedValue + issuedQtyThisTime);
                 // Update remaining quantity to track what's left to issue
                 Double remainingQty = originalOrderItem.getRemainingQty();
                 double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
-                originalOrderItem.setRemainingQty(currentRemaining - billItemsInIssue.getQty());
+                originalOrderItem.setRemainingQty(currentRemaining - issuedQtyThisTime);
 
                 billItemFacade.editAndCommit(originalOrderItem);
 
