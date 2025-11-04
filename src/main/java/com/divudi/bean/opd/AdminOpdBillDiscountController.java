@@ -396,6 +396,11 @@ public class AdminOpdBillDiscountController implements Serializable {
 
     public void setNewPaymentScheme(PaymentScheme newPaymentScheme) {
         this.newPaymentScheme = newPaymentScheme;
+        // Invalidate any previously calculated preview when scheme changes
+        previewCalculated = false;
+        if (newValues != null) {
+            newValues.clear();
+        }
     }
 
     public String getAdminComment() {
