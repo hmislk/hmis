@@ -25,7 +25,7 @@
                             <h:form>
                                 <p:panelGrid columns="3" layout="tabular" class="w-100">
                                     <p:outputLabel value="Membership Card No / Membership Phone Number"/>
-                                    <p:inputText value="#{patientController.searchText}" autocomplete="off"
+                                    <p:inputText value="#{patientController.searchMembershipCardNo}" autocomplete="off"
                                                  style="width: 30em;"/>
                                     <p:commandButton
                                             ajax="false"
@@ -77,7 +77,7 @@
                             <h:form>
                                 <p:panelGrid columns="3" layout="tabular" class="w-100">
                                     <p:outputLabel value="Address"/>
-                                    <p:inputText value="#{patientController.searchText}" autocomplete="off"
+                                    <p:inputText value="#{patientController.searchPatientAddress}" autocomplete="off"
                                                  style="width: 30em;"/>
                                     <p:commandButton
                                             ajax="false"
