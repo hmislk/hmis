@@ -270,6 +270,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
+    private String blacklistComment;
+
+    public String getBlacklistComment() {
+        return blacklistComment;
+    }
+
+    public void setBlacklistComment(String blacklistComment) {
+        this.blacklistComment = blacklistComment;
+    }
 
     /**
      *
@@ -2953,30 +2962,57 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return toViewPatient();
     }
     
-    public void toggleBlacklistPatient(Patient patient, boolean blacklist){
-        if(patient != null && patient.getId() != null){
+    public void toggleBlacklistPatient( boolean blacklist){
+        Patient patient = this.current;
+        System.out.println(patient+ " - "+blacklist);
+        if(patient == null || patient.getId() == null){
+            System.out.println("line 2969");
             return;   
         }
-        
+
         if(blacklist && !patient.isBlacklisted()){
-            patient.setBlacklisted(true);
-            patient.setBlacklistedAt(new Date());
-            patient.setBlacklistedBy(sessionController.getWebUser());
-            patient.setReasonForBlacklist(patient.getReasonForBlacklist() != null ? patient.getReasonForBlacklist() + " / " +searchText  : searchText);
-            
-            getFacade().edit(patient);
+            System.out.println("line 2974");
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
+                return;
+            }
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(true);
+            newb.setBlacklistedAt(new Date());
+            getFacade().edit(newb);
+            System.out.println("line 2978 "+newb.isBlacklisted() + newb.getBlacklistedAt());
+            newb.setBlacklistedBy(sessionController.getLoggedUser());
+            System.out.println("user " + sessionController.getLoggedUser());
+            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment  : blacklistComment);
+            System.out.println("line 2983 "+newb.isBlacklisted() + newb.getBlacklistedAt());
+//            getFacade().edit(patient);
+            getFacade().editAndCommit(newb);
+            this.current = getFacade().findWithoutCache(newb.getId());
+            blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient is blacklisted.");
-        }else if(!blacklist && patient.isBlacklisted()){
-            patient.setBlacklisted(false);
-            patient.setReasonForBlacklist(patient.getReasonForBlacklist() +" at " 
-                    + patient.getBlacklistedAt() + " by " 
-                    + patient.getBlacklistedBy() 
-                    + " / revert by " + sessionController.getWebUser() 
-                    + " at "+new Date());
-            patient.setBlacklistedAt(null);
-            patient.setBlacklistedBy(null);
             
-            getFacade().edit(patient);
+        }else if(!blacklist && patient.isBlacklisted()){
+            System.out.println("line 2995");
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for revert blacklisting. ");
+                return;
+            }
+            System.out.println("line 3000");
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(false);
+            getFacade().edit(newb);
+            newb.setReasonForBlacklist(patient.getReasonForBlacklist() +" at " 
+                    + newb.getBlacklistedAt() + " by " 
+                    + newb.getBlacklistedBy() 
+                    + " / revert by " + sessionController.getWebUser() 
+                    + " at "+new Date() + " revert comment - " + blacklistComment);
+            
+            newb.setBlacklistedAt(null);
+            newb.setBlacklistedBy(null);
+            System.out.println("line 2993");
+            getFacade().editAndCommit(newb);
+
+            blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
         }
     }
