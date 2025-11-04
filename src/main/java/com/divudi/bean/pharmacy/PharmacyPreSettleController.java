@@ -875,27 +875,63 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                         p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
                         p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
                         break;
                     case Cheque:
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
                         p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
                         p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
                         break;
                     case Cash:
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
                         break;
                     case ewallet:
                         p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                        p.setPolicyNo(cd.getPaymentMethodData().getEwallet().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getEwallet().getReferenceNo());
+                        p.setBank(cd.getPaymentMethodData().getEwallet().getInstitution());
                         break;
+                    case Agent:
                     case PatientDeposit:
                         p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        break;
+                    case Credit:
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getCredit().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
                         break;
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setPaymentDate(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setComments(cd.getPaymentMethodData().getSlip().getComment());
                         p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
+                        break;
+                    case OnCall:
+                        break;
+                    case OnlineSettlement:
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
+                        break;
+                    case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                            // Set bill.toStaff from the first Staff payment component
+                            if (bill.getToStaff() == null) {
+                                bill.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                            }
+                        }
                         break;
                     case Staff_Welfare:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
@@ -907,13 +943,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             }
                         }
                         break;
-                    case Agent:
-                    case Credit:
-                    case OnCall:
-                    case OnlineSettlement:
-                    case Staff:
                     case YouOweMe:
                     case MultiplePaymentMethods:
+                        break;
                 }
 
                 paymentFacade.create(p);
@@ -933,18 +965,24 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
                     p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    p.setComments(paymentMethodData.getCreditCard().getComment());
                     break;
                 case Cheque:
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
                     p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setBank(paymentMethodData.getCheque().getInstitution());
                     p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    p.setComments(paymentMethodData.getCheque().getComment());
                     break;
                 case Cash:
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
                     break;
                 case ewallet:
                     p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
                     p.setComments(paymentMethodData.getEwallet().getComment());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
                     break;
                 case Credit:
                     p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
@@ -953,15 +991,44 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     p.setPaidValue(paymentMethodData.getCredit().getTotalValue());
                     p.setComments(paymentMethodData.getCredit().getComment());
                     bill.setToInstitution(paymentMethodData.getCredit().getInstitution());
+                    bill.setCreditCompany(paymentMethodData.getCredit().getInstitution());
                     break;
+                case Agent:
                 case PatientDeposit:
                     p.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
                     break;
-                case Agent:
                 case Slip:
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    p.setPaymentDate(paymentMethodData.getSlip().getDate());
+                    p.setComments(paymentMethodData.getSlip().getComment());
+                    p.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
+                    break;
                 case OnCall:
+                    break;
                 case OnlineSettlement:
+                    p.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    p.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
+                    p.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                    break;
                 case Staff:
+                    p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+                    p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
+                    if (paymentMethodData.getStaffCredit().getToStaff() != null) {
+                        bill.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+                    }
+                    break;
+                case Staff_Welfare:
+                    p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
+                    p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
+                    if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
+                        bill.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
+                    }
+                    break;
                 case YouOweMe:
                 case MultiplePaymentMethods:
             }
