@@ -48,7 +48,11 @@
       "Bash(\"D:\\Program Files\\NetBeans-18\\netbeans\\java\\maven\\bin\\mvn.cmd\" --version)",
       "Bash(where:*)",
       "Bash(git tag:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(gh pr close:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
