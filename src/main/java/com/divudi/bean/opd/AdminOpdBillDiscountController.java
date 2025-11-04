@@ -1,7 +1,7 @@
 package com.divudi.bean.opd;
 
 import com.divudi.bean.common.AuditEventController;
-import com.divudi.bean.common.BillBean;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -50,7 +50,7 @@ public class AdminOpdBillDiscountController implements Serializable {
     @Inject
     private PriceMatrixController priceMatrixController;
     @Inject
-    private BillBean billBean;
+    private BillBeanController billBean;
     @Inject
     private AuditEventController auditEventController;
 
