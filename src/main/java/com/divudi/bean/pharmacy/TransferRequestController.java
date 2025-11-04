@@ -1161,6 +1161,8 @@ public class TransferRequestController implements Serializable {
         }
     }
 
+    // Transfer Request bills should have NEUTRAL (positive) values for all fields
+    // This is different from Issue (negative) and Receive (positive) bills
     private void calculateBillTotalsFromItemsForTransferRequests(Bill billForRequest, List<BillItem> requestBillItems) {
         if (billForRequest == null) {
             return;
@@ -1279,8 +1281,9 @@ public class TransferRequestController implements Serializable {
                     pbi.setRetailValue(f.getValueAtRetailRate().doubleValue());
                 }
             }
-        }
-
+        // For Transfer Requests, all values should be positive (neutral)
+        billForRequest.setTotal(Math.abs(BigDecimalUtil.valueOrZero(grossTotal).doubleValue()));
+        billForRequest.setNetTotal(Math.abs(BigDecimalUtil.valueOrZero(netTotal).doubleValue()));
         billForRequest.setTotal(BigDecimalUtil.valueOrZero(grossTotal).doubleValue());
         billForRequest.setNetTotal(BigDecimalUtil.valueOrZero(netTotal).doubleValue());
         billForRequest.setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
@@ -1331,10 +1334,11 @@ public class TransferRequestController implements Serializable {
         bfd.setTotalRetailSaleValue(sumRetailFromItems);
         bfd.setTotalWholesaleValue(totalWholesale);
         bfd.setTotalQuantity(totalQty);
-        bfd.setTotalFreeQuantity(totalFreeQty);
-        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
-        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
-        bfd.setGrossTotal(grossTotal);
+        // For Transfer Requests, all BillFinanceDetails values should be positive (neutral)
+        bfd.setGrossTotal(grossTotal.abs());
+        bfd.setLineGrossTotal(lineGrossTotalSum.abs());
+        bfd.setNetTotal(netTotal.abs());
+        bfd.setLineNetTotal(lineNetTotalSum.abs());
         bfd.setLineGrossTotal(lineGrossTotalSum);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotalSum);
