@@ -404,7 +404,8 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="2. IP Unsettled Invoices" action="#{reportController.navigateToIpUnsettledInvoices()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Room Change" />
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Admission Category Wise Admission"  action="#{reportController.navigateToAdmissionCategoryWiseAdmission()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="5. Service Report"  action="/reports/inpatientReports/ip_service_report?faces-redirect=true" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="5. Service Reports"  action="#{reportController.navigateToIpServiceReport()}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="6. Admission Reports"  action="#{reportController.navigateToAdmissionReport()}" />
 
                                 </div>
                             </p:tab>
