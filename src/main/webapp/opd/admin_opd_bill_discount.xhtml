@@ -98,29 +98,31 @@
                                         </p:panelGrid>
                                     </div>
 
-                                    <div class="col-md-6" rendered="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill != null}">
-                                        <h:outputText value="Batch Bill Values" styleClass="d-block font-weight-bold mb-2"></h:outputText>
-                                        <p:panelGrid columns="2"
-                                                     styleClass="w-100"
-                                                     columnClasses="w-50,w-50"
-                                                     layout="tabular">
-                                            <h:outputLabel value="Total:" />
-                                            <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.total}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
+                                    <h:panelGroup rendered="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill != null}">
+                                        <div class="col-md-6">
+                                            <h:outputText value="Batch Bill Values" styleClass="d-block font-weight-bold mb-2"></h:outputText>
+                                            <p:panelGrid columns="2"
+                                                         styleClass="w-100"
+                                                         columnClasses="w-50,w-50"
+                                                         layout="tabular">
+                                                <h:outputLabel value="Total:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
 
-                                            <h:outputLabel value="Discount:" />
-                                            <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.discount}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
+                                                <h:outputLabel value="Discount:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
 
-                                            <h:outputLabel value="Net Total:" class="font-weight-bold"/>
-                                            <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.netTotal}"
-                                                          styleClass="font-weight-bold">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </p:panelGrid>
-                                    </div>
+                                                <h:outputLabel value="Net Total:" class="font-weight-bold"/>
+                                                <h:outputText value="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill.netTotal}"
+                                                              styleClass="font-weight-bold">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:panelGrid>
+                                        </div>
+                                    </h:panelGroup>
                                 </div>
                             </h:panelGroup>
                         </p:panel>
@@ -193,37 +195,39 @@
                                         </p:panelGrid>
                                     </div>
 
-                                    <div class="col-md-6" rendered="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill != null}">
-                                        <h:outputText value="New Batch Bill Values" styleClass="d-block font-weight-bold mb-2 text-success"></h:outputText>
-                                        <p:panelGrid columns="2"
-                                                     styleClass="w-100"
-                                                     columnClasses="w-50,w-50"
-                                                     layout="tabular">
-                                            <h:outputLabel value="Total:" />
-                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillTotal']}"
-                                                          styleClass="text-success">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
+                                    <h:panelGroup rendered="#{adminOpdBillDiscountController.selectedBill.backwardReferenceBill != null}">
+                                        <div class="col-md-6">
+                                            <h:outputText value="New Batch Bill Values" styleClass="d-block font-weight-bold mb-2 text-success"></h:outputText>
+                                            <p:panelGrid columns="2"
+                                                         styleClass="w-100"
+                                                         columnClasses="w-50,w-50"
+                                                         layout="tabular">
+                                                <h:outputLabel value="Total:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillTotal']}"
+                                                              styleClass="text-success">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
 
-                                            <h:outputLabel value="Discount:" />
-                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillDiscount']}"
-                                                          styleClass="text-success">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
+                                                <h:outputLabel value="Discount:" />
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillDiscount']}"
+                                                              styleClass="text-success">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
 
-                                            <h:outputLabel value="Net Total:" class="font-weight-bold"/>
-                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillNetTotal']}"
-                                                          styleClass="font-weight-bold text-success">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
+                                                <h:outputLabel value="Net Total:" class="font-weight-bold"/>
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillNetTotal']}"
+                                                              styleClass="font-weight-bold text-success">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
 
-                                            <h:outputLabel value="Difference:" class="font-weight-bold text-primary"/>
-                                            <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillNetTotal'] - adminOpdBillDiscountController.selectedBill.backwardReferenceBill.netTotal}"
-                                                          styleClass="font-weight-bold text-primary">
-                                                <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
-                                            </h:outputText>
-                                        </p:panelGrid>
-                                    </div>
+                                                <h:outputLabel value="Difference:" class="font-weight-bold text-primary"/>
+                                                <h:outputText value="#{adminOpdBillDiscountController.newValues['batchBillNetTotal'] - adminOpdBillDiscountController.selectedBill.backwardReferenceBill.netTotal}"
+                                                              styleClass="font-weight-bold text-primary">
+                                                    <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
+                                                </h:outputText>
+                                            </p:panelGrid>
+                                        </div>
+                                    </h:panelGroup>
                                 </div>
 
                                 <div class="ui-messages ui-messages-info ui-corner-all mt-3" role="alert">
