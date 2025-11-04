@@ -687,6 +687,39 @@ public abstract class AbstractFacade<T> {
         return resultList;
     }
 
+    // Overloaded method to support maxRecords with optional cache bypass
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords, boolean noCache) {
+        Query qry = getEntityManager().createQuery(jpql);
+
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<?> resultList;
+        qry.setMaxResults(maxRecords);
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
     public List<T> findByJpql(String jpql, int maxResults) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(maxResults);

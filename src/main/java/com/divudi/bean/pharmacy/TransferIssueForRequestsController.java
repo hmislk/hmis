@@ -609,14 +609,21 @@ public class TransferIssueForRequestsController implements Serializable {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
 
+        // Use the user's input quantity from BillItemFinanceDetails instead of pre-calculated values
+        BigDecimal userInputQtyInPacks = f.getQuantity() != null ? f.getQuantity().abs() : BigDecimal.ZERO;
+
         b.setRate(rate);
         b.setNetRate(rate);
-        // Money movement (revenue) must be positive
-        b.setNetValue(rate * Math.abs(b.getQty()));
-        b.setGrossValue(rate * Math.abs(b.getQty()));
+        // Money movement (revenue) must be positive - use user input quantity
+        b.setNetValue(rate * userInputQtyInPacks.doubleValue());
+        b.setGrossValue(rate * userInputQtyInPacks.doubleValue());
 
-        BigDecimal qtyInUnits = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
-        BigDecimal qtyInPacks = BigDecimal.valueOf(b.getQty());
+        // Calculate units based on user input and pack size
+        BigDecimal unitsPerPack = f.getUnitsPerPack() != null ? f.getUnitsPerPack() : BigDecimal.ONE;
+        BigDecimal userInputQtyInUnits = userInputQtyInPacks.multiply(unitsPerPack);
+
+        BigDecimal qtyInUnits = userInputQtyInUnits;
+        BigDecimal qtyInPacks = userInputQtyInPacks;
         BigDecimal rateBig = BigDecimal.valueOf(rate);
 
         // Set unitsPerPack from the PharmaceuticalBillItem/DTO before computing pack rates
@@ -628,20 +635,14 @@ public class TransferIssueForRequestsController implements Serializable {
             }
         }
 
-        // Quantity signs for ISSUE: negative (stock out)
-        BigDecimal absQtyInPacks = qtyInPacks.abs();
-        BigDecimal absQtyInUnits = qtyInUnits.abs();
+        // Don't override user input - preserve the quantity from BillItemFinanceDetails
+        // The user input is already stored in qtyInPacks and qtyInUnits variables
 
-        // Set BillItem qty to negative for transfer issue (stock out)
-        b.setQty(0 - absQtyInPacks.doubleValue());
-
-        f.setQuantity(BigDecimal.ZERO.subtract(absQtyInPacks));
-        f.setTotalQuantity(BigDecimal.ZERO.subtract(absQtyInPacks));
         f.setLineGrossRate(rateBig);
         f.setLineNetRate(rateBig);
-        // Money totals should be positive
-        f.setLineGrossTotal(rateBig.multiply(absQtyInPacks));
-        f.setLineNetTotal(rateBig.multiply(absQtyInPacks));
+        // Money totals should be positive - use user input quantity
+        f.setLineGrossTotal(rateBig.multiply(qtyInPacks));
+        f.setLineNetTotal(rateBig.multiply(qtyInPacks));
 
         // Cost/purchase valuations should be negative for transfer out
         if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
@@ -649,9 +650,9 @@ public class TransferIssueForRequestsController implements Serializable {
             BigDecimal costRate = BigDecimal.valueOf(batch.getCostRate());
             f.setCostRate(costRate);
             f.setLineCostRate(costRate);
-            f.setLineCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyInUnits)));
+            f.setLineCost(BigDecimal.ZERO.subtract(costRate.multiply(qtyInUnits)));
             f.setTotalCostRate(costRate);
-            f.setTotalCost(BigDecimal.ZERO.subtract(costRate.multiply(absQtyInUnits)));
+            f.setTotalCost(BigDecimal.ZERO.subtract(costRate.multiply(qtyInUnits)));
             // Ensure purchaseRate is present on finance details
             if (f.getPurchaseRate() == null) {
                 f.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
@@ -667,8 +668,18 @@ public class TransferIssueForRequestsController implements Serializable {
         f.setGrossRate(rateBig);
 
         // Quantity by units should be negative (stock out)
-        f.setQuantityByUnits(BigDecimal.ZERO.subtract(absQtyInUnits));
-        f.setTotalQuantityByUnits(BigDecimal.ZERO.subtract(absQtyInUnits));
+        f.setQuantityByUnits(BigDecimal.ZERO.subtract(qtyInUnits));
+        f.setTotalQuantityByUnits(BigDecimal.ZERO.subtract(qtyInUnits));
+
+        // Update PharmaceuticalBillItem quantities to match user input
+        if (b.getPharmaceuticalBillItem() != null) {
+            // Set negative quantities for issue (stock out)
+            b.getPharmaceuticalBillItem().setQty(-qtyInUnits.doubleValue());
+            b.getPharmaceuticalBillItem().setQtyPacks(-qtyInPacks.doubleValue());
+        }
+
+        // Update BillItem quantity to match user input (negative for issue)
+        b.setQty(-qtyInPacks.doubleValue());
     }
 
     private void updateBillItemRateAndValueAndSave(BillItem b) {
