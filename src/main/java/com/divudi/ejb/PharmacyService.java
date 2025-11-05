@@ -23,6 +23,7 @@ import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,8 +80,8 @@ public class PharmacyService {
     }
 
     /**
-     * Build a human readable warning if the bill item matches any recorded allergies.
-     * Checks the Amp, Atm, Vmp, and Vtm hierarchy for conflicts.
+     * Build a human readable warning if the bill item matches any recorded
+     * allergies. Checks the Amp, Atm, Vmp, and Vtm hierarchy for conflicts.
      *
      * @param patient patient whose allergies are evaluated
      */
@@ -126,7 +127,7 @@ public class PharmacyService {
         }
 
         if (atm != null) {
-            vtm = atm.getVtm();
+            vtm = (Vtm) atm.getVtm();
         }
 
         if (vtm == null && vmp != null) {
@@ -144,7 +145,7 @@ public class PharmacyService {
                     || (atm != null && a.equals(atm))
                     || (vmp != null && a.equals(vmp))
                     || (vtm != null && a.equals(vtm))) {
-                return item.getName() + " is not allowed as patient is allergic to " + a.getName();
+                return item.getName() + " is not allowed as patient has allergic to " + a.getName();
             }
         }
 
@@ -323,6 +324,15 @@ public class PharmacyService {
         return bundle;
     }
 
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyTransferValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
@@ -332,12 +342,30 @@ public class PharmacyService {
         return bundle;
     }
 
+    public PharmacyBundle fetchPharmacyTransferValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyAdjustmentValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
         List<Bill> pharmacyIncomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBills);
         bundle.generatePharmacyPurchaseGroupedByBillType();
+        return bundle;
+    }
+
+    public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
     }
 
@@ -374,6 +402,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
                 BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING,
                 BillTypeAtomic.PHARMACY_GRN_RETURN,
                 BillTypeAtomic.PHARMACY_GRN_CANCELLED
         );
@@ -382,12 +411,25 @@ public class PharmacyService {
     public List<BillTypeAtomic> getPharmacyInternalTransferBillTypes() {
         return Arrays.asList(
                 BillTypeAtomic.PHARMACY_ISSUE,
-                BillTypeAtomic.PHARMACY_RECEIVE
+                BillTypeAtomic.PHARMACY_RECEIVE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
         );
     }
 
     public List<BillTypeAtomic> getPharmacyAdjustmentBillTypes() {
         return Arrays.asList(
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );

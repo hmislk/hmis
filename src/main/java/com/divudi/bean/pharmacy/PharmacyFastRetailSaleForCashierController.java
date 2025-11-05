@@ -4,13 +4,9 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Patient;
-import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.data.BillClassType;
@@ -19,8 +15,6 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Department;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.core.data.dto.StockDTO;
-import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.facade.BillFacade;
@@ -42,8 +36,8 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
-import com.divudi.bean.pharmacy.UserStockController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.service.pharmacy.StockSearchService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -73,6 +67,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     SearchController searchController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     @Inject
     TokenController tokenController;
     @EJB
@@ -147,7 +143,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     }
 
     /**
-     * Finalize pre-bill, deduct stock and generate token. Payment will be collected later at cashier.
+     * Finalize pre-bill, deduct stock and generate token. Payment will be
+     * collected later at cashier.
      */
     public void settlePreBill() {
         if (getPreBill().getBillItems().isEmpty()) {
@@ -173,8 +170,7 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(billFacade.find(getPreBill().getId()));
-        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier") ||
-                configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
+        if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
                 if (t == null) {
@@ -215,10 +211,43 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
         getPreBill().setPaymentMethod(paymentMethod);
         getPreBill().setPaymentScheme(getPaymentScheme());
         getBillBean().setPaymentMethodData(getPreBill(), paymentMethod, getPaymentMethodData());
-        String insId = billNumberBean.institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
-        getPreBill().setInsId(insId);
-        String deptId = billNumberBean.departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        } else {
+            // Use existing method for backward compatibility
+            deptId = billNumberBean.departmentBillNumberGenerator(
+                    getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        } else {
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Preserve old behavior: use existing institution method for backward compatibility
+                insId = billNumberBean.institutionBillNumberGenerator(
+                        getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+            }
+        }
+
         getPreBill().setDeptId(deptId);
+        getPreBill().setInsId(insId);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
     }
 
@@ -367,8 +396,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     }
 
     /**
-     * Initialize controller state on first access to prevent NPEs.
-     * This method is called by the preRenderView event in the XHTML.
+     * Initialize controller state on first access to prevent NPEs. This method
+     * is called by the preRenderView event in the XHTML.
      */
     public void initIfNeeded() {
         // Ensure all necessary objects are initialized
@@ -385,7 +414,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
 
     /**
      * Payment method handling for sale for cashier - minimal implementation.
-     * Note: As per issue #14268, no payment data is preserved in sale for cashier.
+     * Note: As per issue #14268, no payment data is preserved in sale for
+     * cashier.
      */
     public PaymentMethod getPaymentMethod() {
         if (paymentMethod == null) {
@@ -422,8 +452,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     }
 
     /**
-     * Payment method change listener - minimal implementation for sale for cashier.
-     * Note: As per issue #14268, no actual payment data is preserved.
+     * Payment method change listener - minimal implementation for sale for
+     * cashier. Note: As per issue #14268, no actual payment data is preserved.
      */
     public void listnerForPaymentMethodChange() {
         // Minimal implementation to prevent NPEs
@@ -437,4 +467,3 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
         }
     }
 }
-

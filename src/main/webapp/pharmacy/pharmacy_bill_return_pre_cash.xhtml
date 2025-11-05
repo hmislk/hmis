@@ -15,7 +15,7 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel rendered="#{!pharmacyPreSettleController.billPreview}">
+                    <p:panel rendered="#{!pharmacyRefundForItemReturnsController.printPreview}">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <div>
@@ -25,7 +25,7 @@
                                 <div>
                                     <h:outputLabel value="Refunding Total " class="mx-3"></h:outputLabel>
                                     <h:outputLabel value=" : "></h:outputLabel>
-                                    <h:outputLabel id="refundingAmount" value="#{pharmacyPreSettleController.preBill.netTotal}"  class="mx-3">
+                                    <h:outputLabel id="refundingAmount" value="#{pharmacyRefundForItemReturnsController.refundBill.netTotal}"  class="mx-3">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </div>
@@ -35,16 +35,16 @@
                         <p:growl ></p:growl>
 
                         <div class="row" >
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                         <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
-                                    <common:patient patient="#{pharmacyPreSettleController.preBill.patient}" class="w-100"/>
+                                    <common:patient patient="#{pharmacyRefundForItemReturnsController.refundBill.patient}" class="w-100"/>
                                 </p:panel>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt"></h:outputText>
@@ -52,26 +52,90 @@
                                     </f:facet>
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyRefundForItemReturnsController.refundBill.deptId}" ></h:outputLabel>
                                         <h:outputLabel value="Payment Method:" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.paymentMethod}" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod}" ></h:outputLabel>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.total}" >
+                                        <h:outputLabel value="#{pharmacyRefundForItemReturnsController.refundBill.total}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Discount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.discount}" >
+                                        <h:outputLabel value="#{pharmacyRefundForItemReturnsController.refundBill.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.netTotal}" >
+                                        <h:outputLabel value="#{pharmacyRefundForItemReturnsController.refundBill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>
 
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <p:panel rendered="#{not empty pharmacyRefundForItemReturnsController.originalBillPayments}">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-money-check-alt"></h:outputText>
+                                        <h:outputLabel value="Original Payment Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:dataTable
+                                        value="#{pharmacyRefundForItemReturnsController.originalBillPayments}"
+                                        var="op"
+                                        styleClass="table table-sm"
+                                        emptyMessage="No original payments found">
+
+                                        <p:column headerText="Method" width="120">
+                                            <h:outputText value="#{op.paymentMethod}" />
+                                        </p:column>
+
+                                        <p:column headerText="Amount" styleClass="text-end" width="100">
+                                            <h:outputText value="#{op.paidValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Bank" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                            <h:outputText value="#{op.bank.name}" rendered="#{op.bank ne null}"/>
+                                            <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Ref/Card No" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                            <h:outputText value="#{op.referenceNo}" rendered="#{op.referenceNo ne null and op.referenceNo ne ''}"/>
+                                            <h:outputText value="#{op.chequeRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.chequeRefNo ne null and op.chequeRefNo ne ''}"/>
+                                            <h:outputText value="#{op.creditCardRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.creditCardRefNo ne null and op.creditCardRefNo ne ''}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Date" rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
+                                            <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                            <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                            <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Credit Company" rendered="#{op.paymentMethod eq 'Credit'}">
+                                            <h:outputText value="#{op.creditCompany.name}" rendered="#{op.creditCompany ne null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Policy No" rendered="#{op.paymentMethod eq 'Credit'}">
+                                            <h:outputText value="#{op.policyNo}" />
+                                        </p:column>
+
+                                        <p:column headerText="Staff" rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare'}">
+                                            <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Comments">
+                                            <h:outputText value="#{op.comments}" styleClass="text-muted small"/>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-3">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <h:outputText value="Return Details" class="mt-2" ></h:outputText>
@@ -82,49 +146,84 @@
                                             icon="fa fa-money-bill-wave"
                                             style="float:right; width: 8em;"
                                             class="ui-button-warning"
-                                            action="#{pharmacyPreSettleController.settleReturnBillWithPay()}">
+                                            action="#{pharmacyRefundForItemReturnsController.settleRefundForReturnItems()}">
                                         </p:commandButton>
                                     </f:facet>
 
                                     <p:panelGrid columns="2" >
                                         <p:outputLabel value="Return Comments" ></p:outputLabel>
-                                        <p:inputText value="#{pharmacyPreSettleController.refundComment}"  class="w-100"></p:inputText>
+                                        <p:inputText value="#{pharmacyRefundForItemReturnsController.refundComment}"  class="w-100"></p:inputText>
                                         <p:outputLabel value="Payment Method" ></p:outputLabel>
                                         <p:selectOneMenu   
                                             id="cmbPs" 
-                                            value="#{pharmacyPreSettleController.preBill.paymentMethod}"
+                                            value="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod}"
                                             required="true"
                                             requiredMessage="Please select a payment method">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                            <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}"/>
                                             <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </p:panelGrid>
 
                                     <h:panelGroup id="paymentDetails"  >
                                         <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="creditCard" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Card'}" >
-                                            <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                            layout="block"
+                                            rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Credit'}" >
+                                            <div class="my-2">
+                                                <pa:creditDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
+
                                         <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="cheque"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                            layout="block"
+                                            rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Staff'}" >
+                                            <div class="my-2">
+                                                <pa:staff_credit valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="slip"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+
+                                        <h:panelGroup
+                                            layout="block"
+                                            rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Staff_Welfare'}" >
+                                            <div class="my-2">
+                                                <pa:staff_welfare_asOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
                                         </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="ewallet"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+
+                                        <h:panelGroup layout="block" id="creditCard" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Card'}" >
+                                            <div class="my-2">
+                                                <pa:creditCardDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" id="ptdeposit" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'PatientDeposit'}">
+                                            <div class="my-2">
+                                                <pa:patient_deposit valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" id="ewallet" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'ewallet'}" >
+                                            <div class="my-2">
+                                                <pa:ewalletDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" id="cheque" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Cheque'}" >
+                                            <div class="my-2">
+                                                <pa:chequeDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" id="slip" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'Slip'}">
+                                            <div class="my-2">
+                                                <pa:slipDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{pharmacyRefundForItemReturnsController.paymentMethodData}"/>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" id="multiplePaymentMethods" rendered="#{pharmacyRefundForItemReturnsController.refundBill.paymentMethod eq 'MultiplePaymentMethods'}">
+                                            <div class="my-2">
+                                                <pa:multiple_payment_methods class="w-100" controller="#{pharmacyRefundForItemReturnsController}" paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}"/>
+                                            </div>
                                         </h:panelGroup>
                                     </h:panelGroup>
                                 </p:panel>
@@ -140,7 +239,7 @@
                                     </f:facet>
                                     <p:dataTable 
                                         id="billItems"
-                                        value="#{pharmacyPreSettleController.preBill.billItems}" 
+                                        value="#{pharmacyRefundForItemReturnsController.itemReturnBill.billItems}" 
                                         var="bip"
                                         rowKey="#{bip.id}"
                                         styleClass="table table-sm">
@@ -206,29 +305,92 @@
                     </p:panel>
 
 
-                    <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
+                    <p:panel rendered="#{pharmacyRefundForItemReturnsController.printPreview}">
                         <f:facet name="header">
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h:outputText styleClass="fas fa-check-circle text-success"></h:outputText>
-                                    <h:outputLabel value="Refund Completed Successfully" class="mx-3"></h:outputLabel>
+                                    <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                    <h:outputLabel value="Refund Bill Preview - #{pharmacyRefundForItemReturnsController.bill.deptId}" class="mx-3"></h:outputLabel>
                                 </div>
                                 <div>
-                                    <p:commandButton ajax="false" value="Search More Bills" 
-                                                     actionListener="#{pharmacyBillSearch.recreateModel()}" 
-                                                     action="pharmacy_search_pre_refund_bill_for_return_cash"
-                                                     class="ui-button-secondary mx-2"/>
-                                    <p:commandButton ajax="false" value="Print Receipt"  
-                                                     styleClass="noPrintButton ui-button-info" >
-                                        <p:printer target="gpBillPreview" />
+                                    <p:commandButton value="Print"
+                                                     ajax="false"
+                                                     icon="fas fa-print"
+                                                     class="ui-button-info mx-1">
+                                        <p:printer target="printArea" />
                                     </p:commandButton>
+
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary mx-1"
+                                        type="button"
+                                        onclick="PF('billRefundConfigDialog').show();" />
+
+                                    <p:commandButton ajax="false"
+                                                     value="Back to Search"
+                                                     icon="fas fa-arrow-left"
+                                                     actionListener="#{pharmacyBillSearch.recreateModel()}"
+                                                     action="pharmacy_search_pre_refund_bill_for_return_cash"
+                                                     class="ui-button-secondary mx-1"/>
                                 </div>
                             </div>
                         </f:facet>
-                        <h:panelGroup id="gpBillPreview" >
-                            <ph:saleBill bill="#{pharmacyPreSettleController.bill}"/>
+
+                        <!-- Print Area with conditional rendering based on paper type settings -->
+                        <h:panelGroup id="printArea">
+                            <!-- Default A4 Format -->
+                            <h:panelGroup id="gpBillPreviewA4"
+                                          rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Refund Bill is A4 Paper', true)}">
+                                <ph:saleBill bill="#{pharmacyRefundForItemReturnsController.bill}"/>
+                            </h:panelGroup>
+
+                            <!-- POS Format (if needed in future) -->
+                            <h:panelGroup id="gpBillPreviewPOS"
+                                          rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Refund Bill is POS Paper', false)}">
+                                <ph:saleBill bill="#{pharmacyRefundForItemReturnsController.bill}"/>
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
+
+                    <!-- Printer Configuration Dialog -->
+                    <p:dialog id="billRefundConfigDialog"
+                              header="Refund Bill Printer Configuration"
+                              widgetVar="billRefundConfigDialog"
+                              modal="true"
+                              width="600"
+                              rendered="#{pharmacyRefundForItemReturnsController.printPreview}">
+                        <h:panelGroup id="billRefundConfigForm" layout="block">
+                            <p:panel header="Select Paper Format">
+                                <p:panelGrid columns="2" styleClass="w-100">
+                                    <h:outputLabel value="A4 Paper Format:" />
+                                    <p:selectBooleanCheckbox
+                                        id="chkA4Paper"
+                                        value="#{pharmacyConfigController.retailSaleReturnRefundBillA4Paper}" />
+
+                                    <h:outputLabel value="POS Paper Format:" />
+                                    <p:selectBooleanCheckbox
+                                        id="chkPosPaper"
+                                        value="#{pharmacyConfigController.retailSaleReturnRefundBillPosPaper}" />
+                                </p:panelGrid>
+
+                                <div class="mt-3">
+                                    <p:commandButton value="Apply &amp; Close"
+                                                     icon="fas fa-save"
+                                                     class="ui-button-success"
+                                                     ajax="false"
+                                                     action="#{pharmacyConfigController.saveRetailSaleReturnRefundBillConfig}"
+                                                     onclick="PF('billRefundConfigDialog').hide();" />
+                                    <p:commandButton value="Cancel"
+                                                     type="button"
+                                                     icon="fas fa-times"
+                                                     onclick="PF('billRefundConfigDialog').hide();"
+                                                     class="ui-button-secondary ms-2" />
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+                    </p:dialog>
 
                 </h:form>
             </ui:define>

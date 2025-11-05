@@ -202,14 +202,10 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
      * Methods
      */
     public void fillDepartmentStocks() {
-        List<DepartmentType> availableDepartmentTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
         reportTimerController.trackReportExecution(() -> {
             Date startedAt = new Date();
             Map<String, Object> m = new HashMap<>();
             StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
-
-            sql.append(" and s.itemBatch.item.departmentType in :dts ");
-            m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
 
             if (department != null) {
                 sql.append(" and s.department=:d");
@@ -248,25 +244,22 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     }
 
     public void fillDepartmentStockDtos() {
-        List<DepartmentType> availableDepartmentTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
         reportTimerController.trackReportExecution(() -> {
             Map<String, Object> m = new HashMap<>();
             StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
             jpql.append("s.id, ");
-            jpql.append("s.itemBatch.item.category.name, ");
-            jpql.append("s.itemBatch.item.name, ");
+            jpql.append("COALESCE(s.itemBatch.item.category.name, ''), ");
+            jpql.append("COALESCE(s.itemBatch.item.name, ''), ");
             jpql.append("s.itemBatch.item.departmentType, ");
-            jpql.append("s.itemBatch.item.code, ");
-            jpql.append("amp.vmp.name, ");
+            jpql.append("COALESCE(s.itemBatch.item.code, ''), ");
+            jpql.append("COALESCE(amp.vmp.name, ''), ");
             jpql.append("s.itemBatch.dateOfExpire, ");
-            jpql.append("s.itemBatch.batchNo, ");
-            jpql.append("s.stock, ");
-            jpql.append("s.itemBatch.purcahseRate, ");
-            jpql.append("s.itemBatch.costRate, ");
-            jpql.append("s.itemBatch.retailsaleRate) ");
+            jpql.append("COALESCE(s.itemBatch.batchNo, ''), ");
+            jpql.append("COALESCE(s.stock, 0.0), ");
+            jpql.append("COALESCE(s.itemBatch.purcahseRate, 0.0), ");
+            jpql.append("COALESCE(s.itemBatch.costRate, 0.0), ");
+            jpql.append("COALESCE(s.itemBatch.retailsaleRate, 0.0)) ");
             jpql.append("from Stock s join TREAT(s.itemBatch.item as Amp) amp where s.stock > 0");
-            jpql.append(" and s.itemBatch.item.departmentType in :dts");
-            m.put("dts", availableDepartmentTypes);
 
             if (department != null) {
                 jpql.append(" and s.department=:d");
@@ -280,7 +273,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             }
 
             stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
-            stockDtos.sort(Comparator.comparing(StockDTO::getItemName, String.CASE_INSENSITIVE_ORDER));
+            stockDtos.sort(Comparator.comparing(StockDTO::getItemName, Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER)));
 
             stockPurchaseValue = stockDtos.stream()
                     .mapToDouble(s -> {

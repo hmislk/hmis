@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -17,16 +18,20 @@
         <div class="d-flex flex-wrap align-items-end gap-2 mt-2">
             <div class="flex-fill">
                 <p:outputLabel for="txtVal" value="Total Value:" />
-                <p:inputText id="txtVal" value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off">
+                <p:inputText id="txtVal" value="#{cc.attrs.paymentMethodData.cheque.totalValue}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off"
+                             required="true"
+                             requiredMessage="Total Value is required">
                     <p:tooltip value="Enter the total value of the cheque."/>
                     <f:convertNumber pattern="#,##0.00" />
-                    <p:ajax process="@this"/>
+                    <p:ajax event="keyup" process="@this" />
                 </p:inputText>
             </div>
 
             <div class="flex-fill">
                 <p:outputLabel for="chequeNo" value="Cheque Number:"/>
-                <p:inputText id="chequeNo" placeholder="Cheque No" value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off">
+                <p:inputText id="chequeNo" placeholder="Cheque No" value="#{cc.attrs.paymentMethodData.cheque.no}" style="width: auto; max-width: 200px;" class="form-control" autocomplete="off"
+                             required="true"
+                             requiredMessage="Cheque Number is required">
                     <p:tooltip value="Enter the cheque number."/>
                     <p:ajax process="@this"/>
                 </p:inputText>
@@ -34,7 +39,9 @@
 
             <div class="flex-fill">
                 <p:outputLabel for="bankSelect" value="Bank:"/>
-                <p:selectOneMenu id="bankSelect" value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: auto; max-width: 200px;" class="form-control">
+                <p:selectOneMenu id="bankSelect" value="#{cc.attrs.paymentMethodData.cheque.institution}" style="width: auto; max-width: 200px;" class="form-control"
+                                 required="true"
+                                 requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                     <p:tooltip value="Select the bank for the cheque."/>
@@ -44,7 +51,9 @@
 
             <div class="flex-fill">
                 <!--                <p:outputLabel for="ChequeDate" value="Cheque Date:"/>-->
-                <p:calendar id="ChequeDate" placeholder="Cheque Date" value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
+                <p:calendar id="ChequeDate" placeholder="Cheque Date" value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}"
+                            required="true"
+                            requiredMessage="Cheque Date is required"  >
                     <p:tooltip value="Select the date of the cheque."/>
                     <p:ajax process="@this"/>
                 </p:calendar>
@@ -52,7 +61,9 @@
 
             <div class="flex-fill">
                 <!--                <p:outputLabel for="chequeComment" value="Comments:"/>-->
-                <p:inputText id="chequeComment" value="#{cc.attrs.paymentMethodData.cheque.comment}" placeholder="Enter Cheque Comments" style="width: auto; max-width: 200px;" class="form-control">
+                <p:inputText id="chequeComment" value="#{cc.attrs.paymentMethodData.cheque.comment}" placeholder="Enter Cheque Comments" style="width: auto; max-width: 200px;" class="form-control"
+                             required="true"
+                             requiredMessage="Comments are required">
                     <p:tooltip value="Add any additional comments about the cheque."/>
                     <p:ajax process="@this"/>
                 </p:inputText>

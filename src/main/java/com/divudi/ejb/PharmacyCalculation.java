@@ -245,6 +245,25 @@ public class PharmacyCalculation implements Serializable {
         //System.err.println("GETTING TOTAL QTY " + value);
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
+    
+    public double getTotalQty(BillItem b, List<BillTypeAtomic> btas) {
+        if (btas == null || btas.isEmpty()) {
+            return 0.0;
+        }
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p "
+                + " where (p.bill.retired is null or p.bill.retired=false)"
+                + " and (p.retired is null or p.retired=false) "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic in :btas";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btas", btas);
+
+        //System.err.println("GETTING TOTAL QTY " + value);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
 
     public double getTotalFreeQty(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
@@ -797,9 +816,11 @@ public class PharmacyCalculation implements Serializable {
         }
 
         // Extract AMP (Actual Medicinal Product) even if input is AMPP (Pack)
-        Item amp = inputBillItem.getItem();
+        Item originalItem = inputBillItem.getItem();
+        Item amp = originalItem;
         if (amp instanceof Ampp) {
             amp = ((Ampp) amp).getAmp();
+        } else {
         }
 
         Date expiryDate = inputBillItem.getPharmaceuticalBillItem().getDoe();
@@ -822,7 +843,7 @@ public class PharmacyCalculation implements Serializable {
                 return null;
             }
 
-            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineGrossRate();
+            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineNetRate();
 
             BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
             if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
@@ -839,7 +860,16 @@ public class PharmacyCalculation implements Serializable {
             retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
             costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
 
+            System.out.println("@@@ PharmacyCalculation.saveItemBatchWithCosting @@@");
+            System.out.println("Item: " + (inputBillItem.getItem() != null ? inputBillItem.getItem().getName() : "null"));
+            System.out.println("costRatePerUnit FROM BillItemFinanceDetails.getTotalCostRate(): " + costRatePerUnit);
+            System.out.println("purchaseRatePerUnit: " + purchaseRatePerUnit);
+            System.out.println("retailRatePerUnit: " + retailRatePerUnit);
+
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
+
+            System.out.println("ItemBatch fetched/created with costRate: " + (itemBatch != null ? itemBatch.getCostRate() : "null"));
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         } else {
             // Use values from PharmaceuticalBillItem when costing is not enabled
             purchaseRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getPurchaseRate();
@@ -864,6 +894,7 @@ public class PharmacyCalculation implements Serializable {
             itemBatch.setModal(inputBillItem.getPharmaceuticalBillItem().getModel());
 
             getItemBatchFacade().create(itemBatch);
+        } else {
         }
 
         return itemBatch;
@@ -874,11 +905,11 @@ public class PharmacyCalculation implements Serializable {
         String sql;
 
         sql = "SELECT i from Amp i where i.retired=false and "
-                + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
+                + "i.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
         items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
-                + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
+                + "i.amp.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
         items.addAll(amppList);
 
@@ -902,11 +933,11 @@ public class PharmacyCalculation implements Serializable {
 
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
-                + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
+                + "i.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
         items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
-                + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
+                + "i.amp.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
         items.addAll(amppList);
         return items;
@@ -916,11 +947,11 @@ public class PharmacyCalculation implements Serializable {
 
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
-                + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getId() + ")";
+                + "i.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getId() + ")";
         items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
-                + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getId() + ")";
+                + "i.amp.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
         items.addAll(amppList);
         return items;
@@ -930,11 +961,11 @@ public class PharmacyCalculation implements Serializable {
 
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
-                + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
+                + "i.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
         items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
-                + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
+                + "i.amp.vmp.id in (select vv.vmp.id from VirtualProductIngredient vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
         List<Item> amppList = getItemFacade().findByJpql(sql);
         items.addAll(amppList);
         return items;
@@ -975,13 +1006,13 @@ public class PharmacyCalculation implements Serializable {
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Cheque) {
-            if (b.getBank().getId() == null || b.getChequeRefNo() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getChequeRefNo() == null) {
                 msg = "Please select Cheque Number and Bank";
             }
         }
 
         if (b.getPaymentMethod() != null && b.getPaymentMethod() == PaymentMethod.Slip) {
-            if (b.getBank().getId() == null || b.getComments() == null) {
+            if (b.getBank() == null || b.getBank().getId() == null || b.getComments() == null) {
                 msg = "Please Fill Memo and Bank";
             }
         }
@@ -1185,7 +1216,6 @@ public class PharmacyCalculation implements Serializable {
         }
         
         try {
-            System.out.println("DEBUG: Executing bulk calculation for " + billItemIds.size() + " bill items");
             
             // Step 1: Get issued quantities (BilledBill)
             String issuedSql = "SELECT bi.referanceBillItem.id, SUM(ABS(bi.qty)) " +
@@ -1242,7 +1272,6 @@ public class PharmacyCalculation implements Serializable {
             
             java.util.List<Object[]> originalResults = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(originalSql, originalParams, javax.persistence.TemporalType.TIMESTAMP);
             
-            System.out.println("DEBUG: Found " + issuedMap.size() + " issued, " + cancelledMap.size() + " cancelled, " + originalResults.size() + " original items");
             
             java.util.Map<Long, com.divudi.core.data.dto.BillItemCalculationDTO> resultMap = new java.util.HashMap<>();
             
@@ -1257,15 +1286,13 @@ public class PharmacyCalculation implements Serializable {
                     
                 resultMap.put(billItemId, dto);
                 
-                System.out.println("  Item ID: " + billItemId + " -> Original: " + originalQty + ", Issued: " + issuedQty + ", Cancelled: " + cancelledQty + ", Remaining: " + dto.getRemainingQty());
             }
             
             return resultMap;
             
         } catch (Exception e) {
-            // Log error and return empty map as fallback
-            System.err.println("Error in getBulkCalculationsForBillItems: " + e.getMessage());
-            e.printStackTrace();
+// Log error and return empty map as fallback
+                        e.printStackTrace();
             return new java.util.HashMap<>();
         }
     }

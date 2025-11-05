@@ -18,6 +18,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -2830,15 +2831,21 @@ public class BillBeanController implements Serializable {
         Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 
         if (obj == null) {
-            Double[] dbl = new Double[3];
+            Double[] dbl = new Double[4];
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
-//            dbl[3] = 0.0;
+            dbl[3] = 0.0;
             return dbl;
         }
 
-        Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
+        Double[] dbl = Arrays.copyOf(obj, Math.max(4, obj.length), Double[].class);
+
+        for (int i = 0; i < 4; i++) {
+            if (dbl[i] == null) {
+                dbl[i] = 0.0;
+            }
+        }
 
         return dbl;
     }
@@ -3684,6 +3691,18 @@ public class BillBeanController implements Serializable {
         m.put("ret", false);
         m.put("b", b);
         return billItemFacade.findByJpql(j, m);
+    }
+    
+    public List<BillItemDTO> fillBillItemDTOs(Long billId) {
+        String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.bill.id, bi.item.id, bi.bill.paymentMethod, bi.item.clazz, bi.netValue, bi.discount, bi.marginValue ) "
+                + " from BillItem bi "
+                + " where bi.bill.id=:billId "
+                + " and bi.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("billId", billId);
+        List<BillItemDTO> dtos = billItemFacade.findLightsByJpql(j, m);
+        return dtos;
     }
 
     public List<BillFee> fillBillItemFees(BillItem bi) {

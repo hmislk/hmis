@@ -26,33 +26,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
-                                    <p:selectOneMenu 
-                                        id="commentsMenu" 
-                                        value="#{billSearch.comment}" 
-                                        editable="true" 
-                                        filter="true" 
-                                        placeholder="Select or enter a comment"
-                                        filterMatchMode="contains"  
-                                        style="float: right; width: 100%" 
-                                        >
-                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
-                                        <f:selectItems 
-                                            value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}" 
-                                            var="option" 
-                                            itemLabel="#{option}" 
-                                            itemValue="#{option}"/>
-                                    </p:selectOneMenu>
 
-                                    <p:commandButton
-                                        ajax="false"
-                                        value="Cancel Bill"
-                                        icon="fa fa-cancel"
-                                        style="float: right"
-                                        class="ui-button-danger"
-                                        action="#{billSearch.cancelCollectingCentreBill()}"
-                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                    return false;">
-                                    </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-secondary d-flex justify-content-end mx-2"
                                         style="float: right"
@@ -64,31 +38,65 @@
                                 </h:panelGrid>
                             </f:facet>
 
-                            <!-- Payment Mode Panel -->
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
-                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
-                                </f:facet>
+                            <div class="d-flex justify-content-end gap-3 mb-3">
                                 <p:selectOneMenu 
-                                    id="cmbPs" 
-                                    value="#{billSearch.paymentMethod}" 
-                                    rendered="#{billSearch.bill.billType eq 'OpdBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
+                                    id="commentsMenu" 
+                                    value="#{billSearch.comment}" 
+                                    editable="true" 
+                                    filter="true" 
+                                    placeholder="Select or enter a comment"
+                                    filterMatchMode="contains"  
+                                    style="float: right; width: 500px;" 
+                                    >
+                                    <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems 
+                                        value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}" 
+                                        var="option" 
+                                        itemLabel="#{option}" 
+                                        itemValue="#{option}"/>
                                 </p:selectOneMenu>
 
-                                <p:selectOneMenu id="cmbPs2" value="#{billSearch.paymentMethod}"  
-                                                 disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
-                                                 rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
-                                </p:selectOneMenu>
-                            </p:panel>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Cancel Bill"
+                                    icon="fa-solid fa-ban"
+                                    style="float: right"
+                                    class="ui-button-danger"
+                                    action="#{billSearch.cancelCollectingCentreBill()}"
+                                    onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                return false;">
+                                </p:commandButton>
+                            </div>
+
 
                             <!-- Patient Details and Bill Details Panels -->
                             <div class="row">
                                 <div class="col-6">
+
+                                    <!-- Payment Mode Panel -->
+                                    <p:panel class="mb-3">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                            <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:selectOneMenu 
+                                            id="cmbPs" 
+                                            value="#{billSearch.paymentMethod}" 
+                                            rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                                            <f:selectItem itemLabel="Select paymentMethod"/>
+                                            <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:selectOneMenu 
+                                            id="cmbPs2" 
+                                            value="#{billSearch.paymentMethod}"  
+                                            disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
+                                            rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                            <f:selectItem itemLabel="Select paymentMethod"/>
+                                            <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
+                                        </p:selectOneMenu>
+                                    </p:panel>
+
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -110,7 +118,7 @@
                                             <h:outputLabel value="#{billSearch.bill.collectingCentre.code}" ></h:outputLabel>
                                             <h:outputLabel value="Route :" ></h:outputLabel>
                                             <h:outputLabel value="#{billSearch.bill.collectingCentre.route.name}" ></h:outputLabel>
-                                            
+
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
                                             <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Total :" ></h:outputLabel>
@@ -125,7 +133,7 @@
                             </div>
 
                             <!-- Bill Item Detail Panel -->
-                            <p:panel>
+                            <p:panel class="mt-3">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                     <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>

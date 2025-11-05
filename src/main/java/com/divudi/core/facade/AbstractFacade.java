@@ -112,12 +112,11 @@ public abstract class AbstractFacade<T> {
     public T findFirstByJpql(String jpql) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(1);
-        try {
-            T result = qry.getSingleResult();
-            return result;
-        } catch (Exception e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
     }
 
     public List<T> findByJpql(String jpql, Map<String, Object> parameters, Map<String, TemporalType> temporalTypes) {
@@ -246,11 +245,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        try {
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
     }
 
     public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
@@ -274,11 +273,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        try {
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
 
     }
 
@@ -373,7 +372,33 @@ public abstract class AbstractFacade<T> {
     }
 
     public T find(Object id) {
-        return getEntityManager().find(entityClass, id);
+        if (id == null) {
+            return null;
+        }
+        try {
+            return getEntityManager().find(entityClass, id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get a reference (proxy) to an entity without loading it from database.
+     * Use this when you only need the entity reference for relationships,
+     * not the entity's data. Much faster than find() as it doesn't query the database.
+     *
+     * @param id The entity ID
+     * @return Proxy reference to the entity
+     */
+    public T getReference(Object id) {
+        if (id == null) {
+            return null;
+        }
+        try {
+            return getEntityManager().getReference(entityClass, id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public T findWithoutCache(Object id) {
@@ -638,6 +663,39 @@ public abstract class AbstractFacade<T> {
 
     public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
         Query qry = getEntityManager().createQuery(jpql);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<?> resultList;
+        qry.setMaxResults(maxRecords);
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    // Overloaded method to support maxRecords with optional cache bypass
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords, boolean noCache) {
+        Query qry = getEntityManager().createQuery(jpql);
+
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
 
         for (Map.Entry<String, Object> entry : entries) {
@@ -1193,13 +1251,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        T t;
-        try {
-            t = qry.getSingleResult();
-        } catch (Exception e) {
-            t = null;
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
+            return null;
         }
-        return t;
+        return results.get(0);
     }
 
     public <U> List<T> testMethod(U[] a, Collection<U> all) {

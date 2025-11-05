@@ -73,6 +73,7 @@
                             </h:form>
                         </div>
                         <div class="card-body">
+                            <p:messages id="msgs" showDetail="true" closable="true" autoUpdate="true"/>
                             <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
                                 <div class="alert alert-warning d-flex align-items-center">
                                     <i class="fa fa-exclamation-triangle fa-lg" style="margin-right: 12px;"></i>
@@ -84,6 +85,17 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBill}">
+                                <!-- Display warning if stock taking is completed -->
+                                <h:panelGroup rendered="#{pharmacyStockTakeController.snapshotBill.completed}">
+                                    <div class="alert alert-danger d-flex align-items-center mb-4">
+                                        <i class="fa fa-lock fa-lg" style="margin-right: 12px;"></i>
+                                        <div>
+                                            <strong>Stock Taking Completed</strong>
+                                            <p class="mb-0">This stock taking session has been completed and closed. No uploads are allowed.</p>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
                                 <div class="card bg-light mb-4">
                                     <div class="card-body">
                                         <h:outputText value="Snapshot Bill Information" styleClass="h5 mb-3 text-primary"/>
@@ -115,55 +127,21 @@
                                                         </h:outputText>
                                                     </span>
                                                 </div>
+                                                <div class="info-item mb-2">
+                                                    <i class="fa fa-info-circle text-muted" style="margin-right: 8px;"></i>
+                                                    <strong>Status:</strong>
+                                                    <span class="badge" style="margin-left: 8px; #{pharmacyStockTakeController.snapshotBill.completed ? 'background-color: #28a745;' : 'background-color: #ffc107;'}">
+                                                        #{pharmacyStockTakeController.snapshotBill.completed ? 'Completed' : 'Ongoing'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <h:form id="frmDownloads">
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-info text-white">
-                                            <i class="fa fa-download" style="margin-right: 8px;"></i>
-                                            <strong>Download Stock Count Sheets</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3 mb-md-0">
-                                                    <div class="download-option h-100">
-                                                        <div class="mb-2">
-                                                            <i class="fa fa-eye text-success" style="margin-right: 8px;"></i>
-                                                            <strong>Guided Sheet</strong>
-                                                        </div>
-                                                        <p class="text-muted mb-3">Includes current system quantities for reference during counting</p>
-                                                        <p:commandButton value="Download Guided Sheet" ajax="false" 
-                                                                       styleClass="ui-button-success ui-button-lg" 
-                                                                       icon="fa fa-download" 
-                                                                       onclick="PrimeFaces.monitorDownload();">
-                                                            <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
-                                                        </p:commandButton>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="download-option h-100">
-                                                        <div class="mb-2">
-                                                            <i class="fa fa-eye-slash text-warning" style="margin-right: 8px;"></i>
-                                                            <strong>Blind Sheet</strong>
-                                                        </div>
-                                                        <p class="text-muted mb-3">No system quantities shown - for unbiased physical counting</p>
-                                                        <p:commandButton value="Download Blind Sheet" ajax="false" 
-                                                                       styleClass="ui-button-warning ui-button-lg" 
-                                                                       icon="fa fa-download" 
-                                                                       onclick="PrimeFaces.monitorDownload();">
-                                                            <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
-                                                        </p:commandButton>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </h:form>
 
-                                <h:form id="frmUpload" enctype="multipart/form-data">
+
+                                <h:form id="frmUpload" enctype="multipart/form-data" rendered="#{not pharmacyStockTakeController.snapshotBill.completed}">
                                     <div class="card">
                                         <div class="card-header bg-secondary text-white">
                                             <i class="fa fa-upload" style="margin-right: 8px;"></i>
@@ -181,22 +159,22 @@
                                                     </ul>
                                                 </div>
                                             </div>
-                                            
-                                            <div class="upload-area p-4 border-dashed border-2 border-secondary rounded text-center mb-3" 
+
+                                            <div class="upload-area p-4 border-dashed border-2 border-secondary rounded text-center mb-3"
                                                  style="background-color: #f8f9fa;">
                                                 <i class="fa fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
                                                 <div class="mb-3">
-                                                    <p:fileUpload value="#{pharmacyStockTakeController.file}" 
-                                                                mode="simple" 
+                                                    <p:fileUpload value="#{pharmacyStockTakeController.file}"
+                                                                mode="simple"
                                                                 label="Choose Excel File"
                                                                 styleClass="ui-button-lg ui-button-outlined"/>
                                                 </div>
                                                 <p class="text-muted mb-0">Select your completed stock count Excel file</p>
                                             </div>
-                                            
+
                                             <div class="text-center">
-                                                <p:commandButton value="Process Upload &amp; Review" 
-                                                               icon="fa fa-upload" 
+                                                <p:commandButton value="Process Upload &amp; Review"
+                                                               icon="fa fa-upload"
                                                                styleClass="ui-button-success ui-button-lg"
                                                                action="#{pharmacyStockTakeController.parseAndPersistNavigate}"
                                                                ajax="false"/>

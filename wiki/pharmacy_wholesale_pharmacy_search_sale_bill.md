@@ -1,2 +1,0 @@
-# pharmacy_wholesale_pharmacy_search_sale_bill
-Source: `/pharmacy_wholesale/pharmacy_search_sale_bill.xhtml`

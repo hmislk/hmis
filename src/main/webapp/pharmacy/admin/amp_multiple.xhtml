@@ -7,91 +7,169 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
-        <h:form  >
+        <h:form>
 
-            <p:commandButton value="Download" ajax="false" >
-                <p:dataExporter fileName="amps" target="tblamps" type="xlsx" ></p:dataExporter>
+            <p:panel header="Export AMP Data for Import" styleClass="p-2">
+                <p:panel>
+                    <h:outputText value="Export AMP Data Compatible with Import" />
+                    <p>This export generates an Excel file (.xlsx) with all columns required for the pharmaceutical item import functionality.</p>
+                    <p>The downloaded file can be directly used for importing pharmaceutical items with the following features:</p>
+                    <ul>
+                        <li>All 14 columns (A-N) exactly matching the import format</li>
+                        <li>Serial numbers automatically generated</li>
+                        <li>All pharmaceutical entities included (Category, Product, VTM, VMP, AMP)</li>
+                        <li>Institution data (Distributor, Manufacturer, Importer) included</li>
+                        <li>Measurement units and pack information included</li>
+                    </ul>
+                    <p><strong>Usage:</strong> Download → Modify as needed → Import using the pharmaceutical item import page</p>
+                </p:panel>
+            </p:panel>
+
+            <p:commandButton value="Download Excel Template for Import" ajax="false" styleClass="ui-button-success">
+                <p:dataExporter fileName="pharmaceutical_items_template" target="tblamps" type="xlsx" ></p:dataExporter>
             </p:commandButton>
             
-            <p:dataTable 
+            <p:dataTable
                 id="tblamps"
-                value="#{pharmacyController.amps}" 
+                value="#{pharmacyController.amps}"
                 var="i"
                 rowKey="#{i.id}"
                 rows="5"
-                paginator="true" 
+                paginator="true"
                 paginatorPosition="both"
                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                 rowsPerPageTemplate="5,10,1000,{ShowAll|'All'}"
                 >
                 <f:facet name="header">
-                    <h:outputText value="AMP List" ></h:outputText>
+                    <h:outputText value="AMP List - Download format compatible with Import" ></h:outputText>
                 </f:facet>
-                <p:column 
-                    headerText="Category" 
-                    sortBy="#{i.id}"
-                    filterBy="#{i.id}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.category.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="AMP Name" 
-                    sortBy="#{i.name}"
-                    filterBy="#{i.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="AMP Code" 
-                    sortBy="#{i.code}"
-                    filterBy="#{i.code}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.code}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="AMP Barcode" 
-                    sortBy="#{i.barcode}"
-                    filterBy="#{i.barcode}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.barcode}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="VTM" 
-                    sortBy="#{i.vmp.vtm.name}"
-                    filterBy="#{i.vmp.vtm.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.vmp.vtm.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="VMP" 
-                    sortBy="#{i.vmp.name}"
-                    filterBy="#{i.vmp.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.vmp.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Strength" 
-                    sortBy="#{i.dblValue}"
-                    filterBy="#{i.dblValue}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.dblValue}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Strength Unit" 
-                    sortBy="#{i.strengthUnit.name}"
-                    filterBy="#{i.strengthUnit.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.measurementUnit.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Issue Unit" 
-                    sortBy="#{i.vmp.issueUnit.name}"
-                    filterBy="#{i.vmp.issueUnit.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.vmp.issueUnit.name}" ></h:outputText>
+
+                <!-- Column A: Serial No -->
+                <p:column headerText="Serial No" exportable="true">
+                    <h:outputText value="#{i.id}" ></h:outputText>
                 </p:column>
 
+                <!-- Column B: Category -->
+                <p:column
+                    headerText="Category"
+                    sortBy="#{i.category.name}"
+                    filterBy="#{i.category.name}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.category ? '' : i.category.name}" ></h:outputText>
+                </p:column>
+
+                <!-- Column C: Product -->
+                <p:column
+                    headerText="Product"
+                    sortBy="#{i.name}"
+                    filterBy="#{i.name}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.name ? '' : i.name}" ></h:outputText>
+                </p:column>
+
+                <!-- Column D: Code -->
+                <p:column
+                    headerText="Code"
+                    sortBy="#{i.code}"
+                    filterBy="#{i.code}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.code ? '' : i.code}" ></h:outputText>
+                </p:column>
+
+                <!-- Column E: Bar Code -->
+                <p:column
+                    headerText="Bar Code"
+                    sortBy="#{i.barcode}"
+                    filterBy="#{i.barcode}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.barcode ? '' : i.barcode}" ></h:outputText>
+                </p:column>
+
+                <!-- Column F: Generic Name -->
+                <p:column
+                    headerText="Generic Name"
+                    sortBy="#{i.vmp.vtm.name}"
+                    filterBy="#{i.vmp.vtm.name}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.vmp or empty i.vmp.vtm ? '' : i.vmp.vtm.name}" ></h:outputText>
+                </p:column>
+
+                <!-- Column G: Strength -->
+                <p:column
+                    headerText="Strength"
+                    sortBy="#{i.dblValue}"
+                    filterBy="#{i.dblValue}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.dblValue ? '' : i.dblValue}" ></h:outputText>
+                </p:column>
+
+                <!-- Column H: Strength Unit -->
+                <p:column
+                    headerText="Strength Unit"
+                    sortBy="#{i.strengthUnit.name}"
+                    filterBy="#{i.strengthUnit.name}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.strengthUnit ? '' : i.strengthUnit.name}" ></h:outputText>
+                </p:column>
+
+                <!-- Column I: Pack Size -->
+                <p:column
+                    headerText="Pack Size"
+                    exportable="true">
+                    <h:outputText value="" ></h:outputText>
+                </p:column>
+
+                <!-- Column J: Issue Unit -->
+                <p:column
+                    headerText="Issue Unit"
+                    sortBy="#{i.issueUnit.name}"
+                    filterBy="#{i.issueUnit.name}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.issueUnit ? '' : i.issueUnit.name}" ></h:outputText>
+                </p:column>
+
+                <!-- Column K: Pack Unit -->
+                <p:column
+                    headerText="Pack Unit"
+                    exportable="true">
+                    <h:outputText value="" ></h:outputText>
+                </p:column>
+
+                <!-- Column L: Distributor -->
+                <p:column
+                    headerText="Distributor"
+                    exportable="true">
+                    <h:outputText value="" ></h:outputText>
+                </p:column>
+
+                <!-- Column M: Manufacturer -->
+                <p:column
+                    headerText="Manufacturer"
+                    sortBy="#{i.manufacturer.name}"
+                    filterBy="#{i.manufacturer.name}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.manufacturer ? '' : i.manufacturer.name}" ></h:outputText>
+                </p:column>
+
+                <!-- Column N: Importer -->
+                <p:column
+                    headerText="Importer"
+                    sortBy="#{i.importer.name}"
+                    filterBy="#{i.importer.name}"
+                    filterMatchMode="contains"
+                    exportable="true">
+                    <h:outputText value="#{empty i.importer ? '' : i.importer.name}" ></h:outputText>
+                </p:column>
 
             </p:dataTable>
 

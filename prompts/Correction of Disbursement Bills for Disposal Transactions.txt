@@ -1,0 +1,85 @@
+in Admin Function, I need to have s new fuction to correct the negative / positive signs of variables
+Page - https://qa.carecode.org/qa1/faces/dataAdmin/admin_functions.xhtml
+
+Under Pharmacy Section
+I want a new button to correct the negatove / positive sign of Bill Values, BillFinanceDetail values, BillItem Values, BillItemFinanceDetails Value and Pharmaceutical Bill Item Values depending on the Bill Type
+
+First get all Bills entities and list of bill items and its related ones through billService.reload
+Iterate all bills fixing the sign
+get absolute value first and then negate
+can change only the sign, do not change any values
+do not change any other attribute
+
+
+
+
+BillTypeAtomic to list
+    PHARMACY_ISSUE("Pharmacy Transfer Issue", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
+    PHARMACY_ISSUE_CANCELLED("Pharmacy Transfer Issue Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
+    PHARMACY_ISSUE_RETURN("Pharmacy Transfer Issue returned", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
+    PHARMACY_DIRECT_ISSUE("Pharmacy Direct Issue", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyIssue),
+    PHARMACY_DIRECT_ISSUE_CANCELLED("Pharmacy Direct Issue Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyIssue),
+    PHARMACY_DISPOSAL_ISSUE("Pharmacy Disposal Issue", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyDisposalIssue),
+    PHARMACY_DISPOSAL_ISSUE_CANCELLED("Pharmacy Disposal Issue Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyDisposalIssue),
+    PHARMACY_DISPOSAL_ISSUE_RETURN("Pharmacy Disposal Issue returned", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyDisposalIssue),
+    PHARMACY_RECEIVE("Pharmacy Receive", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferReceive),
+    PHARMACY_RECEIVE_PRE("Pharmacy Receive Request", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferReceive),
+    PHARMACY_RECEIVE_CANCELLED("Pharmacy Receive Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyTransferReceive),
+
+How to correct
+
+**BillFinanceDetails \ BillTypeAtomic**	**Pharmacy Transfer Issue**	**Pharmacy Transfer Issue Cancelled**	**Pharmacy Transfer Issue Return**	**Pharmacy Direct Issue**	**Pharmacy Direct Issue Cancelled**	**Pharmacy Disposal Issue**	**Pharmacy Disposal Issue Cancelled**	**Pharmacy Disposal Issue Return**	**Pharmacy Receive**	**Pharmacy Receive Pre**	**Pharmacy Receive Cancelled**											
+**totalPurchaseValue**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalPurchaseValueFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalPurchaseValueNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalOfFreeItemValues**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalOfFreeItemValuesFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalOfFreeItemValuesNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalRetailSaleValue**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalRetailSaleValueFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalRetailSaleValueNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalWholesaleValue**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalWholesaleValueFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalWholesaleValueNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**lineGrossTotal**	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive											
+**billGrossTotal**	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive											
+**grossTotal**	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive											
+**lineNetTotal**	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive											
+**billNetTotal**	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive											
+**netTotal**	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive	Positive											
+																						
+**BillItem \ BillTypeAtomic**	**Pharmacy Transfer Issue**	**Pharmacy Transfer Issue Cancelled**	**Pharmacy Transfer Issue Return**	**Pharmacy Direct Issue**	**Pharmacy Direct Issue Cancelled**	**Pharmacy Disposal Issue**	**Pharmacy Disposal Issue Cancelled**	**Pharmacy Disposal Issue Return**	**Pharmacy Receive**	**Pharmacy Receive Pre**	**Pharmacy Receive Cancelled**											
+**netRate**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**grossValue**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**netValue**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+																						
+**Bill \ BillTypeAtomic**	**Pharmacy Transfer Issue**	**Pharmacy Transfer Issue Cancelled**	**Pharmacy Transfer Issue Return**	**Pharmacy Direct Issue**	**Pharmacy Direct Issue Cancelled**	**Pharmacy Disposal Issue**	**Pharmacy Disposal Issue Cancelled**	**Pharmacy Disposal Issue Return**	**Pharmacy Receive**	**Pharmacy Receive Pre**	**Pharmacy Receive Cancelled**											
+**total**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**netTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**billTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**grantTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**grnNetTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+																						
+**BillFinanceDetails \ BillTypeAtomic**	**Pharmacy Transfer Issue**	**Pharmacy Transfer Issue Cancelled**	**Pharmacy Transfer Issue Return**	**Pharmacy Direct Issue**	**Pharmacy Direct Issue Cancelled**	**Pharmacy Disposal Issue**	**Pharmacy Disposal Issue Cancelled**	**Pharmacy Disposal Issue Return**	**Pharmacy Receive**	**Pharmacy Receive Pre**	**Pharmacy Receive Cancelled**											
+**totalPurchaseValue**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalPurchaseValueFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalPurchaseValueNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalOfFreeItemValues**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalOfFreeItemValuesFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalOfFreeItemValuesNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalRetailSaleValue**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalRetailSaleValueFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalRetailSaleValueNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalWholesaleValue**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalWholesaleValueFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**totalWholesaleValueNonFree**	Negative	Positive	Positive	Negative	Positive	Negative	Positive	Positive	Positive	Positive	Negative											
+**lineGrossTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**billGrossTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**grossTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**lineNetTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**billNetTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+**netTotal**	Positive	Negative	Negative	Positive	Negative	Positive	Negative	Negative	Negative	Negative	Positive											
+																						
+																		
+																						
+																						

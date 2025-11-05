@@ -17,56 +17,65 @@
                         </f:facet>
                         <div class="row">
                             <div class="col-md-2">
-                                <h:panelGrid columns="1" class="mt-1">
-                                    <h:outputLabel value="From Date"/>
-                                    <p:datePicker 
-                                        styleClass="dateTimePicker" 
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}" 
-                                        showTime="true"                                           
-                                        showButtonBar="true"   
-                                        timeInput="true"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                    </p:datePicker>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:datePicker 
-                                        id="toDate" 
-                                        value="#{searchController.toDate}" 
-                                        showTime="true"                                            
-                                        showButtonBar="true"   
-                                        timeInput="true"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                    </p:datePicker>
-                                    <p:commandButton 
-                                        id="btnSearch" 
-                                        ajax="false" 
-                                        value="Search" 
-                                        class="w-100 mt-2 ui-button-warning" 
-                                        icon="fas fa-search"
-                                        action="#{searchController.createReturnBhtBills}"  />
-                                    <h:panelGrid columns="1" class="mt-2">
-                                        <h:outputLabel value="Sale Bill No"/>   
-                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />  
-                                        <h:outputLabel value="Return Bill No"/> 
-                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                        <h:outputLabel value="BHT No"/>
-                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
-                                        <h:outputLabel value="Patient Name"/>  
-                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                        <h:outputLabel value="Net Total"/>
-                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/> 
-                                    </h:panelGrid>
-                                </h:panelGrid>
+                                <h:outputLabel value="From Date"/>
+                                <p:datePicker 
+                                    id="fromDate"
+                                    value="#{searchController.fromDate}"
+                                    showTime="true"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    showButtonBar="true"
+                                    timeInput="true"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" > 
+                                </p:datePicker>
+
+                                <h:outputLabel value="To Date"/>
+                                <p:datePicker
+                                    id="toDate"
+                                    value="#{searchController.toDate}" 
+                                    showTime="true"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    showButtonBar="true"   
+                                    timeInput="true"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                </p:datePicker>
+
+                                <p:commandButton 
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search" 
+                                    class="w-100 mt-2 ui-button-warning" 
+                                    icon="fas fa-search"
+                                    action="#{searchController.createReturnBhtBills}">
+                                </p:commandButton>
+
+                                <h:outputLabel value="Sale Bill No" class="mt-3"/>   
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" class="w-100" />  
+                                <h:outputLabel value="Return Bill No"/> 
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100" />
+                                <h:outputLabel value="BHT No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100" />
+                                <h:outputLabel value="Patient Name"/>  
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
+                                <h:outputLabel value="Net Total"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/> 
+
                             </div>
+
                             <div class="col-md-10">
-                                <p:dataTable id="tblBills"
-                                             value="#{searchController.bills}"
-                                             var="bill"  
-                                             paginator="true"
-                                             paginatorPosition="bottom"
-                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             rowsPerPageTemplate="5,10,15"
-                                             size="10">
+                                <p:dataTable 
+                                    id="tblBills"
+                                    value="#{searchController.bills}"
+                                    var="bill"  
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,20,50"
+                                    rows="10">
+
                                     <p:column headerText="Sale Bill No" >                              
                                         <h:outputLabel value="#{bill.billedBill.deptId}" ></h:outputLabel>
                                     </p:column>  
@@ -83,7 +92,6 @@
                                         <h:outputLabel  value="#{bill.patientEncounter.patient.person.name}"  />
                                     </p:column>
 
-
                                     <p:column headerText="Item Return At"  >                               
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -96,7 +104,8 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>                             
-                                    </p:column>                 
+                                    </p:column>     
+                                    
                                     <p:column headerText="Item Return By" >                               
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>                                
@@ -106,13 +115,19 @@
                                             <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup>                             
-                                    </p:column>        
+                                    </p:column>  
+                                    
                                     <p:column>
-                                        <p:commandButton ajax="false" disabled="#{bill.checkActiveReturnCashBill() or bill.cancelled}" 
-                                                         icon="fas fa-eye" value="View Bill" action="pharmacy_reprint_bill_return_bht"  >
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            disabled="#{bill.checkActiveReturnCashBill() or bill.cancelled}" 
+                                            icon="fas fa-eye" 
+                                            value="View Bill" 
+                                            action="pharmacy_reprint_bill_return_bht?faces-redirect=true"  >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandButton>                                
                                     </p:column>
+
                                 </p:dataTable>
                             </div>
                         </div>

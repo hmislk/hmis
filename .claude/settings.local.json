@@ -56,9 +56,10 @@
       "Bash(gh pr merge:*)",
       "Read(/D:\\tmp/**)",
       "Read(/D:\\c/**)",
-      "Bash(gh workflow:*)"
-      "Read(/D:\\c/**)"
-      "Bash(git checkout:*)"
+      "Bash(gh workflow:*)",
+      "Read(/D:\\c/**)",
+      "Bash(git checkout:*)",
+      "Bash(javap:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

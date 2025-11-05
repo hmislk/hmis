@@ -87,6 +87,14 @@ public class LabTestHistoryController implements Serializable {
     public void addBarcodeGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
         addNewHistory(TestHistoryType.BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null);
     }
+    
+    public void addSampleSeparateAndCreateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
+        addNewHistory(TestHistoryType.SEPARATE_AND_BARCODE_GENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null);
+    }
+    
+    public void addSampleSeparate(PatientInvestigation patientInvestigation, PatientSample patientSample,String separateReason) {
+        addNewHistory(TestHistoryType.SAMPLE_SEPARATE, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, separateReason);
+    }
 
     public void addSampleReGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
         addNewHistory(TestHistoryType.BARCODE_REGENERATED, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null);
@@ -110,6 +118,14 @@ public class LabTestHistoryController implements Serializable {
 
     public void addSampleOutLabSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter, Department fromDepartment, Department toDepartment) {
         addNewHistory(TestHistoryType.SAMPLE_SENT_OUT_LAB, fromDepartment, toDepartment, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null, null);
+    }
+    
+    public void addSampleInternalLabSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter, Department fromDepartment, Department toDepartment) {
+        addNewHistory(TestHistoryType.SAMPLE_SENT_INTERNAL_LAB, fromDepartment, toDepartment, patientInvestigation, null, patientSample, sampleTransporter, null, null, null, null, null);
+    }
+    
+    public void addSampleRetrievingHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, String comment) {
+        addNewHistory(TestHistoryType.SAMPLE_RETRIEVING, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, comment);
     }
 
     public void addSampleReceiveHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {

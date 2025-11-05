@@ -17,17 +17,17 @@
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Summary Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
+<!--                                            <p:commandButton 
                                                 class="w-100 ui-button-secondary" 
                                                 ajax="false" 
                                                 style="text-align: left" 
                                                 value="OPD Income Report"
-                                                action="#{opdReportController.navigateToOpdIncomeReport()}"/>
+                                                action="#{opdReportController.navigateToOpdIncomeReport()}"/>-->
                                             <p:commandButton 
                                                 class="w-100 ui-button-success" 
                                                 ajax="false" 
                                                 style="text-align: left" 
-                                                value="OPD Income Report DTO"
+                                                value="OPD Income Report"
                                                 action="#{opdReportController.navigateToOpdIncomeReportDto()}"/>
                                              <p:commandButton 
                                                 class="w-100" 
@@ -62,7 +62,8 @@
                                             <p:commandButton class="w-100" ajax="false" value="Bill List" action="#{opdBillController.navigateToOpdBillList()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Bill Item List" action="#{opdBillController.navigateToOpdBillItemList()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Bill Payment List" action="#{opdBillController.navigateToOpdBillPayments()}" />
-                                            <p:commandButton 
+                                            <p:commandButton class="w-100" ajax="false" value="Cancellation Bill List" action="#{opdBillController.navigateToOpdCancellationBillList()}" />
+                                            <p:commandButton
                                                 class="w-100" ajax="false" value="OPD Sale Report"
                                                 action="#{searchController.navigateToOpdSaleReport()}" />
 
@@ -72,20 +73,33 @@
                                     <!-- Package Reports Tab -->
                                     <p:tab title="Item Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Itemized Sales Summary" 
-                                                action="#{searchController.navigateToItemizedSaleSummary}" />     
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Item-vice Sale Report" 
-                                                action="#{searchController.navigateToItemizedSaleReportOpd()}" /> 
-                                            <p:commandButton   
-                                                class="w-100"  
-                                                ajax="false" 
-                                                value="Income Breakdown by Category"  
+                                            <!-- DTO-OPTIMIZED VERSION: Recommended for performance -->
+                                            <p:commandButton
+                                                class="w-100 ui-button-success"
+                                                ajax="false"
+                                                icon="fa fa-rocket"
+                                                value="Itemized Sales Summary (Fast - Recommended)"
+                                                action="#{searchController.navigateToOptimizedItemizedSaleSummary}"
+                                                title="High-performance DTO-based report - Uses database aggregation for faster loading"/>
+
+                                            <!-- DEPRECATED: Entity-based version - will be removed after QA approval -->
+                                            <p:commandButton
+                                                class="w-100 ui-button-warning"
+                                                ajax="false"
+                                                icon="fa fa-exclamation-triangle"
+                                                value="Itemized Sales Summary (Deprecated)"
+                                                action="#{searchController.navigateToItemizedSaleSummary}"
+                                                title="Legacy entity-based report - Deprecated, will be removed after QA testing"/>
+
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Item-vice Sale Report"
+                                                action="#{searchController.navigateToItemizedSaleReportOpd()}" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Income Breakdown by Category"
                                                 action="#{searchController.navigateToIncomeBreakdownByCategoryOpd()}"/>
 
                                         </div>

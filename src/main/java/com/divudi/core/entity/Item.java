@@ -4,11 +4,11 @@
  */
 package com.divudi.core.entity;
 
-import com.divudi.core.converter.DepartmentTypeConverter;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBarcodeGenerationStrategy;
 import com.divudi.core.data.ItemType;
+import com.divudi.core.data.MeasurementType;
 import com.divudi.core.data.SessionNumberType;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -43,14 +42,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -172,7 +169,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     boolean requestForQuentity;
     boolean marginNotAllowed;
     private boolean printSessionNumber;
-    @Column
+    private boolean allowFractions = false;
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
@@ -184,6 +181,20 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     @Lob
     String comments;
     double vatPercentage;
+
+    @ManyToOne
+    private Category dosageForm;
+    @ManyToOne
+    private Item vtm;
+    @ManyToOne
+    private MeasurementUnit issueMultipliesUnit;
+    @ManyToOne
+    private MeasurementUnit minimumIssueQuantityUnit;
+    private Double strengthOfAnIssueUnit;
+    private Double issueMultipliesQuantity;
+    private Double minimumIssueQuantity;
+    @Enumerated(EnumType.STRING)
+    private MeasurementType issueType;
 
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
@@ -206,6 +217,10 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
     private Vmp vmp;
+    @ManyToOne
+    private Amp amp;
+    @ManyToOne
+    private Vmpp vmpp;
 
     @ManyToOne
     private Machine machine;
@@ -284,9 +299,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private String clazz;
 
     private boolean canRemoveItemfromPackage;
-    
+
     private boolean consideredForCosting = true;
-    
+
     private boolean refundsAllowed = false;
 
     public double getVatPercentage() {
@@ -990,6 +1005,22 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.vmp = vmp;
     }
 
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+
+    public Vmpp getVmpp() {
+        return vmpp;
+    }
+
+    public void setVmpp(Vmpp vmpp) {
+        this.vmpp = vmpp;
+    }
+
     public Date getEffectiveTo() {
         return effectiveTo;
     }
@@ -1466,6 +1497,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.alternativeReportAllowed = alternativeReportAllowed;
     }
 
+    public boolean isAllowFractions() {
+        return allowFractions;
+    }
+
+    public void setAllowFractions(boolean allowFractions) {
+        this.allowFractions = allowFractions;
+    }
+
     public String getReserveNumbersForFirstVisit() {
         return reserveNumbersForFirstVisit;
     }
@@ -1534,6 +1573,77 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setRefundsAllowed(boolean refundsAllowed) {
         this.refundsAllowed = refundsAllowed;
+    }
+
+    public MeasurementUnit getIssueMultipliesUnit() {
+        return issueMultipliesUnit;
+    }
+
+    public void setIssueMultipliesUnit(MeasurementUnit issueMultipliesUnit) {
+        this.issueMultipliesUnit = issueMultipliesUnit;
+    }
+
+    public MeasurementUnit getMinimumIssueQuantityUnit() {
+        return minimumIssueQuantityUnit;
+    }
+
+    public void setMinimumIssueQuantityUnit(MeasurementUnit minimumIssueQuantityUnit) {
+        this.minimumIssueQuantityUnit = minimumIssueQuantityUnit;
+    }
+
+    public Double getStrengthOfAnIssueUnit() {
+        return strengthOfAnIssueUnit;
+    }
+
+    public void setStrengthOfAnIssueUnit(Double strengthOfAnIssueUnit) {
+        this.strengthOfAnIssueUnit = strengthOfAnIssueUnit;
+    }
+
+//    public Double getIssueUnitsPerPackUnit() {
+//        return issueUnitsPerPackUnit;
+//    }
+//
+//    public void setIssueUnitsPerPackUnit(Double issueUnitsPerPackUnit) {
+//        this.issueUnitsPerPackUnit = issueUnitsPerPackUnit;
+//    }
+    public Double getIssueMultipliesQuantity() {
+        return issueMultipliesQuantity;
+    }
+
+    public void setIssueMultipliesQuantity(Double issueMultipliesQuantity) {
+        this.issueMultipliesQuantity = issueMultipliesQuantity;
+    }
+
+    public Double getMinimumIssueQuantity() {
+        return minimumIssueQuantity;
+    }
+
+    public void setMinimumIssueQuantity(Double minimumIssueQuantity) {
+        this.minimumIssueQuantity = minimumIssueQuantity;
+    }
+
+    public MeasurementType getIssueType() {
+        return issueType;
+    }
+
+    public void setIssueType(MeasurementType issueType) {
+        this.issueType = issueType;
+    }
+
+    public Category getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(Category dosageForm) {
+        this.dosageForm = dosageForm;
+    }
+
+    public Item getVtm() {
+        return vtm;
+    }
+
+    public void setVtm(Item vtm) {
+        this.vtm = vtm;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

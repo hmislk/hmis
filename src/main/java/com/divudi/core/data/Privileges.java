@@ -140,6 +140,8 @@ public enum Privileges {
     OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
+    LabSampleSeparate("Lab Sample Separate"),
+    LabSampleRetrieving("Receiving the Sent Sample"),
     LabReportFormatEditing("Lab Report Format Editing"),
     LabDataentry("Lab Data Entry"),
     LabAutherizing("Lab Authorizing"),
@@ -191,6 +193,10 @@ public enum Privileges {
     DashBoardReportSearch("DashBoard Report Search"),
     DashBoardPatientReportSearch("DashBoard Patient Report Search"),
     AccessLabTestHistory("Access Lab Test History"),
+    
+    DoctorDashBoardMenu("Doctor DashBoard Menu"),
+    
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -212,6 +218,7 @@ public enum Privileges {
     PharmacyOrderCancellation("Pharmacy Order Cancellation"),
     PharmacySaleWithoutStock("Pharmacy Sale Without Stock"),
     PharmacySaleReprint("Pharmacy Sale Reprint"),
+    PrintOriginalPharmacyBillFromReprint("Print Original Pharmacy Bill From Reprint"),
     PharmacySaleCancel("Pharmacy Sale Cancel"),
     PharmacySaleReturn("Pharmacy Sale Return"),
     // Wholesale
@@ -570,7 +577,15 @@ public enum Privileges {
     CreateGrnReturn("Create GRN Return"),
     FinalizeGrnReturn("Finalize GRN Return"),
     ApproveGrnReturn("Approve GRN Return"),
+    CreateDisposalReturn("Create Disposal Return"),
+    FinalizeDisposalReturn("Finalize Disposal Return"),
+    ApproveDisposalReturn("Approve Disposal Return"),
+    ViewDisposalReturn("View Disposal Return"),
+    CreateDirectPurchaseReturn("Create Direct Purchase Return"),
+    FinalizeDirectPurchaseReturn("Finalize Direct Purchase Return"),
+    ApproveDirectPurchaseReturn("Approve Direct Purchase Return"),
     ReturnWithoutRecipt("Return without Receipt"),
+    PharmacyReturnWithoutReceiptBill("Pharmacy Return Without Receipt Bill"),
     PharmacyGrnSave("Pharmacy GRN Save"),
     PharmacyGrnFinalize("Pharmacy GRN Finalize"),
     PharmacyGrnApprove("Pharmacy GRN Approve"),
@@ -650,6 +665,11 @@ public enum Privileges {
     AdminPrices("Admin Prices"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Approval">
+    BillCancelRequestApproval("Bill Cancel Request Approval"),
+    ItemRefundRequestApproval("Item Refund Request Approval"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Developers">
@@ -771,6 +791,7 @@ public enum Privileges {
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
             case AccessLabTestHistory:
+            case DoctorDashBoardMenu:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:
@@ -838,7 +859,15 @@ public enum Privileges {
             case CreateGrnReturn:
             case FinalizeGrnReturn:
             case ApproveGrnReturn:
+            case CreateDisposalReturn:
+            case FinalizeDisposalReturn:
+            case ApproveDisposalReturn:
+            case ViewDisposalReturn:
+            case CreateDirectPurchaseReturn:
+            case FinalizeDirectPurchaseReturn:
+            case ApproveDirectPurchaseReturn:
             case ReturnWithoutRecipt:
+            case PharmacyReturnWithoutReceiptBill:
             // Disbursement
             case PharmacyDisburesementMenu:
             case PharmacyDisbursementRequest:
@@ -936,6 +965,11 @@ public enum Privileges {
             case CollectingCentreReports:
             case ChangeCollectingCentre:
                 return "Collecting Centre";
+            
+            // Approval Privileges
+            case BillCancelRequestApproval:
+            case ItemRefundRequestApproval:
+                return "Approval";
                 
             default:
                 return this.toString();

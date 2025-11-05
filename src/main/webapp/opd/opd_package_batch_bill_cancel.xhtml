@@ -235,7 +235,7 @@
                                                     layout="block" 
                                                     id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{billPackageController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" class="w-100"/>
+                                                    <pa:multiple_payment_methods controller="#{billPackageController}" paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" class="w-100"/>
 
                                                 </h:panelGroup>
 

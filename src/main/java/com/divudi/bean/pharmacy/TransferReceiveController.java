@@ -64,6 +64,7 @@ public class TransferReceiveController implements Serializable {
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
+    @Deprecated
     private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
@@ -97,6 +98,8 @@ public class TransferReceiveController implements Serializable {
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+    @Inject
+    private com.divudi.bean.common.SearchController searchController;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
@@ -162,6 +165,11 @@ public class TransferReceiveController implements Serializable {
         fromDate = null;
         toDate = null;
         selectedBillItem = null;
+
+//        // Refresh the issued list data to show updated fullyIssued status
+//        if (searchController != null) {
+//            searchController.createIssueTable();
+//        }
     }
 
     public TransferReceiveController() {
@@ -318,14 +326,20 @@ public class TransferReceiveController implements Serializable {
         if (bill == null) {
             return false;
         }
-        
+
         // Get fresh data from the database to avoid caching issues
         Bill freshIssueBill = billFacade.find(bill.getId());
         if (freshIssueBill == null) {
             return false;
         }
-        
+
         List<BillItem> issueItems = billService.fetchBillItems(freshIssueBill);
+
+        // If there are no items in the issue, it cannot be "already received"
+        if (issueItems == null || issueItems.isEmpty()) {
+            return false;
+        }
+
         for (BillItem bi : issueItems) {
             double remainingQty = calculateRemainingQtyWithFreshData(bi);
             if (remainingQty > 0.001) { // Add small tolerance for floating point precision
@@ -455,8 +469,40 @@ public class TransferReceiveController implements Serializable {
             }
         }
 
-        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
-        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else {
+            // Use existing method for backward compatibility
+            deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+                insId = deptId;
+            }
+        }
+
+        getReceivedBill().setDeptId(deptId);
+        getReceivedBill().setInsId(insId);
 
         getReceivedBill().setInstitution(getSessionController().getInstitution());
         getReceivedBill().setDepartment(getSessionController().getDepartment());
@@ -625,9 +671,15 @@ public class TransferReceiveController implements Serializable {
 
         inputBill.setSaleValue(retailFree + retailNonFree);
         inputBill.setFreeValue(retailFree);
+
+        // Transfer receive represents money going out, so bill totals should be negative
         inputBill.setNetTotal(netTotal);
         inputBill.setGrantTotal(netTotal);
         inputBill.setTotal(netTotal);
+
+        // Also negate BillFinanceDetails totals to match
+        inputBill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(netTotal));
+        inputBill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(netTotal));
 
 
     }
@@ -909,9 +961,10 @@ public class TransferReceiveController implements Serializable {
         }
         
         fd.setLineGrossRate(grossRate);
-        
 
-        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+
+        // Transfer receive represents money going out, so totals should be negative
+        BigDecimal lineGrossTotal = grossRate.multiply(qty).negate();
         fd.setLineGrossTotal(lineGrossTotal);
         fd.setGrossTotal(lineGrossTotal);
 
@@ -994,7 +1047,8 @@ public class TransferReceiveController implements Serializable {
         BigDecimal grossRate = Optional.ofNullable(fd.getLineGrossRate()).orElse(determineTransferRate(ph.getItemBatch()).multiply(unitsPerPack));
         fd.setLineGrossRate(grossRate);
 
-        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+        // Transfer receive represents money going out, so totals should be negative
+        BigDecimal lineGrossTotal = grossRate.multiply(qty).negate();
         fd.setLineGrossTotal(lineGrossTotal);
         fd.setGrossTotal(lineGrossTotal);
 
@@ -1333,14 +1387,17 @@ public class TransferReceiveController implements Serializable {
         this.selectedBillItem = selectedBillItem;
     }
 
+    @Deprecated
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
     }
 
+    @Deprecated
     public void setShowAllBillFormats(boolean showAllBillFormats) {
         this.showAllBillFormats = showAllBillFormats;
     }
 
+    @Deprecated
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";

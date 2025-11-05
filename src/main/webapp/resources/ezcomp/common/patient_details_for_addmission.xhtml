@@ -55,7 +55,7 @@
 
 
                                 </p:selectBooleanButton>
-                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
+                                <p:commandButton id="btnDone" alt="Save Patient Details" ajax="true" process="ptImp" update="ptImp" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
                             </h:panelGroup>
 
                         </h:panelGroup>
@@ -296,7 +296,7 @@
                                             class="form-control w-100"
                                             value="#{cc.attrs.controller.patient.person.religion}">
                                             <f:selectItem itemLabel="Select Religion" />
-                                            <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
+                                            <f:selectItems value="#{clinicalEntityController.religion}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}"/>
 
                                         </p:selectOneMenu>

@@ -162,6 +162,13 @@
 
                         <div class="d-flex align-items-center mt-5">
                             <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
+                            <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
@@ -258,6 +265,9 @@
                                 <h:outputText value="#{f.retailRate * f.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                </f:facet>
                             </p:column>
 
                         </p:dataTable>

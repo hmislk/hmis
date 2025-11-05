@@ -1,2 +1,0 @@
-# pharmacy_search_pre_bill_for_return_item_only
-Source: `/pharmacy/pharmacy_search_pre_bill_for_return_item_only.xhtml`

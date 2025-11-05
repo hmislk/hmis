@@ -15,7 +15,6 @@
         <title >Interim Bill</title>
     </h:head>
 
-
     <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
@@ -25,37 +24,48 @@
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
                             <p:outputLabel value="Interim Bill" />
-
                         </f:facet>
 
                         <h:panelGrid columns="10">
-
                             <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true"
-                                             required="true" requiredMessage="Please select a patient"
-                                             value="#{bhtSummeryController.patientEncounter}"
-                                             completeMethod="#{admissionController.completePatientDishcargedNotFinalized}"
-                                             var="myItem" itemValue="#{myItem}"
-                                             itemLabel="#{myItem.bhtNo}"
-                                             size="30"
-                                             class="m-2">
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.name}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.currentPatientRoom.roomFacilityCharge.name}
-                                </p:column>
+                            <p:autoComplete  
+                                widgetVar="aPt" 
+                                id="acPt" 
+                                forceSelection="true"
+                                required="true" 
+                                requiredMessage="Please select a patient"
+                                value="#{bhtSummeryController.patientEncounter}"
+                                completeMethod="#{admissionController.completePatientDishcargedNotFinalized}"
+                                var="myItem" 
+                                itemValue="#{myItem}"
+                                itemLabel="#{myItem.bhtNo}"
+                                size="30"
+                                class="m-2">
 
+                                <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{myItem.patient.phn}"/>
+                                </p:column>
+                                <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{myItem.bhtNo}"/>
+                                </p:column>
+                                <p:column headerText="Patient" style="padding: 6px; width: 400px;">
+                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                    <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                    <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                                </p:column>
 
                             </p:autoComplete>
 
-                            <p:commandButton ajax="false"
-                                             value="Select"
-                                             class="ml-2"
-                                             action="#{bhtSummeryController.createIntrimBillTable()}" >
+                            <p:commandButton 
+                                ajax="false"
+                                value="Select"
+                                class="ml-2"
+                                action="#{bhtSummeryController.createIntrimBillTable()}" >
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -116,13 +126,9 @@
                                         value="#{bhtSummeryController.patientEncounter}"
                                         target="#{admissionController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
-
-
                             </div>
 
                         </f:facet>
-
-
 
                         <h:panelGrid columns="1" rendered="#{bhtSummeryController.patientEncounter eq null}">
                             Please select a BHT and Click Display Details
@@ -191,10 +197,6 @@
                                                 showTime="true"
                                                 showButtonBar="true"
                                                 timeInput="true">
-                                                <!--                                                <f:ajax execute="@this"
-                                                                                                        render="sum tvPt tot"
-                                                                                                        event="dateSelect"
-                                                                                                        listener="#{bhtSummeryController.checkDate}" />-->
                                             </p:datePicker>
                                         </h:panelGrid>
                                         <div class="d-flex justify-content-end my-2">
@@ -202,25 +204,30 @@
                                                 ajax="false"
                                                 style="float: right;"
                                                 value="Recalculate"
-                                                action="#{bhtSummeryController.createTables()}"  />
+                                                action="#{bhtSummeryController.createTables()}"  >
+                                            </p:commandButton>
+
                                             <p:commandButton
                                                 ajax="false"
                                                 rendered="false"
                                                 value="Add Vat"
                                                 class="mx-1"
-                                                action="#{bhtSummeryController.addVat}"  />
+                                                action="#{bhtSummeryController.addVat}">
+                                            </p:commandButton>
 
                                             <p:commandButton
                                                 ajax="false"
                                                 value="Discharge"
                                                 class="mx-1 ui-button-success"
-                                                action="#{bhtSummeryController.discharge}"  />
+                                                action="#{bhtSummeryController.discharge}"  >
+                                            </p:commandButton>
 
                                             <p:commandButton
                                                 ajax="false"
                                                 value="Discharge Cancel"
                                                 class=" ui-button-warning"
-                                                action="#{bhtSummeryController.dischargeCancel}"  />
+                                                action="#{bhtSummeryController.dischargeCancel}"  >
+                                            </p:commandButton>
                                         </div>
                                     </p:panel>
                                 </h:panelGrid>

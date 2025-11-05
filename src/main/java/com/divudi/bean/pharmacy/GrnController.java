@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -92,6 +93,8 @@ public class GrnController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
     /////////////////
     private Institution dealor;
     private Bill approveBill;
@@ -152,6 +155,20 @@ public class GrnController implements Serializable {
     }
 
     public String navigateToResive() {
+        // Check if there are existing unapproved GRNs for this purchase order
+        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
+            for (Bill existingGrn : getApproveBill().getListOfBill()) {
+                if (existingGrn != null && 
+                    existingGrn.getBillTypeAtomic() != null &&
+                    existingGrn.getBillTypeAtomic().toString().equals("PHARMACY_GRN_PRE") &&
+                    !existingGrn.isRetired() && 
+                    !existingGrn.isCancelled()) {
+                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
+                    return "";
+                }
+            }
+        }
+        
         clear();
         createGrn();
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -160,6 +177,20 @@ public class GrnController implements Serializable {
     }
 
     public String navigateToResiveWithSaveApprove() {
+        // Check if there are existing unapproved GRNs for this purchase order
+        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
+            for (Bill existingGrn : getApproveBill().getListOfBill()) {
+                if (existingGrn != null && 
+                    existingGrn.getBillTypeAtomic() != null &&
+                    existingGrn.getBillTypeAtomic().toString().equals("PHARMACY_GRN_PRE") &&
+                    !existingGrn.isRetired() && 
+                    !existingGrn.isCancelled()) {
+                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
+                    return "";
+                }
+            }
+        }
+        
         clear();
         createGrn();
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -1270,6 +1301,41 @@ public class GrnController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            // Normalize null to 0.0 for tmpQty to prevent NPE during modulus operation
+            Double tmpQtyValue = tmp.getTmpQty();
+            if (tmpQtyValue == null) {
+                tmp.setTmpQty(0.0);
+                tmpQtyValue = 0.0;
+            }
+
+            // Check quantity for decimal values
+            if (tmpQtyValue % 1 != 0) {
+                tmp.setTmpQty(0.0);
+                calGrossTotal();
+                calDifference();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+
+            // Normalize null to 0.0 for tmpFreeQty to prevent NPE during modulus operation
+            Double tmpFreeQtyValue = tmp.getTmpFreeQty();
+            if (tmpFreeQtyValue == null) {
+                tmp.setTmpFreeQty(0.0);
+                tmpFreeQtyValue = 0.0;
+            }
+
+            // Check free quantity for decimal values
+            if (tmpFreeQtyValue % 1 != 0) {
+                tmp.setTmpFreeQty(0.0);
+                calGrossTotal();
+                calDifference();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         setBatch(tmp);
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
 

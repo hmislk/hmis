@@ -10,6 +10,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.*;
 import com.divudi.core.entity.*;
+import com.divudi.core.util.BigDecimalUtil;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -45,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -112,6 +114,12 @@ public class TransferRequestController implements Serializable {
     private List<Department> recentToDepartments;
     // </editor-fold>
 
+    public String navigateToCreateANewTransferRequest() {
+        recreate();
+
+        return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
+    }
+
     public void recreate() {
         toDepartment = null;
         bill = null;
@@ -148,8 +156,6 @@ public class TransferRequestController implements Serializable {
             String user = b.getCreater().getWebUserPerson().getName();
             String billDate = (b != null ? CommonFunctions.getDateFormat(b.getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
             String billStatus = b.getStatus() == null ? "" : b.getStatus().toString();
-
-
 
             filledHeader = s.replace("{{from_dept}}", fromDepartment)
                     .replace("{{from_ins}}", fromInstitution)
@@ -244,14 +250,14 @@ public class TransferRequestController implements Serializable {
 
         updateFinancials(fd);
         getBillItems().add(bi);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        recalculateTransferRequestBillTotals();
 
         currentBillItem = null;
     }
 
     public void onEdit(BillItem tmp) {
         updateFinancials(tmp.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        recalculateTransferRequestBillTotals();
     }
 
     public void displayItemDetails(BillItem bi) {
@@ -290,6 +296,10 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items");
             return null;
         }
+        if (preBillToCreateApprovedBill == null) {
+            JsfUtil.addErrorMessage("No Pre Bill");
+            return null;
+        }
 
         newApprovedBill.copy(preBillToCreateApprovedBill);
 
@@ -305,21 +315,22 @@ public class TransferRequestController implements Serializable {
         newApprovedBill.setCreatedAt(new Date());
         newApprovedBill.setCreater(sessionController.getLoggedUser());
 
-        String requestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-                newApprovedBill.getDepartment(),
-                newApprovedBill.getToDepartment(),
-                BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-
         newApprovedBill.setBillDate(new Date());
         newApprovedBill.setBillTime(new Date());
-        newApprovedBill.setDeptId(requestId);
-        newApprovedBill.setInsId(requestId);
-        newApprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        newApprovedBill.setBillType(BillType.PharmacyTransferRequest);
+        //Always have to be the same as prebill
+        newApprovedBill.setInsId(preBillToCreateApprovedBill.getInsId());
+        newApprovedBill.setDeptId(preBillToCreateApprovedBill.getDeptId());
+
         newApprovedBill.setApproveAt(new Date());
+        newApprovedBill.setApproveUser(sessionController.getLoggedUser());
+
+        newApprovedBill.setChecked(true);
         newApprovedBill.setCheckedBy(sessionController.getLoggedUser());
         newApprovedBill.setCheckeAt(new Date());
-        newApprovedBill.setApproveUser(sessionController.getLoggedUser());
+
+        newApprovedBill.setCompleted(true);
+        newApprovedBill.setCompletedBy(sessionController.getLoggedUser());
+        newApprovedBill.setCompletedAt(new Date());
 
         if (newApprovedBill.getId() == null) {
             newApprovedBill.setCreater(sessionController.getLoggedUser());
@@ -344,19 +355,24 @@ public class TransferRequestController implements Serializable {
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(newApprovedBill, newApprovedBill.getBillItems());
         billFacade.edit(newApprovedBill);
 
-        if (preBillToCreateApprovedBill != null) {
-            preBillToCreateApprovedBill.setForwardReferenceBill(newApprovedBill);
-            preBillToCreateApprovedBill.setApproveUser(sessionController.getLoggedUser());
-            preBillToCreateApprovedBill.setApproveAt(new Date());
-            preBillToCreateApprovedBill.setReferenceBill(newApprovedBill);
-            billFacade.edit(preBillToCreateApprovedBill);
-            newApprovedBill.setReferenceBill(preBillToCreateApprovedBill);
-        }
+        preBillToCreateApprovedBill.setForwardReferenceBill(newApprovedBill);
+
+        preBillToCreateApprovedBill.setApproveUser(sessionController.getLoggedUser());
+        preBillToCreateApprovedBill.setApproveAt(new Date());
+        preBillToCreateApprovedBill.setReferenceBill(newApprovedBill);
+
+        preBillToCreateApprovedBill.setCompleted(true);
+        preBillToCreateApprovedBill.setCompletedAt(new Date());
+        preBillToCreateApprovedBill.setCompletedBy(sessionController.getLoggedUser());
+
+        billFacade.edit(preBillToCreateApprovedBill);
+        newApprovedBill.setReferenceBill(preBillToCreateApprovedBill);
 
         billFacade.edit(newApprovedBill);
         return newApprovedBill;
     }
 
+    @Deprecated
     public void request() {
         if (getBillItems() == null) {
             JsfUtil.addErrorMessage("No Item Selected to Request");
@@ -400,10 +416,43 @@ public class TransferRequestController implements Serializable {
             transferRequestBillPre.setForwardReferenceBill(getBill());
             getBill().setReferenceBill(transferRequestBillPre);
             getBillFacade().edit(getTransferRequestBillPre());
-        }
+        } else {
 
-        getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
+            boolean useDeptInsFormat = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+            boolean useInsFormat = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+            String deptId;
+            if (useDeptInsFormat) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else if (configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else if (useInsFormat) {
+                deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else {
+                deptId = getBillNumberBean().institutionBillNumberGenerator(
+                        getSessionController().getDepartment(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ);
+            }
+
+            String insId;
+            if (useInsFormat) {
+                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            } else if (useDeptInsFormat) {
+                insId = deptId;
+            } else {
+                insId = getBillNumberBean().institutionBillNumberGenerator(
+                        getSessionController().getInstitution(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ);
+            }
+
+            getBill().setDeptId(deptId);
+            getBill().setInsId(insId);
+        }
 
         getBill().setCreater(getSessionController().getLoggedUser());
         getBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -461,10 +510,6 @@ public class TransferRequestController implements Serializable {
     }
 
     public void saveTransferRequestPreBillAndBillItems() {
-        String requestPreBillId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-                getSessionController().getDepartment(),
-                getToDepartment(),
-                BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
         getTransferRequestBillPre().setToDepartment(getToDepartment());
@@ -486,8 +531,52 @@ public class TransferRequestController implements Serializable {
         if (getTransferRequestBillPre().getId() == null) {
             getBillFacade().create(getTransferRequestBillPre());
         }
-        getTransferRequestBillPre().setDeptId(requestPreBillId);
-        getTransferRequestBillPre().setInsId(requestPreBillId);
+
+        // Only generate bill numbers if they are blank
+        if (getTransferRequestBillPre().getDeptId() == null || getTransferRequestBillPre().getDeptId().trim().isEmpty()
+                || getTransferRequestBillPre().getInsId() == null || getTransferRequestBillPre().getInsId().trim().isEmpty()) {
+
+            boolean useDeptInsFormat = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+            boolean useInsFormat = configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number", false);
+
+            String legacyRequestId = null;
+            if (!useDeptInsFormat && !useInsFormat) {
+                legacyRequestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
+                        getSessionController().getDepartment(),
+                        getToDepartment(),
+                        BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+            }
+
+            String deptId;
+            if (useDeptInsFormat) {
+                deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+            } else if (configOptionApplicationController.getBooleanValueByKey(
+                    "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+            } else if (useInsFormat) {
+                deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+            } else {
+                deptId = legacyRequestId;
+            }
+
+            String insId;
+            if (useInsFormat) {
+                insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+            } else if (useDeptInsFormat) {
+                insId = deptId;
+            } else {
+                insId = legacyRequestId;
+            }
+
+            getTransferRequestBillPre().setDeptId(deptId);
+            getTransferRequestBillPre().setInsId(insId);
+        }
         getTransferRequestBillPre().setCreater(getSessionController().getLoggedUser());
         getTransferRequestBillPre().setCreatedAt(Calendar.getInstance().getTime());
         getBillFacade().edit(getTransferRequestBillPre());
@@ -537,11 +626,13 @@ public class TransferRequestController implements Serializable {
             return "";
         }
         billItems = fetchBillItems(getTransferRequestBillPre());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), billItems);
+        calculateBillTotalsFromItemsForTransferRequests(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
+    
+    
 
     public String navigateToApproveRequest() {
         Bill transferRequestBillTemp = transferRequestBillPre;
@@ -559,6 +650,18 @@ public class TransferRequestController implements Serializable {
         bill.copy(transferRequestBillPre);
         bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         bill.setBillType(BillType.PharmacyTransferRequest);
+        if (bill.getInstitution() == null) {
+            bill.setInstitution(sessionController.getInstitution());
+        }
+        if (bill.getDepartment() == null) {
+            bill.setDepartment(sessionController.getDepartment());
+        }
+        if (bill.getCreater() == null) {
+            bill.setCreater(sessionController.getLoggedUser());
+        }
+        if (bill.getCreatedAt() == null) {
+            bill.setCreatedAt(new Date());
+        }
         billItems = new ArrayList<>();
         for (BillItem requestItemInPreBill : getTransferRequestBillPre().getBillItems()) {
             BillItem newBillItemInApprovedRequest = new BillItem();
@@ -580,24 +683,54 @@ public class TransferRequestController implements Serializable {
         saveTransferRequestPreBillAndBillItems();
         getTransferRequestBillPre().setEditedAt(new Date());
         getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
+
         getTransferRequestBillPre().setCheckeAt(new Date());
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
+
+//        getTransferRequestBillPre().setApproveAt(new Date());
+//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
+//        getTransferRequestBillPre().setCompleted(true);
+//        getTransferRequestBillPre().setCompletedAt(new Date());
+//        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
-        boolean approvalIsNeeded = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transer Request With Approval", false);
-        if (!approvalIsNeeded) {
-            bill = createNewApprovedTransferRequestBill(
-                    getTransferRequestBillPre(),
-                    getTransferRequestBillPre().getBillItems(),
-                    new BilledBill()
-            );
-        } else {
-            bill = getTransferRequestBillPre();
-        }
+        bill = getTransferRequestBillPre();
 
         printPreview = true;
     }
+
+    // Commented out - No longer needed as approval is done via separate approval page
+    // This method was called from pharmacy_transfer_request.xhtml Approve button which has been removed
+//    public void approveTranserRequestPreBill() {
+//        if (errorsPresent()) {
+//            return;
+//        }
+//        saveTransferRequestPreBillAndBillItems();
+//        getTransferRequestBillPre().setEditedAt(new Date());
+//        getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setCheckeAt(new Date());
+//        getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setApproveAt(new Date());
+//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setCompleted(true);
+//        getTransferRequestBillPre().setCompletedAt(new Date());
+//        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
+//
+//        getBillFacade().edit(getTransferRequestBillPre());
+//        JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
+//
+//        bill = createNewApprovedTransferRequestBill(
+//                getTransferRequestBillPre(),
+//                getTransferRequestBillPre().getBillItems(),
+//                new BilledBill()
+//        );
+//
+//        printPreview = true;
+//    }
 
     public String processTransferRequest() {
         if (toDepartment == null) {
@@ -621,7 +754,7 @@ public class TransferRequestController implements Serializable {
         for (BillItem bi : getBillItems()) {
             bi.setSearialNo(serialNo++);
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        recalculateTransferRequestBillTotals();
 
     }
 
@@ -974,7 +1107,7 @@ public class TransferRequestController implements Serializable {
         }
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        recalculateTransferRequestBillTotals();
     }
 
     // ChatGPT contributed - Recalculate item totals when gross rate changes
@@ -985,7 +1118,7 @@ public class TransferRequestController implements Serializable {
 
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        recalculateTransferRequestBillTotals();
     }
 
     // ************************************
@@ -1002,7 +1135,7 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        recalculateTransferRequestBillTotals();
     }
 
     public void onCurrentLineGrossRateChange() {
@@ -1016,7 +1149,195 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        recalculateTransferRequestBillTotals();
+    }
+
+    private void recalculateTransferRequestBillTotals() {
+        if (transferRequestBillPre != null) {
+            calculateBillTotalsFromItemsForTransferRequests(transferRequestBillPre, getBillItems());
+        }
+        if (bill != null) {
+            calculateBillTotalsFromItemsForTransferRequests(bill, getBillItems());
+        }
+    }
+
+    private void calculateBillTotalsFromItemsForTransferRequests(Bill billForRequest, List<BillItem> requestBillItems) {
+        if (billForRequest == null) {
+            return;
+        }
+
+        List<BillItem> itemsToProcess = requestBillItems != null ? requestBillItems : new ArrayList<>();
+
+        int serialNo = 0;
+
+        BigDecimal billDiscount = BigDecimal.valueOf(billForRequest.getDiscount());
+        BigDecimal billExpense = BigDecimal.valueOf(billForRequest.getExpenseTotal());
+        BigDecimal billTax = BigDecimal.valueOf(billForRequest.getTax());
+        BigDecimal billCost = billDiscount.subtract(billExpense.add(billTax));
+
+        BigDecimal totalLineDiscounts = BigDecimal.ZERO;
+        BigDecimal totalLineExpenses = BigDecimal.ZERO;
+        BigDecimal totalLineCosts = BigDecimal.ZERO;
+        BigDecimal totalTaxLines = BigDecimal.ZERO;
+        BigDecimal totalFreeItemValue = BigDecimal.ZERO;
+        BigDecimal totalPurchase = BigDecimal.ZERO;
+        BigDecimal totalRetail = BigDecimal.ZERO;
+        BigDecimal totalWholesale = BigDecimal.ZERO;
+        BigDecimal totalQty = BigDecimal.ZERO;
+        BigDecimal totalFreeQty = BigDecimal.ZERO;
+        BigDecimal totalQtyAtomic = BigDecimal.ZERO;
+        BigDecimal totalFreeQtyAtomic = BigDecimal.ZERO;
+        BigDecimal grossTotal = BigDecimal.ZERO;
+        BigDecimal lineGrossTotalSum = BigDecimal.ZERO;
+        BigDecimal netTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotalSum = BigDecimal.ZERO;
+        BigDecimal totalDiscount = BigDecimal.ZERO;
+        BigDecimal totalExpense = BigDecimal.ZERO;
+        BigDecimal totalCost = BigDecimal.ZERO;
+        BigDecimal totalTax = BigDecimal.ZERO;
+
+        for (BillItem bi : itemsToProcess) {
+            if (bi == null) {
+                continue;
+            }
+
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+
+            if (pbi == null || f == null) {
+                continue;
+            }
+
+            bi.setSearialNo(serialNo++);
+
+            BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.valueOf(bi.getQty()));
+            BigDecimal grossRate = Optional.ofNullable(f.getLineGrossRate()).orElse(BigDecimal.ZERO);
+            BigDecimal netRate = Optional.ofNullable(f.getLineNetRate()).orElse(grossRate);
+
+            if (f.getLineGrossTotal() == null || f.getLineGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setLineGrossTotal(grossRate.multiply(qty));
+            }
+
+            if (f.getGrossTotal() == null || f.getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setGrossTotal(f.getLineGrossTotal());
+            }
+
+            if (f.getLineNetTotal() == null || f.getLineNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setLineNetTotal(f.getLineGrossTotal());
+            }
+
+            if (f.getNetTotal() == null || f.getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                f.setNetTotal(f.getLineNetTotal());
+            }
+
+            BigDecimal lineGrossTotal = Optional.ofNullable(f.getLineGrossTotal()).orElse(BigDecimal.ZERO);
+            BigDecimal lineNetTotal = Optional.ofNullable(f.getLineNetTotal()).orElse(lineGrossTotal);
+            BigDecimal netTotalForItem = Optional.ofNullable(f.getNetTotal()).orElse(lineNetTotal);
+
+            bi.setRate(netRate.doubleValue());
+            bi.setNetRate(netRate.doubleValue());
+            bi.setGrossValue(lineGrossTotal.doubleValue());
+            bi.setNetValue(lineNetTotal.doubleValue());
+
+            BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
+            BigDecimal qtyTotal = qty.add(freeQty);
+
+            BigDecimal costRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+            BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO);
+            BigDecimal wholesaleRate = Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO);
+
+            BigDecimal retailValue = retailRate.multiply(qtyTotal);
+            BigDecimal wholesaleValue = wholesaleRate.multiply(qtyTotal);
+            BigDecimal freeItemValue = costRate.multiply(freeQty);
+
+            totalLineDiscounts = totalLineDiscounts.add(Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO));
+            totalLineExpenses = totalLineExpenses.add(Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO));
+            totalTaxLines = totalTaxLines.add(Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO));
+            totalLineCosts = totalLineCosts.add(Optional.ofNullable(f.getLineCost()).orElse(BigDecimal.ZERO));
+            totalFreeItemValue = totalFreeItemValue.add(freeItemValue);
+            totalPurchase = totalPurchase.add(Optional.ofNullable(f.getGrossTotal()).orElse(lineGrossTotal));
+            totalRetail = totalRetail.add(retailValue);
+            totalWholesale = totalWholesale.add(wholesaleValue);
+            totalQty = totalQty.add(qty);
+            totalFreeQty = totalFreeQty.add(freeQty);
+            totalQtyAtomic = totalQtyAtomic.add(Optional.ofNullable(f.getQuantityByUnits()).orElse(BigDecimal.ZERO));
+            totalFreeQtyAtomic = totalFreeQtyAtomic.add(Optional.ofNullable(f.getFreeQuantityByUnits()).orElse(BigDecimal.ZERO));
+            grossTotal = grossTotal.add(lineNetTotal);
+            lineGrossTotalSum = lineGrossTotalSum.add(lineGrossTotal);
+            netTotal = netTotal.add(netTotalForItem);
+            lineNetTotalSum = lineNetTotalSum.add(lineNetTotal);
+            totalDiscount = totalDiscount.add(Optional.ofNullable(f.getTotalDiscount()).orElse(BigDecimal.ZERO));
+            totalExpense = totalExpense.add(Optional.ofNullable(f.getTotalExpense()).orElse(BigDecimal.ZERO));
+            totalCost = totalCost.add(Optional.ofNullable(f.getTotalCost()).orElse(BigDecimal.ZERO));
+            totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
+
+            if (pbi != null) {
+                if (f.getValueAtPurchaseRate() != null) {
+                    pbi.setPurchaseValue(f.getValueAtPurchaseRate().doubleValue());
+                }
+                if (f.getValueAtRetailRate() != null) {
+                    pbi.setRetailValue(f.getValueAtRetailRate().doubleValue());
+                }
+            }
+        }
+
+        billForRequest.setTotal(BigDecimalUtil.valueOrZero(grossTotal).doubleValue());
+        billForRequest.setNetTotal(BigDecimalUtil.valueOrZero(netTotal).doubleValue());
+        billForRequest.setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
+
+        BillFinanceDetails bfd = billForRequest.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(billForRequest);
+            billForRequest.setBillFinanceDetails(bfd);
+        }
+
+        bfd.setBillDiscount(billDiscount);
+        bfd.setBillExpense(billExpense);
+        bfd.setBillTaxValue(billTax);
+        bfd.setBillCostValue(billCost);
+        bfd.setLineDiscount(totalLineDiscounts);
+        bfd.setLineExpense(totalLineExpenses);
+        bfd.setItemTaxValue(totalTaxLines);
+        bfd.setLineCostValue(totalLineCosts);
+        bfd.setTotalDiscount(totalDiscount);
+        bfd.setTotalExpense(totalExpense);
+        bfd.setTotalTaxValue(totalTax);
+
+        BigDecimal sumCostFromItems = BigDecimal.ZERO;
+        BigDecimal sumPurchaseFromItems = BigDecimal.ZERO;
+        BigDecimal sumRetailFromItems = BigDecimal.ZERO;
+        for (BillItem it : itemsToProcess) {
+            if (it == null || it.getBillItemFinanceDetails() == null) {
+                continue;
+            }
+            BillItemFinanceDetails fd = it.getBillItemFinanceDetails();
+            sumCostFromItems = sumCostFromItems.add(Optional.ofNullable(fd.getValueAtCostRate()).orElse(BigDecimal.ZERO));
+            sumPurchaseFromItems = sumPurchaseFromItems.add(Optional.ofNullable(fd.getValueAtPurchaseRate()).orElse(BigDecimal.ZERO));
+            sumRetailFromItems = sumRetailFromItems.add(Optional.ofNullable(fd.getValueAtRetailRate()).orElse(BigDecimal.ZERO));
+
+            if (it.getPharmaceuticalBillItem() != null) {
+                if (fd.getValueAtPurchaseRate() != null) {
+                    it.getPharmaceuticalBillItem().setPurchaseValue(fd.getValueAtPurchaseRate().doubleValue());
+                }
+                if (fd.getValueAtRetailRate() != null) {
+                    it.getPharmaceuticalBillItem().setRetailValue(fd.getValueAtRetailRate().doubleValue());
+                }
+            }
+        }
+
+        bfd.setTotalCostValue(sumCostFromItems);
+        bfd.setTotalOfFreeItemValues(totalFreeItemValue);
+        bfd.setTotalPurchaseValue(sumPurchaseFromItems);
+        bfd.setTotalRetailSaleValue(sumRetailFromItems);
+        bfd.setTotalWholesaleValue(totalWholesale);
+        bfd.setTotalQuantity(totalQty);
+        bfd.setTotalFreeQuantity(totalFreeQty);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQtyAtomic);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(totalFreeQtyAtomic);
+        bfd.setGrossTotal(grossTotal);
+        bfd.setLineGrossTotal(lineGrossTotalSum);
+        bfd.setNetTotal(netTotal);
+        bfd.setLineNetTotal(lineNetTotalSum);
     }
 
     private BigDecimal determineTransferRate(Item item) {

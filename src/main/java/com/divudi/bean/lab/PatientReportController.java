@@ -446,6 +446,16 @@ public class PatientReportController implements Serializable {
         m.put("pi", pi);
         return getFacade().findByJpql(j, m);
     }
+    
+    public List<PatientReport> allPatientReportsInBill(Bill bill) {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation.billItem.bill=:bi "
+                + " and r.retired =:ret";
+        Map m = new HashMap();
+        m.put("bi", bill);
+        m.put("ret", false);
+        return getFacade().findByJpql(j, m);
+    }
 
     public List<PatientReport> approvedPatientReports(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
@@ -1595,27 +1605,27 @@ public class PatientReportController implements Serializable {
 
         String template = configOptionApplicationController.getLongTextValueByKey("Custom SMS Body Massage for Lab Report");
         if (!template.equalsIgnoreCase("")) {
-            smsBody = replaceReporSMSBody(template,r,url);
+            smsBody = replaceReporSMSBody(template, r, url);
         } else {
             smsBody = "Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready. " + url;
         }
         return smsBody;
     }
-    
+
     public String replaceReporSMSBody(String template, PatientReport patientReport, String url) {
         String output;
         String processedTemplate = template.replace("\\n", "\n");
         String location = "";
-        if("CC".equalsIgnoreCase(patientReport.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc())){
+        if ("CC".equalsIgnoreCase(patientReport.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc())) {
             location = patientReport.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getName();
-        }else{
+        } else {
             location = patientReport.getPatientInvestigation().getBillItem().getBill().getDepartment().getPrintingName();
         }
         output = processedTemplate
                 .replace("{patient_name}", patientReport.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle())
                 .replace("{patient_report}", patientReport.getPatientInvestigation().getInvestigation().getName())
                 .replace("{report_url}", url)
-                .replace("{collecting_location}",location );
+                .replace("{collecting_location}", location);
         return output;
     }
 
@@ -2051,6 +2061,7 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
+        
         if (currentPatientReport.getDataEntered() == false) {
             JsfUtil.addErrorMessage("First Save report");
             return;
@@ -2065,6 +2076,16 @@ public class PatientReportController implements Serializable {
         if (!tbm.isFlag()) {
             JsfUtil.addErrorMessage(tbm.getMessage());
             return;
+        }
+
+        boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
+        if (authorized) {
+            if (currentPatientReport.getPatientInvestigation().getInvestigation().getStaff() != null) {
+                if (!(sessionController.getLoggedUser().getStaff().getId().equals(currentPatientReport.getPatientInvestigation().getInvestigation().getStaff().getId()))) {
+                    JsfUtil.addErrorMessage("You can't access to Approve this Report");
+                    return;
+                }
+            }
         }
 
         getCurrentPtIx().setApproved(true);
@@ -2380,6 +2401,11 @@ public class PatientReportController implements Serializable {
         currentPtIx.setCancelledAt(Calendar.getInstance().getTime());
         currentPtIx.setCancelledUser(getSessionController().getLoggedUser());
         currentPtIx.setCancellDepartment(getSessionController().getDepartment());
+        
+        currentPtIx.setApproveAt(null);
+        currentPtIx.setApproveDepartment(null);
+        currentPtIx.setApproveUser(null);
+        
         getPiFacade().edit(currentPtIx);
         currentPatientReport.setApproved(Boolean.FALSE);
         currentPatientReport.setApproveUser(null);
@@ -2656,7 +2682,10 @@ public class PatientReportController implements Serializable {
         List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(pi);
         if (pscs != null) {
             for (PatientSampleComponant psc : pscs) {
-                sampleIDs += psc.getPatientSample().getIdStr() + " ";
+                if (!psc.getPatientSample().getSampleRejected()) {
+                    sampleIDs += psc.getPatientSample().getIdStr() + " ";
+                }
+
             }
         }
         return createNewPatientReport(pi, ix, sampleIDs);

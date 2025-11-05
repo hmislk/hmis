@@ -28,7 +28,7 @@ for (Stock stock : stocks) {
 **✅ CORRECT APPROACH:**
 ```java
 // DO THIS - Direct DTO query from database
-String sql = "SELECT new com.divudi.core.data.dto.StockDTO("
+String jpql = "SELECT new com.divudi.core.data.dto.StockDTO("
     + "s.id, "
     + "s.itemBatch.item.name, "
     + "s.itemBatch.item.code, "
@@ -39,8 +39,84 @@ String sql = "SELECT new com.divudi.core.data.dto.StockDTO("
     + "s.itemBatch.purcahseRate, "
     + "s.itemBatch.wholesaleRate) "
     + "FROM Stock s WHERE ...";
-List<StockDTO> dtos = (List<StockDTO>) facade.findLightsByJpql(sql, params);
+
+// 🚨 CRITICAL: Use findLightsByJpql() with cast for DTO constructor queries
+List<StockDTO> dtos = (List<StockDTO>) facade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 ```
+
+### 2a. Navigation Pattern: Use IDs and Names Instead of Entity References
+
+**🚨 CRITICAL PATTERN for Navigation Support:**
+
+When DTOs need to support navigation (e.g., clicking on a row to view details), use **IDs and String names** instead of full entity references.
+
+**❌ WRONG - Including entity objects in DTOs:**
+```java
+public class OpdSaleSummaryDTO {
+    private Category category;  // Don't do this - defeats DTO purpose
+    private Item item;          // Don't do this - loads entity graph
+    private String itemName;
+    private Double total;
+}
+```
+
+**✅ CORRECT - Use IDs and names for navigation:**
+```java
+public class OpdSaleSummaryDTO {
+    private Long categoryId;      // For navigation
+    private String categoryName;  // For display
+    private Long itemId;          // For navigation
+    private String itemName;      // For display
+    private Double total;
+
+    // Constructor for JPQL query
+    public OpdSaleSummaryDTO(Long categoryId, String categoryName,
+                              Long itemId, String itemName, Double total) {
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.total = total;
+    }
+}
+```
+
+**JPQL Query Pattern:**
+```java
+String jpql = "SELECT new com.divudi.core.data.dto.OpdSaleSummaryDTO("
+    + "bi.item.category.id, "           // Category ID for navigation
+    + "bi.item.category.name, "         // Category name for display
+    + "bi.item.id, "                    // Item ID for navigation
+    + "bi.item.name, "                  // Item name for display
+    + "sum(bi.netValue)) "              // Aggregated data
+    + "FROM BillItem bi "
+    + "WHERE ... "
+    + "GROUP BY bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name";
+
+List<OpdSaleSummaryDTO> dtos = (List<OpdSaleSummaryDTO>) facade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+```
+
+**Navigation Controller Pattern:**
+```java
+// In controller - load full entity only when navigating
+public String navigateToDetails(OpdSaleSummaryDTO dto) {
+    // Load full entities only when needed for detail page
+    if (dto.getCategoryId() != null) {
+        this.category = categoryFacade.find(dto.getCategoryId());
+    }
+    if (dto.getItemId() != null) {
+        this.item = itemFacade.find(dto.getItemId());
+    }
+    return "/detail_page?faces-redirect=true";
+}
+```
+
+**Benefits:**
+- ✅ DTOs remain lightweight (no entity graph loading)
+- ✅ Navigation still works (using IDs to load entities on demand)
+- ✅ Display names available without entity access
+- ✅ Database aggregation stays efficient
+- ✅ Memory footprint minimized
 
 ### 3. Safe Entity Property Changes
 When changing controller properties from entities to DTOs:
@@ -122,12 +198,44 @@ Direct DTO queries provide:
 ### 8. Example: StockSearchService Reference
 See `StockSearchService.findStockDtos()` method for the correct pattern of direct DTO querying.
 
+### 9. CRITICAL: Correct Facade Method for DTO Constructor Queries
+
+**🚨 ALWAYS use `findLightsByJpql()` with explicit cast for DTO constructor queries:**
+
+```java
+// ✅ CORRECT - DTO constructor query
+String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
+    + "i.bill.billTypeAtomic.label, "
+    + "sum(i.pharmaceuticalBillItem.qty)) "
+    + "FROM BillItem i "
+    + "WHERE ... "
+    + "GROUP BY i.bill.billTypeAtomic.label";
+
+// MUST use findLightsByJpql() with cast
+salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+```
+
+**❌ WRONG facade methods for DTO constructor queries:**
+```java
+// DON'T USE THESE for DTO constructor queries:
+facade.findByJpql(jpql, params)           // Wrong return type
+facade.findAggregates(jpql, params)       // For Object[] results only
+facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Date parameters
+```
+
+**Why `findLightsByJpql()` is required:**
+- Optimized for lightweight objects (DTOs)
+- Handles constructor queries correctly
+- Supports temporal parameters for Date/Timestamp filtering
+- Returns properly typed collections
+
 ## Common Pitfalls to Avoid
 1. **Changing existing constructor signatures** → Compilation errors in dependent code
 2. **Converting entities to DTOs in loops** → Performance degradation
-3. **Removing entity properties used by business logic** → Runtime failures  
-4. **Not using `findLightsByJpql()`** → Missing DTO optimization
-5. **Forgetting to handle null entity relationships** → NullPointerExceptions in queries
+3. **Removing entity properties used by business logic** → Runtime failures
+4. **Using wrong facade method for DTO queries** → `findByJpql()` instead of `findLightsByJpql()`
+5. **Missing explicit cast** → Type safety issues with DTO constructor queries
+6. **Forgetting to handle null entity relationships** → NullPointerExceptions in queries
 
 ## Navigation-Level DTO/Entity Selection
 When implementing dual DTO/Entity approach:

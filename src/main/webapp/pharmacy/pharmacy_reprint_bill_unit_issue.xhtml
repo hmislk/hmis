@@ -6,56 +6,171 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
-
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <div class="d-flex justify-content-between">
-                                <h:outputLabel value="Reprint Pre Bill" />
-                                <div class="d-flex">
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        class="ui-button-danger"
-                                        icon="fa fa-cancel"
-                                        value="To Cancel" 
-                                        action="pharmacy_cancel_bill_unit_issue" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                            <div class="row">
+                                <div class="col-4">
+                                    <h:outputLabel value="Reprint Pre Bill" />
+                                </div>
+                                <div class="col-4">
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary mx-1"
+                                        onclick="PF('disposalIssueConfigDialog').show();" />
+                                    <h:panelGroup 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Cancellation is allowed', false)}" >
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            class="ui-button-danger"
+                                            icon="fa fa-cancel"
+                                            value="To Cancel" 
+                                            action="pharmacy_cancel_bill_unit_issue?faces-redirect=true" 
+                                            disabled="#{pharmacyBillSearch.bill.cancelled}">   
+                                            <f:setPropertyActionListener value="false" target="#{pharmacyBillSearch.printPreview}"/>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <h:panelGroup 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Returns are allowed', true)}" >
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="To Return" 
+                                            class="mx-2 ui-button-danger"
+                                            icon="fa fa-money-bill-wave"
+                                            action="#{issueReturnController.navigateToReturnDisposalIssueBill(pharmacyBillSearch.bill)}"   
+                                            disabled="#{pharmacyBillSearch.bill.cancelled eq true}"  >                                
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                    <p:commandButton
+                                        accesskey="n"
+                                        value="New Disposal Issue Bill"
+                                        icon="pi pi-plus"
+                                        class="ui-button-warning mx-1"
+                                        ajax="false"
+                                        action="/pharmacy/pharmacy_issue?faces-redirect=true"
+                                        actionListener="#{pharmacyIssueController.resetAll()}" >
                                     </p:commandButton>
-                                    
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="To Return" 
-                                        class="mx-2 ui-button-warning"
-                                        icon="fa fa-money-bill-wave"
-                                        action="pharmacy_bill_return_issue?faces-redirect=true"   
-                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true}"  >                                
-                                        <f:setPropertyActionListener 
-                                            value="#{pharmacyBillSearch.bill}" 
-                                            target="#{issueReturnController.bill}"  />
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        icon="fa fa-print"
-                                        class="ui-button-info"
-                                        value="Reprint" 
+                                </div>
+                                <div class="col-4">
+                                    <p:commandButton
+                                        accesskey="p"
+                                        id="btnPrint"
+                                        icon="pi pi-print"
+                                        class="ui-button-success mx-1 float-end"
+                                        value="Reprint"
                                         ajax="false" >
-                                        <p:printer target="gpBillPreview" />
+                                        <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
                                 </div>
                             </div>
-
                         </f:facet>
-
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:consumptionIssue bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                            <ph:pharmacy_issue_receipt
+                                duplicate="true"
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Disposal Issue Receipt is A4 Paper',true)}"
+                                bill="#{pharmacyBillSearch.bill}"/>
+                            <ph:pharmacy_issue_receipt_custom_1
+                                duplicate="true"
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Disposal Issue Receipt is Custom 1',false)}"
+                                bill="#{pharmacyBillSearch.bill}"/>
+                            <ph:pharmacy_issue_receipt_custom_2
+                                duplicate="true"
+                                rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Disposal Issue Receipt is Custom 2',false)}"
+                                bill="#{pharmacyBillSearch.bill}"/>
                         </h:panelGroup>
-
+                        <div class="row">
+                            <div class="col-12">
+                                <h:panelGroup 
+                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Cancellation is allowed', false)}" >
+                                    <p:outputLabel value="Disposal Cancellation is Disabled by Configuration - Pharmacy Disposal Cancellation is allowed" ></p:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup 
+                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Returns are allowed', true)}" >
+                                    <p:outputLabel value="Disposal Returns are Disabled by Configuration - Pharmacy Disposal Returns are allowed" ></p:outputLabel>
+                                </h:panelGroup>
+                            </div>
+                        </div>
                     </p:panel>
+
+                    <!-- Disposal Issue Configuration Dialog -->
+                    <p:dialog id="disposalIssueConfigDialog"
+                              header="Disposal Issue Printer Configuration"
+                              widgetVar="disposalIssueConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="400"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="disposalIssueConfigForm" />
+
+                        <h:form id="disposalIssueConfigForm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> Disposal Issue Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="disposalIssueA4"
+                                                    value="#{pharmacyConfigController.disposalIssueA4Paper}" />
+                                                <p:outputLabel for="disposalIssueA4" value="A4 Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Standard A4 paper format for disposal issue receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="disposalIssueCustom1"
+                                                    value="#{pharmacyConfigController.disposalIssueCustom1}" />
+                                                <p:outputLabel for="disposalIssueCustom1" value="Custom Format 1" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 1 for disposal issue receipts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="disposalIssueCustom2"
+                                                    value="#{pharmacyConfigController.disposalIssueCustom2}" />
+                                                <p:outputLabel for="disposalIssueCustom2" value="Custom Format 2" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Custom format 2 for disposal issue receipts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="disposalIssueConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyConfigController.saveDisposalIssueConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('disposalIssueConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
 
                 </h:form>
             </ui:define>

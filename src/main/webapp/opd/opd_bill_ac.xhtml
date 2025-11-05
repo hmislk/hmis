@@ -7,8 +7,7 @@
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:c="http://java.sun.com/jsp/jstl/core"
-      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -1057,7 +1056,7 @@
                                                 value="#{opdBillController.paymentMethod}"
                                                 >     
                                                 <f:selectItems 
-                                                    value="#{enumController.paymentMethodsForOpdBilling}"  
+                                                    value="#{configOptionController.paymentMethodsForOpdBilling}"  
                                                     var="pm"
                                                     itemLabel="#{pm.label}"
                                                     itemValue="#{pm}"/>
@@ -1252,7 +1251,7 @@
                                                 >
                                                 <pa:multiple_payment_methods 
                                                     controller="#{opdBillController}" 
-                                                    paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" 
+                                                    paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" 
                                                     class="w-100"/>
 
                                             </h:panelGroup>

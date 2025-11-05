@@ -372,6 +372,11 @@
                                                 </h:panelGroup>
                                             </h:panelGrid>
                                         </p:tooltip>
+                                        
+                                        <h:panelGroup rendered="#{bill.currentRequest ne null}">
+                                            <p:badge value="#{bill.currentRequest.status.label}" severity="warning" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
+                                        
                                     </p:column>
 
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}"

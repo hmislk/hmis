@@ -69,7 +69,7 @@
                             font-family: "Trebuchet MS", sans-serif !important;
                             line-height: 1.2;
                         }
-                        
+
                         .hospital-details {
                             font-family: "Trebuchet MS", sans-serif !important;
                         }
@@ -80,7 +80,7 @@
                             font-family: "Trebuchet MS", sans-serif !important;
                             line-height: 1.2;
                         }
-                        
+
                         .total-table th,
                         .total-table td {
                             font-family: "Trebuchet MS", sans-serif !important;
@@ -232,6 +232,34 @@
                     </h:panelGroup>
                 </table>
                 <br/>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr style="font-size: 11pt;">
+                                <td style="border: 1px solid #545454; padding-left: 5px;">Pay Type</td>
+                                <td style="text-align: end; border: 1px solid #545454; padding-right: 5px;"> Amount</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="ps" >
+                                <tr>
+                                    <td style="text-align: left; border : 1px solid #545454; padding-left: 5px; ">
+                                        <h:outputText style="font-size: 10pt;"  value="#{ps.paymentMethod}"/>
+                                        <h:outputText style="font-size: 10pt;"  value=" (#{ps.creditCardRefNo})" rendered="#{ps.paymentMethod eq 'Card'}"/>
+                                    </td>
+                                    <td style="text-align: right!important; border : 1px solid #545454; padding-right: 5px;">
+                                        <h:outputText style="font-size: 10pt;" value="#{ps.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                    </table>
+
+                </h:panelGroup>
+
 
                 <!-- Separator Line -->
                 <div class="separator"></div>

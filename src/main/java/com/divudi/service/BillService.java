@@ -70,6 +70,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -598,6 +599,7 @@ public class BillService {
         jpql = "SELECT bi "
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
                 + " order by bi.id";
         params.put("bl", b);
         return billItemFacade.findByJpql(jpql, params);
@@ -688,6 +690,7 @@ public class BillService {
         jpql = "SELECT count(bi) "
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
                 + " order by bi.id";
         params.put("bl", b);
         return billItemFacade.findLongByJpql(jpql, params);
@@ -758,6 +761,19 @@ public class BillService {
             }
         }
     }
+    public List<Payment> fetchBillPaymentsFromBillId(Long billId) {
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill.id=:billId "
+                + "order by p.id";
+        params.put("billId", billId);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+    
 
     public List<Payment> fetchBillPayments(Bill bill) {
         List<Payment> fetchingBillComponents;
@@ -1041,7 +1057,161 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+    
+    public List<BillLight> fetchBillDtos(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme);
+    }
+    
+    
+    
+    public List<BillLight> fetchBillDtos(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select new com.divudi.core.light.common.BillLight( b.id, b.billTypeAtomic, b.netTotal ) "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }else{
+            jpql += " and b.paymentScheme is null";
+        }
+        
+
+        jpql += " order by b.createdAt desc  ";
+        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+
+    /**
+     * Fetches BillLight objects with comprehensive financial details including stock values.
+     * Used for pharmacy reports that require cost, purchase, and retail sale values.
+     */
+    public List<BillLight> fetchBillLightsWithFinanceDetails(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select new com.divudi.core.light.common.BillLight("
+                + " b.id, "
+                + " b.billTypeAtomic, "
+                + " b.total, "
+                + " b.netTotal, "
+                + " b.discount, "
+                + " b.margin, "
+                + " b.serviceCharge, "
+                + " coalesce(bfd.totalCostValue, 0.0), "
+                + " coalesce(bfd.totalPurchaseValue, 0.0), "
+                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                + " b.paymentMethod, "
+                + " b.patientEncounter "
+                + ") "
+                + " from Bill b "
+                + " left join b.billFinanceDetails bfd "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc ";
+
+        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
 
@@ -1333,6 +1503,12 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc";
+
+        // Debug logging
+        System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
+        System.out.println("JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+        System.out.println("========================================================");
 
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -1669,10 +1845,13 @@ public class BillService {
 
         List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
 
+        // Updated to use new constructor with IDs for navigation support
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
-                + " coalesce(bi.item.category.name, 'No Category'),"
-                + " coalesce(bi.item.name, 'No Item'),"
-                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end),"
+                + " bi.item.category.id,"  // Category ID for navigation
+                + " coalesce(bi.item.category.name, 'No Category'),"  // Category name for display
+                + " bi.item.id,"  // Item ID for navigation
+                + " coalesce(bi.item.name, 'No Item'),"  // Item name for display
+                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end),"  // Count
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.hospitalFee else bi.hospitalFee end),"
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.staffFee else bi.staffFee end),"
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.grossValue else bi.grossValue end),"
@@ -1713,7 +1892,8 @@ public class BillService {
             params.put("itm", item);
         }
 
-        jpql += " group by bi.item.category.name, bi.item.name"
+        // Group by IDs and names for proper aggregation with navigation support
+        jpql += " group by bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name"
                 + " order by bi.item.category.name, bi.item.name";
 
         return (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
