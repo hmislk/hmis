@@ -798,7 +798,7 @@ public class PharmacyIssueController implements Serializable {
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
-//            return;
+//            return 0.0;
 //        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
@@ -822,8 +822,10 @@ public class PharmacyIssueController implements Serializable {
 
         calTotal();
 
+        // Create a new billItem for the next iteration in multi-batch mode
+        Double currentQty = getQty();
         clearBillItem();
-        return getQty();
+        return currentQty;
     }
 
     public void addBillItemMultipleBatches() {
@@ -866,6 +868,9 @@ public class PharmacyIssueController implements Serializable {
 
         if (getQty() <= getStock().getStock()) {
             Double thisTimeAddingQty = addBillItemSingleItem();
+            if (thisTimeAddingQty == null || thisTimeAddingQty == 0.0) {
+                return;
+            }
             if (thisTimeAddingQty >= requestedQty) {
                 return;
             } else {
@@ -875,12 +880,22 @@ public class PharmacyIssueController implements Serializable {
         } else {
             qty = getStock().getStock();
             Double thisTimeAddingQty = addBillItemSingleItem();
+            if (thisTimeAddingQty == null || thisTimeAddingQty == 0.0) {
+                return;
+            }
             addedQty += thisTimeAddingQty;
             remainingQty = remainingQty - thisTimeAddingQty;
         }
 
+        // Only proceed with multiple batches if we need more quantity
+        if (remainingQty <= 0) {
+            return;
+        }
+
         List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
         for (Stock s : availableStocks) {
+            // Initialize billItem for each iteration since clearBillItem() sets it to null
+            getBillItem(); // This will create a new BillItem if null
             stock = s;
             if (remainingQty < s.getStock()) {
                 qty = remainingQty;
@@ -888,11 +903,14 @@ public class PharmacyIssueController implements Serializable {
                 qty = s.getStock();
             }
             Double thisTimeAddingQty = addBillItemSingleItem();
+            if (thisTimeAddingQty == null || thisTimeAddingQty == 0.0) {
+                continue; // Skip this stock and try the next one
+            }
             addedQty += thisTimeAddingQty;
             remainingQty = remainingQty - thisTimeAddingQty;
 
             if (remainingQty <= 0) {
-                return;
+                break; // Exit the loop when we have enough quantity
             }
         }
         if (addedQty < requestedQty) {
