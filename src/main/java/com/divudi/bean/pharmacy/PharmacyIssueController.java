@@ -730,8 +730,18 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private boolean checkItemBatch() {
+        if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null ||
+            getBillItem().getPharmaceuticalBillItem().getStock() == null) {
+            return false;
+        }
+
         for (BillItem bItem : getPreBill().getBillItems()) {
-            if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
+            if (bItem == null || bItem.getPharmaceuticalBillItem() == null ||
+                bItem.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(),
+                              getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
                 return true;
             }
         }
@@ -784,6 +794,10 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
 
+        // Set the stock early so checkItemBatch() can access it
+        billItem.getPharmaceuticalBillItem().setStock(stock);
+        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+
         if (checkItemBatch()) {
             JsfUtil.addErrorMessage("Already added this item batch");
             return 0.0;
@@ -802,8 +816,6 @@ public class PharmacyIssueController implements Serializable {
 //        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        billItem.getPharmaceuticalBillItem().setStock(stock);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
 
         calculateBillItem();
 
