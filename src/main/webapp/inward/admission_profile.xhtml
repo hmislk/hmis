@@ -16,14 +16,29 @@
             <p:panel >
                 <f:facet name="header" >
                     <h:outputText styleClass="fa fa-id-card"/>
-                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2"/>
-                    <p:commandButton 
-                        value="Back to Search Admission" 
-                        action="#{admissionController.navigateToSearchAdmissions()}" 
-                        style="float: right;"
-                        class="ui-button-warning"
-                        icon="fa fa-arrow-left">
-                    </p:commandButton>
+                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="mt-2"/>
+
+                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                        <p:commandButton 
+                            value="Back to Search Admission" 
+                            action="#{admissionController.navigateToSearchAdmissions()}" 
+                            style="float: right;"
+                            class="ui-button-warning"
+                            icon="fa fa-arrow-left">
+                        </p:commandButton>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                        <p:commandButton 
+                            value="Back to WorkBench" 
+                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                            style="float: right;"
+                            class="ui-button-warning"
+                            icon="fa fa-arrow-left">
+                        </p:commandButton>
+                    </h:panelGroup>
+
+
                 </f:facet>
                 <div class="row" >
                     <div class="col-3" >
@@ -466,7 +481,7 @@
                                         value="#{null}" 
                                         target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
-                                 <p:commandButton 
+                                <p:commandButton 
                                     value="Pharmacy Issue Summary (DTO - Fast)" 
                                     action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto()}" 
                                     icon="fa fa-rocket"

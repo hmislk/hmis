@@ -84,13 +84,32 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
     
     @Inject
     RoomController roomController;
+    @Inject
+    AdmissionController admissionController;
 
     private List<PatientRoomDTO> roomList;
+    
+    
+    public String navigateToAdmissionProfilePage(Long admissionId) {
+        Admission admission = (Admission) patientEncounterFacade.find(admissionId);
+        
+        if(admission == null){
+            JsfUtil.addErrorMessage("No Admission Found");
+            return "";
+        }
+        admissionController.setCurrent(admission);
+        return admissionController.navigateToAdmissionProfilePage();
+    }
+    
 
     public String navigatetoNursingWorkBench() {
         // Load Room Details
         getPatientRooms();
 
+        return "/nurse/index?faces-redirect=true";
+    }
+    
+    public String navigateToBackNursingWorkBench() {
         return "/nurse/index?faces-redirect=true";
     }
 
@@ -102,7 +121,6 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
 
         for (Room r : rooms) {
             PatientEncounter p = null;
-            System.out.println("r = " + r.getName());
 
             PatientRoomDTO prDTO = new PatientRoomDTO();
 
@@ -123,13 +141,10 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
             roomList.add(prDTO);
 
         }
-        System.out.println("rooms = " + rooms.size());
-        System.out.println("roomList = " + roomList.size());
         return roomList;
     }
 
     public PatientEncounter getPatientEncounterFromRoom(Room patientRoom) {
-        System.out.println("patientRoom = " + patientRoom.getId());
         String jpql = "select p from "
                 + " PatientEncounter p "
                 + " where p.discharged =:discharged "
@@ -140,13 +155,6 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
         params.put("room", patientRoom);
 
         PatientEncounter current = patientEncounterFacade.findFirstByJpql(jpql, params);
-
-        if (current != null) {
-            System.out.println("current = " + current.getId());
-            System.out.println("patientRoom = " + current.getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
-        }else{
-            System.out.println(patientRoom.getName()+ " has no Patient");
-        }
 
         return current;
     }
