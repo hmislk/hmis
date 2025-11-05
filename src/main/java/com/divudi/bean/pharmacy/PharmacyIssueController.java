@@ -134,6 +134,8 @@ public class PharmacyIssueController implements Serializable {
     private PharmacyCostingService pharmacyCostingService;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private StockController stockController;
 
     @EJB
     private CashTransactionBean cashTransactionBean;
@@ -737,32 +739,41 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void addBillItem() {
+        if (configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy disposal issue", true)) {
+            addBillItemMultipleBatches();
+        } else {
+            addBillItemSingleItem();
+        }
+        setActiveIndex(1);
+    }
+
+    public Double addBillItemSingleItem() {
         errorMessage = null;
 
         editingQty = null;
 
         if (billItem == null) {
-            return;
+            return 0.0;
         }
         if (billItem.getPharmaceuticalBillItem() == null) {
-            return;
+            return 0.0;
         }
 
         if (getToDepartment() == null) {
             errorMessage = "Please Select To Department";
             JsfUtil.addErrorMessage("Please Select To Department");
-            return;
+            return 0.0;
         }
 
         if (getStock() == null) {
             errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
             JsfUtil.addErrorMessage("Please Enter Item");
-            return;
+            return 0.0;
         }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
             JsfUtil.addErrorMessage("Please enter a quentity");
-            return;
+            return 0.0;
         }
 
         Stock fetchStock = getStockFacade().find(getStock().getId());
@@ -770,18 +781,18 @@ public class PharmacyIssueController implements Serializable {
         if (getQty() > fetchStock.getStock()) {
             errorMessage = "No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
-            return;
+            return 0.0;
         }
 
         if (checkItemBatch()) {
             JsfUtil.addErrorMessage("Already added this item batch");
-            return;
+            return 0.0;
         }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
-            return;
+            return 0.0;
         }
 
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
@@ -812,7 +823,82 @@ public class PharmacyIssueController implements Serializable {
         calTotal();
 
         clearBillItem();
-        setActiveIndex(1);
+        return getQty();
+    }
+
+    public void addBillItemMultipleBatches() {
+        errorMessage = null;
+        editingQty = null;
+
+        if (billItem == null) {
+            return;
+        }
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+
+        if (getToDepartment() == null) {
+            errorMessage = "Please Select To Department";
+            JsfUtil.addErrorMessage("Please Select To Department");
+            return;
+        }
+
+        if (getStock() == null) {
+            errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
+            JsfUtil.addErrorMessage("Please Enter Item");
+            return;
+        }
+        if (getQty() == null) {
+            errorMessage = "Please enter a quentity";
+            JsfUtil.addErrorMessage("Please enter a quentity");
+            return;
+        }
+        if (getQty() == 0.0) {
+            errorMessage = "Please enter a quentity";
+            JsfUtil.addErrorMessage("Quentity Zero?");
+            return;
+        }
+
+        Stock userSelectedStock = stock;
+        double requestedQty = getQty();
+        double addedQty = 0.0;
+        double remainingQty = getQty();
+
+        if (getQty() <= getStock().getStock()) {
+            Double thisTimeAddingQty = addBillItemSingleItem();
+            if (thisTimeAddingQty >= requestedQty) {
+                return;
+            } else {
+                addedQty += thisTimeAddingQty;
+                remainingQty = remainingQty - thisTimeAddingQty;
+            }
+        } else {
+            qty = getStock().getStock();
+            Double thisTimeAddingQty = addBillItemSingleItem();
+            addedQty += thisTimeAddingQty;
+            remainingQty = remainingQty - thisTimeAddingQty;
+        }
+
+        List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
+        for (Stock s : availableStocks) {
+            stock = s;
+            if (remainingQty < s.getStock()) {
+                qty = remainingQty;
+            } else {
+                qty = s.getStock();
+            }
+            Double thisTimeAddingQty = addBillItemSingleItem();
+            addedQty += thisTimeAddingQty;
+            remainingQty = remainingQty - thisTimeAddingQty;
+
+            if (remainingQty <= 0) {
+                return;
+            }
+        }
+        if (addedQty < requestedQty) {
+            errorMessage = "Quantity is not Enough...!";
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) + " is Available from the Requested Quantity");
+        }
     }
 
     public void calTotal() {
