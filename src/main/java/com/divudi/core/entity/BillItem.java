@@ -63,9 +63,10 @@ public class BillItem implements Serializable, RetirableEntity {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Prescription prescription;
 
+    //Kown Typo, can not correct because of backword compatability issues
     double Rate;
     double discountRate;
     double marginRate;
@@ -87,7 +88,7 @@ public class BillItem implements Serializable, RetirableEntity {
     private double otherFee;
     private double reagentFee;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private BillItemFinanceDetails billItemFinanceDetails;
 
 //    private double dblValue;
@@ -156,6 +157,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private Department peformedDepartment;
     @Lob
     private String instructions;
+    
+    private boolean consideredForCosting = true;
 
 //    @Transient
     int searialNo;
@@ -279,6 +282,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present
         if (billItem.getBillItemFinanceDetails() != null) {
@@ -286,6 +290,50 @@ public class BillItem implements Serializable, RetirableEntity {
             clonedFinanceDetails.setBillItem(this);
             this.setBillItemFinanceDetails(clonedFinanceDetails);
         }
+    }
+
+    public void copyWithPharmaceuticalAndFinancialData(BillItem billItem) {
+        item = billItem.getItem();
+        sessionDate = billItem.getSessionDate();
+        patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
+        inwardChargeType = billItem.getInwardChargeType();
+        agentRefNo = billItem.getAgentRefNo();
+        item = billItem.getItem();
+        qty = billItem.getQty();
+        descreption = billItem.getDescreption();
+        billTime = billItem.getBillTime();
+        grossValue = billItem.getGrossValue();
+        netValue = billItem.getNetValue();
+        discount = billItem.getDiscount();
+        adjustedValue = billItem.getAdjustedValue();
+        discountRate = billItem.getDiscountRate();
+        staffFee = billItem.getStaffFee();
+        hospitalFee = billItem.getHospitalFee();
+        otherFee = billItem.getOtherFee();
+        reagentFee = billItem.getReagentFee();
+        Rate = billItem.getRate();
+        marginRate = billItem.getMarginRate();
+        netRate = billItem.getNetRate();
+        searialNo = billItem.getSearialNo();
+        tmpQty = billItem.tmpQty;
+        referenceBill = billItem.getReferenceBill();
+        marginValue = billItem.getMarginValue();
+        priceMatrix = billItem.getPriceMatrix();
+        agentRefNo = billItem.getAgentRefNo();
+        vat = billItem.getVat();
+        vatPlusNetValue = billItem.getVatPlusNetValue();
+        collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
+
+        BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
+        clonedFinanceDetails.setBillItem(this);
+        this.setBillItemFinanceDetails(clonedFinanceDetails);
+        
+        PharmaceuticalBillItem clonedPharmaceuticalBillItem = new PharmaceuticalBillItem();
+        clonedPharmaceuticalBillItem.copy(billItem.getPharmaceuticalBillItem());
+        clonedPharmaceuticalBillItem.setBillItem(this);
+        this.setPharmaceuticalBillItem(clonedPharmaceuticalBillItem);
     }
 
     public void copyWithoutFinancialData(BillItem billItem) {
@@ -305,6 +353,7 @@ public class BillItem implements Serializable, RetirableEntity {
 //        marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
+        consideredForCosting = billItem.isConsideredForCosting();
     }
 
     public void resetValue() {
@@ -342,10 +391,11 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItem.getQty() != null) {
             qty = 0 - billItem.getQty();
         }
-        Rate = 0 - billItem.getRate();
+        // Rates should remain positive - they are unit prices, not values
+        Rate = billItem.getRate();
         discount = 0 - billItem.getDiscount();
-        netRate = 0 - billItem.getNetRate();
-        marginRate = 0 - billItem.getMarginRate();
+        netRate = billItem.getNetRate();
+        marginRate = billItem.getMarginRate();
         grossValue = 0 - billItem.getGrossValue();
         marginValue = 0 - billItem.getMarginValue();
         netValue = 0 - billItem.getNetValue();
@@ -364,9 +414,10 @@ public class BillItem implements Serializable, RetirableEntity {
         if (getQty() != null) {
             qty = 0 - getQty();
         }
-        Rate = 0 - getRate();
+        // Rates should remain positive - they are unit prices, not values
+        // Rate = 0 - getRate(); // Do not invert rates
         discount = 0 - getDiscount();
-        netRate = 0 - getNetRate();
+        // netRate = 0 - getNetRate(); // Do not invert rates
         grossValue = 0 - getGrossValue();
         marginValue = 0 - getMarginValue();
         netValue = 0 - getNetValue();
@@ -754,6 +805,7 @@ public class BillItem implements Serializable, RetirableEntity {
         this.tmpSuggession = tmpSuggession;
     }
 
+    @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public double getTmpQty() {
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
             return tmpQty / getItem().getDblValue();
@@ -762,6 +814,7 @@ public class BillItem implements Serializable, RetirableEntity {
         }
     }
 
+    @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public void setTmpQty(double tmpQty) {
         qty = tmpQty;
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
@@ -1133,6 +1186,7 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItemFinanceDetails == null) {
             billItemFinanceDetails = new BillItemFinanceDetails();
             billItemFinanceDetails.setBillItem(this);
+            billItemFinanceDetails.setCreatedAt(new Date());
         }
         return billItemFinanceDetails;
     }
@@ -1142,6 +1196,14 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItemFinanceDetails != null && billItemFinanceDetails.getBillItem() != this) {
             billItemFinanceDetails.setBillItem(this);
         }
+    }
+
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
+
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
     }
 
 }

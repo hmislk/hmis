@@ -35,6 +35,12 @@
                                     <p:inputText class="form-control" value="#{staffController.current.person.name}"></p:inputText>
 
 
+
+
+
+                                    <p:outputLabel value="Code"></p:outputLabel>
+                                    <p:inputText class="form-control" value="#{staffController.current.code}"></p:inputText>
+
                                     <p:outputLabel value="NIC / Passport"></p:outputLabel>
                                     <p:inputText  class="form-control" value="#{staffController.current.person.nic}"></p:inputText>
 
@@ -83,6 +89,15 @@
 
                             <p:tab title="Employment Details" >
                                 <p:panelGrid columns="2" class="w-100" layout="tabular">
+
+                                    <p:outputLabel value="Status"></p:outputLabel>
+                                    <p:selectOneMenu class="form-control"  value="#{staffController.current.employeeStatus}">
+                                        <f:selectItem itemLabel="Please select a speciality"/>
+                                        <f:selectItems value="#{enumController.employmentStatuses}" var="es" itemLabel="#{es}" itemValue="#{es}" />
+                                    </p:selectOneMenu>
+                                    
+                                     <p:outputLabel value="Date Joined"></p:outputLabel>
+                                     <p:calendar class="form-control"  value="#{staffController.current.dateJoined}"></p:calendar>
 
                                     <p:outputLabel value="Registration"></p:outputLabel>
                                     <p:inputText  class="form-control" value="#{staffController.current.registration}"></p:inputText>
@@ -179,9 +194,9 @@
 
                                     <p:outputLabel value="Annual Welfare Utilized"></p:outputLabel>
                                     <p:inputText  readonly="true" 
-                                        class="form-control text-danger text-end"  value="#{staffController.current.annualWelfareUtilized}" ></p:inputText>
+                                                  class="form-control text-danger text-end"  value="#{staffController.current.annualWelfareUtilized}" ></p:inputText>
 
-                                    
+
 
                                 </p:panelGrid>
 

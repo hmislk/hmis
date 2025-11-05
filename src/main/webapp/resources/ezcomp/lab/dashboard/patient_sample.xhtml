@@ -158,7 +158,7 @@
                             style="max-width: 100%">
                             <f:selectItem itemLabel="Any"></f:selectItem>
                             <f:selectItems 
-                                value="#{departmentController.getInstitutionDepartments(laboratoryManagementController.performingInstitution)}" 
+                                value="#{departmentController.getInstitutionLabDepartments(laboratoryManagementController.performingInstitution)}" 
                                 var="pdpt"
                                 itemLabel="#{pdpt.name}" 
                                 itemValue="#{pdpt}">
@@ -229,11 +229,14 @@
                                 action="#{billSearch.navigateToViewOpdBill()}">
                                 <f:setPropertyActionListener value="#{ps.bill}" target="#{billSearch.bill}"/>
                             </p:commandLink>
-
+                            <br/>
                             <h:outputLabel value="#{ps.bill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                             </h:outputLabel>
                             <br/>
+                            <h:panelGroup rendered="#{ps.bill.patientEncounter ne null}">
+                                <h:outputLabel style="color: #0d6efd;" value="#{ps.bill.patientEncounter.bhtNo}"/>
+                            </h:panelGroup>
 
                         </p:column>
 
@@ -482,20 +485,6 @@
                         id="sampleSend"
                         rendered="#{webUserController.hasPrivilege('LabSampleSending')}">
 
-                        <p:autoComplete 
-                            completeMethod="#{staffController.completeStaff}"
-                            value="#{laboratoryManagementController.sampleTransportedToLabByStaff}" 
-                            var="mys" 
-                            class="w-100 mt-2" 
-                            maxResults="15"
-                            inputStyleClass="form-control"
-                            itemLabel="#{mys.person.nameWithTitle}" 
-                            panelStyleClass="custom-dropdown-panel"
-                            itemValue="#{mys}">
-                            <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
-                            <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
-                        </p:autoComplete>
-
                         <div class="d-flex gap-2 mt-2">
                             <p:commandButton 
                                 value="Pending to Send"
@@ -524,13 +513,11 @@
                                 styleClass="ui-button-secondary">
                             </p:commandButton>
                             <p:commandButton 
-                                value="Send"
-                                ajax="false"
-                                action="#{laboratoryManagementController.sendSamplesToLab()}"
-                                title="Send to Lab"
+                                value="To Sent" 
+                                type="button" 
                                 style="width: 11em;"
-                                icon="pi pi-external-link"
-                                styleClass="ui-button-warning" >
+                                icon="fa fa-paper-plane"
+                                onclick="PF('dlg2').show()">
                             </p:commandButton>
                         </div>
 
@@ -542,6 +529,22 @@
                         id="sampleReceive" 
                         rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}"
                         >
+                        <div class="d-flex gap-2">
+                            <p:selectOneMenu
+                                filter="true"
+                                value="#{laboratoryManagementController.sampleReceiveFromDepartment}"
+                                filterMatchMode="contains"
+                                id="receiveSampleDept"
+                                class="w-100 mb-2">
+                                <f:selectItem itemLabel="Select From Department"></f:selectItem>
+                                <f:selectItems 
+                                    value="#{departmentController.listAllLabDepartments()}" 
+                                    var="odpt" 
+                                    itemLabel="#{odpt.name}" 
+                                    itemValue="#{odpt}">
+                                </f:selectItems>
+                            </p:selectOneMenu>
+                        </div>
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 value="Non Received Samples"
@@ -613,6 +616,60 @@
                             styleClass="mt-2  w-100 ui-button-danger" >
                         </p:commandButton>
                     </h:panelGroup>
+
+                    <p:dialog header="Sent Sample" widgetVar="dlg2" width="600" showEffect="fade" modal="true" closeOnEscape="true">
+                        <div>
+                            <div class="d-flex gap-3 my-2">
+                                <h:outputLabel class="w-50 mt-2" value="Sample Transporter"/>
+                                <p:autoComplete 
+                                    completeMethod="#{staffController.completeStaff}"
+                                    value="#{laboratoryManagementController.sampleTransportedToLabByStaff}" 
+                                    var="mys" 
+                                    class="w-100 mt-2" 
+                                    maxResults="15"
+                                    placeholder="Please Add a Transporter"
+                                    inputStyleClass="form-control"
+                                    itemLabel="#{mys.person.nameWithTitle}" 
+                                    panelStyleClass="custom-dropdown-panel"
+                                    itemValue="#{mys}">
+                                    <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
+                                    <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                </p:autoComplete>
+                            </div>
+
+                            <div class="d-flex gap-3 my-2">
+                                <h:outputLabel class="w-50 mt-2" value="Sending to Department"/>
+                                <p:selectOneMenu
+                                    filter="true"
+                                    value="#{laboratoryManagementController.sampleSendingDepartment}"
+                                    filterMatchMode="contains"
+                                    id="sendSampleDept"
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Any"></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{departmentController.listAllLabDepartments()}" 
+                                        var="odpt" 
+                                        itemLabel="#{odpt.name}" 
+                                        itemValue="#{odpt}">
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div >
+                                <p:commandButton
+                                    id="sendSamples"
+                                    style="float: right;"
+                                    value="Send Samples"
+                                    ajax="false"
+                                    action="#{laboratoryManagementController.sendSamplesToLab()}"
+                                    title="Send Samples"
+                                    icon="fa fa-paper-plane"
+                                    styleClass="m-1 ui-button-info" >
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </p:dialog>
+
                 </div>
             </div>
         </h:panelGroup>

@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.AppointmentController;
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
@@ -48,6 +49,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
@@ -59,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -117,6 +120,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     BhtSummeryController bhtSummeryController;
     @Inject
     ClinicalFindingValueController clinicalFindingValueController;
+    @Inject
+    AppointmentController appointmentController;
 
     ////////////////////////////
     ///////////////////////
@@ -163,6 +168,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private PaymentMethod paymentMethod;
     private boolean admittingProcessStarted;
+    private Reservation latestfoundReservation;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -289,6 +295,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
+    public boolean onRoomFacilityChargeSelected() {
+        List<Reservation> foundReservations = appointmentController.checkAppointmentsForRoom(patientRoom.getRoomFacilityCharge());
+        System.out.println("foundReservations = " + foundReservations.size());
+        if (foundReservations == null || foundReservations.isEmpty()) {
+            latestfoundReservation = new Reservation();
+            return false;
+        } else {
+            latestfoundReservation = foundReservations.get(0);
+            String warnMessage = "You have an upcoming reservation for this room from " + CommonFunctions.getDateFormat(latestfoundReservation.getReservedFrom(), sessionController.getApplicationPreference().getLongDateFormat()) + " to " + CommonFunctions.getDateFormat(latestfoundReservation.getReservedTo(), sessionController.getApplicationPreference().getLongDateFormat());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", warnMessage));
+            return true;
+        }
+    }
+
     public void admissionPaymentMethodChange() {
         if (current.getPaymentMethod() == PaymentMethod.Credit) {
             isPatientHaveALastUsedCreditCompany(current.getPatient());
@@ -296,10 +316,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Checks if the given patient has a previous non-retired admission with a credit payment method and sets the last used credit company.
+     * Checks if the given patient has a previous non-retired admission with a
+     * credit payment method and sets the last used credit company.
      *
      * @param p the patient to check for previous credit admissions
-     * @return true if a previous credit admission exists and the last credit company is set; false otherwise
+     * @return true if a previous credit admission exists and the last credit
+     * company is set; false otherwise
      */
     public boolean isPatientHaveALastUsedCreditCompany(Patient p) {
         if (p == null) {
@@ -328,12 +350,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Retrieves the most recent credit-based admission for the current patient and populates the current encounter's credit companies list with associated institutions and credit limits.
+     * Retrieves the most recent credit-based admission for the current patient
+     * and populates the current encounter's credit companies list with
+     * associated institutions and credit limits.
      *
-     * If the current patient has a previous admission with credit payment, copies each linked, non-retired credit company to the current encounter and accumulates their credit limits.
+     * If the current patient has a previous admission with credit payment,
+     * copies each linked, non-retired credit company to the current encounter
+     * and accumulates their credit limits.
      */
     public void findLastUsedCreditCompanies() {
-        if(configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient",false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient", false)) {
             if (current.getPatient() == null) {
                 return;
             }
@@ -380,11 +406,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Returns a list of discharged credit admissions with outstanding credit balances matching the given query.
+     * Returns a list of discharged credit admissions with outstanding credit
+     * balances matching the given query.
      *
-     * The query matches against BHT number, patient name, or credit company name. Only admissions with a positive credit balance, payment method set to credit, and not retired are included.
+     * The query matches against BHT number, patient name, or credit company
+     * name. Only admissions with a positive credit balance, payment method set
+     * to credit, and not retired are included.
      *
-     * @param qry the search string to match against BHT number, patient name, or credit company name
+     * @param qry the search string to match against BHT number, patient name,
+     * or credit company name
      * @return a list of matching admissions with outstanding credit balances
      */
     public List<Admission> completeBhtCredit(String qry) {
@@ -865,6 +895,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //        return suggestions;
 //    }
     public List<Admission> completePatientDishcargedNotFinalized(String query) {
+        System.out.println("completePatientDishcargedNotFinalized");
         List<Admission> suggestions;
         String sql;
         HashMap h = new HashMap();
@@ -873,12 +904,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         } else {
             sql = "select c from Admission c where c.retired=false and "
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
-                    + " and ( ((c.bhtNo) like :q )or ((c.patient.person.name)"
-                    + " like :q) ) order by c.bhtNo";
-            ////// // System.out.println(sql);
-            //      h.put("btp", BillType.InwardPaymentBill);
+                    + " and ( ((c.bhtNo) like :q )"
+                    + " or ((c.patient.person.name) like :q ) "
+                    + " or ((c.patient.phn =:phn ))) order by c.bhtNo";
+
             h.put("q", "%" + query.toUpperCase() + "%");
+            h.put("phn",query.toUpperCase());
             suggestions = getFacade().findByJpql(sql, h, 20);
+            System.out.println("sql = " + sql);
+            System.out.println("h = " + h);
+            System.out.println("suggestions = " + suggestions);
         }
         return suggestions;
     }
@@ -890,10 +925,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Checks if the given admission has any non-retired, non-canceled provisional bills.
+     * Checks if the given admission has any non-retired, non-canceled
+     * provisional bills.
      *
      * @param ad the admission to check for provisional bills
-     * @return true if at least one provisional bill exists for the admission; false otherwise
+     * @return true if at least one provisional bill exists for the admission;
+     * false otherwise
      */
     public boolean isAddmissionHaveProvisionalBill(Admission ad) {
         List<Bill> ads = new ArrayList<>();
@@ -938,13 +975,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             loggedDepartment = sessionController.getLoggedUser().getDepartment();
         }
         clearSearchValues();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public String navigateToListChildAdmissions() {
         perantAddmission = current;
         searchAdmissions();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public void listCurrentInpatients() {
@@ -1124,10 +1161,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
         String updatedPersonName = CommonFunctions.changeTextCases(getPatient().getPerson().getName(), tc);
         String updatedAddress = CommonFunctions.changeTextCases(getPatient().getPerson().getAddress(), tc);
-        if (updatedPersonName == null) {
+        if (updatedPersonName != null) {
             getPatient().getPerson().setName(updatedPersonName);
         }
-        if (updatedAddress == null) {
+        if (updatedAddress != null) {
             getPatient().getPerson().setAddress(updatedAddress);
         }
         Person person = getPatient().getPerson();
@@ -1172,11 +1209,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
-     * Validates the current admission for required fields and configuration-based constraints.
+     * Validates the current admission for required fields and
+     * configuration-based constraints.
      *
-     * Checks admission type, payment method, admission date, credit company details, room assignment, referring consultant, patient, and guardian information as per application settings. Returns {@code true} if any validation fails and an error message is added; otherwise, returns {@code false}.
+     * Checks admission type, payment method, admission date, credit company
+     * details, room assignment, referring consultant, patient, and guardian
+     * information as per application settings. Returns {@code true} if any
+     * validation fails and an error message is added; otherwise, returns
+     * {@code false}.
      *
-     * @return {@code true} if validation errors are found; {@code false} otherwise
+     * @return {@code true} if validation errors are found; {@code false}
+     * otherwise
      */
     private boolean errorCheck() {
         if (getCurrent().getAdmissionType() == null) {
@@ -1194,6 +1237,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            if (!getCurrent().isClaimable()) {
+                JsfUtil.addErrorMessage("Please mark as Claimable");
+                return true;
+            }
+
             if (encounterCreditCompany.getInstitution() != null) {
                 getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
                 getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
@@ -1268,6 +1316,63 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent().getPatient() == null) {
             JsfUtil.addErrorMessage("Select Patient");
             return true;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Title is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getTitle() == null) {
+                    JsfUtil.addErrorMessage("Patient Title is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getSex() == null) {
+                    JsfUtil.addErrorMessage("Patient Gender is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Age is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getDob() == null) {
+                    JsfUtil.addErrorMessage("Patient Age is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Name is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getName() == null || getCurrent().getPatient().getPerson().getName().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient Name is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Address is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getAddress() == null || getCurrent().getPatient().getPerson().getAddress().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient Address is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Area is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getArea() == null || getCurrent().getPatient().getPerson().getArea().getName().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient Area is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Mail is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getEmail() == null || getCurrent().getPatient().getPerson().getEmail().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient Mail is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getNic() == null || getCurrent().getPatient().getPerson().getNic().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient NIC is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getPhone() == null || getCurrent().getPatient().getPerson().getPhone().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Patient Phone Number is Required");
+                    return true;
+                }
+            }
         }
 
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getApplicationPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
@@ -1352,6 +1457,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getAppointmentBill().setRefunded(true);
         getBillFacade().edit(getAppointmentBill());
 
+    }
+
+    public void listnerForAppoimentSelect(Bill ap) {
+        System.out.println("ap = " + ap);
+        if (ap == null) {
+            return;
+        }
+        setPatient(ap.getPatient());
     }
 
     @Inject
@@ -2102,6 +2215,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
         this.admissionTypeForSearch = admissionTypeForSearch;
+    }
+
+    public Reservation getLatestfoundReservation() {
+        return latestfoundReservation;
+    }
+
+    public void setLatestfoundReservation(Reservation latestfoundReservation) {
+        this.latestfoundReservation = latestfoundReservation;
     }
 
     /**

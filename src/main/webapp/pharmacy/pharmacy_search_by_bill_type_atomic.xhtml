@@ -60,7 +60,6 @@
                                 </h:panelGrid>                              
                             </div>
                             <div class="col-10" style="overflow: scroll;">
-                                #{searchController.billTypeAtomic.billType}
                                 <h:panelGroup id="detail" rendered="#{searchController.billTypeAtomic ne null}">
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyGrnBill'}" >
                                         <se:grn/>
@@ -119,7 +118,8 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyIssue'}" >
-                                        <se:pharmacy_issue />
+                                        <se:pharmacy_issue  rendered="#{searchController.billTypeAtomic ne 'ISSUE_MEDICINE_ON_REQUEST_INWARD'}"/>
+                                        <se:pharmacy_issue_for_inpatients rendered="#{searchController.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD'}"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyTransferReceive'}" >

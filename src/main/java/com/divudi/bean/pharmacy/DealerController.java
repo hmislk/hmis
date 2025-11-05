@@ -18,8 +18,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -66,13 +68,38 @@ public class DealerController implements Serializable {
         return institutionList;
     }
 
+    public List<Institution> completeActiveDealor(String query) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Institution c where c.retired=false and c.inactive=false and "
+                + " c.institutionType =:t and (c.name) like :q order by c.name ";
+        m.put("t", InstitutionType.Dealer);
+        m.put("q", "%" + query.toUpperCase() + "%");
+        institutionList = getEjbFacade().findByJpql(sql, m);
+
+        return institutionList;
+    }
+    
+    public List<Institution> getAllDealors(){
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Institution c where "
+                + " c.institutionType =:t and c.name is not null and c.name <> '' order by c.name";
+
+        m.put("t", InstitutionType.Dealer);
+        return getEjbFacade().findByJpql(sql, m);
+    }
+
     public List<Institution> findAllDealors() {
 
         String sql;
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t order by c.name";
+                + " c.institutionType =:t and c.name is not null and c.name <> '' order by c.name";
         //////// // System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         institutionList = getEjbFacade().findByJpql(sql, m);
@@ -85,19 +112,38 @@ public class DealerController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
 
     public void generateCodeForDealor(){
-        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "Prefix/");
+        if(current == null){
+            JsfUtil.addErrorMessage("Please select or add a supplier first.");
+            return;
+        }
+
+        String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "SUP");
         List<Institution> allDealors = findAllDealors();
 
-        long number = allDealors.size();
-        String formattedNumber = String.format("%04d", number);
-
-        for(Institution i: allDealors){
-            if(i.getInstitutionCode().equalsIgnoreCase(prefix+formattedNumber)){
-                number++;
-                formattedNumber = String.format("%04d", number);
+        // Build HashSet of existing codes for O(1) lookup
+        Set<String> existingCodes = new HashSet<>();
+        for(Institution dealer : allDealors){
+            if(dealer.getInstitutionCode() != null){
+                existingCodes.add(dealer.getInstitutionCode().toUpperCase());
             }
         }
-        current.setInstitutionCode(prefix+formattedNumber);
+
+        long number = 1;
+        String generatedCode;
+
+        // Find the next available code number using O(1) HashSet lookup
+        while(true){
+            String formattedNumber = String.format("%04d", number);
+            generatedCode = prefix + formattedNumber;
+
+            // O(1) check instead of O(n) loop
+            if(!existingCodes.contains(generatedCode.toUpperCase())){
+                current.setInstitutionCode(generatedCode);
+                JsfUtil.addSuccessMessage("Code generated successfully: " + generatedCode);
+                return;
+            }
+            number++;
+        }
     }
 
     public void prepareAdd() {
@@ -181,19 +227,11 @@ public class DealerController implements Serializable {
     }
 
     public void deletedDealorList() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
-
         String sql = "SELECT i FROM Institution i where i.retired=true and i.institutionType =:tp"
                 + " order by i.name";
         m.put("tp", InstitutionType.Dealer);
         dealor = getEjbFacade().findByJpql(sql, m);
-
-
-
     }
 
     private InstitutionFacade getFacade() {
@@ -229,12 +267,20 @@ public class DealerController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.isEmpty()) {
+            if (value == null) {
+                return null;
+            }
+            String v = value.trim();
+            if (v.isEmpty() || v.equalsIgnoreCase("null")) {
                 return null;
             }
             DealerController controller = (DealerController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "dealerController");
-            return controller.getEjbFacade().find(getKey(value));
+            try {
+                return controller.getEjbFacade().find(getKey(v));
+            } catch (Exception e) {
+                return null;
+            }
         }
 
         java.lang.Long getKey(String value) {

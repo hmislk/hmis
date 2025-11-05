@@ -314,9 +314,7 @@ public class InvestigationCategoryController implements Serializable {
         return "/admin/items/theatre_service.xhtml?faces-redirect=true";
     }
 
-    public String navigateToBillExpenses() {
-        return "/admin/items/bill_expenses.xhtml?faces-redirect=true";
-    }
+
 
     public String navigateToRelationships() {
         return "/admin/items/relationships.xhtml?faces-redirect=true";

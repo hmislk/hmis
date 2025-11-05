@@ -335,15 +335,25 @@ public class UserNotificationController implements Serializable {
     }
 
     public List<UserNotification> fillLoggedUserNotifications() {
-        String jpql = "select un "
-                + " from UserNotification un "
-                + " where un.webUser=:wu "
-                + " and un.retired=:ret";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("wu", sessionController.getLoggedUser());
-        items = getFacade().findByJpql(jpql, m, 20);
-        return items;
+        try {
+            if (sessionController == null || sessionController.getLoggedUser() == null) {
+                items = null;
+                return items;
+            }
+            String jpql = "select un "
+                    + " from UserNotification un "
+                    + " where un.webUser=:wu "
+                    + " and un.retired=:ret";
+            Map m = new HashMap();
+            m.put("ret", false);
+            m.put("wu", sessionController.getLoggedUser());
+            items = getFacade().findByJpql(jpql, m, 20);
+            return items;
+        } catch (Exception e) {
+            // Avoid breaking page rendering when notifications query fails
+            items = null;
+            return items;
+        }
     }
 
     public String navigateToCurrentNotificationRequest(UserNotification un) {
@@ -440,7 +450,6 @@ public class UserNotificationController implements Serializable {
                     break;
                 case PharmacyTransferIssue:
                     todept = n.getBill().getToDepartment();
-                    System.out.println("todept = " + todept);
                     break;
                 case PharmacyTransferRequest:
                     todept = n.getBill().getToDepartment();
@@ -459,7 +468,6 @@ public class UserNotificationController implements Serializable {
         }
 
         List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), todept);
-        System.out.println("notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {

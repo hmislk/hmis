@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.ItemLight;
@@ -56,6 +58,7 @@ import com.divudi.service.StaffService;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
@@ -146,6 +149,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ApplicationController applicationController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Item> malePackaes;
@@ -519,7 +526,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        
+
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
 
@@ -529,29 +536,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    batchBillCancellationStarted = false;
-                    return "";
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    batchBillCancellationStarted = false;
-                    return "";
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                batchBillCancellationStarted = false;
-                return "";
-            }
+        if (!hasPrivilegeToCancelPackageBill(getBill())) {
+            batchBillCancellationStarted = false;
+            return "";
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
@@ -681,6 +668,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
+                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error = " + e);
+        }
+
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBill, pd);
@@ -708,6 +705,28 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return canCancelBill;
     }
 
+    private boolean hasPrivilegeToCancelPackageBill(Bill billToCancel) {
+        boolean labStatusOk = checkCancelBill(billToCancel);
+
+        if (!labStatusOk) {
+            if (!getWebUserController().hasPrivilege("OpdPackageBillCancel")) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                JsfUtil.addErrorMessage(
+                        "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
+                return false;
+            }
+            // Bill is processed in lab but user has special privilege - no error message needed
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage(
+                        "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public String cancelPackageBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -720,7 +739,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        
+
         if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
 
@@ -730,28 +749,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
-            for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
-                if (!checkCancelBill(singleBill)) {
-                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                    if (getWebUserController().hasPrivilege("BillCancel")) {
-                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                    } else {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                } else {
-                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+        for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
+            if (!hasPrivilegeToCancelPackageBill(singleBill)) {
                 batchBillCancellationStarted = false;
                 return "";
             }
@@ -799,6 +798,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingPackageBatchBill(originalBill, cancellationBatchBill);
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
+                        labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
+            }
+
         }
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
@@ -850,7 +859,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             paymentMethod = PaymentMethod.Cash;
         }
         printPreview = false;
-        return "/opd/opd_package_bill_cancel?faces-redirect=true;";
+        return "/opd/opd_package_bill_cancel?faces-redirect=true";
     }
 
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
@@ -1307,6 +1316,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
@@ -1366,6 +1376,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 case Staff:
                     pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
                     break;
+                case OnlineSettlement:
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
             }
@@ -1374,6 +1387,22 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         System.out.println("this = " + this);
         listnerForPaymentMethodChange();
 
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     @Deprecated //Instead use checkPaymentDetails
@@ -1833,7 +1862,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             billService.initiateBillItemsAndBillFees(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_package_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_package_batch_bill_print?faces-redirect=true";
     }
 
     public String navigateToCancelOpdPackageBatchBill() {
@@ -1848,7 +1877,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         comment = null;
         printPreview = false;
         batchBillCancellationStarted = false;
-        return "/opd/opd_package_batch_bill_cancel?faces-redirect=true;";
+        return "/opd/opd_package_batch_bill_cancel?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromMenu() {

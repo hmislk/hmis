@@ -107,7 +107,7 @@
                                                 filter="true"
                                                 filterMatchMode="contains">
                                                 <f:selectItem itemLabel="Select Institution Type"/>
-                                                <f:selectItems value="#{institutionController.institutionTypes}" var="it" itemValue="#{it}" itemLabel="#{it.label}"/>                                       
+                                                <f:selectItems value="#{(institutionController.institutionTypes.stream().filter(it->it ne 'OnlineBookingAgent')).toList()}" var="it" itemValue="#{it}" itemLabel="#{it.label}"/>                                       
                                             </p:selectOneMenu>                                 
                                             <h:outputText value="Phone" ></h:outputText>
                                             <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{institutionController.current.phone}"  ></p:inputText>

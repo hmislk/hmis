@@ -135,14 +135,14 @@
                                         <p:inputTextarea value="#{billReturnController.refundComment}"  class="w-100"></p:inputTextarea>
 
                                         <p:spacer ></p:spacer>
-                                        <p:commandButton 
-                                            id="btnSave" 
-                                            value="Return Selected Items" 
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Return Selected Items"
                                             ajax="false"
                                             class="ui-button-warning"
-                                            onclick="if (!confirm('Are You Sure You Want to Refund this Items?'))
-                                                        return false;"
                                             action="#{billReturnController.settleCCReturnBill()}"
+                                            onclick="if (!confirm('Are you sure you want to Return Selected Items ?'))
+                                                        return false;"
                                             oncomplete="PF('dlg').hide();" >
                                         </p:commandButton>
                                     </p:panelGrid>

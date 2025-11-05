@@ -53,7 +53,9 @@
             <div >
                 <p:dataTable
                     style="padding:0px; margin: 0px;"
-                    rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
+                    rowIndexVar="rowIndex" 
+                    styleClass="noBorder normalFont" 
+                    value="#{cc.attrs.bill.billItems}" var="bip"  >
 
                     <p:column style="padding: 0px; margin: 0px;">
                         <f:facet name="header">
@@ -74,6 +76,18 @@
                             <h:outputLabel value="Item Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
+                    </p:column>
+
+                    <p:column style="padding: 0px; margin: 0px; text-align: left!important;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Pack Size"/>
+                        </f:facet>
+                        <p:outputLabel value="#{bip.item.dblValue}"
+                                       rendered="#{bip.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                            <f:convertNumber pattern="0.#" ></f:convertNumber>
+                        </p:outputLabel>
+                        <p:outputLabel value="1"
+                                       rendered="#{bip.item.class eq 'class com.divudi.core.entity.pharmacy.Amp'}"/>
                     </p:column>
 
                     <p:column  style="padding: 0px; margin: 0px; text-align: right!important; ">

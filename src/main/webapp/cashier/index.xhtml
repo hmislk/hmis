@@ -78,8 +78,8 @@
                                         icon="pi pi-wallet"
                                         ajax="false"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Recording Shift End Cash is Required Before Viewing Shift Reports')}"
-                                        action="#{financialTransactionController.navigateToRecordShiftEndCash()}" />
-
+                                        action="#{financialTransactionController.navigateToRecordShiftEndCash()}" >
+                                    </p:commandButton>
 
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
@@ -145,8 +145,6 @@
                                         action="#{financialTransactionController.navigateToCashierShiftBillSearch()}" >
                                     </p:commandButton>
 
-
-
                                 </p:tab>
 
                                 <p:tab title="Float Management">
@@ -177,7 +175,6 @@
                                     </p:commandButton>
                                 </p:tab>
 
-
                                 <p:tab title="Income &amp; Expense Management">
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary" 
@@ -186,7 +183,6 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToNewIncomeBill()}" >
                                     </p:commandButton>
-
 
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-warning"  
@@ -205,12 +201,7 @@
                                     </p:commandButton>
                                 </p:tab>
 
-
-
                                 <p:tab title="Handover Management">
-
-
-
 
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
@@ -236,7 +227,6 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToMyHandovers()}" >
                                     </p:commandButton>
-
 
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
@@ -271,7 +261,6 @@
                                     </p:commandButton>
                                 </p:tab>
 
-
                                 <p:tab title="Cash Book">
 
                                     <p:commandButton 
@@ -281,7 +270,6 @@
                                         ajax="false" 
                                         action="#{searchController.navigateToListCashBookEntrySiteSummary}" >
                                     </p:commandButton>
-
 
                                     <p:commandButton 
                                         class="my-1 w-100"
@@ -294,6 +282,7 @@
 
                                 <p:tab title="Reports">
                                     <p class="m-0">
+
                                         <p:commandButton 
                                             class="my-1 w-100"
                                             value="My Shift Summary"
@@ -312,10 +301,19 @@
 
                                         <p:commandButton 
                                             class="my-1 w-100"
-                                            value="My Department All Cashier SUmmary"
+                                            value="My Department All Cashier Summary"
                                             icon=""
                                             ajax="false" 
                                             action="#{searchController.navigateToMyDepartmentAllCashierSummary}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            ajax="false"  
+                                            class="my-1 w-100 ui-button-success "
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
+                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
+                                            action="daily_summary_by_department?faces-redirect=true" 
+                                            actionListener="#{laborataryReportController.reset9BData()}">
                                         </p:commandButton>
 
                                         <p:commandButton 

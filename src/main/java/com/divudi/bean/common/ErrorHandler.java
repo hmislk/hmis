@@ -1,9 +1,12 @@
 package com.divudi.bean.common;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import com.divudi.core.util.CommonFunctions;
 
 /**
  * Error Handler Bean
@@ -12,6 +15,12 @@ import javax.inject.Named;
 @Named
 @RequestScoped
 public class ErrorHandler implements Serializable {
+    
+    private final LocalDateTime errorTime;
+    
+    public ErrorHandler() {
+        this.errorTime = LocalDateTime.now();
+    }
 
     public String getStatusCode() {
         Object code = FacesContext.getCurrentInstance().getExternalContext()
@@ -58,13 +67,13 @@ public class ErrorHandler implements Serializable {
         // Append the main exception class and message
         sb.append(t.getClass().getName())
           .append(": ")
-          .append(escapeHtml(t.getMessage()))
+          .append(CommonFunctions.escapeHtml(t.getMessage()))
           .append("\n");
 
         // Append stack trace elements
         for (StackTraceElement element : t.getStackTrace()) {
             sb.append("    at ")
-              .append(escapeHtml(element.toString()))
+              .append(CommonFunctions.escapeHtml(element.toString()))
               .append("\n");
         }
 
@@ -75,16 +84,15 @@ public class ErrorHandler implements Serializable {
             appendStackTrace(cause, sb);
         }
     }
-
-    private String escapeHtml(String input) {
-        if (input == null) {
-            return "";
-        }
-        return input
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&#39;");
+    
+    public String getErrorTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return errorTime.format(formatter);
     }
+    
+    public String getErrorTimeWithTimezone() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return errorTime.format(formatter) + " (Server Time)";
+    }
+
 }

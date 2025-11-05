@@ -55,6 +55,7 @@ public class AmppController implements Serializable {
     PharmacyBean pharmacyBean;
     MeasurementUnit packUnit;
     private String selectText = "";
+    private boolean editable;
 
     public MeasurementUnit getPackUnit() {
         return packUnit;
@@ -103,6 +104,20 @@ public class AmppController implements Serializable {
         current = new Ampp();
         current.setVmpp(new Vmpp());
         dblValue = 0.0;
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     private void recreateModel() {
@@ -135,6 +150,7 @@ public class AmppController implements Serializable {
 
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public AmppFacade getEjbFacade() {
@@ -184,6 +200,7 @@ public class AmppController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private AmppFacade getFacade() {
@@ -223,6 +240,14 @@ public class AmppController implements Serializable {
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

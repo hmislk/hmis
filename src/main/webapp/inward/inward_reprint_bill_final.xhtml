@@ -289,6 +289,7 @@
                                                         <div class="d-flex gap-2">
                                                             <p:selectBooleanCheckbox
                                                                 id="box"
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
                                                                 onchange="#{inwardSearch.showProfessionalFee()}">
@@ -321,6 +322,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
                                                                 onchange="#{inwardSearch.showProfessionalFee()}">
                                                                 <p:ajax process="@this" update="finalDuplicateBillPriview"/>
                                                             </p:selectBooleanCheckbox>
@@ -356,6 +358,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
                                                                 onchange="#{inwardSearch.showProfessionalFee()}">
                                                                 <p:ajax process="@this" update="originalHospitalBillPriview"/>
                                                             </p:selectBooleanCheckbox>
@@ -384,6 +387,7 @@
                                                         <div class="d-flex gap-2">
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
                                                                 itemLabel="With Professional Fee"
                                                                 onchange="#{inwardSearch.showProfessionalFee()}">
                                                                 <p:ajax process="@this" update="duplicateHospitalBillPriview"/>
@@ -470,6 +474,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
+                                                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',false)}"
                                                                 onchange="#{inwardSearch.showProfessionalFee()}">
                                                                 <p:ajax process="@this" update="OriginalFinalBillSummaryPriview"/>
                                                             </p:selectBooleanCheckbox>
@@ -504,6 +509,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
+                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
                                                                 onchange="#{inwardSearch.showProfessionalFee()}">
                                                                 <p:ajax process="@this" update="duplicateFinalBillSummaryPriview"/>
                                                             </p:selectBooleanCheckbox>

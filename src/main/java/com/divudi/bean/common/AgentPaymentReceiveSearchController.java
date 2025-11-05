@@ -435,7 +435,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         getBillFacade().editAndCommit(origianlBil);
 
         Payment payments = createPayment(newlyCreatedCancelBill, paymentMethod);
-        drawerController.updateDrawerForOuts(payments);
+        //drawerController.updateDrawerForOuts(payments);
         agentAndCcApplicationController.updateCcBalance(
                 newlyCreatedCancelBill.getFromInstitution(),
                 0,

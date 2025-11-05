@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -162,10 +162,18 @@
 
                         <div class="d-flex align-items-center mt-5">
                             <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
+                            <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" >
+                                value="Process" 
+                                action="#{pharmacyReportController.processBhtIssue()}" >
                             </p:commandButton>
 
                             <p:commandButton 
@@ -202,7 +210,7 @@
 
 
                         <p:dataTable id="tbl" 
-                                     value="" 
+                                     value="#{pharmacyReportController.billItems}" 
                                      var="f" 
                                      rowIndexVar="n" 
                                      paginator="true" 
@@ -214,51 +222,80 @@
 
 
                             <p:column headerText="Date">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Item Name">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.item.name}" />
                             </p:column>                   
                             <p:column headerText="Code">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.item.code}" />
                             </p:column>
                             <p:column headerText="Doc No">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.deptId}" />
                             </p:column>
                             <p:column headerText="Batch Code">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.qty}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Rate">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="MRP">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="BHT Issue">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Net Total">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>                              
                             </p:column> 
                             <p:column headerText="Margine">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.margin}" />
                             </p:column>
                             <p:column headerText="Discount">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="BHT No">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.patientEncounter.bhtNo}" />
                             </p:column>
                             <p:column headerText="MRN">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.patient.phn}" />
                             </p:column>
-                            
+
                         </p:dataTable>
 
                     </p:panel>

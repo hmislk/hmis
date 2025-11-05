@@ -186,7 +186,9 @@
                                 <prints:five_five_paper_with_headings bill="#{billSearch.bill}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >       
-                                <prints:five_five_paper_coustom_cancellation  bill="#{billSearch.bill}"/>
+                                <prints:five_five_paper_coustom_cancellation  
+                                    duplicate="#{billSearch.duplicate}"
+                                    bill="#{billSearch.bill}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <prints:five_five_paper_without_headings 

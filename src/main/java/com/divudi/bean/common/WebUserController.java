@@ -20,6 +20,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.WebUserDashboard;
 import com.divudi.core.entity.WebUserPrivilege;
+import com.divudi.core.entity.WebUserPasswordHistory;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PersonFacade;
@@ -28,6 +29,7 @@ import com.divudi.core.facade.WebUserDashboardFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
 import com.divudi.core.facade.WebUserRoleFacade;
+import com.divudi.core.facade.WebUserPasswordHistoryFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.core.data.LoginPage;
@@ -76,6 +78,8 @@ public class WebUserController implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private WebUserDashboardFacade webUserDashboardFacade;
+    @EJB
+    private WebUserPasswordHistoryFacade webUserPasswordHistoryFacade;
 
     /**
      * Controllers
@@ -155,6 +159,7 @@ public class WebUserController implements Serializable {
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
+    private String output;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -889,6 +894,113 @@ public class WebUserController implements Serializable {
         return "/hr/hr_staff_admin?faces-redirect=true";
     }
 
+    public void addWebUserCodesFromUserNames() {
+        output = null;
+        String jpql = "select wu from WebUser wu "
+                + " where wu.retired=false "
+                + " and (wu.code is null or length(wu.code)=0) "
+                + " and wu.name is not null and length(wu.name)>0";
+        List<WebUser> users = getFacade().findByJpql(jpql);
+        int updated = 0;
+        if (users != null) {
+            for (WebUser wu : users) {
+                if (wu == null) {
+                    continue;
+                }
+                String uname = wu.getName();
+                if (uname == null) {
+                    continue;
+                }
+                String trimmed = uname.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                wu.setCode(trimmed);
+                try {
+                    getFacade().edit(wu);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated web user codes: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
+    public void addStaffCodesFromUserCodes() {
+        output = null;
+        String jpql = "select wu from WebUser wu "
+                + " where wu.retired=false "
+                + " and wu.staff is not null "
+                + " and (wu.staff.code is null or length(wu.staff.code)=0) "
+                + " and wu.code is not null and length(wu.code)>0";
+        List<WebUser> users = getFacade().findByJpql(jpql);
+        int updated = 0;
+        if (users != null) {
+            for (WebUser wu : users) {
+                if (wu == null) {
+                    continue;
+                }
+                Staff s = wu.getStaff();
+                if (s == null) {
+                    continue;
+                }
+                String ucode = wu.getCode();
+                if (ucode == null) {
+                    continue;
+                }
+                String trimmed = ucode.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                s.setCode(trimmed);
+                try {
+                    getStaffFacade().edit(s);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated staff codes: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
+    public void addStaffStaffCodesFromCodes() {
+        output = null;
+        String jpql = "select s from Staff s "
+                + " where s.retired=false "
+                + " and (s.staffCode is null or length(s.staffCode)=0) "
+                + " and s.code is not null and length(s.code)>0";
+        List<Staff> staffList = getStaffFacade().findByJpql(jpql);
+        int updated = 0;
+        if (staffList != null) {
+            for (Staff s : staffList) {
+                if (s == null) {
+                    continue;
+                }
+                String c = s.getCode();
+                if (c == null) {
+                    continue;
+                }
+                String trimmed = c.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                s.setStaffCode(trimmed);
+                try {
+                    getStaffFacade().edit(s);
+                    updated++;
+                } catch (Exception e) {
+                    // skip and continue
+                }
+            }
+        }
+        output = "Updated staff.staffCode: " + updated;
+        JsfUtil.addSuccessMessage(output);
+    }
+
     public String navigateToEditPasswordByAdmin() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -907,6 +1019,9 @@ public class WebUserController implements Serializable {
         getUserPrivilageController().init();
         getUserPrivilageController().setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         getUserPrivilageController().setPrivilegesLoaded(false);
+        if (getUserPrivilageController().getDepartment() == null) {
+            getUserPrivilageController().setDepartment(getSessionController().getDepartment());
+        }
         return "/admin/users/user_privileges?faces-redirect=true";
     }
 
@@ -1037,6 +1152,14 @@ public class WebUserController implements Serializable {
         return sessionController.navigateToManageWebUserPreferences(current);
     }
 
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
+    }
+
     public void addWebUserDashboard() {
         if (current == null) {
             JsfUtil.addErrorMessage("User ?");
@@ -1107,10 +1230,24 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return "";
         }
+        if (isPasswordReused(current, newPassword)) {
+            JsfUtil.addErrorMessage("Cannot reuse previous password.");
+            return "";
+        }
         String hashedPassword;
         hashedPassword = getSecurityController().hashAndCheck(newPassword);
         current.setWebUserPassword(hashedPassword);
         getFacade().edit(current);
+        WebUserPasswordHistory wh = new WebUserPasswordHistory();
+        wh.setWebUser(current);
+        wh.setPassword(hashedPassword);
+        wh.setCreater(sessionController.getLoggedUser());
+        wh.setCreatedAt(new Date());
+        webUserPasswordHistoryFacade.create(wh);
+        
+        // Purge old password history entries beyond the configured limit
+        purgeOldPasswordHistory(current);
+        
         JsfUtil.addSuccessMessage("Password changed");
         return navigateToListUsers();
     }
@@ -1197,6 +1334,14 @@ public class WebUserController implements Serializable {
         return webUserDashboardFacade;
     }
 
+    public WebUserPasswordHistoryFacade getWebUserPasswordHistoryFacade() {
+        return webUserPasswordHistoryFacade;
+    }
+
+    public void setWebUserPasswordHistoryFacade(WebUserPasswordHistoryFacade webUserPasswordHistoryFacade) {
+        this.webUserPasswordHistoryFacade = webUserPasswordHistoryFacade;
+    }
+
     public List<Department> getDepartmentsOfSelectedUsersInstitution() {
         departmentsOfSelectedUsersInstitution = new ArrayList<>();
         if (getCurrent() == null) {
@@ -1237,7 +1382,7 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToManageUsers() {
-        return "/admin/users/index?faces-redirect=true;";
+        return "/admin/users/index?faces-redirect=true";
     }
 
     public List<WebUserLight> getWebUseLights() {
@@ -1356,20 +1501,62 @@ public class WebUserController implements Serializable {
     }
 
     public int getUserNotificationCount() {
-        if (userNotificationController.fillLoggedUserNotifications() != null) {
-            userNotificationCount = 0;
-            List<UserNotification> allNotifications = userNotificationController.fillLoggedUserNotifications();
-            for (UserNotification un : allNotifications) {
-                if (!un.isSeen()) {
-                    userNotificationCount++;
-                }
-            }
-        }
-        return userNotificationCount;
+        // User notifications disabled system-wide due to stability issues in JPQL/transactions.
+        // Returning 0 avoids triggering EJB calls during render (e.g., badge in menu).
+        return 0;
     }
 
     public void setUserNotificationCount(int userNotificationCount) {
         this.userNotificationCount = userNotificationCount;
+    }
+
+    private boolean isPasswordReused(WebUser user, String newPassword) {
+        if (!configOptionApplicationController.isPreventPasswordReuse()) {
+            return false;
+        }
+        
+        int historyLimit = configOptionApplicationController.getPasswordHistoryLimit();
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", user);
+        
+        // Get recent password history entries within the limit, ordered by creation date descending
+        String jpql = "select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u order by h.createdAt desc";
+        List<WebUserPasswordHistory> hs = webUserPasswordHistoryFacade.findByJpql(jpql, m, historyLimit);
+        
+        for (WebUserPasswordHistory h : hs) {
+            if (SecurityController.matchPassword(newPassword, h.getPassword())) {
+                return true;
+            }
+        }
+        if (SecurityController.matchPassword(newPassword, user.getWebUserPassword())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private void purgeOldPasswordHistory(WebUser user) {
+        if (!configOptionApplicationController.isPreventPasswordReuse()) {
+            return;
+        }
+        
+        int historyLimit = configOptionApplicationController.getPasswordHistoryLimit();
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", user);
+        
+        // Get all password history entries for this user, ordered by creation date descending
+        String jpql = "select h from WebUserPasswordHistory h where h.retired=false and h.webUser=:u order by h.createdAt desc";
+        List<WebUserPasswordHistory> allHistory = webUserPasswordHistoryFacade.findByJpql(jpql, m);
+        
+        // If we have more entries than the limit, retire the older ones
+        if (allHistory.size() > historyLimit) {
+            for (int i = historyLimit; i < allHistory.size(); i++) {
+                WebUserPasswordHistory oldEntry = allHistory.get(i);
+                oldEntry.setRetired(true);
+                oldEntry.setRetiredAt(new Date());
+                oldEntry.setRetirer(getSessionController().getLoggedUser());
+                webUserPasswordHistoryFacade.edit(oldEntry);
+            }
+        }
     }
 
 }

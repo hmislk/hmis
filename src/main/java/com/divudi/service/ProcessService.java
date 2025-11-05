@@ -78,7 +78,6 @@ public class ProcessService {
             }
             return true;
         } catch (Exception e) {
-            System.out.println("e = " + e);
             return false;
         }
     }
@@ -303,10 +302,8 @@ public class ProcessService {
         jpql += " ORDER BY pi.createdAt DESC"; // Ordering by createdAt date in descending order
 
         System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
 
         List<ProcessInstance> processInstances = processInstanceFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("processInstances = " + processInstances);
         return processInstances;
     }
 

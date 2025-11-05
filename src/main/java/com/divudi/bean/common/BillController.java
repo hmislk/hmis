@@ -2,6 +2,8 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
+import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
@@ -62,6 +64,7 @@ import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -71,6 +74,7 @@ import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
+import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -166,6 +170,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     private BillSearch billSearch;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     /**
      * Class Vairables
@@ -427,10 +435,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 + " and bf.referenceBillFee=:bf "
                 + " and bf.billItem.retired=:ret "
                 + " and bf.bill.retired=:ret ";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("bf", bf);
-        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, m);
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("bf", bf);
+        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, params);
         if (rbf != null) {
             refunded = true;
         }
@@ -460,8 +468,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             } catch (Exception e) {
                 getFacade().edit(savingBill);
             }
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             getFacade().edit(savingBill);
+            JsfUtil.addSuccessMessage("Updated");
         }
     }
 
@@ -610,10 +620,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (correctReferenceOfPoBill != null) {
                 grnReturnBill.setReferenceBill(correctReferenceOfPoBill);
                 billFacade.edit(grnReturnBill);
-                
+
                 grnBill.setReferenceBill(correctReferenceOfPoBill);
                 billFacade.edit(grnBill);
-                
+
                 output += "Fixed: GRN Return #" + grnReturnBill.getDeptId() + " reference updated to PO #" + correctReferenceOfPoBill.getDeptId() + ".\n";
                 output += "Fixed: GRN #" + grnBill.getDeptId() + " reference updated to PO #" + correctReferenceOfPoBill.getDeptId() + ".\n";
                 fixedCount++;
@@ -971,11 +981,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         sql += " and  (((b.patientEncounter.patient.person.name) like :q )";
         sql += " or  ((b.patientEncounter.bhtNo) like :q )";
         sql += " or  ((b.insId) like :q )";
-        sql += " or  ((b.procedure.item.name) like :q ))";
+        sql += " or  ((b.procedure.item.name) like :q )";
+        sql += " or  ((b.patient.phn) =:phn ))";
         sql += " order by b.insId desc  ";
 
         temMap.put("billType", BillType.SurgeryBill);
-        temMap.put("q", "%" + qry.toUpperCase() + "%");
+        temMap.put("q","%" + qry.toUpperCase() + "%");
+        temMap.put("phn",qry.toUpperCase());
         List<Bill> tmps = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 20);
 
         return tmps;
@@ -1876,22 +1888,61 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return canCancelBill;
     }
 
+    @Inject
+    RequestController requestController;
+    @Inject
+    RequestService requestService;
+
+    private Request currentRequest;
+
     public String navigateToCancelOpdBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return "";
         }
-        bills = billsOfBatchBill(batchBill);
-        paymentMethod = null;
-        patient = batchBill.getPatient();
-        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
-        comment = null;
-        printPreview = false;
-        batchBillCancellationStarted = false;
-        return "/opd/batch_bill_cancel?faces-redirect=true;";
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            currentRequest = requestService.findRequest(batchBill);
+
+            if (currentRequest == null) {
+                return requestController.navigateToCreateRequest(batchBill);
+            } else {
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case APPROVED:
+
+                        bills = billsOfBatchBill(batchBill);
+                        paymentMethod = null;
+                        patient = batchBill.getPatient();
+                        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
+                        comment = currentRequest.getRequestReason();
+                        printPreview = false;
+                        batchBillCancellationStarted = false;
+
+                        return "/opd/batch_bill_cancel?faces-redirect=true";
+                    default:
+                        return "";
+                }
+            }
+        } else {
+            bills = billsOfBatchBill(batchBill);
+            paymentMethod = null;
+            patient = batchBill.getPatient();
+            paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
+            comment = null;
+            printPreview = false;
+            batchBillCancellationStarted = false;
+            return "/opd/batch_bill_cancel?faces-redirect=true";
+        }
     }
-    
+
     private List<Bill> cancelSingleBills = new ArrayList<>();
+
     public String cancelOpdBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -1988,13 +2039,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         getBillFacade().edit(batchBill);
 
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
-        
+
         cancelSingleBills = new ArrayList();
-        
+
         for (Bill originalBill : bills) {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
-        
+
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBatchBill, pd);
@@ -2023,10 +2074,20 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         drawerController.updateDrawerForOuts(cancelPayments);
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
-        
+
         opdBillController.setBills(cancelSingleBills);
         opdBillController.setBatchBill(cancellationBatchBill);
         getSessionController().setLoggedUser(wb);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            Request billRequest = requestService.findRequest(batchBill);
+            if (billRequest != null) {
+                requestController.setBills(bills);
+                requestController.complteRequest(billRequest);
+            } else {
+                JsfUtil.addErrorMessage("Related approval request not found to complete.");
+            }
+        }
 
         printPreview = true;
         batchBillCancellationStarted = false;
@@ -2118,6 +2179,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         printPreview = true;
         batchBillCancellationStarted = false;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
+    }
+
+    public Bill getBillById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return billFacade.find(id);
     }
 
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
@@ -2281,6 +2349,17 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         cancelSingleBills.add(individualCancelltionBill);
 
         List<BillItem> list = createBillItemsForOpdBatchBillCancellation(originalBill, individualCancelltionBill);
+
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(originalBill)) {
+                    labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error = " + e);
+        }
+
         try {
             individualCancelltionBill.setBillItems(list);
         } catch (Exception e) {
@@ -4067,7 +4146,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         paymentMethod = PaymentMethod.Cash;
 
         collectingCentreBillController.setCollectingCentre(null);
-        return "/opd/opd_bill?faces-redirect=true;";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public void makeNull() {
@@ -4871,10 +4950,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         this.collectingCentre = collectingCentre;
     }
 
-    public String navigateToBillContactNumbers() {
-        return "/admin/bill_contact_numbers.xhtml";
-    }
-
     public Bill getBatchBill() {
         return batchBill;
     }
@@ -4920,6 +4995,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
@@ -4964,11 +5040,30 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 case Staff:
                     pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
                     break;
+                case OnlineSettlement:
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
             }
 
         }
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public double getRemainAmount() {
@@ -5012,6 +5107,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setCancelSingleBills(List<Bill> cancelSingleBills) {
         this.cancelSingleBills = cancelSingleBills;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
     }
 
     /**
@@ -5063,6 +5166,21 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     public void setNetPlusVat(double netPlusVat) {
         this.netPlusVat = netPlusVat;
+    }
+
+    public String navigateToBillById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(billId);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        return billSearch.navigateToViewBillByAtomicBillTypeByBillId(billId);
     }
 
 }

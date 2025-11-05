@@ -200,11 +200,11 @@ public class Person implements Serializable, RetirableEntity  {
         int days = period.getDays();
 
         if (years > 12) {
-            ageAsString = years + " years";
+            ageAsString = years + " Years";
         } else if (years > 0) {
-            ageAsString = years + " years and " + months + " months";
+            ageAsString = years + " Years and " + months + " Months";
         } else {
-            ageAsString = months + " months and " + days + " days";
+            ageAsString = months + " Months and " + days + " Days";
         }
 
         period = new Period(ldDob, currentDate, PeriodType.days());

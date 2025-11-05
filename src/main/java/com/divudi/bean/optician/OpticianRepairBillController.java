@@ -508,7 +508,7 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     public String navigateToViewOpdBatchBill() {
@@ -553,7 +553,7 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
             getBillBean().checkBillItemFeesInitiated(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     /**
@@ -2060,6 +2060,22 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
             }
 
         }
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     private boolean errorCheck() {

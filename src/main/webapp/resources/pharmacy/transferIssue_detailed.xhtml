@@ -9,6 +9,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
+        <cc:attribute name="duplicate" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -52,7 +53,8 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Transfer Issue Note"   />       
+                <h:outputLabel value="Transfer Issue Note"   />  
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
             </div>
 
@@ -122,11 +124,12 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="text-align: right;">
+                    <p:column style="text-align: right;"
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                         <f:facet name="header">
-                            <h:outputLabel value="Rate"/>
+                            <h:outputLabel value="Transfer Rate"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                        <h:outputLabel value="#{bip.rate}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -138,17 +141,19 @@
                         <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
                     </p:column>                    
 
-                    <p:column style="text-align: right;">
+                    <p:column style="text-align: right;"
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                         <f:facet name="header">
-                            <h:outputLabel value="Gross Price"/>
+                            <h:outputLabel value="Transfer Value"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{0-bip.netValue}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>
 
 
-                    <p:columnGroup type="footer">
+                    <p:columnGroup type="footer"
+                                   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                         <p:row>
                             <p:column colspan="6">
                                 <f:facet name="footer">

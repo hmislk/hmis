@@ -252,7 +252,7 @@
                                                             <div class="d-flex align-items-center">
                                                                 <span class="text-center mx-1">
                                                                     <h:outputText value="P" style="font-weight: bolder"/><br/>
-                                                                    <p:badge value="#{s.paidPatientCount != null ? s.paidPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
+                                                                    <p:badge id="paidCount" value="#{s.paidPatientCount != null ? s.paidPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
                                                                 <span class="text-center mx-1"> 
                                                                     <h:outputText style="font-weight: bolder" value="B"/><br/>
@@ -260,9 +260,9 @@
                                                                 </span>
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputText style="font-weight: bolder" value="C"/><br/>
-                                                                    <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="success" size="large" styleClass="mr-2"></p:badge>
+                                                                    <p:badge id="completecount" value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="success" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
-                                                                
+
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
@@ -278,7 +278,7 @@
                                                                     </p:commandButton>
 
                                                                 </span>
-                                                                
+
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
@@ -293,16 +293,88 @@
 
                                                                 </span>
 
-                                                                
+
                                                             </div>
                                                         </span>
                                                     </div>
 
-
-
                                                 </div>
                                             </p:column>
                                         </p:dataTable>
+
+                                        <script>
+
+                                            function initializeWebSocket() {
+                                                console.log("start connection");
+
+                                                if (typeof window.wsUrl === "undefined") {
+                                                    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+                                                    
+                                                    const pathName = window.location.pathname;
+                                                    const contextPath = pathName.split('/')[1];
+                                 
+                                                    window.wsUrl = protocol + "//" + window.location.host + "/" + contextPath + "/ws/notify";
+                                                }
+
+                                                if (typeof window.socket === "undefined") {
+                                                    window.socket = new WebSocket(window.wsUrl);
+                                                }
+
+                                                window.socket.onmessage = function (event) {
+
+                                                    try {
+                                                        const message = event.data;
+                                                        const messageParts = message.split(" - ");
+                                                        const sendSessionId = messageParts[1];
+                                                        const sendMessage = messageParts[0];
+
+                                                        if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
+                                                            document.querySelector(".ws-trigger").click();
+                                                         
+
+                                                        }
+                                                        if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
+                                                            document.querySelector(".ws-triggers").click();
+                                                        }
+
+                                                    } catch (e) {
+                                                        console.error("Error in WebSocket onmessage:", error);
+                                                    }
+                                                }
+
+                                                window.socket.onclose = function (event) {
+                                                    console.log("Web socket connection is closed.");
+
+                                                    setTimeout(initializeWebSocket, 2000);
+                                                }
+
+                                                window.socket.onerror = function (event) {
+                                                    console.log("Web socket connection error occured.");
+
+                                                }
+
+                                                window.socket.onopen = function (event) {
+                                                    console.log("Web socket is connected.");
+
+                                                }
+
+                                            }
+
+                                            initializeWebSocket();
+
+
+                                        </script>
+
+                                        <p:commandButton id="ws"
+                                                         action="#{bookingControllerViewScope.refreshSessionsForUpdates(bookingControllerViewScope.selectedSessionInstance)}"
+                                                         process="@this"
+                                                         styleClass="ws-trigger"
+                                                         update="groupFilteredSessions"
+                                                         style="display:none"/>
+
+
+
+
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-5" > 
@@ -412,13 +484,21 @@
                                                 <p:panel header="Normal Booking Section (Check Released Appoinment Numbers)">
                                                     <p:row id="row1" rendered="#{ configOptionApplicationController.getBooleanValueByKey('Released Number Booking available in the Channel Booking by date', false)}">
 
-                                                        <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Apoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
-                                                            <f:selectItem itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" itemValue="Please select" />
-                                                            <f:selectItems value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
+                                                        <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Appoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
+                                                            <f:selectItem id="releaseNumderAvailableCount" itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" />
+                                                            <f:selectItems id="releaseNumderAvailable" value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
                                                             <p:ajax event="valueChange" update="releasedNumbers btnAddReserved"></p:ajax>
                                                         </p:selectOneMenu>
 
                                                     </p:row>
+
+                                                    <p:commandButton id="ws-2"
+                                                                     action="#{bookingControllerViewScope.getReleasedAppoinmentNumbers}"
+                                                                     process="@this"
+                                                                     styleClass="ws-triggers"
+                                                                     update="row1"
+                                                                     style="display:none"/>
+
                                                     <p:commandButton
                                                         id="btnAdd"
                                                         value="Add Normal Booking"
@@ -647,8 +727,10 @@
                                                             <h:outputLabel id="card" value="Card" />
                                                         </div>
                                                     </f:facet>
+                                                    
+                                                    <pa:creditCard paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
 
-                                                    <p:row>
+<!--                                                    <p:row>
                                                         <p:column>
                                                             <p:outputLabel id="creditCardbnkLbl" value="Select Bank" />
                                                         </p:column>
@@ -666,7 +748,7 @@
                                                         <p:column>
                                                             <p:inputText class="w-75 mx-2" id="creditCardTxt" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.creditCard.no}" />
                                                         </p:column>
-                                                    </p:row>
+                                                    </p:row>-->
                                                 </p:panelGrid>
 
                                                 <!-- Cheque Payment Method -->
@@ -1071,7 +1153,7 @@
                                                 value="Back to Booking View" 
                                                 icon="fa fa-redo" 
                                                 class="ui-button-success mx-2" 
-                                                action="#{bookingController.navigateChannelBookingViewFromChannelBookingByDate(bookingControllerViewScope.selectedSessionInstance, null, null)}" 
+                                                action="#{bookingController.navigateChannelBookingViewFromChannelBookingByDate(bookingControllerViewScope.printingBill.singleBillSession.sessionInstance, null, null)}" 
                                                 ajax="false" />
                                             <p:commandButton 
                                                 value="Back" 
@@ -1113,12 +1195,7 @@
 
                     </h:form>
 
-
-
-
-
                 </h:panelGroup>
-
 
             </ui:define>
         </ui:composition>

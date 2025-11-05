@@ -9,6 +9,7 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.dto.PharmacyGrnBillItemDTO;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -297,6 +298,7 @@ public class PharmacySaleReportController implements Serializable {
     List<Amp> amps;
     List<Item> items;
     Department departmentMoving;
+    private List<PharmacyGrnBillItemDTO> pharmacyGrnBillItemDTOS;
 
     public List<Item> getNonMovingItems() {
         return nonMovingItems;
@@ -318,6 +320,18 @@ public class PharmacySaleReportController implements Serializable {
                 + " order by s.itemBatch.item.name";
 
         nonMovingItems = itemFacade.findByJpql(j, m);
+    }
+
+    public List<PharmacyGrnBillItemDTO> getPharmacyGrnBillItemDTOS() {
+        if (pharmacyGrnBillItemDTOS == null) {
+            pharmacyGrnBillItemDTOS = new ArrayList<>();
+        }
+
+        return pharmacyGrnBillItemDTOS;
+    }
+
+    public void setPharmacyGrnBillItemDTOS(List<PharmacyGrnBillItemDTO> pharmacyGrnBillItemDTOS) {
+        this.pharmacyGrnBillItemDTOS = pharmacyGrnBillItemDTOS;
     }
 
     public void setCategory(Category category) {
@@ -420,18 +434,28 @@ public class PharmacySaleReportController implements Serializable {
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
         Map m = new HashMap();
-        sql = "select bi from BillItem bi "
-                + " where bi.bill.billType=:bt "
-                + " and bi.bill.retired=false "
+
+        sql = "select new com.divudi.core.data.dto.PharmacyGrnBillItemDTO( "
+                + " bi.bill.deptId, "
+                + " bi.bill.department.name, "
+                + " bi.bill.referenceBill.deptId, "
+                + " bi.bill.fromInstitution.name, "
+                + " bi.item.name, "
+                + " bi.pharmaceuticalBillItem.qty, "
+                + " bi.pharmaceuticalBillItem.freeQty, "
+                + " bi.pharmaceuticalBillItem.purchaseRate, "
+                + " bi.bill.referenceBill.saleValue, "
+                + " bi.bill.referenceBill.netTotal ) "
+                + " from BillItem bi "
+                + " where bi.bill.billType = :bt "
+                + " and bi.bill.retired = false "
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
             sql += " and ((bi.bill.deptId) like :di) ";
             m.put("di", "%" + searchKeyword.getBillNo().toUpperCase().trim() + "%");
         }
-//        BillItem bi = new BillItem();
-//        bi.getBill().getReferenceBill().getDeptId();
-//        bi.getBill().getFromInstitution();
+
         if (searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")) {
             sql += " and ((bi.bill.referenceBill.deptId) like :po) ";
             m.put("po", "%" + searchKeyword.getRefBillNo().toUpperCase().trim() + "%");
@@ -450,41 +474,38 @@ public class PharmacySaleReportController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
 
-        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        pharmacyGrnBillItemDTOS = (List<PharmacyGrnBillItemDTO>) billItemFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        totalPurchaseValue = getFreeQtyByPurchaseRateTotal(billItems);
-        totalFreeQuantity = getTotalFreeQty(billItems);
+        totalPurchaseValue = getFreeQtyByPurchaseRateTotal(pharmacyGrnBillItemDTOS);
+        totalFreeQuantity = getTotalFreeQty(pharmacyGrnBillItemDTOS);
 
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
     }
 
-    public double getFreeQtyByPurchaseRateTotal(List<BillItem> items) {
+    public double getFreeQtyByPurchaseRateTotal(List<PharmacyGrnBillItemDTO> items) {
         double tot = 0;
         if (items.isEmpty()) {
             return 0;
         }
-        for (BillItem bi : items) {
-            tot += (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
+        for (PharmacyGrnBillItemDTO bi : items) {
+            tot += (bi.getFreeQuantity() * bi.getPurchaseRate());
         }
         return tot;
     }
 
-    public double getTotalFreeQty(List<BillItem> items) {
+    public double getTotalFreeQty(List<PharmacyGrnBillItemDTO> items) {
         double tot = 0;
         if (items == null || items.isEmpty()) {
             return 0;
         }
-        for (BillItem bi : items) {
-            if (bi != null && bi.getPharmaceuticalBillItem() != null) {
-                Double freeQty = bi.getPharmaceuticalBillItem().getFreeQty();
-                if (freeQty != null) {
-                    tot += freeQty;
-                }
+        for (PharmacyGrnBillItemDTO bi : items) {
+            if (bi != null && bi.getFreeQuantity() != null) {
+                double freeQty = bi.getFreeQuantity();
+                tot += freeQty;
             }
         }
         return tot;
@@ -1177,42 +1198,6 @@ public class PharmacySaleReportController implements Serializable {
         return "/pharmacy/pharmacy_report_grn_and_purchase_detail.xhtml?faces-redirect=true";
     }
 
-    public String navigatePharmacyReportPurchaseBillItem() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigatePharmacyReportPurchaseBillItem()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/pharmacy/pharmacy_report_purchase_bill_item.xhtml?faces-redirect=true";
-    }
 
     public String navigatePharmacyReportGrnPaymentDetail() {
         FacesContext context = FacesContext.getCurrentInstance();

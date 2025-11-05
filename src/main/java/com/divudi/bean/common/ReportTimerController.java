@@ -22,9 +22,13 @@ public class ReportTimerController implements Serializable {
     private ReportLogAsyncService reportLogAsyncService;
 
     public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, WebUser loggedUser) {
+        trackReportExecution(reportGenerationLogic, reportType, reportType.getReportName(), loggedUser);
+    }
+
+    public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, String reportName, WebUser loggedUser) {
         final Date startTime = new Date();
 
-        final ReportLog reportLog = new ReportLog(reportType, loggedUser, startTime, null);
+        final ReportLog reportLog = new ReportLog(reportType, reportName, loggedUser, startTime, null);
 
         ReportLog savedLog = null;
 

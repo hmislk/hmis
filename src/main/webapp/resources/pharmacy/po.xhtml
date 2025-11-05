@@ -27,9 +27,6 @@
                 <div >
                     <h:outputLabel value="Telephone : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.phone} / #{cc.attrs.bill.referenceBill.creater.department.telephone1}"/>
                 </div>
-                <!--                <div >
-                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.referenceBill.creater.department.telephone1} "/>
-                                </div>-->
                 <div >
                     <h:outputLabel value="Fax : &nbsp;#{cc.attrs.bill.referenceBill.creater.institution.fax}"/>                                                 
                 </div>
@@ -66,6 +63,9 @@
                         <h:outputText value="Payment Method" />
                         <h:outputText value=":" />
                         <h:outputText value="#{cc.attrs.bill.paymentMethod}" />
+                        <h:outputText value="Consignment" />
+                        <h:outputText value=":" />
+                        <h:outputText value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" />
                     </h:panelGrid>
                 </div>
 
@@ -117,31 +117,31 @@
                                 <tr>
                                     <td style="width: 30px; text-align: right; padding-right: 5px; border: 1px solid black;">#{status.index + 1}</td>
                                     <td style="text-align: left; min-width: 400px; border: 1px solid black;">
-                                        <h:outputLabel value="#{bip.item.name}" ></h:outputLabel>
-                                        <h:outputLabel value="&nbsp;&nbsp;(" ></h:outputLabel>
-                                        <h:outputLabel value="#{bip.item.code}" ></h:outputLabel>
-                                        <h:outputLabel value=")" ></h:outputLabel>
+                                        <h:outputLabel value="#{bip.item.name}"/>
+                                        <h:outputLabel value="&nbsp;&nbsp;(" />
+                                        <h:outputLabel value="#{bip.item.code}" />
+                                        <h:outputLabel value=")" />
 
 
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
                                             <f:convertNumber />
                                         </h:outputText>
                                     </td>
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity}">
                                             <f:convertNumber />
                                         </h:outputText>
                                     </td>
 
                                     <td style="width: 100px; text-align: right; padding-right: 5px; border: 1px solid black; font-weight: bold;">
-                                        <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate * bip.pharmaceuticalBillItem.qty}">
+                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossTotal}">
                                             <f:convertNumber pattern="#,###.00" />
                                         </h:outputText>
                                     </td>
@@ -166,7 +166,12 @@
             </div>
 
             <div class="preparedBy" style="padding-left: 20px; margin: 20px; padding-bottom: 2px; margin-bottom: 2px;">
-                <h:outputLabel value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel style="margin-right: 30%;" value="Prepared By : #{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Created Date/Time:"/>
+                <p:outputLabel value="#{sessionController.currentDate}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </p:outputLabel>
+
 
             </div>
 
@@ -176,7 +181,12 @@
             </div>
 
             <div class="authorizedBy" style="padding-left: 20px; padding-top: 2px; margin-left: 20px; margin-top: 2px;">
-                <h:outputLabel value="Approved By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>       
+                <h:outputLabel style="margin-right: 30%;" value="Approved By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Approved Date/Time:"/>
+                <p:outputLabel value="#{cc.attrs.bill.approveAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </p:outputLabel>
+
             </div>
 
             <div>
@@ -187,7 +197,7 @@
 
                     <ol type="1">
                         <li>Purchase order number must appear on all documents pertaining to this purchase.</li>
-                        <li>Please be kind enough to supply above goods within 3 days.</li>
+                        <li>Comments: </li>
                     </ol>
 
                     <h5 style="color: #000000;">
@@ -200,7 +210,7 @@
                 <div class="d-flex justify-content-center align-items-center" style="font-size: 11pt">
                     <h:outputLabel value="Printed At&nbsp;:&nbsp;"/>
                     <h:outputLabel value="#{sessionController.currentDate}" >
-                        <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
+                        <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
                     </h:outputLabel>
                 </div>
             </div>

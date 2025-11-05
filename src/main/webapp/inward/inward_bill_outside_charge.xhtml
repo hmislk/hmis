@@ -24,24 +24,36 @@
                             <div class="col-12" >
                                 <h:outputLabel value="Type Patient Name or BHT : " class="m-1"/>
 
-                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                 required="true" requiredMessage="Please select a patient"
-                                                 value="#{inwardAdditionalChargeController.current.patientEncounter}"
-                                                 completeMethod="#{admissionController.completePatient}" 
-                                                 var="myItem" itemValue="#{myItem}" 
-                                                 itemLabel="#{myItem.bhtNo}" 
-                                                 size="30"
-                                                 class="m-1">
-                                    <p:column>
+                                <p:autoComplete  
+                                    widgetVar="aPt" 
+                                    id="acPt" 
+                                    forceSelection="true" 
+                                    required="true" 
+                                    requiredMessage="Please select a patient"
+                                    value="#{inwardAdditionalChargeController.current.patientEncounter}"
+                                    completeMethod="#{admissionController.completePatient}" 
+                                    var="myItem" 
+                                    itemValue="#{myItem}" 
+                                    itemLabel="#{myItem.bhtNo}" 
+                                    size="30"
+                                    class="m-1">
+                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{myItem.patient.phn}"/>
+                                    </p:column>
+                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
                                         <h:outputLabel value="#{myItem.bhtNo}"/>
                                     </p:column>
-                                    <p:column>
+                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
                                         <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
                                     </p:column>
-                                    <p:column>
+                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
                                         <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>  
-                                    
+                                    </p:column>
+                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                        <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                                    </p:column>
+
                                 </p:autoComplete> 
                                 <p:commandButton value="Select" ajax="false" class="m-1"/>
                             </div>

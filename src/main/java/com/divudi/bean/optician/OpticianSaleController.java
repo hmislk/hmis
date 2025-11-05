@@ -208,11 +208,11 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyBillForCashier() {
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     private void prepareForPharmacySaleWithoutStock() {
@@ -394,6 +394,22 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
             }
 
         }
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public double getOldQty(BillItem bItem) {

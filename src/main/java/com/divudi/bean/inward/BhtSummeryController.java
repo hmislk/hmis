@@ -1529,6 +1529,12 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter the Date");
             return;
         }
+        if (!configOptionApplicationController.getBooleanValueByKey("Payment can be released without completing it.", true)) {
+            if (getGrantTotal() > getPaid()) {
+                JsfUtil.addErrorMessage("Payment for " + getPatientEncounter().getBhtNo() + " has not been completed.");
+                return;
+            }
+        }
 
         if (checkDischargeTime()) {
             return;
@@ -1744,7 +1750,7 @@ public class BhtSummeryController implements Serializable {
         updateTotal();
         settleOriginalBill();
 
-        return "inward_bill_final?faces-redirect=true;";
+        return "inward_bill_final?faces-redirect=true";
 
     }
 

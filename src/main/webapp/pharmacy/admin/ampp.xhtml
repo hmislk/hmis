@@ -6,81 +6,190 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
-
-
     <ui:define name="subcontent">
-
         <h:panelGroup >
             <h:form  >
                 <p:growl id="msg"/>
                 <p:focus id="selectFocus" context="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
-
-
-
-
                 <p:panel header="Manage AMPPs" >
-
                     <div class="row">
-                        <div class="col-md-6">
-                            <p:commandButton id="btnAdd" value="Add" action="#{amppController.prepareAdd()}" class=" m-1 ui-button-success w-25" update="lstSelect gpDetail" process="btnAdd">
-
+                        <div class="col-md-5">
+                            <p:commandButton
+                                id="btnAdd"
+                                value="Add"
+                                icon="fa fa-plus"
+                                action="#{amppController.prepareAdd()}"
+                                class=" m-1 ui-button-success w-25"
+                                update="lstSelect gpDetail btnEdit btnDelete"
+                                process="btnAdd"
+                                disabled="#{amppController.editable}">
                             </p:commandButton>
-                            <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{amppController.delete()}"  value="Delete"  class=" m-1 ui-button-danger w-25" update="lstSelect gpDetail msg" process="btnDelete">
+                            <p:commandButton
+                                id="btnEdit"
+                                value="Edit"
+                                icon="fas fa-edit"
+                                action="#{amppController.edit()}"
+                                class=" m-1 ui-button-info w-25"
+                                update="lstSelect gpDetail btnAdd btnDelete"
+                                process="btnEdit"
+                                disabled="#{amppController.editable or amppController.current.id eq null}">
                             </p:commandButton>
-
-<!--                            <p:selectOneListbox  id="lstSelect"  class="w-100" value="#{amppController.current}" filter="true">
-                                <f:selectItems  value="#{amppController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                <f:ajax render="gpDetail" execute="lstSelect" >
-                                </f:ajax>
-                            </p:selectOneListbox>-->
+                            <p:commandButton
+                                id="btnDelete"
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;"
+                                action="#{amppController.delete()}"
+                                value="Delete"
+                                icon="fas fa-trash"
+                                class=" m-1 ui-button-danger w-25"
+                                update="lstSelect gpDetail msg"
+                                process="btnDelete"
+                                disabled="#{amppController.editable}">
+                            </p:commandButton>
                             <div class="w-100">
-                                <p:autoComplete id="lstSelect" value="#{amppController.current}" completeMethod="#{amppController.completeAmpp}" 
-                                                forceSelection="true" var="i" itemLabel="#{i.name}" itemValue="#{i}" size="60" scrollHeight="300" placeholder="Type here to search">
-                                    <f:ajax event="itemSelect" execute="@this" render="gpDetail"/>
+                                <p:autoComplete
+                                    id="lstSelect"
+                                    value="#{amppController.current}"
+                                    completeMethod="#{amppController.completeAmpp}"
+                                    forceSelection="true"
+                                    disabled="#{amppController.editable}"
+                                    var="i"
+                                    itemLabel="#{i.name}" 
+                                    itemValue="#{i}" 
+                                    size="60" 
+                                    class="w-100 m-1"
+                                    inputStyleClass="w-100"
+                                    placeholder="Type here to search">
+                                    <f:ajax event="itemSelect" execute="@this" render="gpDetail btnEdit"/>
                                 </p:autoComplete>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <p:panel>
-                                <h:panelGrid id="gpDetail" columns="1" class="w-100">
-                                    <h:panelGrid id="gpDetailText" columns="2" class="w-100">
-                                        <h:outputText id="lblName" value="Pack Name" ></h:outputText>
-                                        <p:inputText autocomplete="off" id="txtName" value="#{amppController.current.name}"  class="w-100"></p:inputText>
-                                        <h:outputText  value="Select AMP" ></h:outputText>
-                                        <p:autoComplete  completeMethod="#{ampController.completeAmp}" 
-                                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" 
-                                                         value="#{amppController.current.amp}" scrollHeight="300" size="45"></p:autoComplete>
-                                        <h:outputText  value="Size" ></h:outputText>
-                                        <p:inputText autocomplete="off" value="#{amppController.current.dblValue}"  class="w-100"></p:inputText>
-                                        <h:outputText  value="Pack Unit" ></h:outputText>
-                                        <p:selectOneMenu value="#{amppController.packUnit}" class="w-100">
-                                            <f:selectItem itemLabel="Select pack"/>
-                                            <f:selectItems value="#{measurementUnitController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" ></f:selectItems>
+                                <p:panelGrid 
+                                    id="gpDetail" 
+                                    columns="1" 
+                                    class="w-100">
+                                    <p:panelGrid 
+                                        id="gpDetailText" 
+                                        columns="2" 
+                                        columnClasses="w-25 , w-75"
+                                        class="w-100">
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                        <h:outputText
+                                            id="lblName" 
+                                            value="Pack Name" ></h:outputText>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtName"
+                                            value="#{amppController.current.name}"
+                                            class="w-100"
+                                            disabled="#{!amppController.editable}"></p:inputText>
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                        <h:outputText 
+                                            value="Select AMP" ></h:outputText>
+                                        <p:autoComplete
+                                            completeMethod="#{ampController.completeAmp}"
+                                            var="pta"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            itemLabel="#{pta.name}"
+                                            itemValue="#{pta}"
+                                            forceSelection="true"
+                                            value="#{amppController.current.amp}"
+                                            scrollHeight="300"
+                                            size="45"
+                                            disabled="#{!amppController.editable}"></p:autoComplete>
+                                        <h:outputText  
+                                            value="Size" ></h:outputText>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{amppController.current.dblValue}"
+                                            class="w-100"
+                                            disabled="#{!amppController.editable}"></p:inputText>
+                                        <h:outputText  
+                                            value="Pack Unit" ></h:outputText>
+                                        <p:selectOneMenu
+                                            value="#{amppController.packUnit}"
+                                            class="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            disabled="#{!amppController.editable}">
+                                            <f:selectItem 
+                                                itemLabel="Select pack"/>
+                                            <f:selectItems 
+                                                value="#{measurementUnitController.items}" 
+                                                var="s" 
+                                                itemLabel="#{s.name}" 
+                                                itemValue="#{s}" ></f:selectItems>
                                         </p:selectOneMenu>
-                                    </h:panelGrid>
 
-                                    <p:commandButton id="btnSave" value="Save" action="#{amppController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect msg">
-                                    </p:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
+                                        <h:outputText value="Type" />
+                                        <p:selectOneMenu  
+                                            value="#{amppController.current.departmentType}" 
+                                            class="w-100"
+                                            filter="true"
+                                            disabled="#{!amppController.editable}"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
+                                        </p:selectOneMenu>
 
-                                </h:panelGrid>
+                                        <p:outputLabel 
+                                            for="txtComments" 
+                                            value="Description" 
+                                            class="form-label"></p:outputLabel>
+                                        <h:inputTextarea
+                                            id="txtComments"
+                                            value="#{amppController.current.comments}"
+                                            required="false"
+                                            class="form-control"
+                                            disabled="#{!amppController.editable}" ></h:inputTextarea>
+
+                                        <h:outputText value="Allow Fractions" />
+                                        <p:selectBooleanButton
+                                            value="#{amppController.current.allowFractions}"
+                                            onLabel="Yes"
+                                            offLabel="No"
+                                            class="w-100"
+                                            disabled="#{!amppController.editable}" />
+                                    </p:panelGrid>
+
+                                    <h:panelGroup layout="block" class="text-end">
+                                        <div>
+                                            <p:commandButton
+                                                id="btnSave"
+                                                value="Save"
+                                                icon="fas fa-save"
+                                                action="#{amppController.saveSelected()}"
+                                                class=" m-1 ui-button-warning w-25"
+                                                process="btnSave gpDetail"
+                                                update="lstSelect gpDetail msg btnEdit btnDelete btnAdd"
+                                                onclick="if (!confirm('Are you sure you want to save changes?'))
+                                                            return false;"
+                                                disabled="#{!amppController.editable}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnCancel"
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                action="#{amppController.cancel()}"
+                                                class=" m-1 ui-button-secondary w-25"
+                                                process="btnCancel"
+                                                update="lstSelect gpDetail btnEdit btnDelete btnAdd"
+                                                disabled="#{!amppController.editable}">
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
+
+                                </p:panelGrid>
                             </p:panel>
                         </div>
-
-
-
                     </div>
-
-
-
-
                 </p:panel>
             </h:form>
-
         </h:panelGroup>
-
     </ui:define>
-
 </ui:composition>

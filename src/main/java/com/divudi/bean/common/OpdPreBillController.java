@@ -1209,6 +1209,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public void addToBill() {
+        System.out.println("addToBill");
 
         if (getCurrentBillItem() == null) {
             JsfUtil.addErrorMessage("Nothing to add");
@@ -1241,8 +1242,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         lastBillItem = getCurrentBillItem();
-        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites for " + sessionController.getDepartment().getName(), true);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
+        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
+        System.out.println("addAllBillFees = " + addAllBillFees);
+        System.out.println("siteBasedBillFees = " + siteBasedBillFees);
+        System.out.println("departmentBasedBillFees = " + departmentBasedBillFees);
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
@@ -1250,11 +1255,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         if (addAllBillFees) {
             addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         } else if (siteBasedBillFees) {
-            addingEntry.setLstBillFees(getBillBean().forInstitutionBillFeefromBillItem(lastBillItem, sessionController.getDepartment().getSite()));
+            addingEntry.setLstBillFees(getBillBean().forInstitutionBillFeesFromBillItem(lastBillItem, sessionController.getDepartment().getSite()));
+        } else if (departmentBasedBillFees) {
+            addingEntry.setLstBillFees(getBillBean().forDepartmentBillFeesFromBillItem(lastBillItem, sessionController.getDepartment()));
         } else {
             addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         }
-
 
         addStaffToBillFees(addingEntry.getLstBillFees());
 

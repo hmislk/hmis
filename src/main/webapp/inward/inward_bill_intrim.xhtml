@@ -15,47 +15,57 @@
         <title >Interim Bill</title>
     </h:head>
 
-
     <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form  >
+                <h:form id="pageForm" >
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
                             <p:outputLabel value="Interim Bill" />
-
                         </f:facet>
 
                         <h:panelGrid columns="10">
-
                             <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true"
-                                             required="true" requiredMessage="Please select a patient"
-                                             value="#{bhtSummeryController.patientEncounter}"
-                                             completeMethod="#{admissionController.completePatientDishcargedNotFinalized}"
-                                             var="myItem" itemValue="#{myItem}"
-                                             itemLabel="#{myItem.bhtNo}"
-                                             size="30"
-                                             class="m-2">
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.name}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.currentPatientRoom.roomFacilityCharge.name}
-                                </p:column>
+                            <p:autoComplete  
+                                widgetVar="aPt" 
+                                id="acPt" 
+                                forceSelection="true"
+                                required="true" 
+                                requiredMessage="Please select a patient"
+                                value="#{bhtSummeryController.patientEncounter}"
+                                completeMethod="#{admissionController.completePatientDishcargedNotFinalized}"
+                                var="myItem" 
+                                itemValue="#{myItem}"
+                                itemLabel="#{myItem.bhtNo}"
+                                size="30"
+                                class="m-2">
 
+                                <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{myItem.patient.phn}"/>
+                                </p:column>
+                                <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{myItem.bhtNo}"/>
+                                </p:column>
+                                <p:column headerText="Patient" style="padding: 6px; width: 400px;">
+                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                    <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                    <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                                </p:column>
 
                             </p:autoComplete>
 
-                            <p:commandButton ajax="false"
-                                             value="Select"
-                                             class="ml-2"
-                                             action="#{bhtSummeryController.createIntrimBillTable()}" >
+                            <p:commandButton 
+                                ajax="false"
+                                value="Select"
+                                class="ml-2"
+                                action="#{bhtSummeryController.createIntrimBillTable()}" >
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -116,13 +126,9 @@
                                         value="#{bhtSummeryController.patientEncounter}"
                                         target="#{admissionController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
-
-
                             </div>
 
                         </f:facet>
-
-
 
                         <h:panelGrid columns="1" rendered="#{bhtSummeryController.patientEncounter eq null}">
                             Please select a BHT and Click Display Details
@@ -191,10 +197,6 @@
                                                 showTime="true"
                                                 showButtonBar="true"
                                                 timeInput="true">
-                                                <!--                                                <f:ajax execute="@this"
-                                                                                                        render="sum tvPt tot"
-                                                                                                        event="dateSelect"
-                                                                                                        listener="#{bhtSummeryController.checkDate}" />-->
                                             </p:datePicker>
                                         </h:panelGrid>
                                         <div class="d-flex justify-content-end my-2">
@@ -202,25 +204,30 @@
                                                 ajax="false"
                                                 style="float: right;"
                                                 value="Recalculate"
-                                                action="#{bhtSummeryController.createTables()}"  />
+                                                action="#{bhtSummeryController.createTables()}"  >
+                                            </p:commandButton>
+
                                             <p:commandButton
                                                 ajax="false"
                                                 rendered="false"
                                                 value="Add Vat"
                                                 class="mx-1"
-                                                action="#{bhtSummeryController.addVat}"  />
+                                                action="#{bhtSummeryController.addVat}">
+                                            </p:commandButton>
 
                                             <p:commandButton
                                                 ajax="false"
                                                 value="Discharge"
                                                 class="mx-1 ui-button-success"
-                                                action="#{bhtSummeryController.discharge}"  />
+                                                action="#{bhtSummeryController.discharge}"  >
+                                            </p:commandButton>
 
                                             <p:commandButton
                                                 ajax="false"
                                                 value="Discharge Cancel"
                                                 class=" ui-button-warning"
-                                                action="#{bhtSummeryController.dischargeCancel}"  />
+                                                action="#{bhtSummeryController.dischargeCancel}"  >
+                                            </p:commandButton>
                                         </div>
                                     </p:panel>
                                 </h:panelGrid>
@@ -482,39 +489,26 @@
                                                                   (iss.billedBill ne null
                                                                   and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
                                         <p:column headerText="Bill No">
-
-                                            #{iss.deptId}
+                                            <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Bill Total" >
+
+                                        <p:column headerText="Billed At">
+                                            <h:outputLabel value="#{iss.createdAt}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                            </h:outputLabel>
+                                            <br/>
+                                            <h:panelGroup rendered="#{iss.cancelled}" >
+                                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
+                                                               value="#{iss.cancelledBill.createdAt}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </p:column>
+                                        <p:column headerText="Bill Total" class="text-end">
                                             <h:outputLabel  value="#{iss.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Billed Date">
-                                            <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:panelGroup rendered="#{iss.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                                                               value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:column headerText="Billed Time" >
-                                            <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:panelGroup rendered="#{iss.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                                                               value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
-                                                </h:outputLabel>
-                                            </h:panelGroup>
                                         </p:column>
                                         <p:column headerText="Billed By">
                                             <h:outputLabel value="#{iss.creater.webUserPerson.name}"/>
@@ -533,6 +527,29 @@
                                             <h:outputLabel value="#{iss.checkeAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Comments"> 
+                                            <h:panelGroup id="commentContainer" layout="block" class="row">
+                                                <div class="row" >
+                                                    <div class="col-8" >
+                                                        <p:inputText id="commentInput"
+                                                                     class="w-100"
+                                                                     value="#{iss.comments}"/>
+                                                    </div>
+                                                    <div class="col-4" >
+                                                        <p:commandButton 
+                                                            id="saveBtn"
+                                                            icon="fa fa-save"
+                                                            class="col-3"
+                                                            action="#{billController.save(iss)}"
+                                                            process="commentContainer"
+                                                            update="pageForm:pageMessages"
+                                                            title="Save"/>
+                                                    </div>
+                                                </div>
+
+
+                                            </h:panelGroup>
                                         </p:column>
                                         <p:column>
                                             <p:commandButton ajax="false" action="pharmacy_reprint_bill_sale_bht"
@@ -884,7 +901,7 @@
 
 
 
-
+                    <p:messages id="pageMessages" ></p:messages>
 
 
                 </h:form>

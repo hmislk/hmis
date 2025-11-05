@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head />
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+
+                <h1>This page will be deleted in next iteration.</h1>
+                
+                <h:panelGroup rendered="false" >
+
+
+
+
+
+                    <div class="container-fluid">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h2 class="mb-0">Pending Physical Count Approvals</h2>
+                                <h:form>
+                                    <p:commandButton value="Refresh" icon="fa fa-sync" ajax="false"
+                                                     actionListener="#{pharmacyStockTakeController.listPendingPhysicalCounts}"/>
+                                </h:form>
+                            </div>
+                            <div class="card-body">
+                                <h:form id="frmPending">
+                                    <p:commandButton value="Load Pending" icon="fa fa-list" ajax="false"
+                                                     actionListener="#{pharmacyStockTakeController.listPendingPhysicalCounts}"
+                                                     update=":frmPending:tbl" styleClass="mb-3"/>
+
+                                    <p:dataTable id="tbl" value="#{pharmacyStockTakeController.pendingPhysicalCounts}" var="d"
+                                                 rows="25" paginator="true" paginatorPosition="both"
+                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="10,25,50,100" styleClass="ui-datatable-striped ui-datatable-gridlines"
+                                                 emptyMessage="No pending physical counts">
+                                        <p:column headerText="Bill No" style="width: 160px;">
+                                            <h:outputText value="#{d.deptId}" style="font-family: monospace;"/>
+                                        </p:column>
+                                        <p:column headerText="Date" style="width: 140px; text-align:center;">
+                                            <h:outputText value="#{d.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Institution" style="min-width: 160px;">
+                                            <h:outputText value="#{d.institutionName}"/>
+                                        </p:column>
+                                        <p:column headerText="Department" style="min-width: 160px;">
+                                            <h:outputText value="#{d.departmentName}"/>
+                                        </p:column>
+                                        <p:column headerText="Items" style="width: 80px; text-align: right;">
+                                            <h:outputText value="#{d.itemsCount}"/>
+                                        </p:column>
+                                        <p:column headerText="Actions" style="width: 260px; text-align: center;">
+                                            <p:commandButton value="View / Approve" icon="fa fa-check" ajax="false"
+                                                             action="#{pharmacyStockTakeController.viewPhysicalCountById(d.id)}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:form>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+

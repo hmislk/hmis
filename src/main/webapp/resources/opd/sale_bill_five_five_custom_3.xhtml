@@ -80,6 +80,14 @@
                         <td style="padding: 2px;" ><h:outputLabel value="BHT No : " rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
                         <td style="padding: 2px;" ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
                     </tr>
+                    
+                    <tr>
+                        <td style="padding: 2px;" ><h:outputLabel value="Payment Method : " /></td>
+                        <td style="padding: 2px;" ><h:outputLabel value="#{cc.attrs.bill.paymentMethod.label}"/></td>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;"></td>
+                        <td style="padding: 2px;"></td>
+                    </tr>
                 </table>
 
                 <!-- Separator Line -->
@@ -102,11 +110,6 @@
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>#{item.item.name}</td>
-<!--                                <td>
-                                    <h:outputLabel value="#{item.netRate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>-->
                                 <td>
                                     <h:outputLabel value="#{item.qty}">
                                         <f:convertNumber integerOnly="true" />

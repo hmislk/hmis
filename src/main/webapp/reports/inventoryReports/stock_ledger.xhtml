@@ -86,6 +86,9 @@
                                 <f:selectItem itemLabel="Consumption" itemValue="consumptionDoc"/>
                                 <f:selectItem itemLabel="Purchase" itemValue="purchaseDoc"/>
                                 <f:selectItem itemLabel="GRN" itemValue="grnDoc"/>
+                                <f:selectItem itemLabel="Return Without Receipt" itemValue="returnWithoutReceiptDoc"/>
+                                <f:selectItem itemLabel="Stock Adjustments" itemValue="stockAdjustmentDoc"/>
+                                <f:selectItem itemLabel="Rate Adjustments" itemValue="rateAdjustmentDoc"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -199,18 +202,31 @@
                                 <p:outputLabel value="Item Name" for="phmItem" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:autoComplete 
+                            <p:autoComplete
                                 id="phmItem"
-                                value="#{pharmacyReportController.amp}" 
+                                value="#{pharmacyReportController.amp}"
                                 completeMethod="#{ampController.completeAmp}"
-                                var="item" 
+                                var="item"
                                 class="w-100"
                                 minQueryLength="3"
                                 maxResults="20"
                                 inputStyleClass="w-100"
-                                itemLabel="#{item.name}" 
-                                itemValue="#{item}" 
+                                itemLabel="#{item.name}"
+                                itemValue="#{item}"
                                 ></p:autoComplete>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-file-alt mr-2" />
+                                <p:outputLabel value="Report Type" for="reportType" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="reportType"
+                                value="#{pharmacyReportController.stockLedgerReportType}"
+                                class="w-100">
+                                <f:selectItem itemLabel="By Batch" itemValue="byBatch"/>
+                                <f:selectItem itemLabel="By Item" itemValue="byItem"/>
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
@@ -224,7 +240,7 @@
 
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
                                              onclick="hidePaginatorBeforePrint()">
-                                <p:printer target="tbl" oncomplete="restorePaginatorAfterPrint()"/>
+                                <p:printer target="tbl" />
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
@@ -260,116 +276,249 @@
                         </h:outputScript>
 
 
-                        <p:dataTable id="tbl" 
-                                     value="#{pharmacyReportController.stockLedgerHistories}" 
-                                     var="f" 
-                                     rowIndexVar="n" 
-                                     paginator="true" 
+                        <p:dataTable id="tbl"
+                                     value="#{pharmacyReportController.stockLedgerHistories}"
+                                     var="f"
+                                     rowIndexVar="n"
+                                     paginator="true"
                                      paginatorPosition="bottom"
-                                     rows="10" 
+                                     rows="10"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                     styleClass="table-sm">
 
 
-                            <p:column headerText="S.No." width="5em">
-                                <h:outputText value="#{n+1}" />
-                            </p:column>
-                            <p:column headerText="Department" width="5em">
+                            <p:column headerText="Department" width="12em">
                                 <h:outputText value="#{f.department.name}" />
                             </p:column>
-                            <p:column headerText="Item Category / Drug Form" width="10em">
-                                <h:outputText value="#{f.pbItem.billItem.item.category.name}" />
+                            <p:column headerText="Category" width="12em">
+                                <h:outputText value="#{empty f.pbItem.billItem.item.amp ? f.pbItem.billItem.item.category.name : f.pbItem.billItem.item.amp.category.name}" />
                             </p:column>
-                            <p:column headerText="Item Code" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.item.code}" />
+                            <p:column headerText="Item" width="8em">
+                                <h:outputText value="#{empty f.pbItem.billItem.item.amp ? f.pbItem.billItem.item.code : f.pbItem.billItem.item.amp.code}" />
                             </p:column>
-                            <p:column headerText="Item Name" width="5em">
+                            <p:column headerText="Name" width="20em">
                                 <h:outputText value="#{f.pbItem.billItem.item.name}" />
                             </p:column>
-                            <p:column headerText="UOM" width="5em">
+                            <p:column headerText="UOM" width="6em">
                                 <h:outputText value="#{f.pbItem.billItem.item.measurementUnit.name}" />
                             </p:column>
-                            <p:column headerText="Transaction Type" width="8em">
-                                <h:outputText 
+                            <p:column headerText="Transaction Type" styleClass="text-center" width="10em">
+                                <h:outputText
                                     value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}"
                                     styleClass="#{f.pbItem.transThisIsStockIn ? 'stock-in-badge' : 'stock-out-badge'}" />
                             </p:column>
-                            <p:column headerText="Doc No" width="15em">
-                                <p:commandLink 
+                            <p:column headerText="Bill Number" width="10em">
+                                <p:commandLink
                                     value="#{f.pbItem.billItem.bill.deptId}"
                                     class="m-1 ui-button-info"
-                                    style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{not empty f.pbItem.billItem.bill ? f.pbItem.billItem.bill : (f.pbItem.billItem.bill.referenceBill or f.pbItem.billItem.bill.backwardReferenceBill or f.pbItem.billItem.bill.forwardReferenceBill)}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Doc Date" width="5em">
-                                <h:outputText value="#{f.createdAt}" />
+                            <p:column headerText="Transaction At" width="12em">
+                                <h:outputText value="#{f.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Ref Doc No." width="15em">
-                                <p:commandLink 
-                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
+                            <p:column headerText="Referance Bill Number" width="10em">
+                                <p:commandLink
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
                                     value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
-                                    style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
+                                <p:commandLink
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' or f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
+                                    value="#{f.pbItem.billItem.bill.billedBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.billedBill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
-                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+                            <p:column headerText="Ref Transaction at" width="12em">
+                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
+                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                </h:outputText>
+                                <h:outputText
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK' or f.pbItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
+                                    value="#{f.pbItem.billItem.bill.billedBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                </h:outputText>
 
                             </p:column>
-                            <p:column headerText="From Store" width="5em">
+                            <p:column headerText="From Store" width="12em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
                             </p:column>
-                            <p:column headerText="To Store" width="5em">
+                            <p:column headerText="To Store" width="12em">
                                 <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
                             </p:column>
-                            <p:column headerText="Document Type" width="5em">
-                                <h:outputText 
-                                    value="#{not empty f.pbItem.billItem.bill.billTypeAtomic ? 
-                                             f.pbItem.billItem.bill.billTypeAtomic.label : 
+                            <p:column headerText="Consumption Department" width="12em">
+                                <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
+                            </p:column>
+                            <p:column headerText="Document Type" width="12em">
+                                <h:outputText
+                                    value="#{not empty f.pbItem.billItem.bill.billTypeAtomic ?
+                                             f.pbItem.billItem.bill.billTypeAtomic.label :
                                              f.pbItem.billItem.bill.billType.label}" />
                             </p:column>
-                            <p:column headerText="Stock In Quantity (Purchase + Free)" width="13em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
-                            </p:column>
-                            <p:column headerText="Stock Out Quantity" width="5em">
-                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
-                            </p:column>
-                            <p:column headerText="Closing Stock" width="5em">
-                                <h:outputText value="#{f.itemStock}" />
-                            </p:column>
-                            <p:column headerText="Rate" width="5em">
-                                <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
-                            </p:column>
-                            <p:column headerText="Closing Stock Value" width="15em">
-                                <h:outputText value="#{f.itemStock * f.pbItem.purchaseRate}" >
+                            <p:column headerText="Stock In Qty in units" styleClass="text-end" width="9em">
+                                <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Locator" width="5em">
-                                <h:outputText value="" />
+                            <p:column headerText="Stock Out Qty in units" styleClass="text-end" width="9em">
+                                <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Batch Code" width="5em">
+                            <p:column id="colClosingStock" styleClass="text-end" width="10em">
+                                <f:facet name="header">
+                                    <h:panelGroup>
+                                        <h:outputText value="Closing Stock " />
+                                        <p:badge value="Batch" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}"></p:badge>
+                                        <p:badge value="Item" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}"></p:badge>
+                                    </h:panelGroup>
+                                </f:facet>
+
+                                <!-- By Batch Report Type -->
+                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}">
+                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                        <h:outputText value="#{f.stockQty}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                            <h:outputText value="#{f.instituionBatchQty}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                            <h:outputText value="#{f.totalBatchQty}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <!-- By Item Report Type -->
+                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}">
+                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                        <h:outputText value="#{f.itemStock}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                            <h:outputText value="#{f.institutionItemStock}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                            <h:outputText value="#{f.totalItemStock}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                            </p:column>
+                            <p:column headerText="Rate" styleClass="text-end" width="8em">
+                                <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Rate" styleClass="text-end" width="8em">
+                                <h:outputText value="#{f.itemBatch.costRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column id="colValueAtPurchaseRate" headerText="Closing Stock Value at Purchase Rate" styleClass="text-end" width="12em">
+                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                    <h:outputText value="#{f.itemStockValueAtPurchaseRate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                        <h:outputText value="#{f.institutionItemStockValueAtPurchaseRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                        <h:outputText value="#{f.totalItemStockValueAtPurchaseRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column id="colValueAtCostRate" headerText="Closing Stock Value at Cost Rate" styleClass="text-end" width="12em">
+                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                    <h:outputText value="#{f.itemStockValueAtCostRate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                        <h:outputText value="#{f.institutionItemStockValueAtCostRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                        <h:outputText value="#{f.totalItemStockValueAtCostRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column  id="colValueAtRetailSaleRate"  headerText="Closing Stock Value at Retail Rate" styleClass="text-end" width="12em">
+                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
+                                    <h:outputText value="#{f.itemStockValueAtSaleRate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
+                                        <h:outputText value="#{f.institutionItemStockValueAtSaleRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
+                                        <h:outputText value="#{f.totalItemStockValueAtSaleRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </p:column>
+                            <!--                            <p:column headerText="Locator" width="8em">
+                                                            <h:outputText value="" />
+                                                        </p:column>-->
+                            <p:column headerText="Batch Code" width="10em">
                                 <h:outputText value="#{f.itemBatch.batchNo}" />
                             </p:column>
-                            <p:column headerText="MRP" width="5em">
-                                <h:outputText value="#{f.pbItem.retailRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                            <p:column headerText="MRP" styleClass="text-end" width="8em">
+                                <h:outputText value="#{f.pbItem.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Expiry Date" width="5em">
-                                <h:outputText value="#{f.pbItem.doe}" />
+                            <p:column headerText="Expiry Date" width="10em">
+                                <h:outputText value="#{f.itemBatch.dateOfExpire}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Inserted Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.createdAt}" />
-                            </p:column>
-                            <p:column headerText="UserName" width="5em">
+                            <!--                            <p:column headerText="Inserted Date" width="12em">
+                                                            <h:outputText value="#{f.pbItem.billItem.bill.createdAt}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                            </h:outputText>
+                                                        </p:column>-->
+                            <p:column headerText="User" width="10em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />
                             </p:column>
 

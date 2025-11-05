@@ -4,6 +4,10 @@ package com.divudi.core.data;
  * Enum for defining various icons with human-readable labels. Note: Image and
  * action paths are removed as per request.
  *
+ * IMPORTANT: This enum is used in several places with EnumType.ORDINAL.
+ * Therefore, do NOT insert new enum values in the middle or reorder existing
+ * ones. Do NOT delete any values. Instead, deprecate unused ones if necessary.
+ *
  * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com>
  */
 public enum Icon {
@@ -37,7 +41,6 @@ public enum Icon {
     Lab_Report_Print("Lab Report Print"),
     OPD_Summaries("OPD Summaries"),
     OPD_Analytics("OPD Analytics"),
-    //for Pharmacy
     pharmacy_sale("Pharmacy - Sale"),
     pharmacy_sale_for_cashier("Pharmacy - Sale for cashier"),
     pharmacy_sale_without_stock("Pharmacy - Sale without Stock"),
@@ -106,7 +109,6 @@ public enum Icon {
     pharmacy_analytics("Pharmacy - Analytics"),
     Goods_Receipt_With_Approval("Goods Receipt With Approval"),
     Pharmacy_Order_Cancellation("Pharmacy Order Cancellation"),
-    // icons for Optician Section
     Optician_EMR("Optician - EMR Management"),
     Optician_Patient_Management("Optician - Patient Management"),
     Optician_Appointment_Management("Optician - Appointment Management"),
@@ -114,9 +116,6 @@ public enum Icon {
     Optician_Product_Catalog("Optician - Product Catalog"),
     Optician_Repair_Management("Optician - Repair Management"),
     Optician_Retail_Sale("Optician - Retail Sale"),
-    /**
-     * @deprecated Retained for backward compatibility with DB entries. Use {@link #Channel_Booking} for channel bookings.
-     */
     @Deprecated
     Appointments("Appointments"),
     Channel_Booking("Channel Booking"),
@@ -128,8 +127,16 @@ public enum Icon {
     Search_Admissions("Search Admissions"),
     Investigation_Trace("Trace Investigations"),
     Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
-    // icons for cashier
-    Cashier_Drawer("Logged User Drawer");
+    Cashier_Drawer("Logged User Drawer"),
+    Financial_Transaction_Manager("Financial Transaction Manager"),
+    Channel_Booking_by_Dates("Channel Booking by Dates"),
+    Channel_Scheduling("Channel Scheduling"),
+    Goods_Receipt_Costing("Goods Receipt Costing"),
+    Report_Execution_Logs("Report Execution Logs"),
+    Purchase_Orders_Finalize("Finalize Purchase Orders"),
+    pharmacy_bill_search("Pharmacy Bill Search"),
+    pharmacy_bill_search_new("Pharmacy Bill Search (New)"),
+    pharmacy_disposal_issue("Pharmacy Disposal - Direct Issue");
 
     private final String label;
 

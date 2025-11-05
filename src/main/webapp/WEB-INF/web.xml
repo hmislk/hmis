@@ -58,8 +58,9 @@
 
     <!-- Session Configuration -->
     <session-config>
-        <session-timeout>90</session-timeout>
+        <session-timeout>180</session-timeout> <!-- minutes -->
     </session-config>
+
 
     <!-- Welcome File -->
     <welcome-file-list>
@@ -86,5 +87,19 @@
         <exception-type>java.lang.Throwable</exception-type>
         <location>/faces/errorPages/generalError.xhtml</location>
     </error-page>
+    
+    <context-param>
+        <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+        <param-value>server</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.faces.numberOfViewsInSession</param-name>
+        <param-value>20</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.faces.numberOfLogicalViews</param-name>
+        <param-value>10</param-value>
+    </context-param>
+
 
 </web-app>

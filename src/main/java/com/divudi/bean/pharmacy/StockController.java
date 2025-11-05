@@ -15,10 +15,12 @@ import com.divudi.bean.store.StoreBean;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.StockLight;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.BillItemFacade;
@@ -30,6 +32,7 @@ import com.divudi.service.StockService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -114,17 +117,29 @@ public class StockController implements Serializable {
         if (item == null) {
             return;
         }
-        String sql;
-        Map m = new HashMap();
+        Amp amp;
+        if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            amp = ampp.getAmp();
+            if (amp == null) {
+                return;
+            }
+        } else if (item instanceof Amp) {
+            amp = (Amp) item;
+        } else {
+            return;
+        }
+        String jpql;
+        Map params = new HashMap();
         double d = 0.0;
-        m.put("s", d);
-        m.put("item", item);
-        sql = "select s "
+        params.put("s", d);
+        params.put("item", amp);
+        jpql = "select s "
                 + "from Stock s "
                 + "where s.stock > :s "
                 + "and s.itemBatch.item = :item "
                 + "order by s.itemBatch.dateOfExpire desc";
-        selectedItemStocks = ejbFacade.findByJpql(sql, m, 20);
+        selectedItemStocks = ejbFacade.findByJpql(jpql, params, 20);
         totalStockQty = calculateStockQty(selectedItemStocks);
     }
 
@@ -135,11 +150,19 @@ public class StockController implements Serializable {
             List<Amp> amps = new ArrayList<>();
             amps.add(amp);
             selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
+        } else if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            Amp amp = ampp.getAmp();
+            List<Amp> amps = new ArrayList<>();
+            if (amp != null) {
+                amps.add(amp);
+            }
+            selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
             selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
         } else {
-            //TO Do for Ampp, Vmpp,
+            //TO Do for Vmpp
         }
         expiaringStockQty = calculateStockQty(selectedItemExpiaringStocks);
     }
@@ -188,7 +211,9 @@ public class StockController implements Serializable {
         }
 
         // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        if (stockSet.size() <= 10) {
+        Long itemCountToExtendStockSearch = configOptionApplicationController.getLongValueByKey("Minimum Item Count to extend search for Pharmacy Item Stocks", 5l);
+
+        if (stockSet.size() <= itemCountToExtendStockSearch.intValue()) {
             List<Stock> additionalStocks = completeAvailableStocksContains(qry);
             if (additionalStocks != null) {
                 stockSet.addAll(additionalStocks);
@@ -220,6 +245,194 @@ public class StockController implements Serializable {
         return new ArrayList<>(stockSet);
     }
 
+    public List<StockDTO> completeAvailableStocksWithItemStockDto(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+        
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        // First, get stocks with individual stock quantities
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.allowFractions) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :barcode ");
+            parameters.put("barcode", qry.trim());
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        List<StockDTO> stockDtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+        // Calculate total stock quantities per item
+        addItemStockToStockDtos(stockDtos);
+
+        return stockDtos;
+    }
+
+    public List<StockDTO> completeAvailableStocksWithItemStockDtoWithoutTotalStock(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        // Get stocks with individual stock quantities only (no total stock calculation)
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.allowFractions) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :barcode ");
+            parameters.put("barcode", qry.trim());
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        List<StockDTO> stockDtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+        // Do not calculate total stock quantities - return as is
+
+        return stockDtos;
+    }
+
+    public List<StockDTO> completeAvailableStocksWithItemStockDtoForAllowedDepartments(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        // Get stocks with individual stock quantities only (no total stock calculation)
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.allowFractions) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND i.itemBatch.item.departmentType in :dts ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :barcode ");
+            parameters.put("barcode", qry.trim());
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        List<StockDTO> stockDtos = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+        // Calculate total stock quantities per item
+        addItemStockToStockDtos(stockDtos);
+
+        return stockDtos;
+    }
+
+    public List<Stock> completeAvailableStocksForAllowedDepartments(String qry) {
+        Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
+        List<Stock> initialStocks = completeAvailableStocksStartsWithForAllowedDepartments(qry);
+        if (initialStocks != null) {
+            stockSet.addAll(initialStocks);
+        }
+
+        Long itemCountToExtendStockSearch = configOptionApplicationController.getLongValueByKey("Minimum Item Count to extend search for Pharmacy Item Stocks", 5l);
+
+        if (stockSet.size() <= itemCountToExtendStockSearch.intValue()) {
+            List<Stock> additionalStocks = completeAvailableStocksContainsForAllowedDepartments(qry);
+            if (additionalStocks != null) {
+                stockSet.addAll(additionalStocks);
+            }
+        }
+
+        return new ArrayList<>(stockSet);
+    }
+
     public void addItemStockToStocks(Set<Stock> inputStocks) {
         if (inputStocks == null || inputStocks.isEmpty()) {
             return;
@@ -246,6 +459,49 @@ public class StockController implements Serializable {
             }
             Item item = s.getItemBatch().getItem();
             s.setTransItemStockQty(itemStockTotals.get(item));
+        }
+    }
+
+    public void addItemStockToStockDtos(List<StockDTO> inputStockDtos) {
+        if (inputStockDtos == null || inputStockDtos.isEmpty()) {
+            return;
+        }
+        if (inputStockDtos.size() > 20) {
+            return;
+        }
+
+        Map<String, Double> itemStockTotals = new HashMap<>();
+
+        // First pass: calculate the total stock quantity for each item
+        for (StockDTO dto : inputStockDtos) {
+            if (dto == null || dto.getItemName() == null) {
+                continue;
+            }
+            String itemKey = dto.getItemName() + "_" + dto.getCode();
+            itemStockTotals.put(itemKey, itemStockTotals.getOrDefault(itemKey, 0.0) + (dto.getStockQty() != null ? dto.getStockQty() : 0.0));
+        }
+
+        // Calculate total stock for each item across all departments
+        for (StockDTO dto : inputStockDtos) {
+            if (dto == null || dto.getItemName() == null) {
+                continue;
+            }
+
+            // Get total stock for this item across all departments
+            Map<String, Object> params = new HashMap<>();
+            params.put("itemName", dto.getItemName());
+            params.put("stockMin", 0.0);
+
+            String sql = "SELECT COALESCE(SUM(s.stock), 0) FROM Stock s "
+                    + "WHERE s.itemBatch.item.name = :itemName "
+                    + "AND s.stock > :stockMin";
+
+            try {
+                Double totalStock = (Double) getStockFacade().findDoubleByJpql(sql, params);
+                dto.setTotalStockQty(totalStock != null ? totalStock : 0.0);
+            } catch (Exception e) {
+                dto.setTotalStockQty(0.0);
+            }
         }
     }
 
@@ -330,6 +586,42 @@ public class StockController implements Serializable {
         return stockList;
     }
 
+    public List<Stock> completeAvailableStocksStartsWithForAllowedDepartments(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
+        return stockList;
+    }
+
+    public List<Stock> completeAvailableStocksContainsForAllowedDepartments(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
+        return stockList;
+    }
+
     public void removeStoreItemsWithoutStocks() {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
@@ -346,17 +638,65 @@ public class StockController implements Serializable {
         }
     }
 
+    @Deprecated
     public double findStock(Item item) {
         return findStock(null, item);
     }
 
+    @Deprecated
     public double findStock(Institution institution, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findStock(institution, amp);
+        } else if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            Amp amp = ampp.getAmp();
+            return findStock(institution, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    @Deprecated
+    public double findInstitutionStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
             return findStock(institution, amp);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
             return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    @Deprecated
+    public double findDepartmentStock(Department department, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findDepartmentStock(department, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(department, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    @Deprecated
+    public double findSiteStock(Institution site, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findSiteStock(site, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findSiteStock(site, amps);
         } else {
             //TO Do for Ampp, Vmpp,
             return 0.0;
@@ -396,6 +736,30 @@ public class StockController implements Serializable {
         return 0.0;
     }
 
+    public double findSiteStock(Institution site, List<Amp> amps) {
+        Double stock;
+        String jpql;
+        Map m = new HashMap();
+
+        m.put("amps", amps);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (site == null) {
+            jpql += " where i.itemBatch.item in :amps ";
+        } else {
+            m.put("ins", site);
+            jpql += " where i.department.site=:ins "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = billItemFacade.findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
+    }
+
+    @Deprecated
     public double findStock(Institution institution, Institution site, Department department, Item item) {
         if (item instanceof Amp) {
             return findStock(institution, site, department, (Amp) item);

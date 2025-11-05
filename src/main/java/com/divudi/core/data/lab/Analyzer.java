@@ -22,7 +22,9 @@ public enum Analyzer {
     HumaCount5D("HumaCount5D"),
     HumaLyte("HumaLyte"),
     HumaStar600("HumaStar600"),
-    MaglumiX3HL7("Maglumi X3 HL7");
+    MaglumiX3HL7("Maglumi X3 HL7"),
+    XL_200("XL 200"),
+    AIA_360("AIA 360");
 
     private final String label;
 

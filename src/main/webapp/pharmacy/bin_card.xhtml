@@ -9,6 +9,18 @@
 
 
     <ui:define name="subcontent">
+        <style>
+            .batch-color-0 { background-color: #f8f9fa !important; }
+            .batch-color-1 { background-color: #e3f2fd !important; }
+            .batch-color-2 { background-color: #f3e5f5 !important; }
+            .batch-color-3 { background-color: #e8f5e8 !important; }
+            .batch-color-4 { background-color: #fff3e0 !important; }
+            .batch-color-5 { background-color: #fce4ec !important; }
+            .batch-color-6 { background-color: #f1f8e9 !important; }
+            .batch-color-7 { background-color: #e0f2f1 !important; }
+            .batch-color-8 { background-color: #fafafa !important; }
+            .batch-color-9 { background-color: #eceff1 !important; }
+        </style>
 
         <h:form>
             <p:panel header="Pharmacy Bin Card" >
@@ -85,7 +97,7 @@
 
                 </h:panelGrid>
 
-                <p:dataTable value="#{pharmacyErrorChecking.stockHistories}"
+                <p:dataTable value="#{pharmacyErrorChecking.binCardEntries}"
                              var="sh"
                              rowIndexVar="i"
                              rows="10"
@@ -94,17 +106,18 @@
                              rowKey="#{sh.id}"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="10,20,50,100,500,1000">
+                             rowsPerPageTemplate="10,20,50,100,500,1000"
+                             rowStyleClass="#{pharmacyErrorChecking.getBatchColorClass(sh.batchNo)}">
 
 
                     <p:column 
                         headerText="Stock Hx ID"
                         rendered="#{webUserController.hasPrivilege('Developers')}"
                         width="10rem">
-                        <p:commandLink 
+                        <p:commandLink
                             ajax="false"
-                            action="#{stockHistoryController.navigateToViewStockHistory(sh)}"
-                            value="#{sh.id}" 
+                            action="#{stockHistoryController.navigateToViewStockHistoryById(sh.id)}"
+                            value="#{sh.id}"
                             ></p:commandLink>
                         <f:facet name="footer">
                             <h:outputText value="Total"/>
@@ -120,36 +133,49 @@
 
                     <!-- Bill Type -->
                     <p:column headerText="Bill Type">
-                        <h:outputText value="#{sh.pbItem.billItem.bill.billType.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic eq null}"/>
-                        <h:outputText value="#{sh.pbItem.billItem.bill.billTypeAtomic.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic ne null}"/>
+                        <h:outputText value="#{sh.billType.label}" rendered="#{sh.billTypeAtomic eq null}"/>
+                        <h:outputText value="#{sh.billTypeAtomic.label}" rendered="#{sh.billTypeAtomic ne null}"/>
+                    </p:column>
+
+                    <!-- Batch Number -->
+                    <p:column headerText="Batch Number" class="text-end">
+                        <h:outputText value="#{sh.batchNo}" />
                     </p:column>
 
                     <!-- Quantity In -->
                     <p:column headerText="Qty In" class="text-end">
-                        <h:outputText value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
-                                      rendered="#{sh.pbItem.transThisIsStockIn}"
-                                      styleClass="#{sh.pbItem.qty gt 0 ? 'text-success' : ''}">
+                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
+                                      rendered="#{sh.transThisIsStockIn}"
+                                      styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
-                        <p:commandLink value="" ></p:commandLink>
                     </p:column>
 
                     <!-- Quantity Out -->
                     <p:column headerText="Qty Out" class="text-end">
                         <h:outputText 
-                            value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
-                            rendered="#{sh.pbItem.transThisIsStockOut}"
-                            styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">
+                            value="#{sh.transAbsoluteQtyPlusFreeQty}" 
+                            rendered="#{sh.transThisIsStockOut}"
+                            styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Balance Qty" class="text-end">
+                    <p:column headerText="Batch Number" class="text-end">
+                        <h:outputText value="#{sh.batchNo}" />
+                    </p:column>
+
+                    <p:column headerText="Closing Stock for Batch" class="text-end">
+                        <h:outputText value="#{sh.stockQty}">
+                            <f:convertNumber pattern="#.#"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Closing Stock for Item" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
-
 
 
                 </p:dataTable>

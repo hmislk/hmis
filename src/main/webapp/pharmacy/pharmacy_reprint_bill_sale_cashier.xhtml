@@ -13,39 +13,157 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" >
+                    <p:panel header="Reprint" rendered="#{webUserController.hasPrivilege('PharmacySaleReprint')}">
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint Sale Bill For Cashier" class="mt-2" ></h:outputLabel>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputLabel value="Reprint Sale Bill For Cashier" />
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Back" 
+                                        class="ui-button-secondary m-1"
+                                        icon="fa fa-arrow-left"
+                                        action="pharmacy_search_pre_bill?faces-redirect=true" />
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Search Bills" 
+                                        title="Search Sale Pre Bills"
+                                        class="ui-button-secondary m-1"
+                                        icon="fa fa-search"
+                                        action="#{pharmacyBillSearch.navigateToSearchSalePreBill()}" />
+                                    <p:commandButton 
+                                        accesskey="n" 
+                                        value="New Bill"  
+                                        ajax="false" 
+                                        class="ui-button-success m-1"
+                                        action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"
+                                        actionListener="#{pharmacySaleController.resetAll()}"
+                                        icon="fa fa-plus"
+                                        >
+                                    </p:commandButton>
 
-                            <p:commandButton 
-                                value="Reprint" 
-                                style="float: right;"
-                                class="ui-button-info mx-2"
-                                icon="fa fa-print"
-                                ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary mx-1"
+                                        type="button"
+                                        onclick="PF('settleReprintConfigDialog').show();" >
+                                    </p:commandButton>
 
-                            <p:commandButton 
-                                ajax="false"
-                                value="Back" 
-                                style="float: right;"
-                                class="ui-button-warning mx-2"
-                                icon="fa fa-arrow-left"
-                                action="pharmacy_search_pre_bill?faces-redirect=true" >
-                            </p:commandButton>   
-                            <!--                            <p:commandButton 
-                                                            ajax="false" 
-                                                            value="Cancel" 
-                                                            style="float: right;"
-                                                            class="ui-button-danger"
-                                                            icon="fa fa-cancel"
-                                                            action="pharmacy_cancel_bill_retail_cash" 
-                                                            disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                                                        </p:commandButton>-->
+                                    <p:commandButton 
+                                        value="Reprint" 
+                                        icon="fa fa-print"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        class="ui-button-info m-1"
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
 
+                                    <p:commandButton 
+                                        value="Reprint" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        class="ui-button-info m-1"
+                                        icon="fa fa-print"
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}"
+                                        value="Print Original" 
+                                        styleClass="ui-button-warning m-1"
+                                        icon="fa fa-print"
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreviewOriginal" />
+                                    </p:commandButton>
+
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Return Items Only"
+                                        title="Payment will be released at the cashier"
+                                        icon="fa fa-undo"
+                                        class="ui-button-warning m-1"
+                                        action="#{pharmacyBillSearch.navigateToReturnItemsOnly()}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Return Goods and Payment"
+                                        title="Will take goods and return payments"
+                                        icon="fa fa-exchange"
+                                        class="ui-button-info m-1"
+                                        action="#{pharmacyBillSearch.navigateToReturnGoodsAndPayment()}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel"
+                                        icon="fa fa-cancel"
+                                        class="ui-button-danger m-1"
+                                        action="pharmacy_cancel_bill_retail?faces-redirect=true" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
 
+                        <div class="mb-3">
+                            <!-- Standard Print Group (Primary actions) -->
+                            <div class="d-inline-block mx-2">
+
+                            </div>
+
+                            <br/>
+
+
+                        </div>
+
+                        <!-- Original Print Section (No Duplicate Text) -->
+                        <h:panelGroup id="gpBillPreviewOriginal" rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}" >
+                            <h:panelGroup   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
+                                <div>
+                                    <ph:saleBill bill="#{pharmacyBillSearch.bill}"></ph:saleBill>
+                                </div>
+                            </h:panelGroup> 
+
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper Custom 1',true)}">
+                                <div>
+                                    <ph:saleBill_Pos_paper_Custom_1 bill="#{pharmacyBillSearch.bill}"></ph:saleBill_Pos_paper_Custom_1>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is Custom 1',true)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_1 bill="#{pharmacyBillSearch.bill}"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is Custom 2',true)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_2 bill="#{pharmacyBillSearch.bill}"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper',true)}">
+                                <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}"></ph:saleBill_Header>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+
+                        <!-- Reprint Section (With Duplicate Text) -->
                         <h:panelGroup id="gpBillPreview" >
                             <h:panelGroup   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
                                 <div>
@@ -53,15 +171,142 @@
                                 </div>
                             </h:panelGroup> 
 
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper Custom 1',true)}">
                                 <div>
-                                    <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                    <ph:saleBill_Pos_paper_Custom_1 bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Pos_paper_Custom_1>
                                 </div>
                             </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is Custom 1',true)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_1 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is Custom 2',true)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_2 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper',true)}">
+                                <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header>
+                            </h:panelGroup>
+
                         </h:panelGroup>
                     </p:panel>
 
                 </h:form>
+
+                <!-- Configuration Dialog -->
+                <p:dialog id="settleReprintConfigDialog"
+                          header="Pharmacy Settle Payment Reprint Configuration"
+                          widgetVar="settleReprintConfigDialog"
+                          modal="true"
+                          width="700"
+                          height="500"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="settleConfigForm" />
+
+                    <h:form id="settleConfigForm">
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-file-alt"></i> Settle Payment Bill Reprint Paper Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settlePosPaper"
+                                                value="#{pharmacyConfigController.settlePaymentPosPaper}" />
+                                            <p:outputLabel for="settlePosPaper" value="POS Paper with Items" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard thermal printer paper format with item details</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settlePosPaperCustom1"
+                                                value="#{pharmacyConfigController.settlePaymentPosPaperCustom1}" />
+                                            <p:outputLabel for="settlePosPaperCustom1" value="POS Paper Custom 1 with Items" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom thermal printer paper format with item details</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settleCustom1"
+                                                value="#{pharmacyConfigController.settlePaymentCustom1}" />
+                                            <p:outputLabel for="settleCustom1" value="Custom Format 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom settle payment template design 1</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settleCustom2"
+                                                value="#{pharmacyConfigController.settlePaymentCustom2}" />
+                                            <p:outputLabel for="settleCustom2" value="Custom Format 2" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom settle payment template design 2</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settleCustom3"
+                                                value="#{pharmacyConfigController.settlePaymentCustom3}" />
+                                            <p:outputLabel for="settleCustom3" value="Custom Format 3" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom settle payment template design 3</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="settlePosHeaderPaper"
+                                                value="#{pharmacyConfigController.settlePaymentPosHeaderPaper}" />
+                                            <p:outputLabel for="settlePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                            <small class="form-text text-muted d-block">POS paper with pre-printed header space</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="settleReprintConfigMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Apply &amp; Close"
+                                                    icon="fas fa-save"
+                                                    class="ui-button-success"
+                                                    ajax="false"
+                                                    action="#{pharmacyConfigController.saveConfig}" />
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="fas fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('settleReprintConfigDialog').hide(); return false;"
+                                                    type="button" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:dialog>
+
             </ui:define>
         </ui:composition>
     </h:body>

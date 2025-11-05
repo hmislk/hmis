@@ -38,14 +38,21 @@
                                     class="mx-2 w-50"
                                     >
                                     <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
-                                    <p:column headerText="BHT No" style="padding: 6px; width: 150px;">
+                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{apt2.patient.phn}"/>
+                                    </p:column>
+                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
                                         <h:outputLabel value="#{apt2.bhtNo}"/>
                                     </p:column>
-                                    <p:column headerText="Patient Name" style="padding: 6px;">
-                                        <h:outputLabel value="#{apt2.patient.person.name}"/>
+                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
+                                        <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
                                     </p:column>
-                                    <p:column headerText="Room No" style="padding: 6px; width: 200px;">
+                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
                                         <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
+                                        <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
                                     </p:column>
                                 </p:autoComplete>
 
@@ -557,7 +564,7 @@
 
                                                     <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}" >
                                                         <ui:repeat value="#{billBhtController.bills}" var="pp">
-                                                            <print:five_eight_opd_bill bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
+                                                            <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="false" payments="#{billBhtController.bills.size()}"/>
                                                             <br/>
                                                         </ui:repeat>
                                                     </h:panelGroup>

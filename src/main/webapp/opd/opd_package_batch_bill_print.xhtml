@@ -127,12 +127,13 @@
                                     <div class="d-flex justify-content-between align-items-center w-100">
                                         <h:outputLabel value="Batch Bill Details" class="" />
                                         <div class="d-flex">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                icon="fa fa-ban" 
+                                            <p:commandButton
+                                                ajax="false"
+                                                icon="fa fa-ban"
                                                 value="To Cancel Batch Bill"
                                                 disabled="#{billPackageController.batchBill.cancelled or billPackageController.batchBill.refunded}"
-                                                action="#{billPackageController.navigateToCancelOpdPackageBatchBill}" 
+                                                action="#{billPackageController.navigateToCancelOpdPackageBatchBill}"
+                                                rendered="#{webUserController.hasPrivilege('OpdPackageBillCancel')}"
                                                 styleClass="m-1 ui-button-danger">
                                             </p:commandButton>
 
@@ -227,13 +228,14 @@
                                     </p:commandButton>
 
                                     <!-- To Cancel Button -->
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
                                         title="To Cancel Bill"
                                         disabled="#{b.cancelled or b.refunded}"
                                         class="ui-button-danger m-1"
                                         icon="fa fa-times"
-                                        action="#{billPackageController.navigateToCancelOpdPackageBill()}">
+                                        action="#{billPackageController.navigateToCancelOpdPackageBill()}"
+                                        rendered="#{webUserController.hasPrivilege('OpdPackageBillCancel')}">
                                         <f:setPropertyActionListener value="#{b}" target="#{billPackageController.bill}"/>
                                     </p:commandButton>
 

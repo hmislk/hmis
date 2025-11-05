@@ -10,6 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="showBackground" type="java.lang.Boolean" default="false"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -17,7 +18,7 @@
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'General'}"  >
             <div id="divReport"  class="labReport"  >
                 <ez:common_report 
-                    showBackground="#{patientReportController.showBackground}"
+                    showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}"
                     commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                     patientReport="#{patientReportController.currentPatientReport}"/>
 
@@ -107,12 +108,19 @@
                     </h:panelGroup>
                 </ui:repeat>
                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                    <h:panelGroup 
+                    <h:panelGroup
+                        layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'ExternalImage'}" >
+                        <img
+                            style="width: #{prv.investigationItem.wtPix}; height:#{prv.investigationItem.htPix} ; overflow: visible; display: block; z-index: 800; "
+                            src="#{prv.investigationItem.htmltext}" ></img>
+                    </h:panelGroup>
+                </ui:repeat>
+                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                    <h:panelGroup
                         layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
-                        <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
                         <p:graphicImage
                             value="#{prv.baImage}"
-                            style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block; z-index: 800; " 
+                            style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block; z-index: 800; "
                             height="#{prv.investigationItem.htPix}"
 
                             width="#{prv.investigationItem.wtPix}">

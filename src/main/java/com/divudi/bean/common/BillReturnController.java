@@ -1,11 +1,15 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
@@ -16,8 +20,15 @@ import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
 
 import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
+import com.divudi.core.entity.lab.Sample;
 
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
@@ -28,7 +39,10 @@ import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
@@ -72,8 +86,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     AgentAndCcApplicationController agentAndCcApplicationController;
     @Inject
     WebUserController webUserController;
-
-    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
@@ -89,7 +107,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
-    private boolean returningStarted = false;
+    private final AtomicBoolean returningStarted = new AtomicBoolean(false);
 
     private double refundingTotalAmount;
     private String refundComment;
@@ -104,7 +122,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        returningStarted = false;
+        returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
         return "/opd/bill_return?faces-redirect=true";
@@ -118,7 +136,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         //System.out.println("Original Bill= " + originalBillToReturn);
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
-        returningStarted = false;
+        returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
         System.out.println("Method = " + paymentMethod);
         return "/collecting_centre/bill_return?faces-redirect=true";
@@ -234,42 +252,128 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         return canReturn;
     }
 
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    PatientSampleComponantFacade patientSampleComponantFacade;
+
+    public PatientInvestigation getPatientInvestigationsFromBillItem(BillItem billItem) {
+        String j = "select pi from PatientInvestigation pi where pi.retired = :ret and pi.billItem =:billItem";
+
+        Map m = new HashMap();
+        m.put("billItem", billItem);
+        m.put("ret", false);
+        return patientInvestigationFacade.findFirstByJpql(j, m);
+    }
+
     public String settleOpdReturnBill() {
-        if (returningStarted) {
+        if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
             return null;
         }
         if (originalBillToReturn == null) {
             JsfUtil.addErrorMessage("Already Returning Started");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         if (originalBillItemsToSelectedToReturn == null || originalBillItemsToSelectedToReturn.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected to return");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (!webUserController.hasPrivilege("OpdReturn")) {
             JsfUtil.addErrorMessage("You have no Privilege to Refund OPD Bills. Please Contact System Administrator.");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
-        
+
         Bill backward = originalBillToReturn.getBackwardReferenceBill();
-        
+
         if (backward != null && backward.getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(backward);
             if (items != null && !items.isEmpty()) {
-                returningStarted = false;
+                returningStarted.set(false);
                 JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be Refund.");
                 return null;
+            }
+        }
+
+        for (BillItem bi : originalBillItemsToSelectedToReturn) {
+            if (bi.getItem() instanceof Investigation) {
+                PatientInvestigation pi = getPatientInvestigationsFromBillItem(bi);
+                if (pi == null) {
+                    returningStarted.set(false);
+                    JsfUtil.addErrorMessage("Patient Investigation not found for this item.");
+                    return null;
+                }
+                if (pi.getStatus() != PatientInvestigationStatus.ORDERED) {
+
+                    String investigationjpql = "select psc from PatientSampleComponant psc "
+                            + " where psc.patientInvestigation = :pi "
+                            + " and psc.separated = :sept and psc.retired = :ret "
+                            + " and psc.patientSample.sampleRejected = :rej";
+
+                    Map params = new HashMap();
+                    params.put("pi", pi);
+                    params.put("sept", false);
+                    params.put("ret", false);
+                    params.put("rej", false);
+
+                    PatientSampleComponant psc = patientSampleComponantFacade.findFirstByJpql(investigationjpql, params);
+
+                    if (psc == null) {
+                        //can Refund Item
+                    }
+                    
+                    if (psc != null) {
+                        String jpql = "select psc from PatientSampleComponant psc where "
+                                + " psc.patientSample = :sample"
+                                + " and psc.separated = :sept "
+                                + " and psc.retired = :ret "
+                                + " and psc.patientSample.sampleRejected = :rej";
+
+                        Map params2 = new HashMap();
+                        params2.put("sample", psc.getPatientSample());
+                        params2.put("sept", false);
+                        params2.put("ret", false);
+                        params2.put("rej", false);
+
+                        List<PatientSampleComponant> patientSampleComponants = patientSampleComponantFacade.findByJpql(jpql, params2);
+
+                        if (patientSampleComponants == null || patientSampleComponants.isEmpty()) {
+                            //can Refund Item
+                        } else if (patientSampleComponants.size() > 1) {
+                            returningStarted.set(false);
+                            JsfUtil.addErrorMessage("This item can't be refunded. First separate this investigation sample.");
+                            return null;
+                        } else {
+                            PatientSample currentPatientSample = patientSampleComponants.get(0).getPatientSample();
+                            
+                            if(currentPatientSample == null){
+                                //can Refund Item
+                            }else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to an external lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to the lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample is currently in the lab.");
+                                return null;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -279,7 +383,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
             JsfUtil.addErrorMessage("Your Draver does not have enough Money");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -287,7 +391,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -301,7 +405,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -339,7 +443,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBillFees = new ArrayList<>();
 
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
-
             returningTotal += selectedBillItemToReturn.getGrossValue();
             returningNetTotal += selectedBillItemToReturn.getNetValue();
             returningHospitalTotal += selectedBillItemToReturn.getHospitalFee();
@@ -359,6 +462,16 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
+
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                        labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
+            }
 
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
@@ -410,7 +523,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 //        }
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
-        returningStarted = false;
+        returningStarted.set(false);
         return "/opd/bill_return_print?faces-redirect=true";
 
     }
@@ -428,25 +541,97 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public String settleCCReturnBill() {
-        if (returningStarted) {
+        if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
             return null;
         }
         if (originalBillToReturn == null) {
             JsfUtil.addErrorMessage("Already Returning Started");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         if (originalBillItemsToSelectedToReturn == null || originalBillItemsToSelectedToReturn.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected to return");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
+        }
+        
+        for (BillItem bi : originalBillItemsToSelectedToReturn) {
+            if (bi.getItem() instanceof Investigation) {
+                PatientInvestigation pi = getPatientInvestigationsFromBillItem(bi);
+                if (pi == null) {
+                    returningStarted.set(false);
+                    JsfUtil.addErrorMessage("Patient Investigation not found for this item.");
+                    return null;
+                }
+                if (pi.getStatus() != PatientInvestigationStatus.ORDERED) {
+
+                    String investigationjpql = "select psc from PatientSampleComponant psc "
+                            + " where psc.patientInvestigation = :pi "
+                            + " and psc.separated = :sept and psc.retired = :ret "
+                            + " and psc.patientSample.sampleRejected = :rej";
+
+                    Map params = new HashMap();
+                    params.put("pi", pi);
+                    params.put("sept", false);
+                    params.put("ret", false);
+                    params.put("rej", false);
+
+                    PatientSampleComponant psc = patientSampleComponantFacade.findFirstByJpql(investigationjpql, params);
+
+                    if (psc == null) {
+                        //can Refund Item
+                    }
+                    
+                    if (psc != null) {
+                        String jpql = "select psc from PatientSampleComponant psc where "
+                                + " psc.patientSample = :sample"
+                                + " and psc.separated = :sept "
+                                + " and psc.retired = :ret "
+                                + " and psc.patientSample.sampleRejected = :rej";
+
+                        Map params2 = new HashMap();
+                        params2.put("sample", psc.getPatientSample());
+                        params2.put("sept", false);
+                        params2.put("ret", false);
+                        params2.put("rej", false);
+
+                        List<PatientSampleComponant> patientSampleComponants = patientSampleComponantFacade.findByJpql(jpql, params2);
+
+                        if (patientSampleComponants == null || patientSampleComponants.isEmpty()) {
+                            //can Refund Item
+                        } else if (patientSampleComponants.size() > 1) {
+                            returningStarted.set(false);
+                            JsfUtil.addErrorMessage("This item can't be refunded. First separate this investigation sample.");
+                            return null;
+                        } else {
+                            PatientSample currentPatientSample = patientSampleComponants.get(0).getPatientSample();
+                            
+                            if(currentPatientSample == null){
+                                //can Refund Item
+                            }else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to an external lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample has been sent to the lab.");
+                                return null;
+                            } else if (currentPatientSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
+                                returningStarted.set(false);
+                                JsfUtil.addErrorMessage("This item can't be refunded. This investigation sample is currently in the lab.");
+                                return null;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         calculateRefundingAmount();
@@ -454,13 +639,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -518,6 +703,16 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
+
+            try {
+                if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBillItem(selectedBillItemToReturn)) {
+                        labTestHistoryController.addRefundHistory(pi, sessionController.getDepartment(), refundComment);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error = " + e);
+            }
 
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
@@ -594,7 +789,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                 HistoryType.CollectingCentreBillingRefund,
                 newlyReturnedBill);
 
-        returningStarted = false;
+        returningStarted.set(false);
         return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
 
     }
@@ -665,11 +860,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public boolean isReturningStarted() {
-        return returningStarted;
+        return returningStarted.get();
     }
 
     public void setReturningStarted(boolean returningStarted) {
-        this.returningStarted = returningStarted;
+        this.returningStarted.set(returningStarted);
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -720,6 +915,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     @Override
     public void recieveRemainAmountAutomatically() {
+        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
         throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
     }
 

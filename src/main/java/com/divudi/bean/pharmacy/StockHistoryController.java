@@ -11,6 +11,7 @@ import com.divudi.core.data.HistoryType;
 import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.data.dto.PharmacyBinCardDTO;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Item;
@@ -87,6 +88,23 @@ public class StockHistoryController implements Serializable {
         return "/analytics/pharmacy/stock_history?faces-redirect=true";
     }
 
+    /**
+     * Helper navigation method when only the id of the stock history is
+     * available. This is used when bin card rows are represented by DTOs.
+     */
+    public String navigateToViewStockHistoryById(Long id) {
+        if (id == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = facade.find(id);
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing found");
+            return null;
+        }
+        return "/analytics/pharmacy/stock_history?faces-redirect=true";
+    }
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void fillHistoryAvailableDays() {
@@ -140,6 +158,48 @@ public class StockHistoryController implements Serializable {
         if (shxs != null) {
         }
         return shxs;
+    }
+
+    /**
+     * Returns lightweight DTOs for the bin card view to reduce memory usage.
+     * This method includes the stockQty and batchNo fields needed for hotfix compatibility.
+     */
+    public List<PharmacyBinCardDTO> findBinCardDTOs(Date fd, Date td, HistoryType ht, Department dep, Item i) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select new com.divudi.core.data.dto.PharmacyBinCardDTO(")
+                .append("s.id, s.pbItem.billItem.bill.id, s.createdAt, ")
+                .append("s.pbItem.billItem.bill.billType, ")
+                .append("s.pbItem.billItem.bill.billTypeAtomic, ")
+                .append("s.pbItem.billItem.item.name, ")
+                .append("s.pbItem.qty, s.pbItem.freeQty, ")
+                .append("s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, ")
+                .append("s.pbItem.billItem.item.dblValue, s.itemStock, ")
+                .append("s.stockQty, s.pbItem.itemBatch.batchNo")
+                .append(") from StockHistory s ")
+                .append("where s.createdAt between :fd and :td ")
+                .append("and s.pbItem is not null ")
+                .append("and s.pbItem.billItem is not null ")
+                .append("and s.pbItem.billItem.bill is not null ")
+                .append("and s.pbItem.billItem.item is not null ")
+                .append("and s.pbItem.itemBatch is not null ");
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("fd", fd);
+        m.put("td", td);
+        if (ht != null) {
+            jpql.append(" and s.historyType=:ht ");
+            m.put("ht", ht);
+        }
+        if (dep != null) {
+            jpql.append(" and s.department=:dep ");
+            m.put("dep", dep);
+        }
+        if (i != null) {
+            jpql.append(" and s.item=:i ");
+            m.put("i", i);
+        }
+        jpql.append(" order by s.createdAt");
+        return (List<PharmacyBinCardDTO>) facade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public void fillStockHistories(boolean withoutZeroStock) {

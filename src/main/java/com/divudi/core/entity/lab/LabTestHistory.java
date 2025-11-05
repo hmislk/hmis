@@ -2,15 +2,19 @@ package com.divudi.core.entity.lab;
 
 import com.divudi.core.data.lab.Analyzer;
 import com.divudi.core.data.lab.TestHistoryType;
+import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -75,6 +79,20 @@ public class LabTestHistory implements Serializable {
 
     @ManyToOne
     private Category analyzer;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Staff staff;
+    
+    @ManyToOne
+    private Sms sms;
+    
+    @ManyToOne
+    private AppEmail email;
+    
+    @ManyToOne
+    private PatientSampleComponant sampleComponent;
+    
+    private String comment;
 
     public Long getId() {
         return id;
@@ -84,8 +102,6 @@ public class LabTestHistory implements Serializable {
         this.id = id;
     }
     
-    
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -237,6 +253,46 @@ public class LabTestHistory implements Serializable {
 
     public void setAnalyzer(Category analyzer) {
         this.analyzer = analyzer;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public PatientSampleComponant getSampleComponent() {
+        return sampleComponent;
+    }
+
+    public void setSampleComponant(PatientSampleComponant sampleComponent) {
+        this.sampleComponent = sampleComponent;
+    }
+
+    public Sms getSms() {
+        return sms;
+    }
+
+    public void setSms(Sms sms) {
+        this.sms = sms;
+    }
+
+    public AppEmail getEmail() {
+        return email;
+    }
+
+    public void setEmail(AppEmail email) {
+        this.email = email;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
     
 }

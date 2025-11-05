@@ -1837,7 +1837,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format?faces-redirect=true;";
+        return "/admin/lims/investigation_format?faces-redirect=true";
     }
 
     public String toEditInvestigationFormatPastData() {
@@ -1846,7 +1846,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format_pastdata?faces-redirect=true;";
+        return "/admin/lims/investigation_format_pastdata?faces-redirect=true";
     }
 
     public String toEditInvestigationFormatMultiple() {
@@ -1855,7 +1855,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format_multiple?faces-redirect=true;";
+        return "/admin/lims/investigation_format_multiple?faces-redirect=true";
     }
 
     public ReportItemFacade getRiFacade() {

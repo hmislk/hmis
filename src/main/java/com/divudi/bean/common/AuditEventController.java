@@ -12,6 +12,7 @@ import com.divudi.core.data.AuditEventStatus;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.entity.ConfigOption;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Arrays;
+import com.google.gson.Gson;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -52,6 +55,7 @@ public class AuditEventController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
+    private final Gson gson = new Gson();
 
     @Deprecated // Please use completeAuditEvent or faileAUditEvent
     public void updateAuditEvent(String auditEventUUID) {
@@ -213,6 +217,65 @@ public class AuditEventController implements Serializable {
         
         auditEvents = getFacade().findByJpql(jpql, params);
         return auditEvents;
+    }
+
+    public void fillConfigOptionEvents() {
+        fillConfigOption(Arrays.asList("Update Config Option", "Delete Config Option"));
+    }
+
+    private void fillConfigOption(List<String> triggers) {
+        String jpql = "select a from AuditEvent a "
+                + " where a.entityType=:et"
+                + " and a.eventTrigger in :trigs"
+                + " and a.eventDataTime between :fd and :td"
+                + " order by a.eventDataTime desc";
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("et", ConfigOption.class.getSimpleName());
+        hm.put("trigs", triggers);
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+        items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+        if (items != null) {
+            items.forEach(AuditEvent::calculateDifference);
+        }
+    }
+
+    private String jsonValue(String json, String key) {
+        if (json == null) {
+            return "";
+        }
+        try {
+            Map map = gson.fromJson(json, Map.class);
+            if (map == null) {
+                return "";
+            }
+            Object val = map.get(key);
+            return val == null ? "" : val.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public String getOptionKey(AuditEvent ae) {
+        if (ae == null) {
+            return "";
+        }
+        String source = ae.getBeforeJson() != null ? ae.getBeforeJson() : ae.getAfterJson();
+        return jsonValue(source, "optionKey");
+    }
+
+    public String getBeforeValue(AuditEvent ae) {
+        if (ae == null) {
+            return "";
+        }
+        return jsonValue(ae.getBeforeJson(), "optionValue");
+    }
+
+    public String getAfterValue(AuditEvent ae) {
+        if (ae == null) {
+            return "";
+        }
+        return jsonValue(ae.getAfterJson(), "optionValue");
     }
 
     public void prepareAdd() {

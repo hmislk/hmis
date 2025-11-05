@@ -14,7 +14,21 @@
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>
     </properties>
-    
+
+    <!-- Dependency Management for Version Consistency -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Jackson BOM for version alignment and security -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.14.3</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- HAPI FHIR -->
         <dependency>
@@ -42,16 +56,33 @@
             <artifactId>hapi-structures-v24</artifactId>
             <version>2.3</version>
         </dependency>
-        <!-- Jackson -->
+        <!-- Jackson Dependencies - Updated for CVE-2019-10202 Security Fix -->
+        <!-- Replaced vulnerable org.codehaus.jackson:jackson-jaxrs 1.9.13 -->
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-jaxrs</artifactId>
-            <version>1.9.13</version>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <!-- Version managed by Jackson BOM (2.14.3) -->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.14.1</version>
+            <!-- Version managed by Jackson BOM (2.14.3) -->
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <!-- Version managed by Jackson BOM (2.14.3) -->
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <!-- Version managed by Jackson BOM (2.14.3) -->
+        </dependency>
+        <!-- Jackson JAXB Annotations Module for JAXB annotation support -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <!-- Version managed by Jackson BOM (2.14.3) -->
         </dependency>
 
         <!-- Commons -->
@@ -68,18 +99,13 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.14.0</version>
+            <version>3.18.0</version>
         </dependency>
 
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <version>1.5</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1</version>
+            <version>1.6.0</version>
         </dependency>
 
         <!-- Joda Time -->
@@ -111,14 +137,27 @@
         </dependency>
        
 
-        
+        <!-- Log4j2 API (required by Apache POI 5.x) -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.23.1</version>
+        </dependency>
+
+        <!-- Log4j2 Core (required by Apache POI 5.x) -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.23.1</version>
+        </dependency>
+
         <!-- Apache POI Core Dependency -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.2.5</version>
         </dependency>
-        
+
         <!-- Apache POI OOXML Dependency -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -177,11 +216,11 @@
             <type>jar</type>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
+        <!-- MySQL Connector/J - Stable version for Payara + JDK 11 -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>8.4.0</version>
+            <version>8.0.33</version>
         </dependency>
 
 
@@ -198,18 +237,12 @@
             </exclusions>
         </dependency>
 
-        <!-- Log4j -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>3.0.0-alpha1</version>
-        </dependency>
-
         <!-- Eclipse Persistence -->
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>javax.persistence</artifactId>
             <version>2.2.1</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- JTA -->
@@ -332,6 +365,26 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.13.4</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.13.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa</artifactId>
+            <version>2.7.12</version>
+            <scope>provided</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>8.0.1</version>
@@ -357,7 +410,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>9.0.105</version> <!-- or the version compatible with your setup -->
+            <version>9.0.107</version> <!-- or the version compatible with your setup -->
         </dependency>
         <dependency>
             <groupId>com.github.hmislk</groupId>
@@ -369,6 +422,11 @@
             <artifactId>gson</artifactId>
             <version>2.8.9</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.20.1</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -388,9 +446,33 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <release>8</release> <!-- Compile with Java 8 compatibility -->
+                    <release>11</release> <!-- Compile with Java 8 compatibility -->
                     <debug>false</debug>
                 </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-banned-dependencies</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.codehaus.jackson:*:*</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Maven WAR Plugin -->
@@ -403,12 +485,49 @@
                 </configuration>
             </plugin>
 
+            <!-- Maven Surefire Plugin for Testing with Increased Memory -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <argLine>-Xmx2048m -Xms512m</argLine>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+
             <!-- Maven Dependency Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.1.2</version>
                 <!-- Any specific configurations related to your project dependencies -->
+            </plugin>
+
+            <!-- Embed Git / build metadata for About page (no runtime network calls) -->
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.9.10</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.branch$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.build.time$</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <dateFormat>yyyy-MM-dd HH:mm:ss 'UTC'</dateFormat>
+                    <dateFormatTimeZone>UTC</dateFormatTimeZone>
+                </configuration>
             </plugin>
         </plugins>
     </build>

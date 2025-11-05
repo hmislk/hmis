@@ -245,22 +245,22 @@ public class ChannelReportTemplateController implements Serializable {
 
     public String navigateToChannlingSessionCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/daily_session_counts?faces-redirect=true;";
+        return "/channel/reports/daily_session_counts?faces-redirect=true";
     }
 
     public String navigateToChannlingDoctorCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/daily_doctor_counts?faces-redirect=true;";
+        return "/channel/reports/daily_doctor_counts?faces-redirect=true";
     }
 
     public String navigateToCategorySessionCount() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/category_session_counts?faces-redirect=true;";
+        return "/channel/reports/category_session_counts?faces-redirect=true";
     }
 
     public String navigateToOnlineBookings() {
         bundle = new ReportTemplateRowBundle();
-        return "/channel/reports/online_session_booking_count?faces-redirect=true;";
+        return "/channel/reports/online_session_booking_count?faces-redirect=true";
     }
 
     public void clearWithDefultValue() {

@@ -35,7 +35,7 @@ public class SearchKeyword {
     private String fromInstitution;
     private String fromDepartment;
     private String toInstitution;
-    private String toDepartment;
+    private Department toDepartment;
     private String creator;
     private String bank;
     private String number;
@@ -49,6 +49,7 @@ public class SearchKeyword {
     private String insId;
     private String deptId;
     private String serialNumber;
+    private String tokenNumber;
     private String serviceName;
     private PatientEncounter patientEncounter;
     private PaymentMethod paymentMethod;
@@ -60,6 +61,7 @@ public class SearchKeyword {
     private Investigation investigation;
     private List<BillType> billTypes;
     private Long id;
+    // Removed legacy Institution distributor; use String fromInstitution in JSF filters
 
 
 
@@ -271,11 +273,11 @@ public class SearchKeyword {
         this.bhtNo = bhtNo;
     }
 
-    public String getToDepartment() {
+    public Department getToDepartment() {
         return toDepartment;
     }
 
-    public void setToDepartment(String toDepartment) {
+    public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
     }
 
@@ -424,6 +426,14 @@ public class SearchKeyword {
         this.serialNumber = serialNumber;
     }
 
+    public String getTokenNumber() {
+        return tokenNumber;
+    }
+
+    public void setTokenNumber(String tokenNumber) {
+        this.tokenNumber = tokenNumber;
+    }
+
     public Department getItemDepartment() {
         return itemDepartment;
     }
@@ -447,6 +457,8 @@ public class SearchKeyword {
     public void setId(Long id) {
         this.id = id;
     }
+
+    // distributor removed
 
 
 

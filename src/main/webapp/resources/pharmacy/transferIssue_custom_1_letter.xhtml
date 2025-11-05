@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="reprint" />
+        <cc:attribute name="cancelled" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
+        <div style="width: 212mm; height: 275mm; padding-left: 0px">
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+            </div>
+
+            <div class="institutionName">
+                <h:outputLabel value="Transfer Issue Note" />
+                <br />
+                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.cancelled eq true or cc.attrs.bill.cancelled eq true}" />
+            </div>
+
+            <div>
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="120px">Location From</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.department.name}" /></td>
+
+                        <td width="120px">Location To</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" /></td>
+                    </tr>
+
+                    <tr>
+                        <td width="120px">Issued By</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.creater.name}" /></td>
+
+                        <td width="120px">Requested By</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.name}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td width="120px">Issue No.</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
+
+                        <td width="120px">Request No.</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" /></td>
+                    </tr>
+
+                    <tr>
+                        <td width="120px">Transporter</td>
+                        <td>:</td>
+                        <td width="250px"><h:outputLabel value="#{cc.attrs.bill.toStaff.person.name}" /></td>
+
+                        <td width="120px">Issued Time</td>
+                        <td>:</td>
+                        <td width="250px">
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+
+            <div >
+                <table id="tblBis" class="simple-table">
+                    <thead>
+                        <tr>
+                            <th style="width:2em;">No</th>
+                            <th style="width:15em;">Item Name</th>
+                            <th style="width:5em;">Code</th>
+                            <th style="width:7em;">D O E</th>
+                            <th style="width:6em;">Issued Qty</th>
+                            <th style="width:6em;">Req. Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="rowIndex">
+                            <tr>
+                                <!-- No -->
+                                <td class="left-col">#{rowIndex.index + 1}</td>
+                                <!-- Item Name -->
+                                <td class="left-col">#{bip.item.name}</td>
+                                <!-- Code -->
+                                <td class="left-col">#{bip.item.code}</td>
+                                <!-- Date of Expiry -->
+                                <td class="right-col">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                                        <f:convertDateTime pattern="dd/MMM/yyyy" />
+                                    </h:outputText>
+                                </td>
+                                <!-- Issued Qty -->
+                                <td class="right-col">
+                                    <h:outputLabel value="#{0 - bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber />
+                                    </h:outputLabel>
+                                </td>
+                                <!-- Requested Qty -->
+                                <td class="right-col">
+                                    <h:outputLabel value="#{bip.referanceBillItem.qty}">
+                                        <f:convertNumber />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-5">
+                    <h:outputLabel value="Printed By : &nbsp;"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;" >
+                    <h:outputLabel style="text-align: right" value="Printed At : &nbsp;"/>
+                    <h:outputLabel value="#{sessionController.currentDate}" >
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+
+        </div>
+    </cc:implementation>
+</html>

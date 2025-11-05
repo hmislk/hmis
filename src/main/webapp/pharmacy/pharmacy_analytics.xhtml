@@ -15,394 +15,464 @@
                                 <p:accordionPanel activeIndex="#{pharmacyController.managePharamcyReportIndex}">
                                     <p:ajax process="@this"/>
 
-                                    <p:tab title="Summary Reports">
+                                    <p:tab title="Summary Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                value="Pharmacy Income Report"
-                                                icon="fa fa-file-medical"
-                                                ajax="false"
-                                                styleClass="w-100 ui-button-primary"
-                                                style="text-align: left"
-                                                action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income Report')}" 
+                                                             value="Pharmacy Income Report"
+                                                             icon="fa fa-file-medical"
+                                                             ajax="false"
+                                                             styleClass="w-100 ui-button-primary"
+                                                             style="text-align: left"
+                                                             action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
 
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                style="text-align: left" 
-                                                value="Pharmacy Income &amp; Cost"
-                                                action="#{pharmacySummaryReportController.navigateToPharmacyIncomeAndCostReport()}"/>
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                style="text-align: left" 
-                                                value="Daily Stock Values"
-                                                action="#{pharmacySummaryReportController.navigateToDailyStockValuesReport()}"/>
-                                            <p:commandButton 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income and Cost')}" 
+                                                             class="w-100" 
+                                                             ajax="false" 
+                                                             style="text-align: left" 
+                                                             value="Pharmacy Income and Cost"
+                                                             action="#{pharmacySummaryReportController.navigateToPharmacyIncomeAndCostReport()}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}" 
+                                                             class="w-100" 
+                                                             ajax="false" 
+                                                             style="text-align: left" 
+                                                             value="Daily Stock Values"
+                                                             action="#{pharmacySummaryReportController.navigateToDailyStockValuesReport()}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
+                                                             class="w-100 ui-button-warning"
+                                                             ajax="false"
+                                                             style="text-align: left"
+                                                             value="Bill Types"
+                                                             action="#{pharmacySummaryReportController.navigateToBillTypeIncome}"/>
+                                            <p:commandButton
                                                 class="w-100 ui-button-warning"
-                                                ajax="false" 
-                                                style="text-align: left" 
-                                                value="Bill Types"
-                                                action="#{pharmacySummaryReportController.navigateToBillTypeIncome}"/>
+                                                ajax="false"
+                                                style="text-align: left"
+                                                value="All Item Movement Summary"
+                                                action="#{pharmacySummaryReportController.navigateToAllItemMovementSummary}"/>
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Financial Reports">
+                                    <p:tab title="Financial Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Financial Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Cash In/Out Report')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Cash In/Out Report" action="/pharmacy/cash_in_out_ledger?faces-redirect=true"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Cashier Report')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Cashier Report" action="#{commonReport.navigateToReportCashierDetailedByUser1()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Cashier Summary')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Cashier Summary" action="#{commonReport.navigateToReportCashierSummaryByUser()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Cashier Report')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="All Cashier Report" action="#{commonReport.navigateToReportCashierSummaryAll()}" 
                                                              actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Cashier Summary')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="All Cashier Summary " action="#{commonReport.navigateToReportCashierSummaryAllTotalOnly()}" 
                                                              actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Cashier Detailed Report by Department')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Cashier Detailed Report by Department" action="#{commonReport.navigateToReportCashierDetailedByDepartment()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Sale Summary')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Pharmacy Sale Summary"
                                                              action="#{commonReport.navigateToPharmacySaleSummery()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Sale Summary Date')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Pharmacy Sale Summary Date"
                                                              action="#{commonReport.navigateToPharmacySaleSummeryByDate()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Department Sale Summary')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="All Department Sale Summary " 
                                                              action="#{commonReport.navigateToPharmacyReportSummary()}"/>                                    
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Summary - By Bill Type')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Sale Summary - By Bill Type"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>   
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Summary - By Payment Method')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Sale Summary - By Payment Method "
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethod()}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>   
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Summary - By Payment Method (By Bill)')}" class="w-100 ui-button-warning" ajax="false" style="text-align: left"
                                                              value="Sale Summary - By Payment Method (By Bill) "
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethodByBill}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Overview Report')}" class="w-100" ajax="false" style="text-align: left"
                                                              value="Stock Overview Report "
                                                              action="#{reportsStock.navigateToPharmacyStockOverviewReport()}" 
-                                                            />
+                                                             />
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Stock Reports">
+                                    <p:tab title="Stock Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Stock Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                icon="fa fa-cubes" 
-                                                value="Stock Report by Batch" 
-                                                action="#{reportsStock.navigateToStockReportByBatch()}" 
-                                                ajax="false" />
+                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                                <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch')}"
+                                                                 class="w-100"
+                                                                 icon="fa fa-cubes"
+                                                                 value="Stock Report by Batch for Developers to cross check"
+                                                                 action="#{reportsStock.navigateToStockReportByBatch()}"
+                                                                 ajax="false" />
+                                            </h:panelGroup>
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch', true)}"
+                                                             class="w-100 ui-button-success"
+                                                             icon="fa fa-rocket"
+                                                             value="Stock Report by Batch"
+                                                             action="#{reportsStock.navigateToStockReportByBatchDto()}"
+                                                             ajax="false"
+                                                             title="High-performance DTO-based report - Recommended" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Expiring Stock Report by Batch')}" class="w-100" value="Expiring Stock Report by Batch" action="pharmacy_report_department?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}" class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Zero Stock Item Report')}"
+                                                             class="w-100"
+                                                             icon="fa fa-cubes"
+                                                             value="Zero Stock Item Report"
+                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByZeroItem()}"
+                                                             ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Suppliers Expiring Stocks')}" class="w-100" value="Suppliers Expiring Stocks" action="pharmacy_report_supplier_expiary_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}" 
+                                                             class="w-100"
+                                                             value="Stock Report by Item"
+                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItem()}"
+                                                             ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}"
+                                                             class="w-100"
+                                                             style="background-color:green;border-color: green"
+                                                             value="Stock Report by Item - DTO"
+                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
+                                                             ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item - Order by VMP')}" 
+                                                             class="w-100"
+                                                             value="Stock Report by Item - Order by VMP"
+                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemOrderByVmp()}"
+                                                             ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Product')}" class="w-100" value="Stock Report by Product" action="pharmacy_report_department_stock_by_product?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report of Single Product')}" class="w-100" value="Stock Report of Single Product" action="pharmacy_report_department_stock_by_single_product?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Supplier Stock Report')}" class="w-100 ui-button-warning" value="Supplier Stock Report" action="pharmacy_report_supplier_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Suppliers Stock Summary')}" class="w-100 ui-button-warning" value="Suppliers Stock Summary" action="pharmacy_report_all_supplier_stock?faces-redirect=true" ajax="false" />
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Category Stock Report')}" class="w-100" value="Category Stock Report" action="pharmacy_report_category_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Category Stock Summary')}" class="w-100" value="Category Stock Summary" action="pharmacy_report_category_stock_by_category?faces-redirect=true" ajax="false" />
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Staff Stock')}" class="w-100" value="All Staff Stock" action="pharmacy_report_all_staff_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock History')}" class="w-100 ui-button-warning" value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Before Stock Taking Report')}" class="w-100 ui-button-warning" value="Before Stock Taking Report" action="pharmacy_report_before_stock_taking?faces-redirect=true" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show After Stock Taking Report')}" class="w-100 ui-button-warning" value="After Stock Taking Report" action="pharmacy_report_after_stock_taking?faces-redirect=true" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Taking Report(New)')}" class="w-100 ui-button-warning" value="Stock Taking Report(New)" action="pharmacy_report_adjustment_bill_for_stock_taking?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock With Movement')}" class="w-100 ui-button-warning" value="Stock With Movement" action="pharmacy_report_item_stock_sale?faces-redirect=true" ajax="false" />
 
 
 
-                                            <p:commandButton class="w-100" value="Stock Report by Batch" action="pharmacy_report_department_stock_by_batch?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100" value="Expiring Stock Report by Batch" action="pharmacy_report_department?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Suppliers Expiring Stocks" action="pharmacy_report_supplier_expiary_stock_by_batch?faces-redirect=true" ajax="false" />
-                                            <p:commandButton 
-                                                class="w-100"
-                                                value="Stock Report by Item"
-                                                action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItem()}"
-                                                ajax="false"/>
-                                            <p:commandButton 
-                                                class="w-100 ui-button-warning"
-                                                value="Stock Report by Item - Order by VMP"
-                                                action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemOrderByVmp()}"
-                                                ajax="false" />
-                                            <p:commandButton class="w-100" value="Stock Report by Product" action="pharmacy_report_department_stock_by_product?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100" value="Stock Report of Single Product" action="pharmacy_report_department_stock_by_single_product?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Supplier Stock Report" action="pharmacy_report_supplier_stock_by_batch?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Suppliers Stock Summary" action="pharmacy_report_all_supplier_stock?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Category Stock Report" action="pharmacy_report_category_stock_by_batch?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Category Stock Summary" action="pharmacy_report_category_stock_by_category?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100" value="All Staff Stock" action="pharmacy_report_all_staff_stock_by_batch?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Before Stock Taking Report" action="pharmacy_report_before_stock_taking?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="After Stock Taking Report" action="pharmacy_report_after_stock_taking?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Stock Taking Report(New)" action="pharmacy_report_adjustment_bill_for_stock_taking?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Stock With Movement" action="pharmacy_report_item_stock_sale?faces-redirect=true" ajax="false" />
-
-                                            <p:commandButton 
-                                                class="w-100"
-                                                value="Stock Summary (with Suppliers)" 
-                                                action="pharmacy_stock_summary_with_supplier?faces-redirect=true" 
-                                                ajax="false" >
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Summary (with Suppliers)')}"
+                                                             class="w-100"
+                                                             value="Stock Summary (with Suppliers)"
+                                                             action="pharmacy_stock_summary_with_supplier?faces-redirect=true"
+                                                             ajax="false" >
                                             </p:commandButton>   
 
-                                            <p:commandButton 
-                                                class="w-100"
-                                                value="Stock Report (with Suppliers)" 
-                                                action="pharmacy_report_stock_report_with_supplier?faces-redirect=true" 
-                                                ajax="false" >
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report (with Suppliers)')}" 
+                                                             class="w-100"
+                                                             value="Stock Report (with Suppliers)" 
+                                                             action="pharmacy_report_stock_report_with_supplier?faces-redirect=true" 
+                                                             ajax="false" >
                                             </p:commandButton>       
 
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                icon="fa fa-file-export" 
-                                                value="Stock Report by Batch for Export" 
-                                                action="#{reportsStock.navigateToStockReportByBatchForExport()}" 
-                                                ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch for Export')}" 
+                                                             class="w-100" 
+                                                             icon="fa fa-file-export" 
+                                                             value="Stock Report by Batch for Export" 
+                                                             action="#{reportsStock.navigateToStockReportByBatchForExport()}" 
+                                                             ajax="false" />
 
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Item Reports">
+                                    <p:tab title="Item Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Item Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" value="Bin Card" action="#{pharmacyController.navigateToBinCard}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Items (AMP) List" action="#{ampController.navigateToCreateItemList}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Medicine (VTM,ATM,VMP,AMP,VMPP &amp; AMPP) List" action="#{ampController.navigateToCreateMedicineList}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Single Items Summary" action="#{pharmacyController.navigateToItemTransactionDetails}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="All Items Summary" action="#{pharmacyController.navigateToAllItemsTransactionSummary}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bin Card')}" class="w-100" value="Bin Card" action="#{pharmacyController.navigateToBinCard}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item Bin Card', true)}" class="w-100 ui-button-secondary" value="Item Bin Card" action="#{pharmacyController.navigateToItemBinCard}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Batch Bin Card', true)}" class="w-100 ui-button-secondary" value="Batch Bin Card" action="#{pharmacyController.navigateToBatchBinCard}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items (AMP) List')}" class="w-100 ui-button-warning" value="Items (AMP) List" action="#{ampController.navigateToCreateItemList}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List')}" class="w-100 ui-button-warning" value="Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List" action="#{ampController.navigateToCreateMedicineList}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Single Items Summary')}" class="w-100 ui-button-success" value="Single Item Summary" action="#{pharmacyController.navigateToItemTransactionDetails}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Items Summary')}" class="w-100 ui-button-warning" value="All Items Summary" action="#{pharmacyController.navigateToAllItemsTransactionSummary}" ajax="false"/>
 
-                                            <p:commandButton class="w-100 ui-button-warning" value="Items Without Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndReportItemsWithoutDistributor}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Items With Suppliers and Prices" action="#{pharmacyController.navigateToItemsWithSuppliersAndPrices}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Items With Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithDistributor}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Items With Multiple Distributor(Items Only)" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithMultipleDistributorsItemsOnly}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Item With Multiple Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemWithMultipleDistributors}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="ROL &amp; ROQ Management" action="#{pharmacyController.navigateToReorderManagement()}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Reorder Analysis" action="#{pharmacyController.navigateToReorderAnalysis}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items Without Distributor')}" class="w-100 ui-button-warning" value="Items Without Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndReportItemsWithoutDistributor}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items With Suppliers and Prices')}" class="w-100 ui-button-warning" value="Items With Suppliers and Prices" action="#{pharmacyController.navigateToItemsWithSuppliersAndPrices}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items With Distributor')}" class="w-100 ui-button-warning" value="Items With Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithDistributor}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items With Multiple Distributor(Items Only)')}" class="w-100 ui-button-warning" value="Items With Multiple Distributor(Items Only)" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithMultipleDistributorsItemsOnly}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item With Multiple Distributor')}" class="w-100 ui-button-warning" value="Item With Multiple Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemWithMultipleDistributors}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show ROL and ROQ Management')}" class="w-100 ui-button-warning" value="ROL and ROQ Management" action="#{pharmacyController.navigateToReorderManagement()}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Reorder Analysis')}" class="w-100 ui-button-warning" value="Reorder Analysis" action="#{pharmacyController.navigateToReorderAnalysis}" ajax="false"/>
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Movement Report Stock By Date" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovement}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Movement Report Stock By Date - By Batch" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovementItemBach}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Pharmacy All Report" action="#{pharmacySaleReportController.navigatePharmacyReportSummaryAll}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Report Stock By Date')}" class="w-100 ui-button-warning" ajax="false" value="Movement Report Stock By Date" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovement}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Report Stock By Date - By Batch')}" class="w-100 ui-button-warning" ajax="false" value="Movement Report Stock By Date - By Batch" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovementItemBach}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy All Report')}" class="w-100 ui-button-warning" ajax="false" value="Pharmacy All Report" action="#{pharmacySaleReportController.navigatePharmacyReportSummaryAll}"/>
                                         </div>
                                     </p:tab>
 
 
-                                    <p:tab title="Movement Reports">
+                                    <p:tab title="Movement Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Movement Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                value="Movement Out by Sale, Issue, and Consumption with Current Stock Report"
-                                                icon="fa fa-file-medical"
-                                                ajax="false"
-                                                styleClass="w-100 ui-button-primary"
-                                                style="text-align: left"
-                                                action="#{pharmacySummaryReportController.navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report')}" 
+                                                             value="Movement Out by Sale, Issue, and Consumption with Current Stock Report"
+                                                             icon="fa fa-file-medical"
+                                                             ajax="false"
+                                                             styleClass="w-100 ui-button-primary"
+                                                             style="text-align: left"
+                                                             action="#{pharmacySummaryReportController.navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}" />
                                         </div>
                                     </p:tab>
 
 
-                                    <p:tab title="Retail Sale Reports">
+                                    <p:tab title="Retail Sale Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Retail Sale Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100 ui-button-warning" value="Sale Report" action="sale_report?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Prescription Report" action="report_prescreption?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Institution Item Movement" action="pharmacy_report_institution_movement?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Fast Moving" action="pharmacy_report_department_fast_moving?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Slow Moving" action="pharmacy_report_department_slow_moving?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100" value="Non Moving" action="pharmacy_report_department_non_moving?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Prescription Summary" action="#{reportController.navigateToPrescriptionSummaryReport()}" actionListener="#{reportController.makeNull()}" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Presciption List" action="#{reportController.navigateToPrescriptionList()}" actionListener="#{reportController.makeNull()}" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="List of Pharmacy Bills" action="/pharmacy/list_of_all_sale_bills?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Report')}" class="w-100 ui-button-warning" value="Sale Report" action="sale_report?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Prescription Report')}" class="w-100 ui-button-warning" value="Prescription Report" action="report_prescreption?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Institution Item Movement')}" class="w-100 ui-button-warning" value="Institution Item Movement" action="pharmacy_report_institution_movement?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Fast Moving')}" class="w-100 ui-button-warning" value="Fast Moving" action="pharmacy_report_department_fast_moving?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Slow Moving')}" class="w-100 ui-button-warning" value="Slow Moving" action="pharmacy_report_department_slow_moving?faces-redirect=true" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Non Moving')}" class="w-100" value="Non Moving" action="pharmacy_report_department_non_moving?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Prescription Summary')}" class="w-100 ui-button-warning" value="Prescription Summary" action="#{reportController.navigateToPrescriptionSummaryReport()}" actionListener="#{reportController.makeNull()}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Presciption List')}" class="w-100 ui-button-warning" value="Presciption List" action="#{reportController.navigateToPrescriptionList()}" actionListener="#{reportController.makeNull()}" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show List of Pharmacy Bills')}" class="w-100 ui-button-warning" value="List of Pharmacy Bills" action="/pharmacy/list_of_all_sale_bills?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Retail Sale Bill List')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Retail Sale Bill List" 
                                                              action="#{pharmacySaleReportController.navigateToReportPharmacyRetailSaleBillList()}"
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
 
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Detail - By Bill')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Sale Detail - By Bill " 
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetail()}"
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Detail - By Bill Items')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Sale Detail - By Bill Items" 
                                                              action="#{commonReport.navigateToPharmacyReportSaleByBillItems()}"
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Detail - By Discount Scheme')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Sale Detail - By Discount Scheme"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme()}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Summary By Discount Scheme Summary')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Sale Summary By Discount Scheme Summary"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme1()}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Sale Detail - By Payment Method')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Sale Detail - By Payment Method"
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentMethod()}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Sale Report')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Pharmacy Sale Report" action="#{pharmacySaleReportController.navigatePharmacyBillReport()}" />
 
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Wholesale Reports">
+                                    <p:tab title="Wholesale Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Wholesale Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Wholesale Report')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Pharmacy Wholesale Report" action="#{pharmacySaleReportController.navigatePharmacyWholeBillReport()}" />
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Wholesale Credit Bills')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Pharmacy Wholesale Credit Bills" action="#{pharmacySaleReportController.navigatePharmacyReportCredit}" />
 
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Inpatient Reports">
+                                    <p:tab title="Inpatient Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Inpatient Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show BHT Issue - By Bill')}" class="w-100" ajax="false" 
                                                              value="BHT Issue - By Bill" 
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportBhtIssueBill()}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show BHT Issue - By Bill Item')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="BHT Issue - By Bill Item"
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportBhtIssueBillItem()}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show BHT Issue - By Item')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="BHT Issue - By Item" 
                                                              action="#{pharmacySaleReportController.navigateReportBhtIssueByItem()}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show BHT Issue - Staff')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="BHT Issue - Staff " 
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportStaffIssueBill()}" />
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show BHT Issue With Margin Report')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="BHT Issue With Margin Report " 
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportBhtIssueItemWithMargin()}" />
 
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Procurement Reports">
+                                    <p:tab title="Procurement Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Procurement Reports Tab')}">
                                         <div class="d-grid gap-2">
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Procurement Report')}" 
+                                                             class="w-100 ui-button-warning"
+                                                             ajax="false" 
+                                                             style="text-align: left" 
+                                                             value="Pharmacy Procurement Report"
+                                                             action="#{pharmacySummaryReportController.navigateToPharmacyProcurementReport()}"/>
 
                                             <p:commandButton 
                                                 class="w-100 ui-button-warning"
                                                 ajax="false" 
                                                 style="text-align: left" 
-                                                value="Pharmacy Procurement Report"
-                                                action="#{pharmacySummaryReportController.navigateToPharmacyProcurementReport()}"/>
+                                                value="Pharmacy Direct purchase Report"
+                                                action="#{pharmacyReportController.navigateToDirectPurchaseSummeryReport()}"/>
 
-                                            <p:commandButton class="w-100" ajax="false" value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Purchase Orders Not Approved" action="pharmacy_transfer_issued_list_not_approve_report?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Item - wise Purchase/Good Receive" action="/pharmacy/report_item_vice_purchase_and_good_receive?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Purcharse Bill with Supplier" action="/pharmacy/pharmacy_search_purcharse_bill?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Pharmacy GRN Report" action="pharmacy_search_purcharse_bill_1?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="GRN Purchase Items by Supplier" action="/pharmacy/pharmacy_report_grn_free_items_by_supplier?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Summary')}" class="w-100" ajax="false" value="GRN Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch')}" class="w-100" value="Department Stock By Batch" action="pharmacy_department_stock_report_by_batch?faces-redirect=true" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Orders Not Approved')}" class="w-100 ui-button-warning" value="Purchase Orders Not Approved" action="pharmacy_transfer_issued_list_not_approve_report?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Stock By Batch to Upload')}" class="w-100 ui-button-warning" value="Department Stock By Batch to Upload" action="pharmacy_department_stock_by_batch_toupload?faces-redirect=true" ajax="false"/>
+                                            <p:commandButton
+                                                id="btnItemWiseProcurement"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-wise Procurement', true)}"
+                                                styleClass="w-100 ui-button-success"
+                                                value="Item-wise Procurement"
+                                                icon="fa fa-clipboard-list"
+                                                action="#{pharmacyPurchaseController.navigateToItemWiseProcurementReport}"
+                                                ajax="false"/>
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purcharse Bill with Supplier')}" class="w-100 ui-button-warning" value="Purcharse Bill with Supplier" action="/pharmacy/pharmacy_search_purcharse_bill?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy GRN Report')}" class="w-100 ui-button-warning" value="Pharmacy GRN Report" action="pharmacy_search_purcharse_bill_1?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy GRN and purchase Report')}" class="w-100 ui-button-warning" value="Pharmacy GRN and purchase Report" action="pharmacy_search_purcharse_GRN_bill?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Purchase Items by Supplier')}" class="w-100 ui-button-warning" value="GRN Purchase Items by Supplier" action="/pharmacy/pharmacy_report_grn_free_items_by_supplier?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Summary By Supplier')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Bill Item Report')}" class="w-100" ajax="false"
                                                              value="GRN Bill Item Report" action="#{pharmacySaleReportController.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Registry')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Registry" action="#{pharmacySaleReportController.navigatePharmacyReportGrnRegistory()}" />
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"  value="GRN Return List" action="#{pharmacySaleReportController.navigateToPharmacyGrnReturn()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Return List')}" class="w-100 ui-button-warning" ajax="false"  value="GRN Return List" action="#{pharmacySaleReportController.navigateToPharmacyGrnReturn()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Order Summary')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Order Summary" action="#{commonReport.navigateToPharmacyPurchaseOrderReportDetail()}" actionListener="#{commonReport.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Bills by Department')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Bills by Department" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseBillByDepartment()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Summary By Supplier')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Summary (Credit / Cash )')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
-                                                             value="Purchase &amp; GRN Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportGrnAndPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase and GRN Summary (Credit / Cash )')}" class="w-100 ui-button-warning" ajax="false"
+                                                             value="Purchase and GRN Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportGrnAndPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Summary By Supplier (Credit / Cash)')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Summary By Supplier (Credit / Cash)" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
-                                                             value="Purchase Bill Item" 
-                                                             action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseBillItem()}" />
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Payment Summary')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Payment Summary" action="#{pharmacySaleReportController.navigatePharmacyReportGrnPaymentDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Payment Summary By Supplier')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Payment Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportGrnPaymentDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Return Without Traising')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Pharmacy Return Without Traising" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail1()}" />
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Procurement Bill Item List')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Procurement Bill Item List"
                                                              action="#{pharmacyProcurementReportController.navigateToPurchaseItemList()}" />
+
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Donation Bills', true) and webUserController.hasPrivilege('PharmacyDonation')}" class="w-100 ui-button-warning" ajax="false"
+                                                             value="Donation Bills"
+                                                             action="#{pharmacyProcurementReportController.navigateToDonationBillList()}" />
 
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Disbursement Reports">
+                                    <p:tab 
+                                        title="Disbursement Reports" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Disbursement Reports Tab')}">
                                         <div class="d-grid gap-2">
 
 
-                                            <p:commandButton
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue By Bill Item')}"
                                                 value="Transfer Issue By Bill Item" 
                                                 action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
                                                 ajax="false" 
-                                                icon="fa fa-file-invoice" 
-                                                class="w-100"/>
+                                                icon="pi pi-file"
+                                                class="w-100 ui-button-success"/>
+
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill', true)}" 
+                                                value="Transfer Issue by Bill" 
+                                                action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
+                                                ajax="false" 
+                                                icon="pi pi-chart-line"
+                                                class="w-100 ui-button-success"
+                                                title="High-performance DTO-based report - Recommended"/>
 
                                             <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill Summary',true)}"
+                                                class="w-100 ui-button-success"
+                                                value="Transfer Issue Summary"
+                                                action="#{reportsTransfer.navigateToTransferIssueByBillSummary}" 
+                                                ajax="false"
+                                                icon="pi pi-list"/>
+
+                                            <p:separator/>
+
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive By Bill Item')}"
                                                 value="Transfer Receive By Bill Item" 
                                                 action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
                                                 ajax="false" 
-                                                icon="fa fa-receipt" 
-                                                class="w-100"/>
+                                                icon="pi pi-download"
+                                                class="w-100 ui-button-success"/>
 
                                             <p:commandButton 
-                                                value="Transfer Issue by Bill" 
-                                                action="#{reportsTransfer.navigateToTransferIssueByBill}" 
-                                                ajax="false" 
-                                                icon="fa fa-file-export" 
-                                                class="w-100"/>
-
-                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill', true)}"
                                                 value="Transfer Receive by Bill" 
                                                 action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
                                                 ajax="false" 
-                                                icon="fa fa-file-import" 
-                                                class="w-100"/>
+                                                icon="pi pi-inbox"
+                                                class="w-100 ui-button-success"/>
 
-                                            <p:commandButton
-                                                class="w-100" 
-                                                value="Transfer Issue by Bill(Summary)"
-                                                action="#{reportsTransfer.navigateToTransferIssueByBillSummary}" 
-                                                ajax="false" >                                                   
-                                            </p:commandButton>        
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill Summary', true)}" 
+                                                class="w-100 ui-button-success" 
+                                                value="Transfer Receive Summary" 
+                                                action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_receive_bill_summery?faces-redirect=true"
+                                                ajax="false"
+                                                icon="pi pi-list"/>
 
-                                            <p:commandButton class="w-100 ui-button-warning" value="Transfer Receive by Bill(Summary)" action="pharmacy_report_transfer_receive_bill_summery?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100" value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:separator/>
+
+
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Report Transfer Issued not Recieved')}" class="w-100" value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Staff Stock Report')}" class="w-100" value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Report Summary')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Transfer Report Summary" action="#{commonReport.navigateToPharmacyTransferReportSummary()}" actionListener="#{commonReport.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue Summary Report By Date')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Transfer Issue Summary Report By Date" action="#{pharmacySaleReportController.navigatePharmacyReportIssueByDateSummary()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive Vs BHT Issue Quntity Totals By Item')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Transfer Receive Vs BHT Issue Quntity Totals By Item" action="#{pharmacySaleReportController.navigatePharmacyReportTransferRecieveItemCount}" />
 
 
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Adjustment Reports">
+                                    <p:tab title="Adjustment Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Adjustment Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" value="Item-vice adjustments" 
-                                                             action="pharmacy_report_adjustment_bill_item?faces-redirect=true" ajax="false" />
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item-vice adjustments', true)}" class="w-100" value="Item-wise adjustments" 
+                                                action="#{pharmacyAdjustmentController.navigateToViewReportOnItemviceAdjustments}" ajax="false" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Expiry adjustments', true)}" class="w-100" value="Expiry adjustments" 
+                                                             action="/pharmacy/pharmacy_report_adjustment_expiry_date?faces-redirect=true" ajax="false" />
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Disposal Reports">
+                                    <p:tab title="Disposal Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Disposal Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Unit Issue by bill')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Unit Issue by bill" 
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportUnitIssueBill()}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Unit Issue by Department')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Unit Issue by Department" 
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportUnitIssueDepartmentByDepartment}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Unit Issue by Item (Batch)')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Unit Issue by Item (Batch)" 
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportUnitReportByItem()}"/>
 
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Unit Issue by Item')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Unit Issue by Item" 
                                                              action="#{pharmacySaleReportController.navigatePharmacyReportUnitReportByItem1()}"/>
 

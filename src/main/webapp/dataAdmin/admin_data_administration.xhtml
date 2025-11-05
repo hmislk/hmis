@@ -11,268 +11,310 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <div class="row">
-                    <div class="col-md-3">
-                        <h:form >
+                <p:panel header="Manage Metadata" >
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form >
 
-                            <p:accordionPanel 
-                                class="w-100 m-1" 
-                                activeIndex="#{investigationCategoryController.manageItemIndex}" >
-                                <p:ajax process="@this" ></p:ajax>
+                                <p:accordionPanel 
+                                    class="w-100 m-1" 
+                                    activeIndex="#{investigationCategoryController.manageItemIndex}" >
+                                    <p:ajax process="@this" ></p:ajax>
 
-                                <p:tab title="Manage Processes" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            class="w-100"
-                                            ajax="false" 
-                                            value="Process Definition"
-                                            action="#{processDefinitionController.navigateToManageProcessDefinitions()}" 
-                                            icon="fa fa-money-bill-wave" />
-                                        <p:commandButton  
-                                            class="w-100"
-                                            ajax="false" 
-                                            value="Process Definition Step"
-                                            action="#{processStepDefinitionController.navigateToManageProcessStepDefinitions()}" 
-                                            icon="fa fa-money-bill-wave" />
-                                        <p:commandButton  
-                                            class="w-100"
-                                            ajax="false" 
-                                            value="Process Definition Step Action"
-                                            action="#{processStepActionDefinitionController.navigateToManageProcessStepActionDefinitions()}" 
-                                            icon="fa fa-money-bill-wave" />
-                                    </div>
-                                </p:tab>
+                                    <p:tab title="Manage Processes" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Process Definition"
+                                                action="#{processDefinitionController.navigateToManageProcessDefinitions()}"
+                                                icon="fa fa-money-bill-wave" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Process Definition Step"
+                                                action="#{processStepDefinitionController.navigateToManageProcessStepDefinitions()}"
+                                                icon="fa fa-money-bill-wave" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Process Definition Step Action"
+                                                action="#{processStepActionDefinitionController.navigateToManageProcessStepActionDefinitions()}"
+                                                icon="fa fa-money-bill-wave" />
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Schedules" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Scheduled Process Configuration"
+                                                action="#{scheduledProcessConfigurationController.navigateToManageScheduledProcessConfigurations()}"
+                                                icon="fa fa-money-bill-wave" />
+                                        </div>
+                                    </p:tab>
 
-                                <p:tab title="Upload" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            class="w-100"
-                                            ajax="false" 
-                                            value="Members"
-                                            action="#{dataUploadController.navigateToUploadMembers()}" 
-                                            icon="fa fa-money-bill-wave" />
-                                    </div>
-                                </p:tab>
+                                    <p:tab title="Upload" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Members"
+                                                action="#{dataUploadController.navigateToUploadMembers()}" 
+                                                icon="fa fa-money-bill-wave" />
+                                        </div>
+                                    </p:tab>
 
-                                <p:tab title="Analysis Report Templates" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton 
-                                            value="Add New Template" 
-                                            ajax="false"
-                                            class="w-100 "
-                                            icon="fa fa-search"
-                                            action="#{reportTemplateController.navigateToAddNewReportTemplate()}" >
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            value="List Templates" 
-                                            ajax="false"
-                                            class="w-100 "
-                                            icon="fa fa-search"
-                                            action="#{reportTemplateController.navigateToReportTemplateList()}" >
-                                        </p:commandButton>
+                                    <p:tab title="Analysis Report Templates" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                value="Add New Template" 
+                                                ajax="false"
+                                                class="w-100 "
+                                                icon="fa fa-search"
+                                                action="#{reportTemplateController.navigateToAddNewReportTemplate()}" >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="List Templates" 
+                                                ajax="false"
+                                                class="w-100 "
+                                                icon="fa fa-search"
+                                                action="#{reportTemplateController.navigateToReportTemplateList()}" >
+                                            </p:commandButton>
 
-                                    </div>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Manage Frontend Website" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewShortWebContent()}" value="Add New Short Contents" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewLongWebContent()}" value="Add New Long Contents" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewWebContent()}" value="Add New List Contents" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webContentController.toListWebContent()}" value="List Web Contents" icon="pi pi-list"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{uploadController.toAddNewUpload()}" value="Add Web Image" icon="pi pi-image"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{uploadController.toListUploads()}" value="List Images" icon="pi pi-images"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toAddNewWebLanguage()}" value="Add Language" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toListWebLanguage()}" value="List Languages" icon="pi pi-list"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{webTemplateController.navigateToAddNewTemplate()}"
+                                                value="Add New Template" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{webTemplateController.navigateToListWebTemplates()}" 
+                                                value="List Templates" 
+                                                icon="pi pi-list"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{templateComponentController.navigateToAddNewTemplateComponent()}"
+                                                value="Add New Template Componant" icon="pi pi-plus"></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100" 
+                                                action="#{templateComponentController.navigateToListTemplateComponent()}" 
+                                                value="List Templates Componants" 
+                                                icon="pi pi-list"></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Manage Data Entry Forms" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100 "
+                                                action="#{designComponentController.navigateToAddNewDataEntryForm()}"
+                                                value="Add Data Entry Form" icon="pi pi-plus"></p:commandButton>
 
-                                </p:tab>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100 "
+                                                action="#{designComponentController.navigateToListDataEntryForms()}" 
+                                                value="List Data Entry Forms" 
+                                                icon="pi pi-list"></p:commandButton>
+                                        </div>
+                                    </p:tab>
 
-                                <p:tab title="Manage Frontend Website" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewShortWebContent()}" value="Add New Short Contents" icon="pi pi-plus"></p:commandButton>
-                                        <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewLongWebContent()}" value="Add New Long Contents" icon="pi pi-plus"></p:commandButton>
-                                        <p:commandButton ajax="false" class="w-100" action="#{webContentController.toAddNewWebContent()}" value="Add New List Contents" icon="pi pi-plus"></p:commandButton>
-                                        <p:commandButton ajax="false" class="w-100" action="#{webContentController.toListWebContent()}" value="List Web Contents" icon="pi pi-list"></p:commandButton>
-                                        <p:commandButton ajax="false" class="w-100" action="#{uploadController.toAddNewUpload()}" value="Add Web Image" icon="pi pi-image"></p:commandButton>
-                                        <p:commandButton ajax="false" class="w-100" action="#{uploadController.toListUploads()}" value="List Images" icon="pi pi-images"></p:commandButton>
-                                        <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toAddNewWebLanguage()}" value="Add Language" icon="pi pi-plus"></p:commandButton>
-                                        <p:commandButton ajax="false" class="w-100" action="#{webLanguageController.toListWebLanguage()}" value="List Languages" icon="pi pi-list"></p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100" 
-                                            action="#{webTemplateController.navigateToAddNewTemplate()}"
-                                            value="Add New Template" icon="pi pi-plus"></p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100" 
-                                            action="#{webTemplateController.navigateToListWebTemplates}" 
-                                            value="List Templates" 
-                                            icon="pi pi-list"></p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100" 
-                                            action="#{templateComponentController.navigateToAddNewTemplateComponent()}"
-                                            value="Add New Template Componant" icon="pi pi-plus"></p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100" 
-                                            action="#{templateComponentController.navigateToListTemplateComponent()}" 
-                                            value="List Templates Componants" 
-                                            icon="pi pi-list"></p:commandButton>
-                                    </div>
-                                </p:tab>
-                                <p:tab title="Manage Form Templates" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100 "
-                                            action="#{designComponentController.navigateToAddNewDataEntryForm()}"
-                                            value="Add Data Entry Form" icon="pi pi-plus"></p:commandButton>
-
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="w-100 "
-                                            action="#{designComponentController.navigateToListDataEntryForms()}" 
-                                            value="List Data Entry Forms" 
-                                            icon="pi pi-list"></p:commandButton>
-                                    </div>
-                                </p:tab>
-
-                                <p:tab title="Data" disabled="false">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            value="Historical Record List"
-                                            action="#{historicalRecordController.navigateToHistoricalRecordList()}" 
-                                            ajax="false"
-                                            styleClass="w-100 ui-button-success"
-                                            icon="fa fa-database" />
-                                    </div>
-                                </p:tab>
-
-
-                                <p:tab title="Search &amp; Lists"  >
-
-                                    <div class="d-grid gap-2">
-
-                                        <p:commandButton 
-                                            value="Search Any Bill" 
-                                            ajax="false"
-                                            class="w-100 "
-                                            icon="fa fa-search"
-                                            action="#{searchController.toSearchBills}" 
-                                            rendered="#{webUserController.hasPrivilege('Search')}">
-                                        </p:commandButton>
-
-                                        <p:commandButton 
-                                            value="Bills with Errors" 
-                                            ajax="false"
-                                            class="w-100 "
-                                            icon="fa fa-search"
-                                            action="#{searchController.navigateToListBillsWithErrors}" 
-                                            rendered="#{webUserController.hasPrivilege('Search')}">
-                                        </p:commandButton>
-
-                                        <p:commandButton 
-                                            value="List All Bills"  
-                                            ajax="false"
-                                            icon="fa fa-list"
-                                            class="w-100"
-                                            action="#{searchController.toListAllBills}" 
-                                            rendered="#{webUserController.hasPrivilege('Search')}">
-                                        </p:commandButton>
-
-                                        <p:commandButton 
-                                            value="List All Payments"  
-                                            ajax="false"
-                                            icon="fa fa-list"
-                                            class="w-100"
-                                            action="#{searchController.toListAllPayments()}" 
-                                            rendered="#{webUserController.hasPrivilege('Search')}">
-                                        </p:commandButton>
-
-                                        <p:commandButton 
-                                            value="Downlods"
-                                            ajax="false"
-                                            class="w-100"
-                                            icon="fa fa-download"
-                                            action="/dataAdmin/downloads" 
-                                            rendered="#{webUserController.hasPrivilege('Search')}">
-                                        </p:commandButton>
-
-                                        <p:commandButton 
-                                            value="Convert Phone Number"
-                                            ajax="false"
-                                            icon="fa fa-phone"
-                                            class="w-100"
-                                            action="#{patientController.navigateToConvertOldPatientPhoneNumbers}" 
-                                            rendered="#{webUserController.hasPrivilege('Search')}">
-                                        </p:commandButton>
-                                    </div>
-
-                                </p:tab>
+                                    <p:tab title="Data" disabled="false">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                value="Generate Historical Record"
+                                                action="#{historicalRecordController.navigateToHistoricalRecordGenerate()}"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-warning"
+                                                icon="fa fa-cogs" />
+                                            <p:commandButton
+                                                value="Historical Record List"
+                                                action="#{historicalRecordController.navigateToHistoricalRecordList()}"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-success"
+                                                icon="fa fa-database" />
+                                        </div>
+                                    </p:tab>
 
 
-                                <p:tab title="Manage Frontend Website" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            ajax="false"  
-                                            action="#{billController.navigateToBillContactNumbers()}" 
-                                            value="Bulk Messaging" 
-                                            icon="fa fa-comments"
-                                            rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" >
-                                        </p:commandButton>    
-                                    </div>
-                                </p:tab>
+                                    <p:tab title="Search &amp; Lists"  >
 
-                                <p:tab title="Audit" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  
-                                            ajax="false"  
-                                            action="/audit/items_and_fees?faces-redirect=true;" 
-                                            value="Items &amp; Fees" 
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton 
+                                                value="Search Any Bill" 
+                                                ajax="false"
+                                                class="w-100 "
+                                                icon="fa fa-search"
+                                                action="#{searchController.toSearchBills}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                value="Bills with Errors" 
+                                                ajax="false"
+                                                class="w-100 "
+                                                icon="fa fa-search"
+                                                action="#{searchController.navigateToListBillsWithErrors}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                value="List All Bills"  
+                                                ajax="false"
+                                                icon="fa fa-list"
+                                                class="w-100"
+                                                action="#{searchController.toListAllBills}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                value="List All Payments"  
+                                                ajax="false"
+                                                icon="fa fa-list"
+                                                class="w-100"
+                                                action="#{searchController.toListAllPayments()}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                value="Downlods"
+                                                ajax="false"
+                                                class="w-100"
+                                                icon="fa fa-download"
+                                                action="/dataAdmin/downloads" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                value="Convert Phone Number"
+                                                ajax="false"
+                                                icon="fa fa-phone"
+                                                class="w-100"
+                                                action="#{patientController.navigateToConvertOldPatientPhoneNumbers}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
+                                        </div>
+
+                                    </p:tab>
+
+
+
+
+                                    <p:tab title="Audit" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                            action="/audit/items_and_fees?faces-redirect=true"
+                                            value="Items &amp; Fees"
                                             icon="fa fa-comments" >
-                                        </p:commandButton>    
-                                    </div>
-                                </p:tab>
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/config_option_changes?faces-redirect=true"
+                                                value="Config Option Changes"
+                                                icon="pi pi-history" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                            action="/audit/config_option_events?faces-redirect=true"
+                                            value="Config Option Events"
+                                            icon="pi pi-history" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/report_execution_logs?faces-redirect=true"
+                                                value="Report Execution Logs"
+                                                icon="pi pi-history" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/report_analytics?faces-redirect=true"
+                                                value="Report Analytics Dashboard"
+                                                icon="pi pi-chart-bar" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/all_audit_events?faces-redirect=true"
+                                                value="All Audit Events"
+                                                icon="pi pi-history" >
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
 
-                                <p:tab title="System Administrator Functions" disabled="false" >
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton
-                                            ajax="false" 
-                                            action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
-                                            value="Update Database Structure"  
+                                    <p:tab title="System Administrator Functions" disabled="false" >
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false" 
+                                                action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
+                                                value="Update Database Structure"  
+                                                class="w-100 m-1"
+                                                />
+
+                                            <p:commandButton
+                                                ajax="false" 
+                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}"
+                                            value="To Download Log Files"
                                             class="w-100 m-1"
                                             />
-                                        
-                                        <p:commandButton
-                                            ajax="false" 
-                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}" 
-                                            value="To Download Log Files"  
-                                            class="w-100 m-1"
-                                            />
-                                        
-                                        <p:commandButton
-                                            ajax="false" 
-                                            action="#{dataAdministrationController.navigateToNameToCode()}" 
-                                            value="Name To Code"  
-                                            class="w-100 m-1"
-                                            />
-                                        <p:commandButton
-                                            ajax="false" 
-                                            action="admin_functions?faces-redirect=true" 
-                                            value="Admin Functions"  
-                                            class="m-1 w-100"
-                                            />
 
-                                        <p:commandButton 
-                                            value="Test Error Handling"
-                                            action="#{dataAdministrationController.causeError}"
-                                            ajax="false"
-                                            styleClass="ui-button-danger w-100 m-1" />
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToReportExecutionLogs()}"
+                                                value="Process Execution Logs"
+                                                class="w-100 m-1"
+                                                />
 
-                                    </div>
-                                </p:tab>
+                                            <p:commandButton
+                                                ajax="false" 
+                                                action="#{dataAdministrationController.navigateToNameToCode()}" 
+                                                value="Name To Code"  
+                                                class="w-100 m-1"
+                                                />
+                                            <p:commandButton
+                                                ajax="false" 
+                                                action="admin_functions?faces-redirect=true" 
+                                                value="Admin Functions"  
+                                                class="m-1 w-100"
+                                                />
+
+                                            <p:commandButton 
+                                                value="Test Error Handling"
+                                                action="#{dataAdministrationController.causeError}"
+                                                ajax="false"
+                                                styleClass="ui-button-danger w-100 m-1" />
+
+                                        </div>
+                                    </p:tab>
 
 
-                            </p:accordionPanel>
+                                </p:accordionPanel>
 
-                        </h:form>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent">
+
+                            </ui:insert>
+                        </div>
                     </div>
-                    <div class="col-md-9">
-                        <ui:insert name="subcontent">
-
-                        </ui:insert>
-                    </div>
-                </div>
-
+                </p:panel>
             </ui:define>
         </ui:composition>
     </h:body>

@@ -287,7 +287,7 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}" >
                         <tr>
-                            <td >Discount:</td>
+                            <td >Discount : (#{cc.attrs.bill.backwardReferenceBill.paymentScheme.name}) </td>
                             <td  style="text-align: right;">
                                 <h:outputLabel  value="#{-cc.attrs.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />

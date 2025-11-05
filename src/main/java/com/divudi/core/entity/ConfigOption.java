@@ -18,7 +18,7 @@ import javax.persistence.Temporal;
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
-@Entity
+@Entity // Already duplicates are there, Can not have a unieuq constrain now as deployment fails
 public class ConfigOption implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -228,7 +228,4 @@ public class ConfigOption implements Serializable {
     public void setEnumValue(String enumValue) {
         this.enumValue = enumValue;
     }
-
-
-
 }

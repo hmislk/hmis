@@ -25,6 +25,7 @@ import javax.persistence.Temporal;
 @Entity
 public class AuditEvent implements Serializable {
 
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -96,9 +97,6 @@ public class AuditEvent implements Serializable {
     
     
     public void calculateDifference() {
-        System.out.println("calculateDifference");
-        System.out.println("Before JSON: " + beforeJson);
-        System.out.println("After JSON: " + afterJson);
         if (beforeJson == null || afterJson == null) {
             this.difference = "One or both JSON values are null.";
             return;
@@ -114,19 +112,16 @@ public class AuditEvent implements Serializable {
             // Ensure JSON was parsed successfully
             if (beforeMap == null || afterMap == null) {
                 this.difference = "Failed to parse JSON.";
-                System.out.println("Failed to parse JSON.");
                 return;
             }
 
             this.difference = formatDifference(getDifference(beforeMap, afterMap));
         } catch (Exception e) {
-            e.printStackTrace();
             this.difference = "Error calculating difference: " + e.getMessage();
         }
     }
 
     private Map<String, String> getDifference(Map<String, Object> before, Map<String, Object> after) {
-        System.out.println("getDifference");
         Map<String, String> diff = new HashMap<>();
 
         // Create a new HashSet with the keys from 'before' to ensure it's modifiable
@@ -134,28 +129,22 @@ public class AuditEvent implements Serializable {
         allKeys.addAll(after.keySet()); // Now this operation is safe
 
         for (String key : allKeys) {
-            System.out.println("key = " + key);
             Object beforeValue = before.get(key);
             Object afterValue = after.get(key);
             if ((beforeValue == null && afterValue != null)
                     || (beforeValue != null && !beforeValue.equals(afterValue))) {
                 diff.put(key, "Before: " + beforeValue + ", After: " + afterValue);
-                System.out.println("diff = " + diff);
             }
         }
         return diff;
     }
 
     private String formatDifference(Map<String, String> diff) {
-        System.out.println("formatDifference");
-        System.out.println("diff = " + diff);
-
         if (diff.isEmpty()) {
             return "No differences found.";
         }
         StringBuilder sb = new StringBuilder();
         diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
-        System.out.println("sb = " + sb);
         return sb.toString();
     }
 

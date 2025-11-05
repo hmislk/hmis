@@ -525,19 +525,21 @@
                                                         <p:commandButton
                                                             value="Mark Foreigner"
                                                             class="mx-2 my-2"
+                                                            disabled="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
                                                             action="#{bookingControllerViewScope.markAsForeignerWithBillUpdate()}"
                                                             rendered="#{!bookingControllerViewScope.foriegn}"
                                                             process="@this"
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem msg"
                                                             >
                                                         </p:commandButton>
                                                         <p:commandButton
                                                             value="Mark Local"
                                                             class="mx-2"
+                                                            disabled="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
                                                             action="#{bookingControllerViewScope.markAsLocalWithBillUpdate()}"
                                                             rendered="#{bookingControllerViewScope.foriegn}"
                                                             process="@this"
-                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem msg"
                                                             >
                                                         </p:commandButton>
 
@@ -806,7 +808,7 @@
                                                 icon="fas fa-plus"
                                                 class="ui-button-success"
                                                 action="#{bookingControllerViewScope.addItemToBookingAtSettling()}"
-                                                update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel :#{p:resolveFirstComponentWithId('balance',view).clientId} "
+                                                update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel gdManageBookings balance :#{p:resolveFirstComponentWithId('balance',view).clientId} "
                                                 ></p:commandButton>
 
                                             <p:dataTable id="tblBillItemsForAddingNewItem" 
@@ -815,7 +817,7 @@
                                                 <p:column >
                                                     <h:outputText value="#{bi.item.name}" ></h:outputText>
                                                 </p:column>
-                                                <p:column >
+                                                <p:column>
                                                     <h:outputText value="#{bookingControllerViewScope.foriegn ? bi.item.totalForForeigner : bi.netValue}" />
                                                 </p:column>
                                                 <p:column >
@@ -823,6 +825,7 @@
                                                         id="btnRemove"
                                                         ajax="false"
                                                         icon="fas fa-trash"
+                                                        disabled="#{bookingControllerViewScope.checkItemIsSessionInstance(bi)}"
                                                         class="ui-button-danger"
                                                         action="#{bookingControllerViewScope.removeAddedAditionalItem()}"
                                                         >
@@ -830,13 +833,14 @@
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
-
+                                            
+                                            <p:growl id="msg" life="2000"></p:growl>
                                             <p:dataTable 
                                                 id="tblBillFeesForAddingNewItem" 
                                                 value="#{bookingControllerViewScope.selectedBillSession.bill.billFeesWIthoutZeroValue}" 
                                                 var="bf" >
                                                 <p:column headerText="Fee">
-                                                    <h:outputText value="#{bf.fee.item.name}" ></h:outputText>
+                                                    <h:outputText value="#{bf.fee.item.name} - " ></h:outputText>
                                                     <h:outputText value="#{bf.fee.name}" ></h:outputText>
                                                 </p:column>
                                                 <p:column rendered="false" headerText="Gross Fee">
@@ -850,20 +854,48 @@
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Value">
-                                                    <p:inputText id="txtFee" value="#{bookingControllerViewScope.foriegn ? bf.fee.ffee : bf.fee.fee}" onfocus="this.select()">
+                                                    <p:inputText id="txtFee" styleClass="updateFeeValue" onkeyup="validateFeeValue(this)" value="#{bf.feeValue}" onfocus="this.select()">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                         <p:ajax event="keyup" 
                                                                 process="txtFee paymentDetails" 
                                                                 update=":#{p:resolveFirstComponentWithId('lstItems',view).clientId} 
                                                                 :#{p:resolveFirstComponentWithId('tblBillItemsForAddingNewItem',view).clientId} 
                                                                 :#{p:resolveFirstComponentWithId('balance',view).clientId} 
-                                                                :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId}" 
-                                                                listener="#{bookingControllerViewScope.calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(bf)}" 
+                                                                :#{p:resolveFirstComponentWithId('totalsPanel',view).clientId} gdManageBookings balance" 
+                                                                listener="#{bookingControllerViewScope.calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(bf)}"
+                                                                onstart="return validateFeeValue(document.querySelector('.updateFeeValue'))"
                                                                 delay="500" /> <!-- Added a delay to avoid too frequent requests -->
                                                     </p:inputText>
+                                                    <p:tag styleClass="tagText" value="Not a correct value" severity="danger" style="display: none" icon="pi pi-times-circle"></p:tag>
                                                 </p:column>
 
                                             </p:dataTable>
+
+                                            <script>
+
+                                                function validateFeeValue(updateFeeInput) {
+//                                                    const updateFeeInput = document.querySelector('.updateFeeValue');
+                                                    console.log("start function");
+                                                    let value = updateFeeInput.value.trim().replace(/,/g, '');
+                                                    if(!value){
+                                                        console.log("return function "+updateFeeInput.value);
+                                                        return false;
+                                                    }
+                                                    
+                                                    console.log(value);
+
+                                                    if (value === "" || isNaN(value) || !value) {
+                                                        document.querySelector('.tagText').style.display = 'block';
+                                                        console.log("Dont send");
+                                                        return false;
+                                                    }
+                                                    
+                                                    return true;
+                                                }
+
+
+                                            </script>
+
                                         </p:panel>
 
                                         <p:dataTable 
@@ -1226,7 +1258,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Reprint" id="rePrint" >
+                        <p:tab title="Reprint" id="rePrint" disabled="#{!webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
 
                             <h:panelGroup>
                                 <div class="row">
@@ -1332,7 +1364,7 @@
                                         <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
                                             <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                             <f:selectItem itemLabel="Same As Billed Bill" itemValue="#{bookingControllerViewScope.billSession ne null ? (bookingControllerViewScope.billSession.bill.paidBill ne null ?  bookingControllerViewScope.billSession.bill.paidBill.paymentMethod : bookingControllerViewScope.billSession.bill.paymentMethod) : null}" ></f:selectItem>
-                                            <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
+                                            <f:selectItems value="#{bookingControllerViewScope.paymentMethodsToChannelCancellation}"/>
                                         </p:selectOneMenu>
                                     </div>
                                     <p:commandButton 
@@ -1552,7 +1584,7 @@
                                 <p:panel header="Current Patient for Booking" >
                                     <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                 </p:panel>
-                                <ezcommon:patient_details_view_scope_1 controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
+                                <ezcommon:patient_details_view_scope_1 editable="true" controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
                             </p:panelGrid>
                         </p:tab>
 
@@ -1589,12 +1621,12 @@
 
                         <p:tab title="Status" id="statusTab">
                             <p:outputLabel value="Mark As Present / Absent"/>
-                            
+
                             <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
                                                                                                   or bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.checkPaid()}"  value="#{bookingControllerViewScope.absent}" >
                                 <p:ajax process="@this" update="statusTab" listener="#{bookingControllerViewScope.updatePresentStatusOfPatient(bookingControllerViewScope.absent)}" ></p:ajax>
                             </p:selectBooleanButton>
-                            
+
                             <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appoinment." rendered="#{bookingControllerViewScope.checkPaid()}" style="color: red; font-weight: bold"/>
 
                         </p:tab>

@@ -7,6 +7,9 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css" />
+        
+        <h1>Test</h1>
+        
         <h:form id="form"> 
             <div class="row m-3">
                 <div class="col-3">
@@ -60,7 +63,7 @@
                                          actionListener="#{shiftTableController.makeNull()}" 
                                          class="m-1"
                                          /> 
-                        
+
                         <p:commandButton ajax="false" value="Hide" 
                                          action="#{shiftTableController.hide}"
                                          />
@@ -80,34 +83,34 @@
                                          />
                     </div>
 
-<!--                    <div class="m-2">
-                        <p:commandButton ajax="false" value="Hide" 
-                                         action="#{shiftTableController.hide}"
-                                         class="m-1"
-                                         />
+                    <!--                    <div class="m-2">
+                                            <p:commandButton ajax="false" value="Hide" 
+                                                             action="#{shiftTableController.hide}"
+                                                             class="m-1"
+                                                             />
+                    
+                                            <p:commandButton ajax="false" value="Visible" 
+                                                             action="#{shiftTableController.visible}"
+                                                             />
+                    
+                                            <p:commandButton ajax="false" value="Save"
+                                                             action="#{shiftTableController.save}"
+                                                             class="m-1"/>
+                    
+                                            <p:commandButton ajax="false" value="Clear" 
+                                                             action="#{shiftTableController.makeNull()}"
+                                                             />
+                                        </div>-->
 
-                        <p:commandButton ajax="false" value="Visible" 
-                                         action="#{shiftTableController.visible}"
-                                         />
-
-                        <p:commandButton ajax="false" value="Save"
-                                         action="#{shiftTableController.save}"
-                                         class="m-1"/>
-
-                        <p:commandButton ajax="false" value="Clear" 
-                                         action="#{shiftTableController.makeNull()}"
-                                         />
-                    </div>-->
-
-<!--                    <div class="m-2">
-                        <p:commandButton value="Print Blank Roster" ajax="false" action="#" class="m-1">
-                            <p:printer target="print" ></p:printer>
-                        </p:commandButton>
-
-                        <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
-                            <p:printer target="print3" ></p:printer>
-                        </p:commandButton>
-                    </div>-->
+                    <!--                    <div class="m-2">
+                                            <p:commandButton value="Print Blank Roster" ajax="false" action="#" class="m-1">
+                                                <p:printer target="print" ></p:printer>
+                                            </p:commandButton>
+                    
+                                            <p:commandButton value="Print Filled Roster" ajax="false" action="#"  >
+                                                <p:printer target="print3" ></p:printer>
+                                            </p:commandButton>
+                                        </div>-->
 
                 </div>
             </div>
@@ -227,7 +230,17 @@
                             <h:outputLabel value="#{sts.staff.person.name}" />
                         </p:column>
                         <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        
-                            <h:outputLabel value="#{sts.staff.code}"/>                           
+                            <h:outputLabel value="#{sts.staff.code}"/>  
+                            <p:separator ></p:separator>
+                            <p:commandLink 
+                                value="Edit"
+                                action="#{staffController.navigateToManageStaff(sts.staff)}"
+                                ajax="false"
+                                target="_blank"
+                                styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-left">
+                                <i class="fa fa-pencil" />
+                            </p:commandLink>
+
                         </p:column>
 
                         <p:column rendered="#{data.date ne null}">

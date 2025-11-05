@@ -19,6 +19,7 @@ public enum InvestigationItemType {
     AntibioticList,
     Antibiotic,
     Image,
+    ExternalImage,
     Html,
     MeasurementUnit,
     ReportImage,

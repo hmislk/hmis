@@ -12,22 +12,31 @@
                 <p:panel header="Lab Analytics">  
                     <div class="row">
                         <div class="col-2"> 
-                            <p:accordionPanel>
-                                <p:tab title="Performance" > 
+                            <p:accordionPanel id="accPanel" activeIndex="#{laborataryReportController.activeIndex}">
+                                <p:ajax process="accPanel" ></p:ajax>
+                                <p:tab title="Performance"  > 
                                     <h:form>
 
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Investigation List" action="investigation_counts?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Bill List" action="/reportLab/bill_list?faces-redirect=true;"/> 
-                                            <p:commandButton ajax="false" value="Client List" action="/reportLab/client_list?faces-redirect=true;"/> 
-                                            <p:commandButton ajax="false" value="Sample List" action="/lab/patient_sample_list?faces-redirect=true;"/> 
-
-                                            <p:commandButton ajax="false" value="Average Turn Around Time" action="turn_over_time?faces-redirect=true;"/> 
-                                            <p:commandButton ajax="false" value="Bill-vice turn-around time" action="turn_over_time_bills?faces-redirect=true;"/> 
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution?faces-redirect=true;"/>
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Billed Department" action="report_lab_by_billed_department?faces-redirect=true;"/>
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true;"/>
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true;"/>
+                                            <p:commandButton ajax="false" value="Investigation List" action="investigation_counts?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Bill List" action="/reportLab/bill_list?faces-redirect=true"/> 
+                                            
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="w-100 ui-button-success mt-1"
+                                                value="Bill Item List"
+                                                action="/reportLab/bill_item_list?faces-redirect=true">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton ajax="false" value="Client List" action="/reportLab/client_list?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Sample List" action="/lab/patient_sample_list?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" class="w-100 ui-button-success mt-1" value="Sample List (DTO)" action="/lab/dto_patient_sample_list?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Average Turn Around Time" action="turn_over_time?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Bill-vice turn-around time" action="turn_over_time_bills?faces-redirect=true"/> 
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution?faces-redirect=true"/>
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Billed Department" action="report_lab_by_billed_department?faces-redirect=true"/>
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true"/>
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true"/>
 
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="OPD Bill Items For Credit Companies" action="#{searchController.toCreateBillItemListForCreditCompany()}"/>
                                         </div>
@@ -36,7 +45,7 @@
                                 <p:tab title="Institutions" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="By Ordering Institution" action="ix_count_by_billed_institution?faces-redirect=true;"/>
+                                            <p:commandButton ajax="false" value="By Ordering Institution" action="ix_count_by_billed_institution?faces-redirect=true"/>
 
                                         </div>
                                     </h:form>
@@ -44,18 +53,18 @@
                                 <p:tab title="Collecting Centres" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Report by Collection Centre(Summary)" action="report_lab_collection_centre_summery?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count?faces-redirect=true;"/>                            
-                                            <p:commandButton ajax="false" value="Report by Collection Centre Count(Summary)" action="report_lab_by_collection_centre_investigation_count_summery?faces-redirect=true;"/>                            
+                                            <p:commandButton ajax="false" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Report by Collection Centre(Summary)" action="report_lab_collection_centre_summery?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count?faces-redirect=true"/>                            
+                                            <p:commandButton ajax="false" value="Report by Collection Centre Count(Summary)" action="report_lab_by_collection_centre_investigation_count_summery?faces-redirect=true"/>                            
                                         </div>
                                     </h:form>
                                 </p:tab>
                                 <p:tab title="Referring Doctors" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Report by Referring Doctor(Details)" action="report_lab_by_refering_doctor?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Report by Referring Doctor(Summary)" action="report_lab_by_refering_doctor_summery?faces-redirect=true;"/>
+                                            <p:commandButton ajax="false" value="Report by Referring Doctor(Details)" action="report_lab_by_refering_doctor?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Report by Referring Doctor(Summary)" action="report_lab_by_refering_doctor_summery?faces-redirect=true"/>
                                         </div>
                                     </h:form>
                                 </p:tab>
@@ -63,10 +72,10 @@
                                 <p:tab title="Inward" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Inward" action="report_investigation_summery_by_inward?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward?faces-redirect=true;"/>
+                                            <p:commandButton ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Investigation Summary Inward" action="report_investigation_summery_by_inward?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward?faces-redirect=true"/>
 
                                         </div>
                                     </h:form>
@@ -75,19 +84,32 @@
                                 <p:tab title="Income" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Income Summary" action="income_summery?faces-redirect=true;"/> 
-                                            <p:commandButton ajax="false" value="Report Summary Department" action="report_cashier_detailed_by_department?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Report Summary by day" action="report_lab_by_date_summery?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Daily Inward Fee Summary" action="daily_inward_fee_summery?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Daily Inward Fee Summary with Counts" action="daily_inward_fee_summery_counts?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total?faces-redirect=true;"/>
+                                            <p:commandButton ajax="false" value="Income Summary" action="income_summery?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Report Summary Department" action="report_cashier_detailed_by_department?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Report Summary by day" action="report_lab_by_date_summery?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true"/>
+                                            <p:commandButton ajax="false"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
+                                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
+                                                            action="lab_daily_summary_by_department?faces-redirect=true" />
+                                            <p:commandButton ajax="false"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Optimized Method')}"
+                                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)"
+                                                            action="lab_daily_summary_by_department_dto?faces-redirect=true" />
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Laboratary Card Income Report" 
+                                                action="#{laborataryReportController.navigateToLaborataryCardIncomeReportFromLabAnalytics()}">
+                                            </p:commandButton>
+                                            <p:commandButton ajax="false" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Daily Inward Fee Summary" action="daily_inward_fee_summery?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Daily Inward Fee Summary with Counts" action="daily_inward_fee_summery_counts?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total?faces-redirect=true"/>
 
                                         </div>
                                     </h:form>
@@ -97,12 +119,22 @@
                                     <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton
-                                                class="w-100"  
-                                                ajax="false" 
-                                                value="Test Wise Count Report" 
-                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" >
-                                            </p:commandButton>
-                                            
+                                                class="w-100 ui-button-primary"
+                                                ajax="false"
+                                                value="Test Wise Count Report"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report is Enabled',true)}"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" />
+                                            <p:commandButton
+                                                class="w-100 ui-button-success mt-1"
+                                                ajax="false"
+                                                value="Test Wise Count Report - DTO"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count Report By DTO is Enabled',true)}"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
+                                            <p:commandButton
+                                                class="w-100  ui-button-success"
+                                                ajax="false"
+                                                value="Test Wise Reagent Cost Report"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics()}" />
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="Laboratary Income Report" 
@@ -114,18 +146,20 @@
                                                 value="Laboratory Order Report" 
                                                 action="#{laborataryReportController.navigateToLaborataryInwardOrderReportFromLabAnalytics}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
+                                                class="w-100 ui-button-success mt-1"
                                                 value="Laboratory Summary" 
                                                 action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics}">
                                             </p:commandButton>
-                                            
-                                            <p:commandButton ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types?faces-redirect=true;"/> 
-                                            <p:commandButton ajax="false" value="Daily Summary" action="report_opd_service_summery?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd?faces-redirect=true;"/>
-                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count?faces-redirect=true;"/>
+
+                                            <p:commandButton ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Daily Summary" action="report_opd_service_summery?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Laboratory All Income Summary" action="laboratory_all_income_summary?faces-redirect=true;"/>
                                         </div>
                                     </h:form>
                                 </p:tab>
@@ -134,10 +168,10 @@
                                     <h:form>
                                         <h:panelGroup>
                                             <p:commandButton 
-                                                
+
                                                 ajax="false" 
                                                 value="Bills Cancelled after Approving Reports"
-                                                action="/lab/report_cancelled_bill_search?faces-redirect=true;"> 
+                                                action="/lab/report_cancelled_bill_search?faces-redirect=true"> 
                                             </p:commandButton>
                                         </h:panelGroup>
                                     </h:form>
@@ -147,8 +181,8 @@
                                 <p:tab title="Clinical" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Test Results - Single" action="test_results_single?faces-redirect=true;"/> 
-                                            <p:commandButton ajax="false" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true;"/> 
+                                            <p:commandButton ajax="false" value="Test Results - Single" action="test_results_single?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/> 
 
                                         </div>>
                                     </h:form>
@@ -156,13 +190,13 @@
 
                             </p:accordionPanel>
                         </div>
-                        
+
                         <div class="col-10">  
                             <ui:insert name="subcontent" >
 
                             </ui:insert>
                         </div>
-                        
+
                     </div>
                 </p:panel> 
             </ui:define>

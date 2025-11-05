@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
@@ -15,161 +16,170 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <h:panelGrid columns="5" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                                <h:panelGrid columns="5" styleClass="w-100 form-grid"
+                                             columnClasses="label-icon-column, input-column">
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;"
+                                                      styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
                                         <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:calendar 
-                                        styleClass="w-100" 
-                                        inputStyleClass="w-100 form-control" 
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="fromDate"
+                                        value="#{searchController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         />
 
-                                    <p:spacer width="50" ></p:spacer>
+                                    <p:spacer width="50"/>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;"
+                                                      styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
                                         <h:outputLabel value="To" for="toDate" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:calendar 
-                                        styleClass="w-100" 
-                                        inputStyleClass="w-100 form-control" 
-                                        id="toDate" 
-                                        value="#{searchController.toDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="toDate"
+                                        value="#{searchController.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         />
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputText value="&#xf19c;"
+                                                      styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
                                         <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbIns"
                                         class="w-100"
-                                        styleClass="w-100 form-control" 
-                                        value="#{searchController.institution}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.institution}"
                                         filter="true">
-                                        <f:selectItem itemLabel="All Institutions" />
-                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                        <p:ajax process="cmbIns" update="cmbDept" />
+                                        <f:selectItem itemLabel="All Institutions"/>
+                                        <f:selectItems value="#{institutionController.companies}" var="ins"
+                                                       itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                        <p:ajax process="cmbIns" update="cmbDept"/>
                                     </p:selectOneMenu>
 
-                                    <p:spacer width="50" ></p:spacer>
+                                    <p:spacer width="50"/>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
                                         <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbDept"
-                                        style="width: 350px;"  
-                                        class="w-100" 
-                                        value="#{searchController.department}" 
+                                        style="width: 350px;"
+                                        class="w-100"
+                                        value="#{searchController.department}"
                                         filter="true">
-                                        <f:selectItem itemLabel="All Departments" />
-                                        <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        <f:selectItem itemLabel="All Departments"/>
+                                        <f:selectItems
+                                            value="#{departmentController.getInstitutionDepartments(searchController.institution)}"
+                                            var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                     </p:selectOneMenu>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> 
+                                        <h:outputText value="&#xf2b9;" styleClass="fa mr-2"/>
                                         <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:autoComplete id="acSpeciality" 
-                                                    value="#{searchController.speciality}" 
-                                                    completeMethod="#{specialityController.completeSpeciality}" 
-                                                    var="speciality" 
-                                                    itemLabel="#{speciality.name}" 
+                                    <p:autoComplete id="acSpeciality"
+                                                    value="#{searchController.speciality}"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    var="speciality"
+                                                    itemLabel="#{speciality.name}"
                                                     itemValue="#{speciality}"
                                                     inputStyleClass="w-100"
                                                     styleClass="w-100">
-                                        <p:ajax event="itemSelect" update="scStaff" />
+                                        <p:ajax event="itemSelect" update="scStaff"/>
                                     </p:autoComplete>
 
-                                    <p:spacer width="50" ></p:spacer>
+                                    <p:spacer width="50"/>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
+                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
                                         <h:outputLabel value="Doctor" for="scStaff" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:selectOneMenu id="scStaff" 
-                                                     value="#{searchController.staff}" 
-                                                     filter="true" 
-                                                     filterMatchMode="contains" 
+                                    <p:selectOneMenu id="scStaff"
+                                                     value="#{searchController.staff}"
+                                                     filter="true"
+                                                     filterMatchMode="contains"
                                                      styleClass="w-100 form-control">
-                                        <f:selectItem itemLabel="Please Select" noSelectionOption="true" />
+                                        <f:selectItem itemLabel="Please Select" noSelectionOption="true"/>
                                         <f:selectItems
-                                            value="#{staffController.getSpecialityStaff(searchController.speciality)}" 
-                                            var="staff" 
-                                            itemLabel="#{staff.person.nameWithTitle}" 
-                                            itemValue="#{staff}" />
+                                            value="#{staffController.getSpecialityStaff(searchController.speciality)}"
+                                            var="staff"
+                                            itemLabel="#{staff.person.nameWithTitle}"
+                                            itemValue="#{staff}"/>
                                     </p:selectOneMenu>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText styleClass="fas fa-user mr-2" />
+                                        <h:outputText styleClass="fas fa-user mr-2"/>
                                         <h:outputLabel value="User" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:selectOneMenu 
+                                    <p:selectOneMenu
                                         class="w-100"
-                                        styleClass="w-100 form-control"   
-                                        filter="true" 
+                                        styleClass="w-100 form-control"
+                                        filter="true"
                                         value="#{searchController.webUser}" id="acIx">
                                         <f:selectItem itemLabel="Select a user"/>
-                                        <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
+                                        <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}"
+                                                       itemValue="#{st}"/>
                                     </p:selectOneMenu>
 
-                                    <p:spacer width="50" ></p:spacer>
+                                    <p:spacer width="50"/>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText styleClass="fas fa-user mr-2" />
+                                        <h:outputText styleClass="fas fa-user mr-2"/>
                                         <h:outputLabel value="Booking Type" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:selectOneMenu 
+                                    <p:selectOneMenu
                                         class="w-100"
-                                        styleClass="w-100 form-control"   
+                                        styleClass="w-100 form-control"
                                         value="#{searchController.bookingType}">
-                                        <f:selectItem itemLabel="All Bookings" itemValue="All Bookings" />
-                                        <f:selectItem itemLabel="Online Bookings" itemValue="Online Bookings" />
-                                        <f:selectItem itemLabel="System Bookings (With Agent Bookings)" itemValue="System Bookings" />
-                                        <f:selectItem itemLabel="Agent Bookings" itemValue="Agent Bookings" />
+                                        <f:selectItem itemLabel="All Bills" itemValue="All Bills"/>
+                                        <f:selectItem itemLabel="Online Bookings" itemValue="Online Bookings"/>
+                                        <f:selectItem itemLabel="System Bookings (With Agent Bookings)"
+                                                      itemValue="System Bookings"/>
+                                        <f:selectItem itemLabel="Agent Bookings" itemValue="Agent Bookings"/>
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnList" class="m-1 ui-button-danger"
                                     icon="fas fa-list"
                                     ajax="false" value="View List"
-                                    action="#{searchController.generateChannelIncome()}" />
+                                    action="#{searchController.generateChannelIncome()}"/>
 
-                                <p:commandButton 
-                                    id="btnPdf" 
+                                <p:commandButton
+                                    id="btnPdf"
                                     class="m-1 ui-button-info"
                                     ajax="false"
                                     rendered="false"
                                     icon="fas fa-file-pdf"
                                     value="Export as PDF">
-                                    <p:dataExporter type="pdf" target="tbl" fileName="agent_channel_bookings" />
+                                    <p:dataExporter type="pdf" target="tbl" fileName="Channel_income_report"/>
                                 </p:commandButton>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnPrint"
                                     class="m-1 ui-button-primary"
                                     icon="fas fa-print"
                                     ajax="false"
-                                    value="Print Table">
-                                    <p:printer target="tbl" />
+                                    value="Print Table"
+                                    action="channel_income_bill_print?faces-redirect=true">
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    id="btnExcel" 
+                                <p:commandButton
+                                    id="btnExcel"
                                     class="m-1 ui-button-success"
                                     icon="fas fa-file-excel"
                                     ajax="false" value="Export to Excel">
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="agent_channel_bookings" />
+                                    <p:dataExporter type="xlsx" exportFooter="true" target="tbl" fileName="Channel_income_report"/>
                                 </p:commandButton>
                             </div>
                         </div>
@@ -179,7 +189,7 @@
                                          update="tbl"
                                          />
 
-                        <p:dataTable 
+                        <p:dataTable
                             id="tbl"
                             value="#{searchController.bundle.reportTemplateRows}"
                             var="row"
@@ -188,6 +198,8 @@
                             selection="#{searchController.selectedChannelBookingBillRow}"
                             onRowClick="handleRowClick()"
                             paginator="true"
+                            scrollable="true"
+                            scrollHeight="800px"
                             rows="10"
                             rowIndexVar="n"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -196,277 +208,352 @@
 
                             <p:column width="2em">
                                 <f:facet name="header">
-                                    <h:outputText value="Serial" />
+                                    <h:outputText value="Serial"/>
                                 </f:facet>
-                                <h:outputText value="#{n+1}" />
+                                <h:outputText value="#{n+1}"/>
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="Date &amp; Time" />
+                                    <h:outputText value="Date &amp; Time"/>
                                 </f:facet>
-                                <h:outputText value="#{row.bill.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                <h:outputText value="#{row.bill.createdAt}">
+                                    <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column>
+                            <p:column  filterMatchMode="contains" filterBy="#{row.bill.deptId}" width="8em">
                                 <f:facet name="header">
-                                    <h:outputText value="Bill No" />
+                                    <h:outputText value="Bill No"/>
                                 </f:facet>
-                                 <p:commandLink 
-                                    ajax="false" 
+                                <p:commandLink
+                                    id="billNo"
+                                    disabled ="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                                 or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                                 or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                                 or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                                            }"
+                                    ajax="false"
+                                    style="font-weight: bold"
                                     value="#{row.bill.deptId}"
                                     action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
                                 </p:commandLink>
-                                
-                                <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
-                                <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
-                                <p:badge value="Refund Bill" severity="warning" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}"/>
-                                <p:badge value="Cancel Bill" severity="danger" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}"/>
-                                
+                                <p:tooltip for="billNo" value="#{row.bill.deptId}"/>
+
+                                <p:tag rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
+                                <p:tag rendered="#{row.bill.refunded}" value="Refunded - #{row.bill.refundedBill.deptId}"  severity="warning" ></p:tag>
+                                <p:tag rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
+                                <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="Cancel Bill" severity="danger" ></p:tag>
+
+
                             </p:column>
 
                             <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <f:facet name="header">
-                                    <h:outputText value="Bill Type" />
+                                    <h:outputText value="Bill Type"/>
                                 </f:facet>
-                                <h:outputText value="#{row.bill.billTypeAtomic}" />
+                                <h:outputText value="#{row.bill.billTypeAtomic}"/>
+                            </p:column>
+
+                            <p:column width="7em">
+                                <f:facet name="header">
+                                    <h:outputText value="Bill Type"/>
+                                </f:facet>
+                                <h:outputText value="Dr Payment" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION'}"/>
+                                <h:outputText value="Dr Payment Return" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'}"/>
+                                <h:outputText value="OB Agent Payment To Hospital" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'}"/>
+                                <h:outputText value="OB Agent Cancel Payment To Hospital" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'}"/>
+                                <h:outputText value="Channel Bill" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic ne 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                                                                                         and row.bill.billTypeAtomic ne 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                                                                                         and row.bill.billTypeAtomic ne 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                                                                                         and row.bill.billTypeAtomic ne 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                                            }"/>
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="Patient" />
+                                    <h:outputText value="Patient"/>
                                 </f:facet>
-                                <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}">
+                                <h:outputText
+                                    rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"
+                                    value="#{row.bill.patient.person.nameWithTitle}">
                                 </h:outputText>
 
-                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}">
+                                <h:outputText
+                                    rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"
+                                    value="#{row.bill.referenceBill.onlineBooking.patientName}">
                                 </h:outputText>
 
-                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}">
+                                <h:outputText
+                                    rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"
+                                    value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}">
                                 </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;" width="5em">
+                                <f:facet name="header">
+                                    <h:outputText value="Cashier"/>
+                                </f:facet>
+                                <h:outputText value="#{row.bill.creater.name}&nbsp;">
+                                </h:outputText>
+                                <h:outputText value="OB" style="color: #003157; font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;" width="5em">
+                                <f:facet name="header">
+                                    <h:outputText value="Payment Method"/>
+                                </f:facet>
+                                <h:outputText value="#{row.bill.paymentMethod}&nbsp;">
+                                </h:outputText>
+
                             </p:column>
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Hospital Fee" />
+                                    <h:outputText value="Hospital Fee"/>
                                 </f:facet>
                                 <h:outputText styleClass="hosValue" value="#{row.bill.hospitalFee}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalHosValue" value="0.00">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputText styleClass="totalHosValue"
+                                                  value="#{searchController.bundle.hospitalTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Staff Fee" />
+                                    <h:outputText value="Staff Fee"/>
                                 </f:facet>
                                 <h:outputText styleClass="staffValue" value="#{row.bill.staffFee}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalStaffValue" value="0.00">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputText styleClass="totalStaffValue"
+                                                  value="#{searchController.bundle.staffTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Gross Total" />
+                                    <h:outputText value="Gross Total"/>
                                 </f:facet>
                                 <h:outputText styleClass="grossValue" value="#{row.bill.total}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalGrossValue" value="0.00">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputText styleClass="totalGrossValue"
+                                                  value="#{searchController.bundle.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
                                 <f:facet name="header">
-                                    <h:outputText value="Discount" />
+                                    <h:outputText value="Discount"/>
                                 </f:facet>
                                 <h:outputText value="#{row.bill.discount}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                                <!--                                <f:facet name="footer">
-                                                                    <h:outputText value="#{searchController.bundle.discount}">
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputText>
-                                                                </f:facet>-->
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
                                 <f:facet name="header">
-                                    <h:outputText value="Net Total" />
+                                    <h:outputText value="Net Total"/>
                                 </f:facet>
                                 <h:outputText styleClass="netValue" value="#{row.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalNetValue" value="0.00">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputText styleClass="totalNetValue" value="#{searchController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end"  sortBy="#{row.cashValue}" filterBy="#{row.cashValue}"  rendered="#{searchController.bundle.hasCashTransaction}" >
+                            <p:column class="text-end" sortBy="#{row.cashValue}" filterBy="#{row.cashValue}"
+                                      rendered="#{searchController.bundle.hasCashTransaction}">
                                 <f:facet name="header">
-                                    <h:outputText value="Cash" />
+                                    <h:outputText value="Cash"/>
                                 </f:facet>
                                 <h:outputText styleClass="cashValue" value="#{row.cashValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalCashValue" value="0.00">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputText styleClass="totalCashValue" value="#{searchController.bundle.cashValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Card" sortBy="#{row.cardValue}" filterBy="#{row.cardValue}"  rendered="#{searchController.bundle.hasCardTransaction}" >
-                                <h:outputText styleClass="cardValue" value="#{row.cardValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Card" sortBy="#{row.cardValue}"
+                                      filterBy="#{row.cardValue}" rendered="#{searchController.bundle.hasCardTransaction}">
+                                <h:outputText styleClass="cardValue" value="#{row.cardValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalCardValue" value="0.00">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputText styleClass="totalCardValue" value="#{searchController.bundle.cardValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Credit" sortBy="#{row.creditValue}" filterBy="#{row.creditValue}" rendered="#{searchController.bundle.hasCreditTransaction}" >
-                                <h:outputText value="#{row.creditValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Credit" sortBy="#{row.creditValue}"
+                                      filterBy="#{row.creditValue}"
+                                      rendered="#{searchController.bundle.hasCreditTransaction}">
+                                <h:outputText value="#{row.creditValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.creditValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                             <!-- Continuing from Credit -->
-                            <p:column  class="text-end"  headerText="Staff Welfare" sortBy="#{row.staffWelfareValue}" filterBy="#{row.staffWelfareValue}"  rendered="#{searchController.bundle.hasStaffWelfareTransaction}" >
-                                <h:outputText value="#{row.staffWelfareValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Staff Welfare" sortBy="#{row.staffWelfareValue}"
+                                      filterBy="#{row.staffWelfareValue}"
+                                      rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                <h:outputText value="#{row.staffWelfareValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.staffWelfareValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Voucher" sortBy="#{row.voucherValue}" filterBy="#{row.voucherValue}"  rendered="#{searchController.bundle.hasVoucherTransaction}" >
-                                <h:outputText value="#{row.voucherValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Voucher" sortBy="#{row.voucherValue}"
+                                      filterBy="#{row.voucherValue}"
+                                      rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                <h:outputText value="#{row.voucherValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.voucherValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="IOU" sortBy="#{row.iouValue}" filterBy="#{row.iouValue}"  rendered="#{searchController.bundle.hasIouTransaction}" >
-                                <h:outputText value="#{row.iouValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="IOU" sortBy="#{row.iouValue}" filterBy="#{row.iouValue}"
+                                      rendered="#{searchController.bundle.hasIouTransaction}">
+                                <h:outputText value="#{row.iouValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.iouValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Agent" sortBy="#{row.agentValue}" filterBy="#{row.agentValue}"  rendered="#{searchController.bundle.hasAgentTransaction}" >
-                                <h:outputText styleClass="agentValue" value="#{row.agentValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Agent" sortBy="#{row.agentValue}"
+                                      filterBy="#{row.agentValue}"
+                                      rendered="#{searchController.bundle.hasAgentTransaction}">
+                                <h:outputText styleClass="agentValue" value="#{row.agentValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText styleClass="totalAgentValue" value="0.00">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Cheque" sortBy="#{row.chequeValue}" filterBy="#{row.chequeValue}"  rendered="#{searchController.bundle.hasChequeTransaction}" >
-                                <h:outputText value="#{row.chequeValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Cheque" sortBy="#{row.chequeValue}"
+                                      filterBy="#{row.chequeValue}"
+                                      rendered="#{searchController.bundle.hasChequeTransaction}">
+                                <h:outputText value="#{row.chequeValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.chequeValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Slip" sortBy="#{row.slipValue}" filterBy="#{row.slipValue}"  rendered="#{searchController.bundle.hasSlipTransaction}" >
-                                <h:outputText value="#{row.slipValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Slip" sortBy="#{row.slipValue}"
+                                      filterBy="#{row.slipValue}" rendered="#{searchController.bundle.hasSlipTransaction}">
+                                <h:outputText value="#{row.slipValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.slipValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="eWallet" sortBy="#{row.ewalletValue}" filterBy="#{row.ewalletValue}"  rendered="#{searchController.bundle.hasEWalletTransaction}" >
-                                <h:outputText value="#{row.ewalletValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="eWallet" sortBy="#{row.ewalletValue}"
+                                      filterBy="#{row.ewalletValue}"
+                                      rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                <h:outputText value="#{row.ewalletValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.ewalletValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Patient Deposit" sortBy="#{row.patientDepositValue}" filterBy="#{row.patientDepositValue}"  rendered="#{searchController.bundle.hasPatientDepositTransaction}" >
-                                <h:outputText value="#{row.patientDepositValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Patient Deposit" sortBy="#{row.patientDepositValue}"
+                                      filterBy="#{row.patientDepositValue}"
+                                      rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                <h:outputText value="#{row.patientDepositValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.patientDepositValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Patient Points" sortBy="#{row.patientPointsValue}" filterBy="#{row.patientPointsValue}"  rendered="#{searchController.bundle.hasPatientPointsTransaction}" >
-                                <h:outputText value="#{row.patientPointsValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Patient Points" sortBy="#{row.patientPointsValue}"
+                                      filterBy="#{row.patientPointsValue}"
+                                      rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                <h:outputText value="#{row.patientPointsValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.patientPointsValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column  class="text-end"  headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}" filterBy="#{row.onlineSettlementValue}"  rendered="#{searchController.bundle.hasOnCallTransaction}" >
-                                <h:outputText value="#{row.onlineSettlementValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column class="text-end" headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}"
+                                      filterBy="#{row.onlineSettlementValue}"
+                                      rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                <h:outputText value="#{row.onlineSettlementValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.onlineSettlementValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:ajax event="filter" oncomplete="updateTotals();"></p:ajax>
-                            <p:ajax event="page" oncomplete="updateTotals();"></p:ajax>
+                            <p:ajax event="filter" oncomplete="updateTotals();"/>
+                            <p:ajax event="page" oncomplete="updateTotals();"/>
 
                         </p:dataTable>
 
@@ -486,11 +573,11 @@
                                 }
 
                             }
-                            
+
                             function handleRowClick() {
                                 onBillRowClick(); // triggers AJAX to server
                                 setTimeout(updateTotals, 500);
-                                
+
                             }
 
                             function updateTotals() {

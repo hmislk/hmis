@@ -16,6 +16,7 @@
                 <h:form>
 
                     <common:common_filters controller="#{reportController}"/>
+                    <p:messages id="messages" showDetail="true"/>
 
 
 
@@ -24,12 +25,19 @@
                     #{mybundle.name}
                 </ui:repeat>-->
 
-                    <p:commandButton 
+                    <p:commandButton
                         value="Process"
                         icon="pi pi-check"
                         styleClass="ui-button-success"
-                        ajax="false"
+                        ajax="true"
+                        update="panelTbl messages"
+                        onstart="PF('loadingDialog').show()"
+                        oncomplete="PF('loadingDialog').hide()"
                         action="#{reportController.processIncomeBillCounts()}"/>
+
+                    <p:dialog modal="true" widgetVar="loadingDialog" header="Processing" closable="false" draggable="false" resizable="false">
+                        <i class="pi pi-spin pi-spinner" style="font-size:2rem"></i>
+                    </p:dialog>
 
                     <h:panelGroup 
                         id="panelTbl"
@@ -119,6 +127,9 @@
 
                         </table>
 
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{empty reportController.bundle.bundles}">
+                        No data found.
                     </h:panelGroup>
 
                 </h:form>

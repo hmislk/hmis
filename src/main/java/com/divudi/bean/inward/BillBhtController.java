@@ -23,6 +23,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
@@ -164,7 +165,7 @@ public class BillBhtController implements Serializable {
     private ItemLight itemLight;
 
     private int entriesIndex;
-    
+
     private List<ItemLight> departmentInwardItems;
     private Department selectedInwardItemDepartment;
     private List<Department> inwardItemDepartments;
@@ -353,6 +354,19 @@ public class BillBhtController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
 
+        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
+        String batchBillId = "";
+        
+        if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
+            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
+            batchBillId = billNumberBean.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
+        }else{
+            batchBillId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+        }
+        
+        tmp.setDeptId(batchBillId);
+        tmp.setInsId(batchBillId);
+
         if (tmp.getId() == null) {
             getBillFacade().create(tmp);
         }
@@ -513,10 +527,8 @@ public class BillBhtController implements Serializable {
     }
 
     private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
-        // System.err.println("1");
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
-            //   System.err.println("2");
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
@@ -536,16 +548,10 @@ public class BillBhtController implements Serializable {
     }
 
     public void settleBill() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        //   bills = new ArrayList<>();
         bills = null;
         if (errorCheck()) {
             return;
         }
-        //for daily return credit card transaction
         paymentMethod = null;
         if (getPatientEncounter().getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
             settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
@@ -596,9 +602,6 @@ public class BillBhtController implements Serializable {
     }
 
     private Bill saveBill(Department bt, BilledBill temp, Department matrixDepartment) {
-
-        //getCurrent().setCashBalance(cashBalance);
-        //getCurrent().setCashPaid(cashPaid);
         temp.setBillType(BillType.InwardBill);
         temp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL);
         temp.setIpOpOrCc("IP");
@@ -623,8 +626,40 @@ public class BillBhtController implements Serializable {
         temp.setBillTime(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
 
-        temp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill));
-        temp.setInsId(getBillNumberBean().institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWSER));
+        boolean inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
+                = configOptionApplicationController.getBooleanValueByKey(
+                        "InpatientServiceBillNumberGenerateStrategy:FromDepartmentToDepartmentBillTypes", false);
+
+        boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+
+        boolean inpatientServiceBillNumberGenerateStrategyDefault
+                = configOptionApplicationController.getBooleanValueByKey(
+                        "InpatientServiceBillNumberGenerateStrategy:Default", false);
+
+        String deptId;
+        String insId;
+
+        BillNumberGenerator bnb = getBillNumberBean();
+
+        if (inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
+            deptId = bnb.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
+                    bt, sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BILL);
+            insId = deptId;
+        } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
+            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
+            deptId = bnb.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
+            insId = deptId;
+        } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
+            deptId = bnb.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
+            insId = deptId;
+        } else {
+            deptId = bnb.departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
+            insId = bnb.institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWSER);
+        }
+
+        temp.setDeptId(deptId);
+        temp.setInsId(insId);
 
         if (temp.getId() == null) {
             getFacade().create(temp);
@@ -814,13 +849,13 @@ public class BillBhtController implements Serializable {
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
         List<ItemFee> itemFee;
-        
+
         if (siteBasedBillFees && !addAllBillFees) {
-            if (sessionController.getDepartment() != null 
-                && sessionController.getDepartment().getSite() != null) {
+            if (sessionController.getDepartment() != null
+                    && sessionController.getDepartment().getSite() != null) {
                 itemFee = itemFeeManager.fillFees(
-                    billItem.getItem(),
-                    sessionController.getDepartment().getSite()
+                        billItem.getItem(),
+                        sessionController.getDepartment().getSite()
                 );
             } else {
                 itemFee = itemFeeManager.fillFees(billItem.getItem());
@@ -1004,7 +1039,7 @@ public class BillBhtController implements Serializable {
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
     }
-    
+
     public List<ItemLight> fillInwardItem() {
         UserPreference up = sessionController.getDepartmentPreference();
         List<ItemLight> temItems;
@@ -1043,7 +1078,7 @@ public class BillBhtController implements Serializable {
 
         return temItems;
     }
-    
+
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List Inward Items by Department", false);
         if (!listItemsByDepartment || dept == null || dept.getId() == null) {
@@ -1057,7 +1092,7 @@ public class BillBhtController implements Serializable {
         }
         return tils;
     }
-    
+
     public void fillInwardItemDepartments(List<ItemLight> itemLightsToAddDepartments) {
         inwardItemDepartments = new ArrayList<>();
         Set<Long> uniqueDeptIds = new HashSet<>();
@@ -1071,7 +1106,7 @@ public class BillBhtController implements Serializable {
             inwardItemDepartments.add(d);
         }
     }
-    
+
     public void departmentChanged() {
         if (selectedInwardItemDepartment == null) {
             departmentInwardItems = getInwardItem();
@@ -1460,14 +1495,14 @@ public class BillBhtController implements Serializable {
     public void setEntriesIndex(int entriesIndex) {
         this.entriesIndex = entriesIndex;
     }
-    
+
     public List<ItemLight> getInwardItem() {
         if (inwardItem == null) {
             inwardItem = fillInwardItem();
         }
         return inwardItem;
     }
-    
+
     public void setInwardItem(List<ItemLight> inwardItem) {
         this.inwardItem = inwardItem;
     }

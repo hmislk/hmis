@@ -1,0 +1,423 @@
+
+/* 
+@author  H.K. Damith Deshan <hkddrajapaksha@gmail.com>
+*/
+
+/* Reset and Base Styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.5;
+    background-color: #f9fafb;
+}
+
+.lucide {
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Container Styles */
+.container {
+    min-height: 100vh;
+    background-color: #f9fafb;
+    padding: 1rem;
+    min-width: 100vw;
+}
+
+.main-wrapper {
+    max-width: 90vw;
+    margin: 0 auto;
+}
+
+/* Header Card Styles */
+.header-card {
+    background-color: white;
+    border-radius: 0.5rem 0.5rem 0 0;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.icon-container {
+    padding: 0.5rem;
+    background-color: #dbeafe;
+    border-radius: 0.5rem;
+}
+
+.header-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #2563eb;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.close-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: #4b5563;
+    background: none;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.close-button:hover {
+    color: #1f2937;
+    background-color: #f3f4f6;
+}
+
+.close-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.close-text {
+    font-weight: 500;
+}
+
+/* Patient Information Styles */
+.patient-info {
+    padding: 1.5rem;
+    background: linear-gradient(to right, #eff6ff, #eef2ff);
+}
+
+.patient-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .patient-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.patient-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.patient-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #2563eb;
+}
+
+.patient-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #374151;
+    margin: 0;
+}
+
+.meta-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #6b7280;
+}
+
+.sample-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.sample-card {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #bfdbfe;
+}
+
+.sample-title {
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+}
+
+.sample-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.sample-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sample-label {
+    color: #4b5563;
+}
+
+.sample-value {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #1d4ed8;
+}
+
+.sample-investigation {
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Tracking Section Styles */
+.tracking-section {
+    background-color: white;
+    border-radius: 0 0 0.5rem 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tracking-content {
+    padding: 1.5rem;
+}
+
+.tracking-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tracking-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #4b5563;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.tracking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.th-cell {
+    text-align: left;
+    padding: 0.5rem 0.7rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.table-row {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+    background-color: #f9fafb;
+}
+
+.row-white {
+    background-color: white;
+}
+
+.row-gray {
+    background-color: #fafafa;
+}
+
+.td-cell {
+    padding: 0.5rem;
+}
+
+.stage-name {
+    font-weight: 600;
+    color: #111827;
+}
+
+.person-name {
+    color: #374151;
+}
+
+.location-name {
+    color: #4b5563;
+    font-size: 0.875rem;
+}
+
+.cooment {
+    color: #4b5563;
+    font-size: 0.875rem;
+}
+
+.date-text {
+    color: #374151;
+}
+
+.time-text {
+    color: #374151;
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-icon-completed {
+    width: 1rem;
+    height: 1rem;
+    color: #059669;
+}
+
+.status-icon-pending {
+    width: 1rem;
+    height: 1rem;
+    color: #d97706;
+}
+
+.status-completed {
+    color: #047857;
+    font-weight: 500;
+    font-size: 0.875rem;
+    background-color: #d1fae5;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.status-pending {
+    color: #92400e;
+    font-weight: 500;
+    font-size: 0.875rem;
+    background-color: #fef3c7;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+/* Summary Footer Styles */
+.summary-footer {
+    background-color: #f9fafb;
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.summary-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.summary-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-icon-completed {
+    width: 1rem;
+    height: 1rem;
+    color: #059669;
+}
+
+.stat-icon-pending {
+    width: 1rem;
+    height: 1rem;
+    color: #d97706;
+}
+
+.stat-text {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.stat-number-completed {
+    font-weight: 600;
+    color: #047857;
+}
+
+.stat-number-pending {
+    font-weight: 600;
+    color: #92400e;
+}
+
+.last-updated {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0.5rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .summary-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .summary-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

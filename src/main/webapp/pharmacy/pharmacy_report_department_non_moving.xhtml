@@ -121,6 +121,30 @@
                                 </h:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Expiry"
+                                      sortBy="#{i.itemBatch.dateOfExpire}"
+                                      filterBy="#{i.itemBatch.dateOfExpire}"
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Expiry"/>
+                                </f:facet>
+                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}">
+                                    <f:convertDateTime pattern="dd MM yy"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Sale Value"
+                                      sortBy="#{i.itemBatch.retailsaleRate * i.stock}"
+                                      style="text-align: right;"
+                                      styleClass="averageNumericColumn">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Sale Value"/>
+                                </f:facet>
+                                <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
                         </p:dataTable>
                     </h:panelGroup>
                 </p:panel>

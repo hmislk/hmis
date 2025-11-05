@@ -103,27 +103,62 @@
 
 
                                 <h:outputText  value="Code" class="w-100"></h:outputText>
-                                <p:inputText id="code" autocomplete="off"  value="#{ampController.current.code}" class="w-100" ></p:inputText>
+                                <h:panelGroup id="codePanel" class="w-100">
+                                    <p:inputText id="code" autocomplete="off"  value="#{ampController.current.code}" >
+                                        <p:ajax event="blur" process="@this" update="msg btnSave" listener="#{ampController.checkCodeDuplicate}" />
+                                    </p:inputText>
+                                    <p:commandButton id="generateCode" value="Generate Code"
+                                                     action="#{ampController.generateCode()}"
+                                                     process="generateCode codePanel"
+                                                     update="codePanel msg btnSave"
+                                                     class="mx-1 ui-button-secondary"
+                                                     icon="pi pi-refresh" />
+                                </h:panelGroup>
 
 
                                 <h:outputText  value="Bar Code" class="w-100"></h:outputText>
                                 <p:inputText autocomplete="off"  value="#{ampController.current.barcode}"  class="w-100"></p:inputText>
 
                                 <h:outputText  value="VMP (Product)" class="w-100"></h:outputText>
-                                <p:autoComplete  converter="vmp" 
+                                <p:autoComplete  converter="vmp"
                                                  completeMethod="#{vmpController.completeVmp}"
-                                                 var="pta" itemLabel="#{pta.name}" 
-                                                 itemValue="#{pta}" 
-                                                 forceSelection="true" 
+                                                 var="pta" itemLabel="#{pta.name}"
+                                                 itemValue="#{pta}"
+                                                 forceSelection="true"
                                                  value="#{ampController.current.vmp}"
                                                  class="w-100"
                                                  maxResults="15"
                                                  inputStyleClass="w-100"
+                                                 >
+                                </p:autoComplete>
 
-                                                 ></p:autoComplete>
+                                <h:outputText  value="Dosage Form" class="w-100"></h:outputText>
+                                <p:autoComplete  value="#{ampController.current.vmp.dosageForm}"
+                                                 forceSelection="true"
+                                                 completeMethod="#{dosageFormController.completeCategory}"
+                                                 class="w-100"
+                                                 inputStyleClass="w-100"
+                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                </p:autoComplete>
+
+                                <h:outputText  value="Strength" class="w-100"></h:outputText>
+                                <p:inputText autocomplete="off"  value="#{ampController.current.strengthOfAnIssueUnit}"  class="w-100"></p:inputText>
+
+                                <h:outputText  value="Strength Unit" class="w-100"></h:outputText>
+                                <p:selectOneMenu value="#{ampController.current.strengthUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Dose Unit" />
+                                    <f:selectItems value="#{measurementUnitController.items}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
 
 
-
+                                <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>
+                                <h:inputTextarea 
+                                    id="txtComments" 
+                                    value="#{ampController.current.comments}" 
+                                    required="false" 
+                                    class="w-100" ></h:inputTextarea>
 
 
                                 <h:outputText  value="Manufacturer" class="w-100"></h:outputText>
@@ -171,22 +206,46 @@
                                     onLabel="Yes"
                                     offLabel="No"
                                     class="w-100" />
+
+                                <h:outputText  value="Refunds Allowed" class="w-100"></h:outputText>
+                                <p:selectBooleanButton
+                                    value="#{ampController.current.refundsAllowed}" 
+                                    onLabel="Yes"
+                                    offLabel="No"
+                                    class="w-100" />
+
+                                <h:outputText  value="Allow Fractions" class="w-100"></h:outputText>
+                                <p:selectBooleanButton
+                                    value="#{ampController.current.allowFractions}"
+                                    onLabel="Yes"
+                                    offLabel="No"
+                                    class="w-100" />
+
+                                <h:outputText  value="Issue Unit" class="w-100"></h:outputText>
+                                <p:selectOneMenu value="#{ampController.current.issueUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Issue Unit" />
+                                    <f:selectItems value="#{measurementUnitController.issueUnits}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
+
                                 <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
-                                <h:inputTextarea 
-                                    id="txtIns" 
-                                    value="#{ampController.current.instructions}" 
-                                    required="false" 
+                                <h:inputTextarea
+                                    id="txtIns"
+                                    value="#{ampController.current.instructions}"
+                                    required="false"
                                     class="form-control" ></h:inputTextarea>
 
                             </h:panelGrid>
-                            <p:commandButton 
-                                id="btnSave" 
-                                value="Save" 
-                                process="btnSave gpDetail" 
-                                update="acAmp msg" 
+                            <p:commandButton
+                                id="btnSave"
+                                value="Save"
+                                process="btnSave gpDetail"
+                                update="acAmp msg"
                                 class=" m-1 ui-button-warning w-25"
                                 icon="fas fa-save"
-                                action="#{ampController.save}" 
+                                disabled="#{ampController.duplicateCode}"
+                                action="#{ampController.save}"
                                 >
                             </p:commandButton>
 

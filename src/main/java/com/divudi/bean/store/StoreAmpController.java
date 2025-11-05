@@ -49,6 +49,7 @@ public class StoreAmpController implements Serializable {
     private List<Amp> items = null;
     private List<Amp> itemsAll = null;
     List<Amp> itemsByCode = null;
+    private boolean editing;
 
     public List<Amp> getItemsByCode() {
         if (itemsByCode == null) {
@@ -66,6 +67,7 @@ public class StoreAmpController implements Serializable {
 
     public void prepareAdd() {
         current = null;
+        editing = true;
     }
 
     public void recreateModel() {
@@ -85,7 +87,18 @@ public class StoreAmpController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         items = null;
-        // getItems();
+        editing = false;
+    }
+
+    public void startEdit() {
+        if (current != null) {
+            editing = true;
+        }
+    }
+
+    public void cancelEdit() {
+        editing = false;
+        recreateModel();
     }
 
     public AmpFacade getEjbFacade() {
@@ -102,6 +115,14 @@ public class StoreAmpController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+
+    public boolean isEditing() {
+        return editing;
+    }
+
+    public void setEditing(boolean editing) {
+        this.editing = editing;
     }
 
     public StoreAmpController() {
@@ -136,6 +157,7 @@ public class StoreAmpController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editing = false;
     }
 
     private AmpFacade getFacade() {
@@ -183,6 +205,11 @@ public class StoreAmpController implements Serializable {
     }
 
     public void listnerCategorySelect() {
+        if (getCurrent().getCategory() == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            getCurrent().setCode("");
+            return;
+        }
         if (getCurrent().getCategory().getCode() == null || getCurrent().getCategory().getCode().equals("")) {
             JsfUtil.addErrorMessage("Please Select Category Code");
             getCurrent().setCode("");

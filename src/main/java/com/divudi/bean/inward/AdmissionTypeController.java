@@ -58,11 +58,11 @@ public class AdmissionTypeController implements Serializable {
 
 
     public String navigateToManageAdmissionTypes(){
-        return "/inward/inward_admission_type?faces-redirect=true;";
+        return "/inward/inward_admission_type?faces-redirect=true";
     }
 
      public String navigateToManageAdmissionItemsAndFees(){
-        return "/inward/inward_admission_items_and_fees?faces-redirect=true;";
+        return "/inward/inward_admission_items_and_fees?faces-redirect=true";
     }
 
     public List<AdmissionType> getSelectedItems() {

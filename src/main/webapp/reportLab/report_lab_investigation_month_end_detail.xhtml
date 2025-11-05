@@ -13,150 +13,122 @@
         <h:outputStylesheet library="css" name="printing.css"/>
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                <p:panel id="panelPrint">
+
                     <f:facet name="header" >
-                        <h:outputLabel value="1) Lab Investigation With Credit"/>
-
-                        <h:panelGrid columns="2" styleClass="noPrintButton" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:calendar>
-
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:calendar>
-                        </h:panelGrid>
-                        <h:panelGrid columns="5">
-                            <p:spacer width="60" height="1"/>
-                            <p:commandButton id="btnRefresh" value="Process" ajax="false"  styleClass="noPrintButton"/>
-                            <p:defaultCommand target="btnRefresh"/>
-
-                            <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
-                                <p:printer target="panelPrint" />
-                            </p:commandButton>
-
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <p:dataExporter type="xlsx" target="flatTable" fileName="InvestigationReport" />
-                            </p:commandButton>
-                        </h:panelGrid>
+                        <h:outputLabel value="Investigation Month End Detail"/>
                     </f:facet>
 
-                    <!-- Visible display table with nested data -->
-                    <p:dataTable id="ins" value="#{investigationMonthSummeryOwnController.itemDetails}" var="c" >
-                        <f:facet name="header">
-                            <h:outputLabel value="Investigation Month End Detail" />
-                            <h:outputLabel value=" From : " style="white-space: pre-line"/>
-                            <h:outputLabel  value="#{investigationMonthSummeryOwnController.fromDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
-                            <h:outputLabel value="&emsp;&emsp;To :"/>
-                            <h:outputLabel  value="#{investigationMonthSummeryOwnController.toDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
+                    <h:panelGrid columns="2" class="mt-2">
+                        <h:outputLabel value="From Date" style="width: 5em;"/>
+                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="2" class="mt-2">
+                        <h:outputLabel value="To Date" style="width: 5em;"/>
+                        <p:calendar id="toDate" class="mt-2" value="#{investigationMonthSummeryOwnController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="5" class="mt-2 mb-3">
+
+                        <p:commandButton 
+                            id="btnRefresh" 
+                            value="Process" 
+                            styleClass="ui-button-success" 
+                            icon="pi pi-cog"
+                            ajax="false"
+                            action="#{investigationMonthSummeryOwnController.processInvestigationMonthEndDetail()}">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            icon="fa-solid fa-print"
+                            class="mx-2 ui-button-w"
+                            value="Print">
+                            <p:printer target="tbl" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-warning"
+                            icon="pi pi-download"
+                            ajax="false" 
+                            action="#{investigationMonthSummeryOwnController.exportInvestigationReportToExcel()}"
+                            value="Excel">
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                    <p:dataTable
+                        id="tbl"
+                        style="padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: 20px!important;" 
+                        styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                        value="#{investigationMonthSummeryOwnController.bundle.bundles}" 
+                        var="bd"
+                        rowIndexVar="i">
+
+                        <f:facet name="header"  >
+                            <div style="padding: 3px!important; margin: 0px!important;">
+                                <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 24px;">
+                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                </div>
+                                <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                    <h:outputText value="Investigation Month End Detail"/>
+                                </div>
+                                <div class="d-flex justify-content-center mt-2" style=" font-size: 14px;">
+                                    <div class="d-flex gap-3">
+                                        <h:outputText value="From Date" style="width: 6em!important; font-weight: 600;"/>
+                                        <h:outputText value="#{investigationMonthSummeryOwnController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </div>
+                                    <p:spacer width="50" ></p:spacer>
+                                    <div class="d-flex gap-3">
+                                        <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
+                                        <h:outputText value="#{investigationMonthSummeryOwnController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </div>
+                                    <div></div>
+                                </div>
+                            </div>
                         </f:facet>
-                        <p:subTable value="#{c.billItems}" var="bc">
+
+                        <p:subTable 
+                            var="row" 
+                            class="mt-1" 
+                            value="#{bd.rows}">
                             <f:facet name="header">
-                                <h:outputLabel style="font-weight: bold;" value="#{c.investigation.name}"/>
+                                <h:outputText value="#{bd.name}" style="font-weight: 700; font-size: 19px; padding: 6px;"/>
+                                <h:outputText value="-" style="font-weight: 700; font-size: 19px; padding: 6px; width: 180px; text-align: center;"/>
+                                <h:outputText value="#{bd.rows.size()}" style="font-weight: 700; font-size: 19px; padding: 6px;"/>
                             </f:facet>
 
-                            <p:column >
-                                <h:outputLabel value="#{bc.bill.deptId}"/>
+                            <p:column headerText="Bill No." style="padding: 6px;">
+                                <p:spacer width="30"/>
+                                <h:outputText value="#{row.billNo}"/>
+                            </p:column>
+                            <p:column headerText="Bill Date" style="padding: 6px; width: 30mm;">
+                                <h:outputText value="#{row.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Name" style="padding: 6px;">
+                                <h:outputText value="#{row.patientName}"/>
+                            </p:column>
+                            <p:column headerText="Amount" style="padding: 6px; width: 30mm; text-align: right;">
+                                <h:outputText value="#{row.itemValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
 
-                            <p:column>
-                                <h:outputLabel value="#{bc.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column>
-                                <h:outputLabel value="#{bc.bill.patient.person.name}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputLabel value="#{bc.netValue}"/>
-                            </p:column>
                         </p:subTable>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                        </f:facet>
+
                     </p:dataTable>
 
-                    <!-- Hidden flat table for Excel export -->
-                    <p:dataTable id="flatTable" styleClass="hidden-table" style="display: none;">
-                        <f:facet name="header">
-                            <h:outputText value="Investigation Month End Detail" />
-                            <br/>
-                            <h:outputLabel value=" From : " style="white-space: pre-line"/>
-                            <h:outputLabel  value="#{investigationMonthSummeryOwnController.fromDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
-                            <h:outputLabel value="&emsp;&emsp;To :"/>
-                            <h:outputLabel  value="#{investigationMonthSummeryOwnController.toDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputLabel>
-                        </f:facet>
-
-                        <p:column headerText="Investigation">
-                            <ui:repeat value="#{investigationMonthSummeryOwnController.itemDetails}" var="c">
-                                <ui:repeat value="#{c.billItems}" var="bc">
-                                    <h:outputText value="#{c.investigation.name}" />
-                                    <br />
-                                </ui:repeat>
-                            </ui:repeat>
-                        </p:column>
-
-                        <p:column headerText="Department ID">
-                            <ui:repeat value="#{investigationMonthSummeryOwnController.itemDetails}" var="c">
-                                <ui:repeat value="#{c.billItems}" var="bc">
-                                    <h:outputText value="#{bc.bill.deptId}" />
-                                    <br />
-                                </ui:repeat>
-                            </ui:repeat>
-                        </p:column>
-
-                        <p:column headerText="Date">
-                            <ui:repeat value="#{investigationMonthSummeryOwnController.itemDetails}" var="c">
-                                <ui:repeat value="#{c.billItems}" var="bc">
-                                    <h:outputText value="#{bc.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputText>
-                                    <br />
-                                </ui:repeat>
-                            </ui:repeat>
-                        </p:column>
-
-                        <p:column headerText="Patient Name">
-                            <ui:repeat value="#{investigationMonthSummeryOwnController.itemDetails}" var="c">
-                                <ui:repeat value="#{c.billItems}" var="bc">
-                                    <h:outputText value="#{bc.bill.patient.person.name}" />
-                                    <br />
-                                </ui:repeat>
-                            </ui:repeat>
-                        </p:column>
-
-                        <p:column headerText="Net Value">
-                            <ui:repeat value="#{investigationMonthSummeryOwnController.itemDetails}" var="c">
-                                <ui:repeat value="#{c.billItems}" var="bc">
-                                    <h:outputText value="#{bc.netValue}" />
-                                    <br />
-                                </ui:repeat>
-                            </ui:repeat>
-                        </p:column>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                        </f:facet>
-                    </p:dataTable>
                 </p:panel>
             </h:form>
 
-            <style type="text/css">
-                .hidden-table {
-                    position: absolute;
-                    left: -9999px;
-                    top: -9999px;
-                    visibility: hidden;
-                }
-            </style>
         </h:panelGroup>
     </ui:define>
 </ui:composition>

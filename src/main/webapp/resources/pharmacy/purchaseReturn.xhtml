@@ -85,9 +85,17 @@
                         <f:facet name="header">Batch No</f:facet>
                             #{bip.referanceBillItem.pharmaceuticalBillItem.stringValue}
                     </p:column>                                  
-                    <p:column>
+                    <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
+                        <f:facet name="header">Return Total QTY</f:facet>
+                            #{bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.freeQty}
+                    </p:column>
+                    <p:column rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
                         <f:facet name="header">Return QTY</f:facet>
                             #{bip.pharmaceuticalBillItem.qty}
+                    </p:column>
+                    <p:column rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
+                        <f:facet name="header">Free QTY</f:facet>
+                            #{bip.pharmaceuticalBillItem.freeQty}
                     </p:column>
                     <p:column>
                         <f:facet name="header">Rate</f:facet>
@@ -109,13 +117,13 @@
                     </p:column>
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="5" footerText="Total"/>
+                            <p:column colspan="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false) ? 5 : 6}" footerText="Total"/>
                             <p:column footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </f:facet>                               
+                                </f:facet>
                             </p:column>
                         </p:row>
                     </p:columnGroup>

@@ -106,6 +106,9 @@ public class AmpController implements Serializable {
     @Inject
     private ItemController itemController;
 
+    private boolean duplicateCode;
+    private boolean editable;
+
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -410,10 +413,9 @@ public class AmpController implements Serializable {
         List<Amp> a = null;
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
-        m.put("dep", DepartmentType.Store);
         if (qry != null) {
             a = getFacade().findByJpql("select c from Amp c where "
-                    + " c.retired=false and (c.departmentType!=:dep or c.departmentType is null) "
+                    + " c.retired=false "
                     + " and ((c.name) like :n or (c.code)  "
                     + "like :n or (c.barcode) like :n) order by c.name", m, 30);
         }
@@ -423,31 +425,52 @@ public class AmpController implements Serializable {
         }
         return a;
     }
+
+    public List<Amp> completeAmpWithRetired(String qry) {
+        List<Amp> a = null;
+        Map m = new HashMap();
+        m.put("n", "%" + qry + "%");
+        m.put("dep", DepartmentType.Store);
+        if (qry != null) {
+            a = getFacade().findByJpql("select c from Amp c where "
+                    + " (c.departmentType!=:dep or c.departmentType is null) "
+                    + " and ((c.name) like :n or (c.code)  "
+                    + "like :n or (c.barcode) like :n) order by c.name", m, 30);
+        }
+
+        if (a == null) {
+            a = new ArrayList<>();
+        }
+        return a;
+    }
+
     List<Amp> ampList = null;
 
     public List<Item> getPharmaceuticalAndStoreItemAmp(String qry) {
         List<Item> a = new ArrayList<>();
-        a.addAll(completeAmp(qry));
-        a.addAll(itemController.completeStoreItemOnly(qry));
+        a.addAll(completeAmpWithRetired(qry));
+        a.addAll(itemController.completeStoreItemOnlyWithRetired(qry));
 
         return a;
     }
 
     public List<Amp> completeAmpByName(String qry) {
-
-        Map m = new HashMap();
-        m.put("n", "%" + qry + "%");
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
+
         if (qry != null) {
             ampList = getFacade().findByJpql("select c from Amp c where "
-                    + " c.retired=false and"
-                    + " (c.departmentType is null"
-                    + " or c.departmentType!=:dep )and "
-                    + "((c.name) like :n ) order by c.name", m, 30);
+                    + " c.retired = false and "
+                    + " (c.departmentType is null or c.departmentType != :dep) and "
+                    + " (lower(c.name) like lower(:q) or lower(c.code) like lower(:q)) "
+                    + " order by c.name", m, 15);
         }
+
         if (ampList == null) {
             ampList = new ArrayList<>();
         }
+
         return ampList;
     }
 
@@ -520,14 +543,32 @@ public class AmpController implements Serializable {
 //        }
 //        return ampList;
 //    }
-
     public void prepareAdd() {
         current = new Amp();
         current.setItemType(ItemType.Amp);
         current.setDepartmentType(DepartmentType.Pharmacy);
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void listnerCategorySelect() {
+        if (getCurrent().getCategory() == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            getCurrent().setCode("");
+            return;
+        }
         if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().isEmpty()) {
             getCurrent().getCategory().setDescription(getCurrent().getName());
         }
@@ -670,22 +711,22 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No AMP is selected");
             return;
         }
-        
-        if(current.getId() != null){
-            if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
+
+        if (current.getId() != null) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)) {
                 JsfUtil.addErrorMessage("Deleting and Editing is disabled by Configuration Options.");
                 return;
             }
         }
-        
+
         if (current.getName() == null || current.getName().isEmpty()) {
             JsfUtil.addErrorMessage("Please add a name to AMP");
             return;
         }
 
-        int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
+        int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item", "4"));
 
-        if (current.getCode().trim().length() < maxCodeLeanth){
+        if (current.getCode().trim().length() < maxCodeLeanth) {
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
             return;
         }
@@ -701,7 +742,7 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No VMP selected");
             return;
         }
-     
+
         if (current.getCategory() == null) {
             if (current.getVmp().getCategory() != null) {
                 current.setCategory(current.getVmp().getCategory());
@@ -732,20 +773,122 @@ public class AmpController implements Serializable {
     }
 
     public boolean checkItemCode(String code, Amp savingAmp) {
-        if(savingAmp==null){
+        if (savingAmp == null) {
             return false;
         }
         Map m = new HashMap();
         String jpql = "select c from Amp c "
                 + " where c.retired=false"
                 + " and (c.code is not null and c.code=:icode)";
-        if(savingAmp.getId()!=null){
-            jpql +=" and c.id <> :id ";
+        if (savingAmp.getId() != null) {
+            jpql += " and c.id <> :id ";
             m.put("id", savingAmp.getId());
         }
         m.put("icode", code);
         Amp amp = getFacade().findFirstByJpql(jpql, m);
         return amp != null;
+    }
+
+    public void checkCodeDuplicate() {
+        duplicateCode = checkItemCode(current.getCode(), current);
+        if (duplicateCode) {
+            JsfUtil.addErrorMessage("This Code has Already been Used.");
+        }
+    }
+
+    public void generateCode() {
+        int length = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
+        String code = "";
+        if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_NUMERIC_ONLY")) {
+            code = generateNumericCode(length);
+        } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_CHARACTERS_ONLY")) {
+            code = generateCharacterCode(length);
+        } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_ALPHANUMERIC")) {
+            code = generateAlphaNumericCode(length);
+        }
+        current.setCode(code);
+        checkCodeDuplicate();
+    }
+
+    private String generateNumericCode(int length) {
+        long max = 0;
+        List<Amp> all = findItems();
+        for (Amp a : all) {
+            try {
+                long val = Long.parseLong(a.getCode());
+                if (val > max) {
+                    max = val;
+                }
+            } catch (Exception e) {
+            }
+        }
+        long next = max + 1;
+        String format = "%0" + length + "d";
+        String code = String.format(format, next);
+        while (checkItemCode(code, current)) {
+            next++;
+            code = String.format(format, next);
+        }
+        return code;
+    }
+
+    private String generateCharacterCode(int length) {
+        String base = generateShortCode(current.getName());
+        if (base.isEmpty()) {
+            base = "AMP"; // Default fallback
+        }
+        if (base.length() > length) {
+            base = base.substring(0, length);
+        }
+        String code = base.toUpperCase();
+        int index = 1;
+        while (checkItemCode(code, current)) {
+            String suffix = String.valueOf(index);
+            int cut = Math.max(0, length - suffix.length());
+            String prefix = base.length() > cut ? base.substring(0, cut) : base;
+            code = (prefix + suffix).toUpperCase();
+            index++;
+        }
+        if (code.length() > length) {
+            code = code.substring(0, length);
+        }
+        return code;
+    }
+
+    private String generateAlphaNumericCode(int length) {
+        String base = generateShortCode(current.getName()).toUpperCase();
+        if (base.length() >= length) {
+            base = base.substring(0, length - 1);
+        }
+        int digits = Math.max(1, length - base.length());
+        long index = 1;
+        String code;
+        String format = "%0" + digits + "d";
+        code = base + String.format(format, index);
+        while (checkItemCode(code, current)) {
+            index++;
+            code = base + String.format(format, index);
+        }
+        return code;
+    }
+
+    private String generateShortCode(String name) {
+        StringBuilder sc = new StringBuilder();
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        String[] words = name.split(" ");
+        if (words.length == 1 && words[0].length() >= 3) {
+            sc = new StringBuilder(words[0].substring(0, 3).toLowerCase());
+        } else {
+            for (String w : words) {
+                if (!w.isEmpty()) {
+                    sc.append(w.charAt(0));
+                }
+            }
+            sc = new StringBuilder(sc.toString().toLowerCase());
+        }
+        return sc.toString();
     }
 
     public void saveSelected() {
@@ -786,6 +929,7 @@ public class AmpController implements Serializable {
         }
         recreateModel();
         // getItems();
+        editable = false;
     }
 
     public void saveAmp(Amp amp) {
@@ -850,6 +994,7 @@ public class AmpController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private AmpFacade getFacade() {
@@ -972,6 +1117,22 @@ public class AmpController implements Serializable {
 
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
+    }
+
+    public boolean isDuplicateCode() {
+        return duplicateCode;
+    }
+
+    public void setDuplicateCode(boolean duplicateCode) {
+        this.duplicateCode = duplicateCode;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

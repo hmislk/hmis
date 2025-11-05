@@ -1,182 +1,179 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/pharmacy_analytics.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                >
-
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="subcontent">
         <h:form>
             <p:panel styleClass="noBorder summeryBorder" header="GRN Bill Item Report">
                 <h:panelGrid columns="4" class="w-100">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                     </p:calendar>
 
-                    <p:outputLabel value="Supplier"></p:outputLabel>
-                    <p:autoComplete value="#{pharmacySaleReportController.searchKeyword.ins}" 
-                                    completeMethod="#{dealerController.completeDealor}" 
-                                    var="de" itemLabel="#{de.name}" itemValue="#{de}" >
+                    <p:outputLabel value="Supplier"/>
+                    <p:autoComplete value="#{pharmacySaleReportController.searchKeyword.ins}"
+                                    completeMethod="#{dealerController.completeDealor}"
+                                    var="de" itemLabel="#{de.name}" itemValue="#{de}">
                     </p:autoComplete>
 
-                    <p:outputLabel value="Purchase Order Number"></p:outputLabel>
-                    <p:inputText value="#{pharmacySaleReportController.searchKeyword.refBillNo}"></p:inputText>
+                    <p:outputLabel value="Purchase Order Number"/>
+                    <p:inputText value="#{pharmacySaleReportController.searchKeyword.refBillNo}"/>
 
-                    <p:outputLabel value="GRN Number"></p:outputLabel>
-                    <p:inputText value="#{pharmacySaleReportController.searchKeyword.billNo}"></p:inputText>
+                    <p:outputLabel value="GRN Number"/>
+                    <p:inputText value="#{pharmacySaleReportController.searchKeyword.billNo}"/>
 
                     <p:outputLabel value="Department"/>
-                    <p:autoComplete  value="#{pharmacySaleReportController.department}"
-                                     completeMethod="#{departmentController.completeDept}" var="i"
-                                     itemValue="#{i}" itemLabel="#{i.name}"
-                                     forceSelection="true" rendered="true">
+                    <p:autoComplete value="#{pharmacySaleReportController.department}"
+                                    completeMethod="#{departmentController.completeDept}" var="i"
+                                    itemValue="#{i}" itemLabel="#{i.name}"
+                                    forceSelection="true" rendered="true">
                     </p:autoComplete>
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="3" class="my-2">
-                    
-                        <p:commandButton 
-                            ajax="false" 
+                    <p:commandButton
+                            ajax="false"
                             value="Process"
-                            icon="fa-solid fa-arrows-rotate"
-                        class="ui-button-warning"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog"
                             action="#{pharmacySaleReportController.createGRNBillItemTable()}"/>
-                        <p:commandButton 
-                            actionListener="#{pharmacySaleReportController.createGRNBillItemTable()}" 
-                            ajax="false" 
-                            value="Excel"
-                            icon="fa-solid fa-file-excel"
-                        class="ui-button-success mx-2" >
-                            <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
-                        </p:commandButton>
-                        <p:commandButton 
-                            ajax="false" 
-                            value="Print" 
-                            icon="fa-solid fa-print"
-                        class="ui-button-info">
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
-                    
+                    <p:commandButton
+                            actionListener="#{pharmacySaleReportController.createGRNBillItemTable()}"
+                            ajax="false"
+                            value="Download"
+                            styleClass="ui-button-info m-1"
+                            icon="pi pi-download">
+                        <p:dataExporter type="xlsx" target="sum1" fileName="GRN_Bill_Item_Report"/>
+                    </p:commandButton>
+                    <p:commandButton
+                            value="To Print"
+                            styleClass="ui-button-warning m-1"
+                            icon="pi pi-print"
+                            action="pharmacy_report_grn_billitem_print?faces-redirect=true"/>
                 </h:panelGrid>
 
-                <p:panel id="panelPrint" >
-                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.billItems}" var="i" >
+                <p:panel id="panelPrint">
+                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.pharmacyGrnBillItemDTOS}" var="i">
                         <f:facet name="header">
                             <h:outputLabel value="From Date :  "/>&nbsp;&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReportController.fromDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            <h:outputLabel value="#{pharmacySaleReportController.fromDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                             &nbsp;&nbsp;
                             <h:outputLabel value="To Date  :"/>&nbsp;&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReportController.toDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel><br/>                   
+                            <h:outputLabel value="#{pharmacySaleReportController.toDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputLabel><br/>
                             <h:outputLabel value="Pharmacy GRN Bill Item Table"/>&nbsp;&nbsp;
                         </f:facet>
                         <p:column headerText="PO Number">
-                            <f:facet name="header" >
-                                <p:outputLabel value="PO Number" />
+                            <f:facet name="header">
+                                <p:outputLabel value="PO Number"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.referenceBill.deptId}"/>
+                            <h:outputLabel value="#{i.poNo}"/>
                         </p:column>
                         <p:column headerText="GRN Number">
-                            <f:facet name="header" >
-                                <p:outputLabel value="GRN Number" />
+                            <f:facet name="header">
+                                <p:outputLabel value="GRN Number"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.deptId}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
+                            <h:outputLabel value="#{i.grnNo}" />
                         </p:column>
-                        <p:column headerText="PO Value" style="text-align: right;" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}">
-                            <f:facet name="header" >
-                                <p:outputLabel value="PO Value" />
+                        <p:column headerText="PO Value" style="text-align: right;"
+                                  rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}">
+                            <f:facet name="header">
+                                <p:outputLabel value="PO Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.referenceBill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.netTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="PO Value(Sale)" style="text-align: right;" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}">
-                            <f:facet name="header" >
-                                <p:outputLabel value="PO Value(Sale)" />
+                        <p:column headerText="PO Value(Sale)" style="text-align: right;"
+                                  rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}">
+                            <f:facet name="header">
+                                <p:outputLabel value="PO Value(Sale)"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.referenceBill.saleValue}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.saleValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Supplier Name">
-                            <f:facet name="header" >
-                                <p:outputLabel value="Supplier Name" />
+                            <f:facet name="header">
+                                <p:outputLabel value="Supplier Name"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.fromInstitution.name}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </p:column>     
+                            <h:outputLabel value="#{i.supplierName}" />
+                        </p:column>
                         <p:column headerText="Item Name">
-                            <f:facet name="header" >
-                                <p:outputLabel value="Item Name" />
+                            <f:facet name="header">
+                                <p:outputLabel value="Item Name"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.item.name}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.itemName}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Free Quantity" style="text-align: right;">
-                            <f:facet name="header" >
-                                <p:outputLabel value="Free Quantity" />
+                            <f:facet name="header">
+                                <p:outputLabel value="Free Quantity"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.pharmaceuticalBillItem.freeQty}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.freeQuantity}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Purchase Rate" style="text-align: right;">
-                            <f:facet name="header" >
-                                <p:outputLabel value="Purchase Rate" />
+                            <f:facet name="header">
+                                <p:outputLabel value="Purchase Rate"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.purchaseRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Free Qty Value" style="text-align: right;">
-                            <f:facet name="header" >
-                                <p:outputLabel value="Free Qty Value" />
+                            <f:facet name="header">
+                                <p:outputLabel value="Free Qty Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate*i.pharmaceuticalBillItem.freeQty}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.purchaseRate*i.freeQuantity}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Order Quantity" style="text-align: right;">
-                            <f:facet name="header" >
-                                <p:outputLabel value="Order Quantity" />
+                            <f:facet name="header">
+                                <p:outputLabel value="Order Quantity"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.quantity}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
-                        </p:column> 
-                        <p:column headerText="Department" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide Department Column',false)}">
-                            <f:facet name="header" >
-                                <p:outputLabel value="Department" />
+                        </p:column>
+                        <p:column headerText="Department"
+                                  rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide Department Column',false)}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Department"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.bill.department.name}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            <h:outputLabel value="#{i.departmentName}">
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
-
-                        <p:columnGroup type="footer">  
-                            <p:row>                                 
+                        <p:columnGroup type="footer">
+                            <p:row>
                                 <p:column colspan="2"/>
-                                <p:column colspan="1" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}"/>
-                                <p:column colspan="1" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}"/>
+                                <p:column colspan="1"
+                                          rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}"/>
+                                <p:column colspan="1"
+                                          rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}"/>
                                 <p:column colspan="1"/>
                                 <p:column footerText="Total" style=" text-align: right">
                                     <f:facet name="footer">
@@ -184,40 +181,31 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
-                                <p:column footerText="#{pharmacySaleReportController.totalFreeQuantity}" style=" text-align: right">
+
+                                <p:column footerText="#{pharmacySaleReportController.totalFreeQuantity}"
+                                          style=" text-align: right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacySaleReportController.totalFreeQuantity}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column colspan="1"/>
 
-                                <p:column footerText="#{pharmacySaleReportController.totalPurchaseValue}" style=" text-align: right">
+                                <p:column footerText="#{pharmacySaleReportController.totalPurchaseValue}"
+                                          style=" text-align: right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacySaleReportController.totalPurchaseValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                            </p:row>  
+                            </p:row>
                         </p:columnGroup>
-
-
-
                     </p:dataTable>
                 </p:panel>
-                
-
-            </p:panel>         
-
-
+            </p:panel>
         </h:form>
-
     </ui:define>
-
-
-
 </ui:composition>

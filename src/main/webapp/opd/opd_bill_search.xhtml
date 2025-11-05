@@ -26,7 +26,8 @@
                                 <div class="form d-flex flex-column" >
                                     <h:panelGroup id="searchKeyword">
                                         <h:outputLabel value="From Date"/>
-                                        <p:calendar id="fromDate"
+                                        <p:calendar 
+                                            id="fromDate"
                                                     value="#{searchController.fromDate}"
                                                     navigator="false"
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -37,7 +38,8 @@
                                         </p:calendar>
 
                                         <h:outputLabel value="To Date"/>
-                                        <p:calendar id="toDate"
+                                        <p:calendar 
+                                            id="toDate"
                                                     value="#{searchController.toDate}"
                                                     navigator="false"
                                                     styleClass="dateTimePicker"
@@ -88,6 +90,12 @@
                                             autocomplete="off"
                                             class="w-100"
                                             value="#{searchController.searchKeyword.billNo}" />
+                                        
+                                        <p:inputText
+                                            placeholder="MRN No"
+                                            class="form-control my-1"
+                                            autocomplete="off"
+                                            value="#{searchController.searchKeyword.code}" />
 
                                         <p:inputText
                                             placeholder="Name"
@@ -231,10 +239,10 @@
                                         </div>
                                         <div>
                                             <p:commandLink
-                                                id="CancelBillNo"
                                                 ajax="false"
+                                                id="cancelBillNo"
                                                 value="#{bill.cancelledBill.deptId}"
-                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                                action="#{billSearch.navigateToCancelBillView()}"
                                                 rendered="#{bill.cancelled}" style="color: red">
                                                 <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
                                             </p:commandLink>
@@ -364,6 +372,11 @@
                                                 </h:panelGroup>
                                             </h:panelGrid>
                                         </p:tooltip>
+                                        
+                                        <h:panelGroup rendered="#{bill.currentRequest ne null}">
+                                            <p:badge value="#{bill.currentRequest.status.label}" severity="warning" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
+                                        
                                     </p:column>
 
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}"

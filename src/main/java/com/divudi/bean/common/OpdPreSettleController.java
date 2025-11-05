@@ -63,6 +63,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -150,6 +151,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
     boolean billPreview = false;
+    private final AtomicBoolean billSettlingStarted = new AtomicBoolean(false);
     /////////////////
     List<Stock> replaceableStocks;
     List<BillItem> billItems;
@@ -471,6 +473,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -553,7 +556,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
         } else {
-            getBillFacade().edit(getSaleBill());
+            getBillFacade().editAndCommit(getSaleBill());
         }
 
         updateSettledBatchBill();
@@ -592,10 +595,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (outputBilledBill.getId() == null) {
             getBillFacade().create(outputBilledBill);
         } else {
-            getBillFacade().edit(outputBilledBill);
+            getBillFacade().editAndCommit(outputBilledBill);
         }
         inputPreBill.setReferenceBill(outputBilledBill);
-        getBillFacade().edit(inputPreBill);
+        getBillFacade().editAndCommit(inputPreBill);
         return outputBilledBill;
     }
 
@@ -736,18 +739,18 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (savingSettlingIndividualBill.getId() == null) {
             getBillFacade().create(savingSettlingIndividualBill);
         } else {
-            getBillFacade().edit(savingSettlingIndividualBill);
+            getBillFacade().editAndCommit(savingSettlingIndividualBill);
         }
 
         individualBill.setReferenceBill(savingSettlingIndividualBill);
-        getBillFacade().edit(individualBill);
+        getBillFacade().editAndCommit(individualBill);
 
         return savingSettlingIndividualBill;
     }
 
     private void updateSettledBatchBill() {
         getPreBill().setReferenceBill(getSaleBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndCommit(getPreBill());
 
     }
 
@@ -781,8 +784,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
             getBillBean().setPaymentMethodData(newlyCreatedIndividualBilledBillOfBilledBatchBill, getPreBill().getPaymentMethod(), paymentMethodData);
 
-            getBillFacade().edit(newlyCreatedIndividualBilledBillOfBilledBatchBill);
-            getBillFacade().edit(preBill);
+            getBillFacade().editAndCommit(newlyCreatedIndividualBilledBillOfBilledBatchBill);
+            getBillFacade().editAndCommit(preBill);
             billsOfBatchBilledBill.add(newlyCreatedIndividualBilledBillOfBilledBatchBill);
         }
     }
@@ -804,7 +807,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             saveBillFee(originalBillFees, newSettlingBillItem);
             newlyCreatedSettlingIndividualBill.getBillItems().add(newSettlingBillItem);
         }
-        getBillFacade().edit(individualPreBill);
+        getBillFacade().editAndCommit(individualPreBill);
 
     }
 
@@ -843,8 +846,21 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     }
 
     public void settleBillWithPay2() {
-        editingQty = null;
-        if (errorCheckForSaleBill()) {
+        if (!billSettlingStarted.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            editingQty = null;
+            if (errorCheckForSaleBill()) {
+                return;
+            }
+
+        Bill latestPreBill = getBillFacade().findWithoutCache(getPreBill().getId());
+        Map<String, Object> params = new HashMap<>();
+        params.put("pre", latestPreBill);
+        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill=:pre", params);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("Already Paid");
             return;
         }
 
@@ -856,7 +872,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         saveIndividualBilledBillsOfPreBatchBill();
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -864,8 +880,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
 //        makeNull();
         billPreview = true;
-
+    } finally {
+        billSettlingStarted.set(false);
     }
+}
 
     private boolean paymentMethodDataErrorCheck() {
         if (getPaymentMethod() == PaymentMethod.Card) {
@@ -1055,7 +1073,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         saveSettlingBatchBill();
         saveIndividualBilledBillsOfPreBatchBill();
 
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndCommit(getPreBill());
         setBill(getBillFacade().find(getSaleBill().getId()));
 
         billPreview = true;
@@ -1131,9 +1149,27 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
                 pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+                pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
             }
 
         }
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public BilledBill createIndividualBilledBillFormIndividualPreBill(Bill preBill) {
@@ -2135,6 +2171,14 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
+    }
+
+    public boolean isBillSettlingStarted() {
+        return billSettlingStarted.get();
+    }
+
+    public void setBillSettlingStarted(boolean billSettlingStarted) {
+        this.billSettlingStarted.set(billSettlingStarted);
     }
 
 }

@@ -4,14 +4,19 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.BillClassType;
 
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
 import com.divudi.core.data.dataStructure.BillsTotals;
@@ -30,8 +35,11 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Sms;
@@ -52,6 +60,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -64,6 +73,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -107,17 +117,27 @@ public class ChannelReportController implements Serializable {
     double hospitalFeeCancellededTotal;
     double hospitalFeeRefundededTotal;
     private int channelReportMenuIndex;
-    List<String1Value3> valueList;
-    ReportKeyWord reportKeyWord;
-    Date fromDate;
-    Date toDate;
+    private List<String1Value3> valueList;
+    private ReportKeyWord reportKeyWord;
+    private Date fromDate;
+    private Date toDate;
     private Date newSessionDateTime;
-    Institution institution;
-    WebUser webUser;
-    Staff staff;
-    ChannelBillTotals billTotals;
-    Department department;
+    private Institution institution;
+    private WebUser webUser;
+    private Staff staff;
+    private ChannelBillTotals billTotals;
+    private Department department;
     boolean paid = false;
+    private Category category;
+    private List<Category> categoryList;
+
+    public List<Category> getCategoryList() {
+        return categoryList;
+    }
+
+    public void setCategoryList(List<Category> categoryList) {
+        this.categoryList = categoryList;
+    }
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -156,12 +176,21 @@ public class ChannelReportController implements Serializable {
     SessionInstanceFacade sessionInstanceFacade;
     @EJB
     private ReportTimerController reportTimerController;
+    @Inject
+    private InstitutionController institutionController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+
+    private String reportStatus;
+
+    @EJB
+    ChannelService channelService;
+
+    private ReportTemplateRowBundle dataBundle;
 
     public Institution getInstitution() {
         return institution;
@@ -341,6 +370,556 @@ public class ChannelReportController implements Serializable {
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
+    }
+
+    public String navigateToIncomeForScanning() {
+        makeNull();
+        return "/channel/income_for_scanning_bookings?faces-redirect=true";
+    }
+
+    public String navigateToIncomeForAgentBookings() {
+        makeNull();
+        return "/channel/income_with_agent_bookings?faces-redirect=true";
+    }
+
+    public String navigateToFutureIncomeForChanneling() {
+        makeNull();
+        return "/channel/income_with_summery_by_user?faces-redirect=true";
+    }
+
+    private List<Payment> paymentsFromCardAppoinments;
+
+    public List<Payment> getPaymentsFromCardAppoinments() {
+        return paymentsFromCardAppoinments;
+    }
+
+    public void setPaymentsFromCardAppoinments(List<Payment> paymentsFromCardAppoinments) {
+        this.paymentsFromCardAppoinments = paymentsFromCardAppoinments;
+    }
+
+    public List<Institution> getInstitutionForChannelReports() {
+        List<Institution> list = institutionController.getItems();
+
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+
+        return list;
+    }
+
+    public void getPaymentsForChannelCardAppoinments() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        paymentsFromCardAppoinments = channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
+    }
+
+    public double calculateTotalsFromPayment(List<Payment> payments, String type) {
+        if (payments == null || payments.isEmpty()) {
+            return 0;
+        }
+
+        if (type == null || type.trim().isEmpty()) {
+            return 0;
+        }
+
+        double total = 0;
+        switch (type) {
+            case "TotalFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getTotal();
+                    }
+                }
+                return total;
+            case "HosFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getHospitalFee();
+                    }
+                }
+                return total;
+            case "StaffFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getBill().getStaffFee();
+                    }
+                }
+                return total;
+            case "Card":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
+                        total += p.getPaidValue();
+                    }
+                }
+                return total;
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public void fetchScanningSessionForIncome() {
+//        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
+        dataBundle = bundle;
+
+    }
+
+    public static class ChannelIncomeDetailDto {
+
+        private long bsId;
+        private long billId;
+        private Date appoinmentDate;
+        private Date billedDate;
+        private String billedBy;
+        private String patientName;
+        private String patientPhone;
+        private PaymentMethod paymentMethod;
+        private double doctorFee;
+        private double hosFee;
+        private double totalAppoinmentFee;
+        private String remark;
+        private boolean isCancelled;
+        private boolean isRefunded;
+
+        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+            this.bsId = bsId;
+            this.billId = billId;
+            this.appoinmentDate = appoinmentDate;
+            this.billedDate = billedDate;
+            this.billedBy = billedBy;
+            this.patientName = patientName != null ? patientName : "N/A";
+            this.patientPhone = patientPhone != null ? patientPhone : "N/A";
+            this.paymentMethod = paymentMethod;
+            this.doctorFee = doctorFee;
+            this.hosFee = hosFee;
+            this.totalAppoinmentFee = totalAppoinmentFee;
+            this.remark = remark;
+            this.isCancelled = isCancelled;
+            this.isRefunded = isRefunded;
+        }
+
+        public boolean isIsCancelled() {
+            return isCancelled;
+        }
+
+        public void setIsCancelled(boolean isCancelled) {
+            this.isCancelled = isCancelled;
+        }
+
+        public boolean isIsRefunded() {
+            return isRefunded;
+        }
+
+        public void setIsRefunded(boolean isRefunded) {
+            this.isRefunded = isRefunded;
+        }
+
+        public String getBilledBy() {
+            return billedBy;
+        }
+
+        public void setBilledBy(String billedBy) {
+            this.billedBy = billedBy;
+        }
+
+        public Date getAppoinmentDate() {
+            return appoinmentDate;
+        }
+
+        public void setAppoinmentDate(Date appoinmentDate) {
+            this.appoinmentDate = appoinmentDate;
+        }
+
+        public String getPatientName() {
+            return patientName;
+        }
+
+        public void setPatientName(String patientName) {
+            this.patientName = patientName;
+        }
+
+        public String getPatientPhone() {
+            return patientPhone;
+        }
+
+        public void setPatientPhone(String patientPhone) {
+            this.patientPhone = patientPhone;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public double getDoctorFee() {
+            return doctorFee;
+        }
+
+        public void setDoctorFee(double doctorFee) {
+            this.doctorFee = doctorFee;
+        }
+
+        public double getHosFee() {
+            return hosFee;
+        }
+
+        public void setHosFee(double hosFee) {
+            this.hosFee = hosFee;
+        }
+
+        public double getTotalAppoinmentFee() {
+            return totalAppoinmentFee;
+        }
+
+        public void setTotalAppoinmentFee(double totalAppoinmentFee) {
+            this.totalAppoinmentFee = totalAppoinmentFee;
+        }
+
+        public String getRemark() {
+            return remark;
+        }
+
+        public void setRemark(String remark) {
+            this.remark = remark;
+        }
+
+        public long getBsId() {
+            return bsId;
+        }
+
+        public void setBsId(long bsId) {
+            this.bsId = bsId;
+        }
+
+        public long getBillId() {
+            return billId;
+        }
+
+        public void setBillId(long billId) {
+            this.billId = billId;
+        }
+
+        public Date getBilledDate() {
+            return billedDate;
+        }
+
+        public void setBilledDate(Date billedDate) {
+            this.billedDate = billedDate;
+        }
+    }
+
+    public static class WrapperDtoForChannelFutureIncome {
+
+        private List<ChannelIncomeDetailDto> incomeDtos;
+        private List<ChannelIncomeSummeryDto> summeryDtos;
+        private Institution hospital;
+        private Date processDate;
+        private String processedBy;
+        private double allCashTotal;
+        private double allCardTotal;
+        private double allCreditTotal;
+        private double totalValidAppoinments;
+        private double allCancelTotal;
+        private double allRefundTotal;
+        private double allCancelAppoinments;
+        private double allRefundAppoinments;
+
+        public double getAllCashTotal() {
+            return allCashTotal;
+        }
+
+        public void setAllCashTotal(double allCashTotal) {
+            this.allCashTotal = allCashTotal;
+        }
+
+        public double getAllCardTotal() {
+            return allCardTotal;
+        }
+
+        public void setAllCardTotal(double allCardTotal) {
+            this.allCardTotal = allCardTotal;
+        }
+
+        public double getAllCreditTotal() {
+            return allCreditTotal;
+        }
+
+        public void setAllCreditTotal(double allCreditTotal) {
+            this.allCreditTotal = allCreditTotal;
+        }
+
+        public double getTotalValidAppoinments() {
+            return totalValidAppoinments;
+        }
+
+        public void setTotalValidAppoinments(double totalValidAppoinments) {
+            this.totalValidAppoinments = totalValidAppoinments;
+        }
+
+        public double getAllCancelTotal() {
+            return allCancelTotal;
+        }
+
+        public void setAllCancelTotal(double allCancelTotal) {
+            this.allCancelTotal = allCancelTotal;
+        }
+
+        public double getAllRefundTotal() {
+            return allRefundTotal;
+        }
+
+        public void setAllRefundTotal(double allRefundTotal) {
+            this.allRefundTotal = allRefundTotal;
+        }
+
+        public double getAllCancelAppoinments() {
+            return allCancelAppoinments;
+        }
+
+        public void setAllCancelAppoinments(double allCancelAppoinments) {
+            this.allCancelAppoinments = allCancelAppoinments;
+        }
+
+        public double getAllRefundAppoinments() {
+            return allRefundAppoinments;
+        }
+
+        public void setAllRefundAppoinments(double allRefundAppoinments) {
+            this.allRefundAppoinments = allRefundAppoinments;
+        }
+
+        public List<ChannelIncomeDetailDto> getIncomeDtos() {
+            return incomeDtos;
+        }
+
+        public void setIncomeDtos(List<ChannelIncomeDetailDto> incomeDtos) {
+            this.incomeDtos = incomeDtos;
+        }
+
+        public List<ChannelIncomeSummeryDto> getSummeryDtos() {
+            return summeryDtos;
+        }
+
+        public void setSummeryDtos(List<ChannelIncomeSummeryDto> summeryDtos) {
+            this.summeryDtos = summeryDtos;
+        }
+
+        public Institution getHospital() {
+            return hospital;
+        }
+
+        public void setHospital(Institution hospital) {
+            this.hospital = hospital;
+        }
+
+        public Date getProcessDate() {
+            return processDate;
+        }
+
+        public void setProcessDate(Date processDate) {
+            this.processDate = processDate;
+        }
+
+        public String getProcessedBy() {
+            return processedBy;
+        }
+
+        public void setProcessedBy(String processedBy) {
+            this.processedBy = processedBy;
+        }
+
+    }
+
+    public static class ChannelIncomeSummeryDto {
+
+        private Date appoimentDate;
+        private double cashTotal;
+        private double cardTotal;
+        private double creditTotal;
+        private double agentTotal;
+        private double cancelTotal;
+        private double refundTotal;
+        private double totalDocFee;
+        private double totalHosFee;
+        private double totalAmount;
+        private double totalActiveAppoinments;
+        private double totalCancelAppoinments;
+        private double totalRefundAppoinments;
+
+        public double getTotalRefundAppoinments() {
+            return totalRefundAppoinments;
+        }
+
+        public void setTotalRefundAppoinments(double totalRefundAppoinments) {
+            this.totalRefundAppoinments = totalRefundAppoinments;
+        }
+
+        public double getAgentTotal() {
+            return agentTotal;
+        }
+
+        public void setAgentTotal(double agentTotal) {
+            this.agentTotal = agentTotal;
+        }
+
+        public Date getAppoimentDate() {
+            return appoimentDate;
+        }
+
+        public void setAppoimentDate(Date appoimentDate) {
+            this.appoimentDate = appoimentDate;
+        }
+
+        public double getCashTotal() {
+            return cashTotal;
+        }
+
+        public void setCashTotal(double cashTotal) {
+            this.cashTotal = cashTotal;
+        }
+
+        public double getCardTotal() {
+            return cardTotal;
+        }
+
+        public void setCardTotal(double cardTotal) {
+            this.cardTotal = cardTotal;
+        }
+
+        public double getCreditTotal() {
+            return creditTotal;
+        }
+
+        public void setCreditTotal(double creditTotal) {
+            this.creditTotal = creditTotal;
+        }
+
+        public double getCancelTotal() {
+            return cancelTotal;
+        }
+
+        public void setCancelTotal(double cancelTotal) {
+            this.cancelTotal = cancelTotal;
+        }
+
+        public double getRefundTotal() {
+            return refundTotal;
+        }
+
+        public void setRefundTotal(double refundTotal) {
+            this.refundTotal = refundTotal;
+        }
+
+        public double getTotalDocFee() {
+            return totalDocFee;
+        }
+
+        public void setTotalDocFee(double totalDocFee) {
+            this.totalDocFee = totalDocFee;
+        }
+
+        public double getTotalHosFee() {
+            return totalHosFee;
+        }
+
+        public void setTotalHosFee(double totalHosFee) {
+            this.totalHosFee = totalHosFee;
+        }
+
+        public double getTotalAmount() {
+            return totalAmount;
+        }
+
+        public void setTotalAmount(double totalAmount) {
+            this.totalAmount = totalAmount;
+        }
+
+        public double getTotalActiveAppoinments() {
+            return totalActiveAppoinments;
+        }
+
+        public void setTotalActiveAppoinments(double totalActiveAppoinments) {
+            this.totalActiveAppoinments = totalActiveAppoinments;
+        }
+
+        public double getTotalCancelAppoinments() {
+            return totalCancelAppoinments;
+        }
+
+        public void setTotalCancelAppoinments(double totalCancelAppoinments) {
+            this.totalCancelAppoinments = totalCancelAppoinments;
+        }
+    }
+
+    private WrapperDtoForChannelFutureIncome wrapperDto;
+
+    public WrapperDtoForChannelFutureIncome getWrapperDto() {
+        return wrapperDto;
+    }
+
+    public void setWrapperDto(WrapperDtoForChannelFutureIncome wrapperDto) {
+        this.wrapperDto = wrapperDto;
+    }
+
+    public void fetchChannelIncomeSummeryByUserWise() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Date range is not selected.");
+            return;
+        }
+
+        if (fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("From date should be before to toDate.");
+            return;
+        }
+        if (categoryList == null || categoryList.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select categories to proceed the report.");
+            return;
+        }
+
+        wrapperDto = channelService.fetchChannelIncomeByUser(fromDate, toDate, institution, webUser, categoryList, reportStatus, reportStatus);
+
+        if (wrapperDto == null) {
+            return;
+        }
+
+        wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+
+        if (institution != null) {
+            wrapperDto.setHospital(institution);
+        }
+    }
+
+    public void fetchAgentSessionIncome() {
+
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent", reportStatus);
+        dataBundle = bundle;
+    }
+
+    public List<Bill> getChildBills(Bill parent) {
+        List<Bill> childList = new ArrayList<>();
+
+        if (parent.isCancelled()) {
+            childList.add(parent.getCancelledBill());
+        } else if (parent.isRefunded()) {
+            childList.addAll(parent.getRefundBills());
+        }
+
+        return childList;
     }
 
     public void fillSessionsForChannelDoctorCard() {
@@ -2606,6 +3185,7 @@ public class ChannelReportController implements Serializable {
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
         HashMap hm = new HashMap();
+
         String sql = " select b from Bill b "
                 + " where b.retired=false "
                 + " and b.singleBillSession.absent=true "
@@ -2616,21 +3196,40 @@ public class ChannelReportController implements Serializable {
             hm.put("st", stf);
         }
 
-        if (pms != null) {
+        if (pms != null && !pms.isEmpty()) {
             sql += " and b.paymentMethod in :pm";
             hm.put("pm", pms);
         }
 
-        sql += " order by b.insId ";
+        sql += " order by b.createdAt desc ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
         List<Bill> b = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> billList = new ArrayList<>();
 
-        doctorFeeTotal = getStaffFeeTotal(b);
+        for (Bill bill : b) {
+            if (bill.getPaymentMethod() == PaymentMethod.OnCall) {
+                if (bill.getPaidBill() != null) {
+                    billList.add(bill.getPaidBill());
+                    continue;
+                } else {
+                    billList.add(bill);
+                }
+            } else {
+                if (bill.getReferenceBill() != null && bill.getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                    continue;
+                } else {
+                    billList.add(bill);
+                }
 
-        return b;
+            }
+        }
+
+        doctorFeeTotal = getStaffFeeTotal(billList);
+
+        return billList;
     }
 
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
@@ -3315,6 +3914,8 @@ public class ChannelReportController implements Serializable {
         serviceSession = null;
         billSessions = null;
         valueList = null;
+        dataBundle = null;
+        categoryList = null;
     }
 
     List<BillSession> nurseViewSessions;
@@ -4270,6 +4871,30 @@ public class ChannelReportController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public ReportTemplateRowBundle getDataBundle() {
+        return dataBundle;
+    }
+
+    public void setDataBundle(ReportTemplateRowBundle dataBundle) {
+        this.dataBundle = dataBundle;
+    }
+
+    public String getReportStatus() {
+        return reportStatus;
+    }
+
+    public void setReportStatus(String reportStatus) {
+        this.reportStatus = reportStatus;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

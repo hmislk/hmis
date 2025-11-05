@@ -403,7 +403,7 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", BillType.InwardBill);
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
-        if(cpts != null && !cpts.isEmpty()){
+        if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
@@ -603,7 +603,7 @@ public class InwardBeanController implements Serializable {
         hm.put("class", PreBill.class);
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
-        if(cpts != null && !cpts.isEmpty()){
+        if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
@@ -917,7 +917,7 @@ public class InwardBeanController implements Serializable {
         Double total = 0.0;
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
-        if(cpts != null && !cpts.isEmpty()){
+        if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
 
@@ -1033,7 +1033,7 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
-        if(cpts != null && !cpts.isEmpty()){
+        if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
@@ -1103,7 +1103,7 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", BillType.InwardBill);
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
-        if(cpts != null && !cpts.isEmpty()){
+        if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
@@ -1337,7 +1337,7 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", BillType.InwardPaymentBill);
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
-        if(cpts != null && !cpts.isEmpty()){
+        if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
@@ -1854,11 +1854,19 @@ public class InwardBeanController implements Serializable {
         String sql;
 
         if (admissionType != null) {
-            sql = "SELECT count(a.id) FROM Admission a ";
-            sql += " where a.admissionType.admissionTypeEnum=:adType ";
-            hm.put("adType", admissionType.getAdmissionTypeEnum());
-            temp += admissionType.getAdditionToCount();
-            temp += admissionFacade.countByJpql(sql, hm);
+            if (admissionType.isGenerateSeparateAdmissionNumber()) {
+                sql = "SELECT count(a.id) FROM Admission a ";
+                sql += " where a.admissionType=:adType ";
+                hm.put("adType", admissionType);
+                temp += admissionType.getAdditionToCount();
+                temp += admissionFacade.countByJpql(sql, hm);
+            } else {
+                sql = "SELECT count(a.id) FROM Admission a ";
+                sql += " where a.admissionType.admissionTypeEnum=:adType ";
+                hm.put("adType", admissionType.getAdmissionTypeEnum());
+                temp += admissionType.getAdditionToCount();
+                temp += admissionFacade.countByJpql(sql, hm);
+            }
         } else {
             sql = "SELECT count(a.id) FROM Admission a ";
             sql += " where a.admissionType.admissionTypeEnum=:adType ";

@@ -146,8 +146,13 @@ public class PatientSampleController implements Serializable {
             return null;
         }
         current = ps;
-        return "/lab/patient_sample?faces-redirect=true;";
+        return "/lab/patient_sample?faces-redirect=true";
 
+    }
+    
+    public String navigateToEditPatientSample(Long sampleId) {
+        PatientSample sample = getFacade().find(sampleId);
+        return navigateToEditPatientSample(sample);
     }
 
     public String navigateToEditPatientSample(PatientSample ps) {
@@ -156,7 +161,7 @@ public class PatientSampleController implements Serializable {
             return null;
         }
         current = ps;
-        return "/lab/patient_sample_edit?faces-redirect=true;";
+        return "/lab/patient_sample_edit?faces-redirect=true";
     }
 
     public PatientSample getAnyPatientSample() {

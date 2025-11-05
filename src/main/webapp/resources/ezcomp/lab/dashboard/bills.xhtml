@@ -212,6 +212,10 @@
                     <h:outputLabel value="#{b.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
+                    <br/>
+                    <h:panelGroup rendered="#{b.patientEncounter ne null}">
+                        <h:outputLabel style="color: #0d6efd;" value="#{b.patientEncounter.bhtNo}"/>
+                    </h:panelGroup>
                 </p:column>
 
                 <!-- Patient Details Column with Icons -->

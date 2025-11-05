@@ -82,8 +82,7 @@
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Invoice No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
-                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{!cc.attrs.bill.cancelled}"/>
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" rendered="#{cc.attrs.bill.cancelled}"/></div>
+                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.deptId}"/></div>
                 </div>
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Invoice Date" ></h:outputLabel></div>
@@ -278,26 +277,6 @@
                     </ui:repeat>
                 </h:panelGroup>
             </h:panelGroup>
-
-            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
-                <div class="d-flex gap-2" style="font-size: 9pt;margin-left:5%">
-                    <h:outputLabel value="Remark :"/>
-                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
-                </div>
-            </h:panelGroup>
-            <div class="d-flex justify-content-end align-items-center" style="margin-right: 5%;font-size: 9pt">
-                <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
-                    <div>
-                        <h:outputLabel value="Original Bill No :  #{cc.attrs.bill.deptId}" />
-                    </div>
-                </h:panelGroup>
-            </div>
-
-<!--            <div class="footer" style="text-align: center;">
-                <br/>
-                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
-                <br/>
-            </div>-->
 
         </div>
 

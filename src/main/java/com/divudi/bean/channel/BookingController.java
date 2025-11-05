@@ -371,6 +371,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
@@ -414,10 +415,29 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 case Staff:
                     pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
                     break;
+                case OnlineSettlement:
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
             }
         }
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public void calculateBalance() {
@@ -1874,7 +1894,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 return "/channel/channel_booking?faces-redirect=true";
             }
         }
-        return "";
+        return "/channel/channel_booking?faces-redirect=true";
     }
 
     public void markHolidayForSessionInstances(boolean mark) {
@@ -4100,6 +4120,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         //setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
+        billSessions = null;
     }
 
     public void listnerStaffRowSelect() {

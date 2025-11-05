@@ -23,6 +23,7 @@ public enum PaymentMethod {
     PatientPoints("Patient Points", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
     OnlineSettlement("Online Settlement", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS),
     None("None", PaymentType.NONE, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS),
+    OnlineBookingAgent("OnlineBooking Agent", PaymentType.NONE, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS),
     @Deprecated
     YouOweMe("You Owe Me", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS); // Assuming deprecated
 

@@ -23,6 +23,8 @@ public enum BillType {
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
+    CollectingCentreAgentPayment,
+    CollectingCentreAgentPaymentCancel,
     CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
@@ -65,6 +67,7 @@ public enum BillType {
     @Deprecated
     SandryGrn,
     PharmacyIssue,
+    PharmacyDisposalIssue,
     @Deprecated
     PharmacyBhtIssue,
     PharmacyBhtPre,
@@ -90,6 +93,7 @@ public enum BillType {
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
     PurchaseReturn,// Purchase Return
+    PharmacyDonationBill,
     PharmacyTransferRequest,
     PharmacyTransferIssue,
     PharmacyDirectIssue,
@@ -102,10 +106,14 @@ public enum BillType {
     PharmacyAdjustmentSaleRate,
     PharmacyAdjustmentWholeSaleRate,
     PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentCostRate,
     PharmacyAdjustmentExpiryDate,
     PharmacyAddtoStock,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
+    PharmacySnapshotBill,
+    PharmacyPhysicalCountBill,
+    PharmacyStockAdjustmentBill,
     ChannelCash(ChannelCashFlow),
     ChannelPaid(ChannelCashFlow),
     ChannelAgent(ChannelCashFlow),
@@ -117,6 +125,8 @@ public enum BillType {
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,
+    ChannelOnlineBookingAgentPaidToHospital,
+    ChannelOnlineBookingAgentPaidToHospitalBillCancellation,
     gpBooking,
     gpSettling,
     Appointment,
@@ -216,6 +226,8 @@ public enum BillType {
                 return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
+            case PharmacyDonationBill:
+                return "Pharmacy Donation Bill";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
@@ -223,6 +235,12 @@ public enum BillType {
                 return "Pharmacy Sale Bill for Cashier";
             case PharmacyAdjustment:
                 return "Pharmacy Adjustment";
+            case PharmacySnapshotBill:
+                return "Snapshot Bill";
+            case PharmacyPhysicalCountBill:
+                return "Physical Count Bill";
+            case PharmacyStockAdjustmentBill:
+                return "Stock Adjustment Bill";
             case GrnPayment:
                 return "Grn Payment";
             case GrnPaymentPre:
@@ -270,7 +288,9 @@ public enum BillType {
             case StoreTransferIssue:
                 return "Store Transfer Issue";
             case PharmacyIssue:
-                return "Pharmacy Issue";
+                return "Pharmacy Transfer Issue";
+            case PharmacyDisposalIssue:
+                return "Pharmacy Disposal Issue";
             case PharmacyBhtPre:
                 return "Pharmacy BHT Issue (Pre)";
             case OpdPreBill:

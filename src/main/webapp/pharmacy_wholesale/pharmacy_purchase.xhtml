@@ -212,12 +212,12 @@
                                                  style="width:100%"
                                                  onfocus="this.select()">
                                         <f:ajax event="keyup" execute="@this acItem txtQty txtFreeQty" render="tmpRetail tmpWholesale"
-                                                listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                                                listener="#{pharmacyPurchaseController.calculateSaleRate()}"></f:ajax>
                                     </p:inputText>
                                     <p:inputText autocomplete="off" id="txtPrate"  styleClass="numericTxt"
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
                                         <f:ajax event="keyup" execute="@this acItem txtQty txtFreeQty" render="tmpRetail tmpWholesale"
-                                                listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                                                listener="#{pharmacyPurchaseController.calculateSaleRate()}"></f:ajax>
                                     </p:inputText>
 
                                     <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt"

@@ -20,30 +20,39 @@
                                 <div><h:outputLabel value="Purchase Reprint" class="mt-2"></h:outputLabel></div>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
-                                        value="Cancel" 
+                                        value="To Cancel" 
                                         ajax="false"
                                         icon="fas fa-cancel"
-                                        class="ui-button-danger"
-                                        action="pharmacy_cancel_purchase?faces-redirect=true;" 
+                                        class="ui-button-danger mx-2"
+                                        action="pharmacy_cancel_purchase?faces-redirect=true" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                                     </p:commandButton>
 
                                     <p:commandButton
-                                        value="Return" 
+                                        value="To Return" 
                                         ajax="false"
-                                        class="ui-button-warning"
-                                        action="pharmacy_return_purchase?faces-redirect=true;" 
+                                        icon="fa fa-rotate-left"
+                                        class="ui-button-warning mx-2"
+                                        action="#{billSearch.navigateToDirectPurchaseReturn()}" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}" >
-                                        <f:setPropertyActionListener target="#{purchaseReturnController.bill}"  value="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener target="#{billSearch.bill}"  value="#{pharmacyBillSearch.bill}"/>
                                     </p:commandButton>
 
                                     <p:commandButton 
                                         value="Reprint"
-                                        class="ui-button-info"
+                                        class="ui-button-info mx-2"
                                         icon="fa fa-print"
                                         ajax="false" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton> 
+
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary mx-1"
+                                        type="button"
+                                        onclick="PF('directPurchaseReprintConfigDialog').show();" />
 
                                     <p:commandButton 
                                         value="Back to Search"
@@ -57,53 +66,97 @@
                             </div>
                         </f:facet>
 
-                        <style>
-                    @media print{
-                        .purhcaseBill{
-                            width: 297mm!important;
-                        }
 
-                        .hideProfit{
-                            display: none!important;
-                        }
 
-                        .showProfit{
-
-                        }
-                        
-                        .hideRetailValue{
-                            display: none!important;
-                        }
-
-                        .showRetailValue{
-
-                        }
-
-                    }
-
-                    @media screen{
-                        .purhcaseBill{
-                            width: 100%!important;
-                        }
-
-                        .showProfit{
-
-                        }
-                    }
-
-                </style>
-
-                <h:panelGroup id="gpBillPreview" >
-                    <pharmacy:purhcase
-                        bill="#{pharmacyBillSearch.bill}"
-                        ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                        ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                    </pharmacy:purhcase>
-                </h:panelGroup>
+                        <h:panelGroup id="gpBillPreview" >
+                            <pharmacy:purhcase
+                                rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4', true)}"
+                                bill="#{pharmacyBillSearch.bill}"
+                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                            </pharmacy:purhcase>
+                            <pharmacy:direct_purhcase_with_costing_custom_letter
+                                rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom Letter Format',true)}" 
+                                reprint="true"
+                                bill="#{pharmacyBillSearch.bill}"
+                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                            </pharmacy:direct_purhcase_with_costing_custom_letter>
+                        </h:panelGroup>
 
                     </p:panel>
 
                 </h:form>
+
+                <!-- Direct Purchase Configuration Dialog -->
+                <p:dialog id="directPurchaseReprintConfigDialog"
+                          header="Direct Purchase Reprint Printer Configuration"
+                          widgetVar="directPurchaseReprintConfigDialog"
+                          modal="true"
+                          width="600"
+                          height="400"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="directPurchaseReprintConfigForm" />
+
+                    <h:form id="directPurchaseReprintConfigForm">
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-file-alt"></i> Direct Purchase Reprint Paper Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="directPurchaseA4Paper"
+                                                value="#{pharmacyConfigController.directPurchaseA4Paper}" />
+                                            <p:outputLabel for="directPurchaseA4Paper" value="A4 Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 paper format for direct purchase bill reprint</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="directPurchaseCustomLetter"
+                                                value="#{pharmacyConfigController.directPurchaseCustomLetter}" />
+                                            <p:outputLabel for="directPurchaseCustomLetter" value="Custom Letter Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom letter size paper format with costing details reprint</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="directPurchaseConfigMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Apply &amp; Close"
+                                                    icon="fas fa-save"
+                                                    class="ui-button-success"
+                                                    ajax="false"
+                                                    action="#{pharmacyConfigController.saveDirectPurchaseConfig}" />
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="fas fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('directPurchaseReprintConfigDialog').hide(); return false;"
+                                                    type="button" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
             </ui:define>
 
         </ui:composition>

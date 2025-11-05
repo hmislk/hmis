@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       >
 
     <h:body>
@@ -17,28 +18,18 @@
 
                     <p:panel header="Stock Report by Batch" >
 
-                        <h:panelGrid columns="7" class="my-2 " >
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
-                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" 
-                                            value="#{reportsStock.department}" 
-                                            class="w-100 mx-2"
-                                            inputStyleClass="w-100"
-                                              >
-                            </p:autoComplete>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <p:commandButton 
-                                ajax="false" 
+                        <common:institution_site_department_filter controller="#{reportsStock}"/>
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton
+                                ajax="false"
                                 value="Process"
                                 icon="fas fa-cogs"
                                 class="ui-button-warning"
-                                actionListener="#{reportsStock.fillDepartmentStocks()}" >
-                            </p:commandButton>
-                            <p:commandButton 
+                                actionListener="#{reportsStock.fillDepartmentStocks()}" />
+                            <p:commandButton
                                 class="mx-2 ui-button-danger"
                                 icon="fas fa-file-pdf"
-                                value="PDF" 
+                                value="PDF"
                                 ajax="false" >
                                 <p:dataExporter 
                                     type="pdf"
@@ -87,7 +78,20 @@
                                     <h:outputLabel value="Batch Stock Report - #{reportsStock.department.name}"/>                                     
                                 </f:facet> 
 
-                              
+
+                                <p:column 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    headerText="Item"
+                                    sortBy="#{i.itemBatch.item.name}"
+                                    filterBy="#{i.itemBatch.item.name}"
+                                    filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ID"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel 
+                                        value="#{i.itemBatch.id}">
+                                    </h:outputLabel>
+                                </p:column>
 
                                 <p:column headerText="Category" 
                                           style="text-align: left;"
@@ -108,6 +112,16 @@
                                         <h:outputLabel value="Item"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Type"
+                                          sortBy="#{i.itemBatch.item.departmentType}"
+                                          filterBy="#{i.itemBatch.item.departmentType}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Type"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.departmentType}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Code" 
@@ -145,15 +159,15 @@
                                     </h:outputLabel>
                                 </p:column>
 
-<!--                                <p:column headerText="Batch No"
-                                          sortBy="#{i.itemBatch.batchNo}"
-                                          styleClass="averageNumericColumn">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Batch No"/>                                     
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.batchNo}"  >                                        
-                                    </h:outputLabel>
-                                </p:column>-->
+                                <!--                                <p:column headerText="Batch No"
+                                                                          sortBy="#{i.itemBatch.batchNo}"
+                                                                          styleClass="averageNumericColumn">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="Batch No"/>                                     
+                                                                    </f:facet>
+                                                                    <h:outputLabel value="#{i.itemBatch.batchNo}"  >                                        
+                                                                    </h:outputLabel>
+                                                                </p:column>-->
 
                                 <p:column headerText="Purchase Rate"
                                           style="text-align: right;"
@@ -167,14 +181,38 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value" 
+                                <p:column headerText="Purchase Value"
                                           style="text-align: right;"
                                           sortBy="#{i.itemBatch.purcahseRate * i.stock}"
                                           styleClass="averageNumericColumn">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Purchase Value"/>                                     
+                                        <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cost Rate"
+                                          style="text-align: right;"
+                                          sortBy="#{i.itemBatch.costRate}"
+                                          styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.costRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cost Value"
+                                          style="text-align: right;"
+                                          sortBy="#{i.itemBatch.costRate * i.stock}"
+                                          styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.costRate * i.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
@@ -191,12 +229,12 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Sale Value" 
+                                <p:column headerText="Retail Value"
                                           style="text-align: right;"
                                           sortBy="#{i.itemBatch.retailsaleRate * i.stock}"
                                           styleClass="averageNumericColumn">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Sale Value"/>                                     
+                                        <h:outputLabel value="Retail Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -218,6 +256,14 @@
                                             </f:facet>
                                         </p:column>
                                         <p:column></p:column>
+                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockCostValue}">
+                                            <f:facet name="footer" >
+                                                <h:outputLabel value="#{reportsStock.stockCostValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column></p:column>
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
@@ -227,7 +273,7 @@
                                         </p:column>
                                     </p:row>
                                     <p:row>
-                                        <p:column colspan="9" >
+                                        <p:column colspan="11" >
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="Printed At " ></h:outputLabel>
                                                 <h:outputLabel value="#{sessionController.currentDate}" >

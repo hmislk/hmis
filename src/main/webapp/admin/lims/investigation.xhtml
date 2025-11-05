@@ -202,7 +202,9 @@
                                 <div class="row mt-2">
                                     <div class="col-md-3"><h:outputText value="Report Format" ></h:outputText></div>
                                     <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
-                                    <div class="col-md-6"><p:selectOneMenu class="form-control" id="cmbRf"  value="#{investigationController.current.reportFormat}" >
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu class="form-control" id="cmbRf"  value="#{investigationController.current.reportFormat}" >
+                                            <f:selectItem itemLabel="Please select a Report Format"/>
                                             <f:selectItems value="#{reportFormatController.fillParentReportFormats()}" var="rf1" itemLabel="#{rf1.name}" itemValue="#{rf1}" />
                                         </p:selectOneMenu></div>
                                 </div>
@@ -303,10 +305,20 @@
                                     <div class="col-md-3"><h:outputText value="Report Upload Allowed" ></h:outputText></div>
                                     <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
                                     <div class="col-md-6">
-                                        <p:selectBooleanCheckbox 
-                                            itemLabel="Upload Allowed" 
+                                        <p:selectBooleanCheckbox
+                                            itemLabel="Upload Allowed"
                                             value="#{investigationController.current.canUploadPatinrtReport}" >
                                         </p:selectBooleanCheckbox>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Bypass Sample Workflow" /></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:selectBooleanCheckbox
+                                            itemLabel="Bypass"
+                                            value="#{investigationController.current.bypassSampleWorkflow}" />
                                     </div>
                                 </div>
 
@@ -420,6 +432,27 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-md-3"><h:outputText value="Assignee staff" ></h:outputText></div>
+                                    <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
+                                    <div class="col-md-6">
+                                        <p:autoComplete 
+                                    completeMethod="#{staffController.completeStaff}"
+                                    value="#{investigationController.current.staff}" 
+                                    var="mys" 
+                                    class="w-100 mt-2" 
+                                    maxResults="15"
+                                    inputStyleClass="form-control"
+                                    itemLabel="#{mys.person.nameWithTitle}" 
+                                    panelStyleClass="custom-dropdown-panel"
+                                    itemValue="#{mys}">
+                                    <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
+                                    <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                </p:autoComplete>
+                                    </div>
+                                </div>
+                                
 
                                 <div class="row mt-2">
                                     <div class="col-md-3"><h:outputText value="Institution" ></h:outputText></div>

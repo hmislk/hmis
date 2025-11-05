@@ -150,7 +150,7 @@ public class DrawerEntryController implements Serializable {
     }
 
     public String navigateToMyDrawerEntry() {
-        return "/cashier/my_drawer_entry_history?faces-redirect=true;";
+        return "/cashier/my_drawer_entry_history?faces-redirect=true";
     }
 
     public void listMyDrawerHistory() {
@@ -159,7 +159,7 @@ public class DrawerEntryController implements Serializable {
 
     public String navigateToCashierDrawerEntry() {
         makeNull();
-        return "/cashier/cashier_drawer_entry_history?faces-redirect=true;";
+        return "/cashier/cashier_drawer_entry_history?faces-redirect=true";
     }
 
     public void prosessingCashierDrawerEntry() {

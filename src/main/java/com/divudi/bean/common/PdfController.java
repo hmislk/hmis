@@ -25,14 +25,13 @@ import com.divudi.core.entity.lab.CommonReportItem;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.lab.PatientSampleComponant;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.Objects;
+
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
-import java.util.Optional;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.itextpdf.html2pdf.HtmlConverter;
@@ -799,6 +798,28 @@ public class PdfController {
             case "netCashPlusCredit":
                 populateTitleBundleForPdf(document, addingBundle);
                 break;
+            case "opdServiceBilled":
+            case "opdServiceCancellations":
+            case "opdServiceRefunds":
+            case "cashierSummaryOpdCredit":
+            case "opdServiceCancellationsCredit":
+            case "opdServiceRefundsCredit":
+            case "pharmacyNonCreditBills":
+            case "ProfessionalPaymentsOPD":
+            case "ProfessionalPaymentsOPDCancel":
+            case "ProfessionalPaymentsInward":
+            case "ProfessionalPaymentsInwardCancel":
+            case "PettyCashPayment":
+            case "PettyCashPaymentCancel":
+            case "InwardPayments":
+            case "InwardPaymentsCancel":
+            case "InwardPaymentsRefund":
+                populateTableForopdServiceBilled(document, addingBundle);
+                break;
+            case "pharmacyServiceCancellations":
+            case "pharmacyServiceRefunds":
+                populateTableForpharmacyServiceCancellations(document, addingBundle);
+                break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
                 break;
@@ -810,6 +831,499 @@ public class PdfController {
         // Optionally, add spacing or a separator between tables
         document.add(new Paragraph("\n"));
     }
+
+
+    private void populateTableForpharmacyServiceCancellations(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // Handle empty data case - create simple table with "No Data" message
+            Table noDataTable = new Table(1);
+            noDataTable.setWidth(UnitValue.createPercentValue(100));
+
+            // Add header with bundle name
+            Cell headerCell = new Cell()
+                    .add(new Paragraph("No Data for " + addingBundle.getName()))
+                    .setBackgroundColor(ColorConstants.DARK_GRAY)
+                    .setFontColor(ColorConstants.WHITE)
+                    .setPadding(8);
+            noDataTable.addHeaderCell(headerCell);
+
+            document.add(noDataTable);
+            return;
+        }
+
+        boolean includeBillType = true;
+
+        // Define column structure based on template
+        int totalColumns = includeBillType ? 6 : 5;
+
+        // Create column widths array
+        float[] columnWidths;
+        if (includeBillType) {
+            columnWidths = new float[]{8, 20, 15, 15, 25, 17}; // Serial, Date&Time, Bill No, Bill Type, Patient, Net Total
+        } else {
+            columnWidths = new float[]{8, 20, 15, 32, 25}; // Serial, Date&Time, Bill No, Patient, Net Total
+        }
+
+        // Create table
+        Table table = new Table(columnWidths);
+        table.setWidth(UnitValue.createPercentValue(100));
+        table.setMarginLeft(8); // Equivalent to m-2 class margin
+
+        // Add table header with bundle name (equivalent to f:facet="header")
+        Cell titleCell = new Cell(1, totalColumns)
+                .add(new Paragraph(addingBundle.getName()))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setPadding(8)
+                .setTextAlignment(TextAlignment.LEFT)
+                .setBold();
+        table.addHeaderCell(titleCell);
+
+        // Add column headers
+        table.addHeaderCell(new Cell()
+                .add(new Paragraph("Serial"))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setPadding(5)
+                .setTextAlignment(TextAlignment.CENTER));
+
+        table.addHeaderCell(new Cell()
+                .add(new Paragraph("Date & Time"))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setPadding(5)
+                .setTextAlignment(TextAlignment.LEFT));
+
+        table.addHeaderCell(new Cell()
+                .add(new Paragraph("Bill No"))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setPadding(5)
+                .setTextAlignment(TextAlignment.LEFT));
+
+        if (includeBillType) {
+            table.addHeaderCell(new Cell()
+                    .add(new Paragraph("Bill Type"))
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(5)
+                    .setTextAlignment(TextAlignment.LEFT));
+        }
+
+        table.addHeaderCell(new Cell()
+                .add(new Paragraph("Patient"))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setPadding(5)
+                .setTextAlignment(TextAlignment.LEFT));
+
+        table.addHeaderCell(new Cell()
+                .add(new Paragraph("Net Total"))
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setPadding(5)
+                .setTextAlignment(TextAlignment.RIGHT));
+
+        // Add data rows
+        int serialNumber = 1;
+        for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+            // Serial number (n+1 equivalent)
+            table.addCell(new Cell()
+                    .add(new Paragraph(String.valueOf(serialNumber++)))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setPadding(4));
+
+            // Date & Time
+            table.addCell(new Cell().add(new Paragraph(
+                    row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getCreatedAt().toString() : "N/A")));
+
+
+            // Bill No - using insId instead of deptId as per the template
+            table.addCell(new Cell()
+                    .add(new Paragraph(row.getBill().getInsId() != null ? row.getBill().getInsId() : ""))
+                    .setPadding(4));
+
+            // Bill Type (conditional column)
+            if (includeBillType) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(row.getBill().getBillTypeAtomic() != null ?
+                                row.getBill().getBillTypeAtomic().toString() : ""))
+                        .setPadding(4));
+            }
+
+            // Patient
+            String patientName = "";
+            if (row.getBill().getPatient() != null &&
+                    row.getBill().getPatient().getPerson() != null) {
+                patientName = row.getBill().getPatient().getPerson().getNameWithTitle();
+            }
+            table.addCell(new Cell()
+                    .add(new Paragraph(patientName))
+                    .setPadding(4));
+
+            // Net Total
+            table.addCell(new Cell()
+                    .add(new Paragraph(String.format("%,.2f", row.getBill().getNetTotal())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setPadding(4));
+        }
+
+        // Add footer row with total (equivalent to f:facet="footer")
+        // Empty cells for non-total columns
+        int emptyFooterCells = includeBillType ? 5 : 4;
+        for (int i = 0; i < emptyFooterCells; i++) {
+            table.addFooterCell(new Cell().add(new Paragraph("")).setPadding(4));
+        }
+
+        // Net Total footer
+        table.addFooterCell(new Cell()
+                .add(new Paragraph(String.format("#,##0.00", addingBundle.getTotal())))
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setBold()
+                .setPadding(4));
+
+        document.add(table);
+    }
+
+    private void populateTableForopdServiceBilled(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // Handle empty data case - create simple table with "No Data" message
+            Table noDataTable = new Table(1);
+            noDataTable.setWidth(UnitValue.createPercentValue(100));
+
+            // Add header with bundle name
+            Cell headerCell = new Cell()
+                    .add(new Paragraph("No Data for " + addingBundle.getName()))
+                    .setBackgroundColor(ColorConstants.DARK_GRAY)
+                    .setFontColor(ColorConstants.WHITE)
+                    .setPadding(8);
+            noDataTable.addHeaderCell(headerCell);
+
+            document.add(noDataTable);
+            return;
+        }
+
+        // Calculate dynamic column count based on available transaction types
+        List<String> dynamicColumns = new ArrayList<>();
+
+        // Add base columns
+        List<String> baseColumns = Arrays.asList("Serial", "Date & Time", "Bill No", "Bill Type", "Patient", "Net Total");
+
+        // Add conditional payment type columns based on bundle properties
+        if (addingBundle.isHasCashTransaction()) {
+            dynamicColumns.add("Cash");
+        }
+        if (addingBundle.isHasCardTransaction()) {
+            dynamicColumns.add("Card");
+        }
+        if (addingBundle.isHasCreditTransaction()) {
+            dynamicColumns.add("Credit");
+        }
+        if (addingBundle.isHasStaffWelfareTransaction()) {
+            dynamicColumns.add("Staff Welfare");
+        }
+        if (addingBundle.isHasVoucherTransaction()) {
+            dynamicColumns.add("Voucher");
+        }
+        if (addingBundle.isHasIouTransaction()) {
+            dynamicColumns.add("IOU");
+        }
+        if (addingBundle.isHasAgentTransaction()) {
+            dynamicColumns.add("Agent");
+        }
+        if (addingBundle.isHasChequeTransaction()) {
+            dynamicColumns.add("Cheque");
+        }
+        if (addingBundle.isHasSlipTransaction()) {
+            dynamicColumns.add("Slip");
+        }
+        if (addingBundle.isHasEWalletTransaction()) {
+            dynamicColumns.add("eWallet");
+        }
+        if (addingBundle.isHasPatientDepositTransaction()) {
+            dynamicColumns.add("Patient Deposit");
+        }
+        if (addingBundle.isHasPatientPointsTransaction()) {
+            dynamicColumns.add("Patient Points");
+        }
+        if (addingBundle.isHasOnCallTransaction()) { // Assuming this maps to Online Settlement
+            dynamicColumns.add("Online Settlement");
+        }
+
+        // Calculate total columns
+        int totalColumns = baseColumns.size() + dynamicColumns.size();
+
+        // Create column widths array - adjust as needed
+        float[] columnWidths = new float[totalColumns];
+        columnWidths[0] = 8;  // Serial
+        columnWidths[1] = 15; // Date & Time
+        columnWidths[2] = 12; // Bill No
+        columnWidths[3] = 12; // Bill Type
+        columnWidths[4] = 20; // Patient
+        columnWidths[5] = 12; // Net Total
+
+        // Set equal widths for payment type columns
+        float paymentColumnWidth = 10;
+        for (int i = 6; i < totalColumns; i++) {
+            columnWidths[i] = paymentColumnWidth;
+        }
+
+        // Create table
+        Table table = new Table(columnWidths);
+        table.setWidth(UnitValue.createPercentValue(100));
+
+        // Add title header spanning all columns
+        Cell titleCell = new Cell(1, totalColumns)
+                .add(new Paragraph(addingBundle.getName()))
+                .setBackgroundColor(ColorConstants.DARK_GRAY)
+                .setFontColor(ColorConstants.WHITE)
+                .setPadding(8)
+                .setTextAlignment(TextAlignment.LEFT);
+        table.addHeaderCell(titleCell);
+
+        // Add column headers
+        for (String header : baseColumns) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header))
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(5)
+                    .setTextAlignment(header.equals("Serial") ? TextAlignment.CENTER :
+                            (header.equals("Net Total") ? TextAlignment.RIGHT : TextAlignment.LEFT));
+            table.addHeaderCell(headerCell);
+        }
+
+        for (String header : dynamicColumns) {
+            Cell headerCell = new Cell()
+                    .add(new Paragraph(header))
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(5)
+                    .setTextAlignment(TextAlignment.RIGHT);
+            table.addHeaderCell(headerCell);
+        }
+
+        // Add data rows
+        int serialNumber = 1;
+        for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+            // Serial number
+            table.addCell(new Cell()
+                    .add(new Paragraph(String.valueOf(serialNumber++)))
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setPadding(4));
+
+            // Date & Time
+            table.addCell(new Cell().add(new Paragraph(
+                    row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getCreatedAt().toString() : "N/A")));
+
+            // Bill No
+            table.addCell(new Cell()
+                    .add(new Paragraph(row.getBill().getDeptId() != null ? row.getBill().getDeptId() : ""))
+                    .setPadding(4));
+
+            // Bill Type
+            table.addCell(new Cell()
+                    .add(new Paragraph(row.getBill().getBillTypeAtomic() != null ? row.getBill().getBillTypeAtomic().toString() : ""))
+                    .setPadding(4));
+
+            // Patient
+            String patientName = "";
+            if (row.getBill().getPatient() != null &&
+                    row.getBill().getPatient().getPerson() != null) {
+                patientName = row.getBill().getPatient().getPerson().getNameWithTitle();
+            }
+            table.addCell(new Cell()
+                    .add(new Paragraph(patientName))
+                    .setPadding(4));
+
+            // Net Total
+            table.addCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", row.getBill().getNetTotal())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setPadding(4));
+
+            // Add dynamic payment columns
+            if (addingBundle.isHasCashTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getCashValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasCardTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getCardValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasCreditTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getCreditValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasStaffWelfareTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getStaffWelfareValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasVoucherTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getVoucherValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasIouTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getIouValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasAgentTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getAgentValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasChequeTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getChequeValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasSlipTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getSlipValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasEWalletTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getEwalletValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasPatientDepositTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getPatientDepositValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasPatientPointsTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getPatientPointsValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+            if (addingBundle.isHasOnCallTransaction()) {
+                table.addCell(new Cell()
+                        .add(new Paragraph(String.format("#,##0.00", row.getOnlineSettlementValue())))
+                        .setTextAlignment(TextAlignment.RIGHT)
+                        .setPadding(4));
+            }
+        }
+
+        // Add footer row with totals
+        // Empty cells for first columns
+        for (int i = 0; i < 5; i++) {
+            table.addFooterCell(new Cell().add(new Paragraph("")).setPadding(4));
+        }
+
+        // Net Total footer
+        table.addFooterCell(new Cell()
+                .add(new Paragraph(String.format("#,##0.00", addingBundle.getTotal())))
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                .setPadding(4));
+
+        // Add footer totals for payment columns
+        if (addingBundle.isHasCashTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getCashValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasCardTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getCardValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasCreditTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getCreditValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasStaffWelfareTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getStaffWelfareValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasVoucherTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getVoucherValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasIouTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getIouValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasAgentTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getAgentValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasChequeTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getChequeValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasSlipTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getSlipValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasEWalletTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getEwalletValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasPatientDepositTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getPatientDepositValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasPatientPointsTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getPatientPointsValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+        if (addingBundle.isHasOnCallTransaction()) {
+            table.addFooterCell(new Cell()
+                    .add(new Paragraph(String.format("#,##0.00", addingBundle.getOnlineSettlementValue())))
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .setPadding(4));
+        }
+
+        document.add(table);
+    }
+
 
     private void populateTableForCreditCards(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
@@ -1450,6 +1964,150 @@ public class PdfController {
 
         // Visual separator after the total
         document.add(lineSeparator);
+    }
+
+    // New method for DTO-based bundles
+    public StreamedContent createPdfForDtoBundle(com.divudi.core.data.dto.DailyReturnBundleDTO rootBundle) throws IOException {
+        if (rootBundle == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
+            addDtoDataToPdf(document, rootBundle, rootBundle.getBundleType());
+        } else {
+            for (com.divudi.core.data.dto.DailyReturnBundleDTO childBundle : rootBundle.getBundles()) {
+                addDtoDataToPdf(document, childBundle, childBundle.getBundleType());
+            }
+        }
+
+        document.close();
+
+        // Create a ByteArrayInputStream from the byte array
+        byte[] bytes = outputStream.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+
+        // Create and return StreamedContent
+        StreamedContent pdfSc = DefaultStreamedContent.builder()
+                .name("daily_return_dto_" + new Date().getTime() + ".pdf")
+                .contentType("application/pdf")
+                .stream(() -> inputStream)
+                .build();
+
+        return pdfSc;
+    }
+    
+    private void addDtoDataToPdf(Document document, com.divudi.core.data.dto.DailyReturnBundleDTO addingBundle, String type) {
+        if (addingBundle == null) {
+            return;
+        }
+
+        try {
+            PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ROMAN);
+            PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.TIMES_BOLD);
+
+            // Add bundle title
+            Paragraph title = new Paragraph(addingBundle.getName())
+                    .setFont(boldFont)
+                    .setFontSize(14)
+                    .setMarginBottom(5)
+                    .setTextAlignment(TextAlignment.LEFT);
+            document.add(title);
+
+            // Only add data table if there are rows to display
+            if (addingBundle.getRows() != null && !addingBundle.getRows().isEmpty()) {
+                // Create table with 7 columns
+                Table table = new Table(UnitValue.createPercentArray(new float[]{2, 3, 1.5f, 2, 2, 1.5f, 2}));
+                table.setWidth(UnitValue.createPercentValue(100));
+
+                // Add header row
+                String[] headers = {"Category", "Item / Service", "Count", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
+                for (String header : headers) {
+                    Cell headerCell = new Cell()
+                            .add(new Paragraph(header).setFont(boldFont).setFontSize(10))
+                            .setTextAlignment(TextAlignment.CENTER)
+                            .setBackgroundColor(new DeviceRgb(240, 240, 240));
+                    table.addHeaderCell(headerCell);
+                }
+
+                // Add data rows
+                for (com.divudi.core.data.dto.DailyReturnRowDTO row : addingBundle.getRows()) {
+                    // Category
+                    table.addCell(new Cell().add(new Paragraph(row.getCategoryName() != null ? row.getCategoryName() : "").setFont(font).setFontSize(9)));
+                    // Item
+                    table.addCell(new Cell().add(new Paragraph(row.getItemName() != null ? row.getItemName() : "").setFont(font).setFontSize(9)));
+                    // Count
+                    table.addCell(new Cell().add(new Paragraph(String.valueOf(row.getItemCount() != null ? row.getItemCount() : 0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Hospital Fee
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Professional Fee
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Discount
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                    // Net Amount
+                    table.addCell(new Cell().add(new Paragraph(String.format("%.2f", row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0)).setFont(font).setFontSize(9)).setTextAlignment(TextAlignment.RIGHT));
+                }
+
+                document.add(table);
+            } else {
+                // If no data, add a message
+                Paragraph noData = new Paragraph("No Data for " + addingBundle.getName())
+                        .setFont(font)
+                        .setFontSize(10)
+                        .setMarginBottom(5)
+                        .setTextAlignment(TextAlignment.LEFT);
+                document.add(noData);
+            }
+
+            // Add bundle total
+            addDtoBundleTotal(document, addingBundle);
+
+        } catch (IOException e) {
+            // Handle font creation error
+            System.err.println("Error creating PDF fonts: " + e.getMessage());
+        }
+    }
+    
+    private void addDtoBundleTotal(Document document, com.divudi.core.data.dto.DailyReturnBundleDTO addingBundle) {
+        try {
+            PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.TIMES_BOLD);
+            
+            // Line separator before the total
+            LineSeparator lineSeparator = new LineSeparator(new SolidLine());
+            document.add(lineSeparator);
+
+            // Create a table with 2 columns for the total (left aligned title, right aligned value)
+            Table table = new Table(UnitValue.createPercentArray(new float[]{80, 20}));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            // Left-aligned cell (empty or can contain additional info)
+            Cell titleCell = new Cell()
+                    .add(new Paragraph("Total for " + addingBundle.getName()).setBold().setTextAlignment(TextAlignment.LEFT));
+            titleCell.setBorder(Border.NO_BORDER);
+            table.addCell(titleCell);
+
+            // Right-aligned cell (Total)
+            Cell totalCell = new Cell()
+                    .add(new Paragraph("Total  : " + String.format("%.2f", addingBundle.getTotal() != null ? addingBundle.getTotal() : 0.0)).setFont(boldFont).setTextAlignment(TextAlignment.RIGHT));
+            totalCell.setBorder(Border.NO_BORDER);
+            table.addCell(totalCell);
+            table.setMarginBottom(8);
+            table.setMarginTop(8);
+            table.setBorder(Border.NO_BORDER);
+
+            // Add the table to the document
+            document.add(table);
+
+            // Visual separator after the total
+            document.add(lineSeparator);
+        } catch (IOException e) {
+            // Handle font creation error
+            System.err.println("Error creating PDF fonts for total: " + e.getMessage());
+        }
     }
 
 

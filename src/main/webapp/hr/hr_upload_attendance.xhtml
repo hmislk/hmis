@@ -23,10 +23,15 @@
                     <p:column headerText="Name" >
                         <h:outputLabel value="#{ffr.staff.person.name}" ></h:outputLabel>
                     </p:column>
-                    <p:column headerText="Day Type" >
-                        <h:outputLabel value="#{ffr.dayType}" />
-                    </p:column>                   
-                  
+                    <p:column headerText="Record Type" >
+                        <h:outputLabel value="#{ffr.fingerPrintRecordType}" />
+                    </p:column>  
+                    <p:column headerText="Time Stamp" >
+                        <h:outputLabel value="#{ffr.recordTimeStamp}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </p:column>  
+
                 </p:dataTable>
             </ui:define>
 

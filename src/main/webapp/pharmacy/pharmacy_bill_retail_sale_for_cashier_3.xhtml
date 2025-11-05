@@ -35,7 +35,7 @@
                             <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton icon="fas fa-file-invoice" class="mx-2" disabled="true" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}" class="mx-4">
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" class="mx-4">
                                 <p:outputLabel value="Counter" ></p:outputLabel>
                                 <p:selectOneMenu class="mx-2" value="#{pharmacySaleController3.counter}" >
                                     <f:selectItem itemLabel="Any" ></f:selectItem>
@@ -767,15 +767,17 @@
                                     icon="fa fa-print"
                                     class="ui-button-info mx-1"
                                     action="#" >
-                                    <p:printer target="gpBillPreviewTokenAndBill" ></p:printer>
+                                    <p:printer target="billAndTokenPrint" ></p:printer>
                                 </p:commandButton>
 
-                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
-                                    <f:selectItem itemLabel="Please Select Paper Type" />
-                                    <f:selectItems value="#{enumController.paperTypes}" />
-                                </p:selectOneMenu>
-                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                                    <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                </h:panelGroup>
                             </div>
 
                             <div class="d-flex justify-content-end">
@@ -796,7 +798,7 @@
                             <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                         </div>
 
-                        <h:panelGroup id="gpBillPreviewTokenAndBill">
+                        <h:panelGroup id="billAndTokenPrint">
                             <h:panelGroup  rendered="#{pharmacySaleController3.printBill ne null}"  id="TokenPreview" class="m-2">
                                 <h:panelGroup id="gpBillPreviewPosToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                     <div >

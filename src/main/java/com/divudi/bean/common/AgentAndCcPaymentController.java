@@ -32,7 +32,9 @@ import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -87,6 +89,8 @@ public class AgentAndCcPaymentController implements Serializable {
     String comment;
     double amount;
     boolean ccDepositSettlingStarted = false;
+    
+    private Institution collectingCentre;
 
     public void createAndAddBillItemToCcPaymentReceiptBill() {
         getCurrentBillItem().setNetValue(getCurrent().getNetTotal());
@@ -98,6 +102,19 @@ public class AgentAndCcPaymentController implements Serializable {
         getCurrentBillItem().setRate(getCurrent().getNetTotal());
         getBillItems().add(getCurrentBillItem());
         currentBillItem = null;
+    }
+    
+    public List<Institution> getAgentInstitutions() {
+        String j;
+        j = "select i "
+                + " from Institution i "
+                + " where i.retired=:ret"
+                + " and i.institutionType = :type"
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("type", InstitutionType.Agency);
+        return getInstitutionFacade().findByJpql(j, m);
     }
 
     public AgentAndCcPaymentController() {
@@ -285,7 +302,7 @@ public class AgentAndCcPaymentController implements Serializable {
         
         if ((getCurrent().getNetTotal() > (ccToResetAllowedCredit.getMaxCreditLimit() - ccToResetAllowedCredit.getStandardCreditLimit())) && (ccToResetAllowedCredit.getMaxCreditLimit() != ccToResetAllowedCredit.getStandardCreditLimit())) {
             ccToResetAllowedCredit.setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
-            getInstitutionFacade().edit(ccToResetAllowedCredit);
+            getInstitutionFacade().editAndCommit(ccToResetAllowedCredit);
         }
         JsfUtil.addSuccessMessage("Bill Saved");
         ccDepositSettlingStarted = false;
@@ -357,7 +374,6 @@ public class AgentAndCcPaymentController implements Serializable {
         }
 
         updateBallance(current.getFromInstitution(), current.getNetTotal(), HistoryType.AgentBalanceUpdateBill, current);
-        System.out.println(current.getFromInstitution().getBallance());
         saveBillItem();
 
         List<Payment> p = billService.createPayment(current, getCurrent().getPaymentMethod(), paymentMethodData);
@@ -613,6 +629,7 @@ public class AgentAndCcPaymentController implements Serializable {
         billItems = null;
         comment = null;
         amount = 0.0;
+        collectingCentre = null;
     }
 
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
@@ -891,6 +908,14 @@ public class AgentAndCcPaymentController implements Serializable {
 
     public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
         this.billNumberGenerator = billNumberGenerator;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
     }
 
 }

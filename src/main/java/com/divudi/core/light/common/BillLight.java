@@ -1,7 +1,10 @@
 package com.divudi.core.light.common;
 
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
@@ -29,21 +32,33 @@ public class BillLight {
     private BillTypeAtomic billTypeAtomic;
     private Long count;
     private Department toDpartment;
+    private Double ccTotal;
+    private Double hospitalTotal;
+    private String referenceNumber;
+    private Double total;
+    private Double netTotal;
+    private Double margin;
+    private Double serviceCharge;
+    private BigDecimal totalCostValue;
+    private BigDecimal totalPurchaseValue;
+    private BigDecimal totalRetailSaleValue;
+    private PaymentMethod paymentMethod;
+    private PatientEncounter patientEncounter;
 
     public BillLight() {
     }
-    
-    public BillLight(BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public BillLight(BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.count = count;
     }
-    
-    public BillLight(Department  toDpartment, Long count) {
+
+    public BillLight(Department toDpartment, Long count) {
         this.toDpartment = toDpartment;
         this.count = count;
     }
-    
-    public BillLight(Department  toDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public BillLight(Department toDpartment, BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.toDpartment = toDpartment;
         this.count = count;
@@ -101,6 +116,42 @@ public class BillLight {
         this.discount = discount;
         this.netValue = netValue;
         this.patientId = patientId;
+    }
+
+    public BillLight(Long id, String billNo, String referenceNumber, Date billDate, String patientName, Double ccTotal, Double hospitalTotal) {
+        this.id = id;
+        this.billNo = billNo;
+        this.referenceNumber = referenceNumber;
+        this.billDate = billDate;
+        this.patientName = patientName;
+        this.ccTotal = ccTotal;
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    //Use 9B Report
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double netValue) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        this.netValue = netValue;
+    }
+
+    // Constructor for Pharmacy Daily Stock Value Report
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double total, Double netTotal,
+                     Double discount, Double margin, Double serviceCharge,
+                     BigDecimal totalCostValue, BigDecimal totalPurchaseValue, BigDecimal totalRetailSaleValue,
+                     PaymentMethod paymentMethod, PatientEncounter patientEncounter) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        this.total = total;
+        this.netTotal = netTotal;
+        this.discount = discount;
+        this.margin = margin;
+        this.serviceCharge = serviceCharge;
+        this.totalCostValue = totalCostValue;
+        this.totalPurchaseValue = totalPurchaseValue;
+        this.totalRetailSaleValue = totalRetailSaleValue;
+        this.paymentMethod = paymentMethod;
+        this.patientEncounter = patientEncounter;
     }
 
     public Long getId() {
@@ -245,11 +296,11 @@ public class BillLight {
         this.canterName = canterName;
     }
 
-    public BillTypeAtomic  getBillTypeAtomic() {
+    public BillTypeAtomic getBillTypeAtomic() {
         return billTypeAtomic;
     }
 
-    public void setBillTypeAtomic(BillTypeAtomic  billTypeAtomic) {
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
     }
 
@@ -267,6 +318,102 @@ public class BillLight {
 
     public void setTodDpartment(Department toDpartment) {
         this.toDpartment = toDpartment;
+    }
+
+    public Double getCcTotal() {
+        return ccTotal;
+    }
+
+    public void setCcTotal(Double ccTotal) {
+        this.ccTotal = ccTotal;
+    }
+
+    public Double getHospitalTotal() {
+        return hospitalTotal;
+    }
+
+    public void setHospitalTotal(Double hospitalTotal) {
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public Double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(Double netTotal) {
+        this.netTotal = netTotal;
+    }
+
+    public Double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(Double margin) {
+        this.margin = margin;
+    }
+
+    public Double getServiceCharge() {
+        return serviceCharge;
+    }
+
+    public void setServiceCharge(Double serviceCharge) {
+        this.serviceCharge = serviceCharge;
+    }
+
+    public BigDecimal getTotalCostValue() {
+        return totalCostValue;
+    }
+
+    public void setTotalCostValue(BigDecimal totalCostValue) {
+        this.totalCostValue = totalCostValue;
+    }
+
+    public BigDecimal getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(BigDecimal totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public BigDecimal getTotalRetailSaleValue() {
+        return totalRetailSaleValue;
+    }
+
+    public void setTotalRetailSaleValue(BigDecimal totalRetailSaleValue) {
+        this.totalRetailSaleValue = totalRetailSaleValue;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
 
 }

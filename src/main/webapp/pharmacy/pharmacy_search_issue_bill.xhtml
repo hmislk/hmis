@@ -6,196 +6,159 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
+    <h:head>
+        <title>Pharmacy Issue Bill Search</title>
+    </h:head>
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Issue Bills" >
-                        <f:facet name="header" > 
-                            <h:outputText styleClass="fas fa-file-invoice"/>
-                            <h:outputLabel class="mx-4" value="Pharmacy Issue Bill Search"/>  
+                    <p:panel>
+                        <f:facet name="header">
+                            <i class="fas fa-file-invoice me-2"></i>
+                            <h:outputText value="Pharmacy Issue Bill Search"/>
                         </f:facet>
 
                         <div class="row">
-                            <div class="col-2">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar 
-                                    class="w-100"
-                                    inputStyleClass="form-control"
-                                    styleClass="dateTimePicker" 
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar 
-                                    class="w-100"
-                                    inputStyleClass="form-control"
-                                    id="toDate" 
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <h:outputLabel value="Bill No" class="mt-2"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
-                                <h:outputLabel value="Patient Name"/>   
-                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
-                                <h:outputLabel value="From Department Name"/>   
-                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.department}" />
-                                <h:outputLabel value="Total"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.total}" />
-                                <h:outputLabel value="Net Total"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
-                                <p:commandButton 
-                                    class="w-100 mt-2 ui-button-warning" 
+                            <div class="col-md-3 col-lg-2">
+                                <div class="mb-3">
+                                    <p:outputLabel for="fromDate" value="From Date"/>
+                                    <p:calendar
+                                        id="fromDate"
+                                        value="#{searchController.fromDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        styleClass="w-100"
+                                        inputStyleClass="form-control"
+                                        title="Select start date for search range">
+                                    </p:calendar>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel for="toDate" value="To Date"/>
+                                    <p:calendar
+                                        id="toDate"
+                                        value="#{searchController.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        styleClass="w-100"
+                                        inputStyleClass="form-control"
+                                        title="Select end date for search range">
+                                    </p:calendar>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel for="billNo" value="Bill No"/>
+                                    <p:inputText
+                                        id="billNo"
+                                        autocomplete="off"
+                                        styleClass="w-100"
+                                        value="#{searchController.searchKeyword.billNo}"
+                                        title="Enter bill number to search"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel for="patientName" value="Patient Name"/>
+                                    <p:inputText
+                                        id="patientName"
+                                        autocomplete="off"
+                                        styleClass="w-100"
+                                        value="#{searchController.searchKeyword.patientName}"
+                                        title="Enter patient name to search"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel for="department" value="From Department"/>
+                                    <p:inputText
+                                        id="department"
+                                        autocomplete="off"
+                                        styleClass="w-100"
+                                        value="#{searchController.searchKeyword.department}"
+                                        title="Enter department name to search"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel for="total" value="Total"/>
+                                    <p:inputText
+                                        id="total"
+                                        autocomplete="off"
+                                        styleClass="w-100"
+                                        value="#{searchController.searchKeyword.total}"
+                                        title="Enter total amount to search"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:outputLabel for="netTotal" value="Net Total"/>
+                                    <p:inputText
+                                        id="netTotal"
+                                        autocomplete="off"
+                                        styleClass="w-100"
+                                        value="#{searchController.searchKeyword.netTotal}"
+                                        title="Enter net total amount to search"/>
+                                </div>
+
+                                <p:commandButton
                                     id="btnSearch"
                                     ajax="false"
                                     value="Search"
                                     icon="fas fa-search"
-                                    action="#{searchController.listPharmacyIssue}"/>
-
+                                    action="#{searchController.listPharmacyIssue}"
+                                    styleClass="w-100 ui-button-warning"
+                                    style="min-width: 90px;"
+                                    title="Search for issue bills based on selected criteria"/>
 
                             </div>
-                            <div class="col-10">
-                                <p:dataTable 
-                                    id="tblBills" 
-                                    value="#{searchController.bills}" 
-                                    var="bill"  
-                                    rows="10"
+                            <div class="col-md-9 col-lg-10">
+                                <p:dataTable
+                                    id="tblBills"
+                                    value="#{searchController.disposalIssueBillDtos}"
+                                    var="row"
+                                    rows="20"
                                     paginator="true"
                                     paginatorPosition="bottom"
-                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="20,30,50,100"
-                                    >
+                                    styleClass="table-striped"
+                                    emptyMessage="No issue bills found">
 
-                                    <p:column headerText="Bill No" >                                
-                                        <p:commandLink
-                                            value="#{bill.deptId}"
+                                    <p:column headerText="Bill No" style="width: 8em;">
+                                        <h:outputText value="#{row.billDeptId}"/>
+                                    </p:column>
+
+                                    <p:column headerText="From Department" style="width: 12em;">
+                                        <h:outputText value="#{row.billDepartmentName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="To Department" style="width: 12em;">
+                                        <h:outputText value="#{row.billFromInstitutionName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Billed At" style="width: 12em;">
+                                        <h:outputText value="#{row.billCreatedAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Net Amount" style="width: 10em;" styleClass="text-end">
+                                        <h:outputText value="#{row.billNetTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Status" style="width: 8em;" styleClass="text-center">
+                                        <h:outputText value="#{row.cancelled ? 'Cancelled' : (row.refunded ? 'Refunded' : 'Active')}"
+                                                      styleClass="#{row.cancelled ? 'badge bg-danger' : (row.refunded ? 'badge bg-warning' : 'badge bg-success')}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" style="width: 7em;" styleClass="text-center">
+                                        <p:commandButton
+                                            value="View"
                                             ajax="false"
-                                            action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/> 
-                                        </p:commandLink>
-                                    </p:column>
-
-
-
-                                    <p:column headerText="From Department"  >                                
-                                        <h:outputLabel value="#{bill.department.name}" />                                    
-                                    </p:column>   
-
-                                    <p:column headerText="To Department"  >                                
-                                        <h:outputLabel value="#{bill.toDepartment.name}" />                                    
-                                    </p:column>   
-
-                                    <p:column headerText="Billed At"  >
-                                        <h:outputLabel value="#{bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <br/>                                
-                                        <h:panelGroup rendered="#{bill.referenceBill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Return at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" 
-                                                           value="#{bill.refundedBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.retired}" >
-                                            <h:outputLabel style="color: red;" value="Deleted at " />
-                                            <h:outputLabel style="color: red;"  
-                                                           value="#{bill.retiredAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>   
-
-                                    <p:column headerText="Billed At"  >
-                                        
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
-                                                           value="#{bill.cancelledBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: orange;" value="Refunded at " />
-                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" 
-                                                           value="#{bill.refundedBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.retired}" >
-                                            <h:outputLabel style="color: red;" value="Deleted at " />
-                                            <h:outputLabel style="color: red;"  
-                                                           value="#{bill.retiredAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column> 
-
-                                    <p:column headerText="Pre Bill By" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" />                                      
-                                        <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
-                                                           value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: orange;" value="Refunded By " />
-                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}"
-                                                           value="#{bill.refundedBill.creater.webUserPerson.name}" >
-
-                                            </h:outputLabel>
-                                        </h:panelGroup>                               
-                                    </p:column>    
-
-                                    <p:column headerText="Billed By" >
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
-                                                           value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: orange;" value="Refunded By " />
-                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}"
-                                                           value="#{bill.refundedBill.creater.webUserPerson.name}" >
-
-                                            </h:outputLabel>
-                                        </h:panelGroup>                               
-                                    </p:column>                      
-
-                                    <p:column headerText="Payment method">
-                                        <h:outputLabel value="#{bill.paymentMethod}" /><br/>
-                                        <h:outputLabel value="#{bill.paymentScheme.name}" />
-                                    </p:column>
-
-                                    <p:column headerText="Gross Value" styleClass="averageNumericColumn" >
-                                        <h:outputLabel value="#{bill.total}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Discount" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Net Value" styleClass="averageNumericColumn" >
-                                        <h:outputLabel value="#{bill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Comments" >
-                                        <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
-                                        </h:outputLabel>
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(row.billId)}"
+                                            icon="fas fa-eye"
+                                            styleClass="ui-button-info"
+                                            style="min-width: 90px;"
+                                            title="View bill details"/>
                                     </p:column>
 
                                 </p:dataTable>

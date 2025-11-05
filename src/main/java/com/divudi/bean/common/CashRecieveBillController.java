@@ -24,6 +24,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
@@ -94,6 +95,10 @@ public class CashRecieveBillController implements Serializable {
     private PaymentMethodData paymentMethodData;
     private PaymentMethod paymentMethod;
     private Institution institution;
+    Department department;
+    Institution site;
+    
+    private Institution creditCompany;
     private String comment;
 
     public void makeNull() {
@@ -103,13 +108,21 @@ public class CashRecieveBillController implements Serializable {
         billItems = null;
         selectedBillItems = null;
         paymentMethodData = null;
-        institution = null;
+        creditCompany = null;
         recreateModel();
     }
 
     public void selectInstitutionListener() {
-        Institution ins = institution;
+        Institution ins = creditCompany;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getBillController().getCreditBills(ins);
         for (Bill b : list) {
@@ -129,9 +142,20 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void selectVoucherListener() {
+        if (selectedBill == null) {
+            return;
+        }
         Institution ins = selectedBill.getCreditCompany();
         current = selectedBill;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getBillController().getCreditBills(ins);
         for (Bill b : list) {
@@ -149,8 +173,16 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void selectInstitutionListenerPharmacy() {
-        Institution ins = institution;
+        Institution ins = creditCompany;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getBillController().getCreditBillsPharmacy(ins);
         for (Bill b : list) {
@@ -176,7 +208,7 @@ public class CashRecieveBillController implements Serializable {
     private AdmissionController admissionController;
 
 //    public void selectInstitutionListenerBht() {
-//        Institution ins = institution;
+//        Institution ins = creditCompany;
 //        makeNull();
 //
 //        List<Admission> list = getAdmissionController().getCreditBillsBht(ins);
@@ -192,8 +224,16 @@ public class CashRecieveBillController implements Serializable {
 //    }
 
     public void selectInstitutionListenerBht() {
-        Institution ins = institution;
+        Institution ins = creditCompany;
         makeNull();
+
+        setCreditCompany(ins);
+        if (ins == null) {
+            return;
+        }
+        if (getCurrent() != null) {
+            getCurrent().setCreditCompany(ins);
+        }
 
         List<Bill> list = getAdmissionController().getCreditPaymentBillsBht(ins);
         for (Bill b : list) {
@@ -271,9 +311,13 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private double getReferenceBallance(BillItem billItem) {
+        System.out.println("getReferenceBallance");
+        System.out.println("billItem = " + billItem);
+        
         double refBallance = 0;
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
+        System.out.println("refAmount = " + refAmount);
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(billItem.getReferenceBill()));
         refBallance = neTotal - (paidAmt + refAmount);
         return refBallance;
@@ -673,7 +717,9 @@ public class CashRecieveBillController implements Serializable {
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(billType);
         getCurrent().setBillTypeAtomic(billTypeAtomic);
-        getCurrent().setCreditCompany(institution);
+        if (creditCompany != null) {
+            getCurrent().setCreditCompany(creditCompany);
+        }
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getCurrent().setComments(comment);
@@ -849,6 +895,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void settleBill() {
+        // Validate creditCompany first
+        if (creditCompany == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return;
+        }
+
         if (errorCheck()) {
             return;
         }
@@ -984,7 +1036,7 @@ public class CashRecieveBillController implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setBalance(getCurrent().getNetTotal());
-        getCurrent().setCreditCompany(institution);
+        getCurrent().setCreditCompany(creditCompany);
 
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         //saveBillItem();
@@ -1348,9 +1400,45 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateReferenceBill(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
-        tmp.getReferenceBill().setPaidAmount(0 - dbl);
-        getBillFacade().edit(tmp.getReferenceBill());
+        // Get the absolute payment value
+        double paymentValue = Math.abs(tmp.getNetValue());
+
+        // Step 1: Update the original bill (tmp.referenceBill)
+        Bill originalBill = tmp.getReferenceBill();
+        if (originalBill == null) {
+            throw new RuntimeException("Reference bill is null for BillItem ID: " + tmp.getId()
+                    + ". This indicates a data integrity issue.");
+        }
+
+        // Update original bill's financial fields
+        updateBillFinancialFieldsForPayment(originalBill, paymentValue);
+
+        // Step 2: Get and update the reference bill's reference bill if it exists
+        Bill referenceBillOfOriginal = originalBill.getReferenceBill();
+        if (referenceBillOfOriginal != null) {
+            // Update reference bill's financial fields as well
+            updateBillFinancialFieldsForPayment(referenceBillOfOriginal, paymentValue);
+        }
+    }
+
+    /**
+     * Helper method to update bill financial fields when receiving credit company payment
+     * @param bill The bill to update
+     * @param paymentValue The absolute payment value
+     */
+    private void updateBillFinancialFieldsForPayment(Bill bill, double paymentValue) {
+        // Update paidAmount - add the payment amount
+        double currentPaidAmount = bill.getPaidAmount();
+        bill.setPaidAmount(currentPaidAmount + paymentValue);
+
+        // Update balance - deduct the payment amount (only if balance > 0)
+        double currentBalance = bill.getBalance();
+        if (currentBalance > 0) {
+            bill.setBalance(currentBalance - paymentValue);
+        }
+
+        // Save the updated bill
+        getBillFacade().edit(bill);
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
@@ -1427,7 +1515,7 @@ public class CashRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         selectedBillItems = null;
-        institution = null;
+        creditCompany = null;
         comment = null;
         selectedBill = null;
     }
@@ -1568,14 +1656,17 @@ public class CashRecieveBillController implements Serializable {
         this.creditBean = creditBean;
     }
 
-    public Institution getInstitution() {
-        return institution;
+    public Institution getCreditCompany() {
+        return creditCompany;
     }
 
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
+
+    
+    
     public BillController getBillController() {
         return billController;
     }
@@ -1625,6 +1716,37 @@ public class CashRecieveBillController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public double getRefundAmountForBill(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        return creditBean.getRefundAmount(bill);
     }
 
 }

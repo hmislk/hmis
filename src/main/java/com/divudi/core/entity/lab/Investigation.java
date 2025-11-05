@@ -30,6 +30,11 @@ public class Investigation extends Item implements Serializable {
     @ManyToOne
     Sample sample;
     Double SampleVolume;
+    /**
+     * If true, bypasses sample collection workflow and allows direct result
+     * entry immediately after billing.
+     */
+    boolean bypassSampleWorkflow;
 
     public InvestigationCategory getInvestigationCategory() {
         return investigationCategory;
@@ -61,6 +66,14 @@ public class Investigation extends Item implements Serializable {
 
     public void setSampleVolume(Double SampleVolume) {
         this.SampleVolume = SampleVolume;
+    }
+
+    public boolean isBypassSampleWorkflow() {
+        return bypassSampleWorkflow;
+    }
+
+    public void setBypassSampleWorkflow(boolean bypassSampleWorkflow) {
+        this.bypassSampleWorkflow = bypassSampleWorkflow;
     }
 
     @Enumerated(EnumType.STRING)

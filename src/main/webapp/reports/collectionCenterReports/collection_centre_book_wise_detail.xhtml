@@ -12,36 +12,49 @@
         <ui:define name="subcontent">
             <h:form>
                 <p:panel header="Collection Center Book Wise Detail">
+                    <p:panelGrid columns="4" layout="tabular" class="w-100" style="border: none;
+                    border-collapse: collapse;">
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                            <p:outputLabel value="From Date" class="mx-3"/>
+                        </h:panelGroup>
 
-                    <p:panelGrid columns="5" layout="tabular" class="w-100">
-                        <!--                        <h:panelGroup>-->
-                        <!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
-                        <!--                            <p:outputLabel value="From Date" class="mx-3">-->
-                        <!--                            </p:outputLabel>-->
-                        <!--                        </h:panelGroup>-->
-                        <!--                        <p:calendar-->
-                        <!--                                class="w-100 "-->
-                        <!--                                inputStyleClass="w-100"-->
-                        <!--                                id="fromDate"-->
-                        <!--                                value="#{reportsController.fromDate}"-->
-                        <!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
-                        <!--                        </p:calendar>-->
+                        <p:calendar
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                id="fromDate"
+                                value="#{reportsController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                disabled="#{reportsController.withoutDateRange}">
+                        </p:calendar>
 
-                        <!--                        <p:spacer width="5em"/>-->
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                            <p:outputLabel value="To Date" class="mx-3"/>
+                        </h:panelGroup>
 
-                        <!--                        <h:panelGroup>-->
-                        <!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
-                        <!--                            <p:outputLabel value="To Date" class="mx-3">-->
-                        <!--                            </p:outputLabel>-->
-                        <!--                        </h:panelGroup>-->
-                        <!--                        <p:calendar-->
-                        <!--                                class="w-100 "-->
-                        <!--                                inputStyleClass="w-100"-->
-                        <!--                                id="toDate"-->
-                        <!--                                value="#{reportsController.toDate}"-->
-                        <!--                                navigator="false"-->
-                        <!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
-                        <!--                        </p:calendar>-->
+                        <p:calendar
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                id="toDate"
+                                value="#{reportsController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                disabled="#{reportsController.withoutDateRange}">
+                        </p:calendar>
+
+                        <h:panelGroup/>
+
+                        <h:panelGroup>
+                            <p:selectBooleanCheckbox
+                                    id="withoutDateRange"
+                                    value="#{reportsController.withoutDateRange}">
+                                <p:ajax update="fromDate toDate"/>
+                            </p:selectBooleanCheckbox>
+                            <h:outputLabel value="Without Date Range" class="mx-3"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup/>
+                        <h:panelGroup/>
 
                         <h:panelGroup class="col-md-2">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
@@ -61,25 +74,24 @@
                             <p:column style="padding: 6px;">#{vt.name}</p:column>
                         </p:autoComplete>
 
-                        <p:spacer width="5em"/>
-
                         <h:panelGroup class="col-md-2">
                             <i class="fa fa-object-group"/>
                             <p:outputLabel value="Book Number" class="mx-3"/>
                         </h:panelGroup>
                         <p:inputText value="#{reportsController.cashBookNumber}" class="w-100"/>
+                        <h:panelGroup/>
 
-                        <h:panelGroup/> <h:panelGroup>
-                        <p:selectBooleanCheckbox value="#{reportsController.withDeletedBooks}"/>
-                        <p:outputLabel value="With Deleted Books" class="mx-3"/>
-                    </h:panelGroup>
+                        <h:panelGroup>
+                            <p:selectBooleanCheckbox value="#{reportsController.withDeletedBooks}"/>
+                            <p:outputLabel value="With Deleted Books" class="mx-3"/>
+                        </h:panelGroup>
 
-                        <p:spacer width="5em"/>
+                        <h:panelGroup/>
 
-                        <h:panelGroup/> <h:panelGroup>
-                        <p:selectBooleanCheckbox value="#{reportsController.withInactiveBooks}"/>
-                        <p:outputLabel value="With Inactive Books" class="mx-3"/>
-                    </h:panelGroup>
+                        <h:panelGroup>
+                            <p:selectBooleanCheckbox value="#{reportsController.withInactiveBooks}"/>
+                            <p:outputLabel value="With Inactive Books" class="mx-3"/>
+                        </h:panelGroup>
                     </p:panelGrid>
 
                     <div class="row mb-2">
