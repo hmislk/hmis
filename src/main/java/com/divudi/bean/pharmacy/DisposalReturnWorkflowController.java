@@ -212,11 +212,11 @@ public class DisposalReturnWorkflowController implements Serializable {
                 + "AND b.billTypeAtomic = :billTypeAtomic "
                 + "AND b.department = :department "
                 + "AND b.checked = :checked "
-                + "AND b.checkedAt between :fd AND :td "
+                + "AND b.checkeAt >= :fd AND b.checkeAt <= :td "
                 + "AND (b.cancelled = :cancelled OR b.cancelled IS NULL) "
                 + "AND (b.billClosed = :closed OR b.billClosed IS NULL) "
                 + "AND (b.completed = :completed OR b.completed IS NULL) "
-                + "ORDER BY b.checkedAt DESC";
+                + "ORDER BY b.checkeAt DESC";
 
         params.put("retired", false);
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
@@ -228,7 +228,7 @@ public class DisposalReturnWorkflowController implements Serializable {
         params.put("fd", getFromDate());
         params.put("td", getToDate());
 
-        disposalReturnsToApprove = billFacade.findByJpql(jpql, params);
+        disposalReturnsToApprove = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         if (disposalReturnsToApprove == null) {
             disposalReturnsToApprove = new ArrayList<>();
         }
