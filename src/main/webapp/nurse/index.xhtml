@@ -11,11 +11,11 @@
         <ui:composition template="/resources/template/template_without_menu.xhtml">
             <ui:define name="content">
                 <h:form>
-                    
+
                     <h:panelGroup rendered="#{!webUserController.hasPrivilege('NursingWorkBench')}">
                         <na:not_authorize />
                     </h:panelGroup>
-                    
+
                     <p:panel header="Online Booking Agent Management" rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
@@ -38,7 +38,7 @@
                         </f:facet>
 
                         <div class="row">
-                            
+
                             <p:splitter  styleClass="mb-3" widgetVar="splitter" onResizeEnd="">
                                 <p:splitterPanel minSize="15" size="15" styleClass="flex align-items-center justify-content-center" >
                                     <div class="card m-3">
@@ -49,23 +49,31 @@
                                                 </f:facet>
 
                                                 <ui:repeat value="#{nursingWorkBenchController.roomList}" var="room">
-                                                        <p:commandButton 
-                                                            ajax="false"
-                                                            value="#{room.currentRoomNo}"
-                                                            class="#{room.inPatient ? 'ui-button-warning w-100 mt-2' : 'ui-button-secondary w-100 mt-2'}"
-                                                            disabled="#{! room.inPatient}"
-                                                            title="#{room.currentRoomNo}"
-                                                            action="#{nursingWorkBenchController.navigateToAdmissionProfilePage(room.admissionId)}">
-                                                        </p:commandButton>
-                                                    </ui:repeat>
-                                                
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        value="#{room.currentRoomNo}"
+                                                        class="#{room.inPatient ? 'ui-button-warning w-100 mt-2' : 'ui-button-secondary w-100 mt-2'}"
+                                                        disabled="#{! room.inPatient}"
+                                                        title="#{room.currentRoomNo}"
+                                                        action="#{nursingWorkBenchController.navigateToAdmissionProfilePage(room.admissionId)}">
+                                                    </p:commandButton>
+                                                </ui:repeat>
+
                                             </p:tab>
                                             <p:tab>
                                                 <f:facet name="title">
                                                     <span>BHT</span>
                                                 </f:facet>
-                                                
-                                                
+
+                                                <ui:repeat value="#{nursingWorkBenchController.bhtList}" var="bht">
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        value="#{bht.bhtNo}"
+                                                        class="ui-button-primary w-100 mt-2"
+                                                        title="#{bht.bhtNo}"
+                                                        action="#{nursingWorkBenchController.navigateToAdmissionProfilePage(bht.admissionId)}">
+                                                    </p:commandButton>
+                                                </ui:repeat>
                                                 
                                             </p:tab>
 

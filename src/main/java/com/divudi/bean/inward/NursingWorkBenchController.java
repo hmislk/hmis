@@ -88,6 +88,7 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
     AdmissionController admissionController;
 
     private List<PatientRoomDTO> roomList;
+    private List<PatientRoomDTO> bhtList;
     
     
     public String navigateToAdmissionProfilePage(Long admissionId) {
@@ -97,15 +98,15 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("No Admission Found");
             return "";
         }
+        
         admissionController.setCurrent(admission);
         return admissionController.navigateToAdmissionProfilePage();
     }
     
-
+    
     public String navigatetoNursingWorkBench() {
-        // Load Room Details
-        getPatientRooms();
-
+        getPatientRooms(); // Load Room Details
+        getPatientEncounter(); // Load BHT Details
         return "/nurse/index?faces-redirect=true";
     }
     
@@ -116,14 +117,11 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
     public List<PatientRoomDTO> getPatientRooms() {
 
         roomList = new ArrayList<>();
-
         List<Room> rooms = roomController.getItems();
-
+        
         for (Room r : rooms) {
             PatientEncounter p = null;
-
             PatientRoomDTO prDTO = new PatientRoomDTO();
-
             p = getPatientEncounterFromRoom(r);
 
             if (p != null) {
@@ -137,9 +135,7 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
                 prDTO.setCurrentRoomNo(r.getName());
                 prDTO.setInPatient(Boolean.FALSE);
             }
-
             roomList.add(prDTO);
-
         }
         return roomList;
     }
@@ -157,6 +153,28 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
         PatientEncounter current = patientEncounterFacade.findFirstByJpql(jpql, params);
 
         return current;
+    }
+    
+    public List<PatientRoomDTO> getPatientEncounter() {
+        bhtList = new ArrayList<>();
+        
+        String jpql = "select new com.divudi.core.data.dto.PatientRoomDTO( p.id, p.bhtNo, p.currentPatientRoom.roomFacilityCharge.room.name ) "
+                + "from PatientEncounter p "
+                + " where p.discharged =:discharged "
+                + " order by p.bhtNo asc";
+
+        HashMap params = new HashMap();
+        params.put("discharged", false);
+
+        bhtList = patientEncounterFacade.findLightsByJpql(jpql, params);
+
+        if(bhtList == null || bhtList.isEmpty()){
+            System.out.println("No BHT Found");
+        }else{
+            System.out.println(bhtList.size() + " BHT Found");
+        }
+        
+        return bhtList;
     }
 
     @Override
@@ -205,6 +223,14 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
 
     public void setRoomList(List<PatientRoomDTO> roomList) {
         this.roomList = roomList;
+    }
+
+    public List<PatientRoomDTO> getBhtList() {
+        return bhtList;
+    }
+
+    public void setBhtList(List<PatientRoomDTO> bhtList) {
+        this.bhtList = bhtList;
     }
 
     /**

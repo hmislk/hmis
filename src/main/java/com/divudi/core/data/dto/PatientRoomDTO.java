@@ -14,12 +14,20 @@ public class PatientRoomDTO implements Serializable {
     public PatientRoomDTO() {
     }
 
+    // Use find Rooms in Nursing Work Bench
     public PatientRoomDTO(Long id, Long admissionId, String bhtNo, String currentRoomNo, Boolean inPatient) {
         this.id = id;
         this.admissionId = admissionId;
         this.bhtNo = bhtNo;
         this.currentRoomNo = currentRoomNo;
         this.inPatient = inPatient;
+    }
+    
+    // Use find BHT in Nursing Work Bench
+    public PatientRoomDTO(Long admissionId, String bhtNo, String currentRoomNo) {
+        this.admissionId = admissionId;
+        this.bhtNo = bhtNo;
+        this.currentRoomNo = currentRoomNo;
     }
 
     public Long getId() {
