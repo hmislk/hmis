@@ -318,7 +318,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         //if (getPatientTabId().toString().equals("tabNewPt")) {
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
-            return false;
+            return true;
+        }
+        
+        if(getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null){
+            JsfUtil.addErrorMessage("Please provide a patient phone number.");
+            return true;
         }
 
         if (getPatient().getPerson() == null) {
