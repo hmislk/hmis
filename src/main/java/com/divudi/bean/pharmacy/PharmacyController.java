@@ -1109,14 +1109,14 @@ public class PharmacyController implements Serializable {
 
         for (Bill bill : billList) {
             // GRN Net Total (from reference bill)
-            if (bill.getReferenceBill() != null && bill.getReferenceBill().getNetTotal() != null) {
+            if (bill.getReferenceBill() != null) {
                 totalGrnNetTotal += bill.getReferenceBill().getNetTotal();
             }
 
             // Return Amount (netTotal from BillFinanceDetails or Bill)
             if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetTotal() != null) {
                 totalReturnAmount += bill.getBillFinanceDetails().getNetTotal().doubleValue();
-            } else if (bill.getNetTotal() != null) {
+            } else {
                 totalReturnAmount += bill.getNetTotal();
             }
 
