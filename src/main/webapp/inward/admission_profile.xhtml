@@ -33,12 +33,11 @@
                             value="Back to WorkBench" 
                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                             style="float: right;"
-                            class="ui-button-warning"
+                            class="ui-button-operating-theatre"
                             icon="fa fa-arrow-left">
                         </p:commandButton>
                     </h:panelGroup>
-
-
+                    
                 </f:facet>
                 <div class="row" >
                     <div class="col-3" >
@@ -59,6 +58,7 @@
                                     action="#{admissionController.navigateToEditAdmission}" 
                                     icon="fa fa-edit"
                                     class="w-100 ">
+                                    
                                 </p:commandButton>
                                 <p:commandButton 
                                     disabled="#{admissionController.current.discharged eq true}"
