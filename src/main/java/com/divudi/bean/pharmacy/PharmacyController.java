@@ -1107,27 +1107,39 @@ public class PharmacyController implements Serializable {
         totalActualNetValue = 0.0;
         totalNetValueAdjustment = 0.0;
 
+        // Track unique GRN IDs to avoid double-counting when multiple returns reference the same GRN
+        Set<Long> processedGrnIds = new HashSet<>();
+
         for (Bill bill : billList) {
-            // GRN Net Total (from reference bill)
+            // GRN Net Total (from reference bill) - only count each unique GRN once
             if (bill.getReferenceBill() != null) {
-                totalGrnNetTotal += bill.getReferenceBill().getNetTotal();
+                Long grnId = bill.getReferenceBill().getId();
+                if (grnId != null && !processedGrnIds.contains(grnId)) {
+                    totalGrnNetTotal += bill.getReferenceBill().getNetTotal();
+                    processedGrnIds.add(grnId);
+                }
             }
 
-            // Return Amount (netTotal from BillFinanceDetails or Bill)
+            // Return Amount - apply negative sign for returns (following existing pattern)
+            double returnAmount = 0.0;
             if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetTotal() != null) {
-                totalReturnAmount += bill.getBillFinanceDetails().getNetTotal().doubleValue();
+                returnAmount = bill.getBillFinanceDetails().getNetTotal().doubleValue();
             } else {
-                totalReturnAmount += bill.getNetTotal();
+                returnAmount = bill.getNetTotal();
             }
+            // Make negative if positive (returns should be negative in accounting)
+            totalReturnAmount += returnAmount > 0.0 ? -returnAmount : returnAmount;
 
-            // Actual Net Value
+            // Actual Net Value - apply negative sign for returns
             if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getActualNetValue() != null) {
-                totalActualNetValue += bill.getBillFinanceDetails().getActualNetValue().doubleValue();
+                double actualNetValue = bill.getBillFinanceDetails().getActualNetValue().doubleValue();
+                totalActualNetValue += actualNetValue > 0.0 ? -actualNetValue : actualNetValue;
             }
 
-            // Net Value Adjustment
+            // Net Value Adjustment - apply negative sign for returns
             if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetValueAdjustment() != null) {
-                totalNetValueAdjustment += bill.getBillFinanceDetails().getNetValueAdjustment().doubleValue();
+                double netValueAdjustment = bill.getBillFinanceDetails().getNetValueAdjustment().doubleValue();
+                totalNetValueAdjustment += netValueAdjustment > 0.0 ? -netValueAdjustment : netValueAdjustment;
             }
         }
     }
