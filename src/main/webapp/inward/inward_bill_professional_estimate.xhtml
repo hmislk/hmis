@@ -100,6 +100,7 @@
 
                             <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
                                 <div class="d-flex gap-2">
+                                    
                                     <p:commandButton
                                         ajax="false"
                                         icon="fa fa-id-card"
@@ -111,6 +112,7 @@
                                             value="#{inwardProfessionalBillController.current.patient}" >
                                         </f:setPropertyActionListener>
                                     </p:commandButton>
+                                    
                                     <p:commandButton 
                                         ajax="false"
                                         icon="fa fa-search"
@@ -118,6 +120,7 @@
                                         class="ui-button-warning mx-1" 
                                         action="#{patientController.navigateToSearchPatients()}" >
                                     </p:commandButton>
+                                    
                                     <p:commandButton 
                                         ajax="false"
                                         icon="fa fa-user"
@@ -129,6 +132,7 @@
                                             target="#{patientController.current}" >
                                         </f:setPropertyActionListener>
                                     </p:commandButton>
+                                    
                                 </div>
                             </h:panelGroup>
 
