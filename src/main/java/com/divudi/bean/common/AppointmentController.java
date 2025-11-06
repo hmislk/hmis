@@ -211,6 +211,11 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
         
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
+            return;
+        }
+        
         if(reservation == null || reservation.getRoom() == null){
             JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
             return;

@@ -1540,6 +1540,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Admittin process already started.");
             return;
         }
+
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
+            return;
+        }
+
         admittingProcessStarted = true;
 
         if (errorCheck()) {

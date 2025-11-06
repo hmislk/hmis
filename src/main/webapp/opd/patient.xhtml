@@ -259,9 +259,8 @@
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Blacklist Patient"
-
                                         ajax="true"
-                                        rendered="#{!patientController.current.blacklisted}"
+                                        rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
                                         styleClass="mx-2 ui-button-danger"
                                         icon="fa fa-ban"
                                         onclick="PF('blacklistModal').show()">
@@ -271,7 +270,7 @@
                                     <p:commandButton 
                                         value="Revert Blacklist Patient"
                                         ajax="true"
-                                        rendered="#{patientController.current.blacklisted}"
+                                        rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
                                         styleClass="mx-2 ui-button-danger"
                                         icon="fa fa-ban"
                                         onclick="PF('blacklistModal').show();">
@@ -328,7 +327,6 @@
                                             value="Revert" 
                                             class="ui-button-danger"
                                             icon="pi pi-ban"
-                                            
                                             rendered="#{patientController.current.blacklisted}"
                                             process="blacklistDlg"
                                             oncomplete="PF('blacklistModal').hide(); "
