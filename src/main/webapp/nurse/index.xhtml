@@ -93,10 +93,8 @@
                                                             actionListener="#{bhtEditController.prepereForNew()}"
                                                             icon="fa fa-edit"
                                                             class="w-100 ">
-                                                            <f:setPropertyActionListener 
-                                                                value="#{null}" 
-                                                                target="#{bhtEditController.current}" />
                                                         </p:commandButton>
+                                                        
                                                         <p:commandButton 
                                                             value="Room Change" 
                                                             ajax="false"
@@ -152,9 +150,6 @@
                                                             action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromInpatientProfile()}" 
                                                             icon="fa fa-external-link-square-alt"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener 
-                                                                value="#{admissionController.current}" 
-                                                                target="#{inwardAdditionalChargeController.current.patientEncounter}" />
                                                         </p:commandButton>
                                                         <p:commandButton 
                                                             value="Add Professional Fees" 
@@ -162,9 +157,6 @@
                                                             action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromInpatientProfile(admissionController.current)}" 
                                                             icon="fa fa-user-md"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener 
-                                                                value="#{admissionController.current}" 
-                                                                target="#{inwardProfessionalBillController.current.patientEncounter}" />
                                                         </p:commandButton>
                                                         <p:commandButton 
                                                             value="Add Estimated Professional Fee" 
@@ -172,9 +164,6 @@
                                                             action="#{inwardProfessionalBillController.navigateToAddEstimatedProfessionalFeeFromInpatientProfile()}" 
                                                             icon="fa fa-user-md"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener 
-                                                                value="#{admissionController.current}" 
-                                                                target="#{inwardProfessionalBillController.current.patientEncounter}" />
                                                         </p:commandButton>
 
                                                         <p:commandButton 
@@ -183,9 +172,6 @@
                                                             action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile(admissionController.current)}" 
                                                             icon="fa fa-clock"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener 
-                                                                value="#{admissionController.current}" 
-                                                                target="#{inwardTimedItemController.current.patientEncounter}" />
                                                         </p:commandButton>
                                                     </div>
                                                 </p:panel>
@@ -195,46 +181,37 @@
                                             <div class="col-2">
                                                 <p:panel header="Surgeries">
                                                     <div class="d-grid gap-3">
+                                                        
                                                         <p:commandButton 
                                                             value="Add Surgeries" 
                                                             icon="fa fa-clock"
                                                             ajax="false"
                                                             action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener
-                                                                value="#{admissionController.current}"
-                                                                target="#{surgeryBillController.surgeryBill.patientEncounter}"
-                                                                />
                                                         </p:commandButton>
+                                                        
                                                         <p:commandButton 
                                                             ajax="false"
                                                             value="Add Services for Surgeries" 
                                                             icon="fa fa-briefcase"
                                                             action="#{billBhtController.navigateToAddServicesFromAdmissionProfile}"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener
-                                                                value="#{admissionController.current}"
-                                                                target="#{billBhtController.patientEncounter}"/>
                                                         </p:commandButton>
+                                                        
                                                         <p:commandButton 
                                                             value="Add Timed Service"
                                                             icon="fa fa-clock"
                                                             ajax="false"
                                                             action="/theater/inward_timed_service_consume_surgery?faces-redirect=true"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener
-                                                                value="#{admissionController.current}"
-                                                                target="#{surgeryBillController.surgeryBill.patientEncounter}"
-                                                                />
                                                         </p:commandButton>
+                                                        
                                                         <p:commandButton 
                                                             ajax="false"
                                                             value="Professional Fee"
                                                             icon="fa fa-briefcase"
                                                             action="/theater/inward_bill_surgery_professional?faces-redirect=true"
                                                             class="w-100">
-                                                            <f:setPropertyActionListener
-                                                                value="#{admissionController.current}" target="#{billBhtController.patientEncounter}" />
                                                         </p:commandButton>
                                                     </div>
                                                 </p:panel>

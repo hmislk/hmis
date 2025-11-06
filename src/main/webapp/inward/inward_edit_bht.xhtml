@@ -31,10 +31,9 @@
                                             <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                                 <p:commandButton 
                                                     value="Back to WorkBench" 
-                                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
-                                                    style="float: right;"
+                                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                                     ajax="false"
-                                                    class="ui-button-warning"
+                                                    class="ui-button-operating-theatre"
                                                     icon="fa fa-arrow-left">
                                                 </p:commandButton>
                                             </h:panelGroup>
@@ -138,8 +137,8 @@
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                         <p:commandButton 
                                             value="Back to WorkBench" 
+                                            ajax="false"
                                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
-                                            style="float: right;"
                                             class="ui-button-operating-theatre"
                                             icon="fa fa-arrow-left">
                                         </p:commandButton>
