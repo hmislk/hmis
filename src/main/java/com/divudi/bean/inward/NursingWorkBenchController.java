@@ -1,70 +1,29 @@
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.AppointmentController;
-import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
-
-import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.dataStructure.PaymentMethodData;
-import com.divudi.core.data.dataStructure.YearMonthDay;
-import com.divudi.core.data.inward.AdmissionStatus;
-import com.divudi.core.data.inward.AdmissionTypeEnum;
-
-import com.divudi.core.entity.Appointment;
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.Doctor;
-import com.divudi.core.entity.EncounterCreditCompany;
-import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.Person;
 import com.divudi.core.entity.inward.Admission;
-import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.AdmissionFacade;
-import com.divudi.core.facade.AppointmentFacade;
-import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
-import com.divudi.core.facade.PatientFacade;
-import com.divudi.core.facade.PatientRoomFacade;
-import com.divudi.core.facade.PersonFacade;
-import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
-import com.divudi.core.data.BillType;
-import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dto.PatientRoomDTO;
-import com.divudi.core.entity.Department;
-import com.divudi.core.entity.Staff;
-import com.divudi.core.entity.clinical.ClinicalFindingValue;
-import com.divudi.core.entity.inward.AdmissionType;
-import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.entity.inward.Room;
-import com.divudi.core.facade.ClinicalFindingValueFacade;
-import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
-import kotlin.collections.ArrayDeque;
-import org.primefaces.event.TabChangeEvent;
 
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
@@ -80,37 +39,63 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
     private AdmissionFacade admissionFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
-    
-    
+
     @Inject
     RoomController roomController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    SessionController sessionController;
+    @Inject
+    RoomChangeController roomChangeController;
+    @Inject
+    BillBhtController billBhtController;
+    @Inject
+    InwardAdditionalChargeController inwardAdditionalChargeController;
+    @Inject
+    InwardProfessionalBillController inwardProfessionalBillController;
+    @Inject
+    InwardTimedItemController inwardTimedItemController;
+    @Inject
+    SurgeryBillController surgeryBillController;
 
     private List<PatientRoomDTO> roomList;
     private List<PatientRoomDTO> bhtList;
-    
-    
+
+    public void clearData() {
+        inwardProfessionalBillController.setBatchBill(null);
+        inwardProfessionalBillController.getCurrent().setPatientEncounter(null);
+        inwardTimedItemController.setBatchBill(null);
+        inwardTimedItemController.getCurrent().setPatientEncounter(null);
+        surgeryBillController.getSurgeryBill().setPatientEncounter(null);
+        inwardAdditionalChargeController.getCurrent().setPatientEncounter(null);
+        billBhtController.setPatientEncounter(null);
+        admissionController.setCurrent(null);
+        roomChangeController.setCurrent(null);
+    }
+
     public String navigateToAdmissionProfilePage(Long admissionId) {
         Admission admission = (Admission) patientEncounterFacade.find(admissionId);
-        
-        if(admission == null){
+
+        if (admission == null) {
             JsfUtil.addErrorMessage("No Admission Found");
             return "";
         }
-        
         admissionController.setCurrent(admission);
         return admissionController.navigateToAdmissionProfilePage();
     }
-    
-    
+
     public String navigatetoNursingWorkBench() {
+        clearData(); // clear data
         getPatientRooms(); // Load Room Details
         getPatientEncounter(); // Load BHT Details
         return "/nurse/index?faces-redirect=true";
     }
-    
+
     public String navigateToBackNursingWorkBench() {
+        clearData();
         return "/nurse/index?faces-redirect=true";
     }
 
@@ -118,7 +103,7 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
 
         roomList = new ArrayList<>();
         List<Room> rooms = roomController.getItems();
-        
+
         for (Room r : rooms) {
             PatientEncounter p = null;
             PatientRoomDTO prDTO = new PatientRoomDTO();
@@ -154,10 +139,10 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
 
         return current;
     }
-    
+
     public List<PatientRoomDTO> getPatientEncounter() {
         bhtList = new ArrayList<>();
-        
+
         String jpql = "select new com.divudi.core.data.dto.PatientRoomDTO( p.id, p.bhtNo, p.currentPatientRoom.roomFacilityCharge.room.name ) "
                 + "from PatientEncounter p "
                 + " where p.discharged =:discharged "
@@ -168,12 +153,6 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
 
         bhtList = patientEncounterFacade.findLightsByJpql(jpql, params);
 
-        if(bhtList == null || bhtList.isEmpty()){
-            System.out.println("No BHT Found");
-        }else{
-            System.out.println(bhtList.size() + " BHT Found");
-        }
-        
         return bhtList;
     }
 
