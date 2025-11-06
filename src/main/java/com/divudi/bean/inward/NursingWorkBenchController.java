@@ -33,7 +33,7 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class NursingWorkBenchController implements Serializable, ControllerWithPatient {
+public class NursingWorkBenchController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -69,7 +69,6 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     SearchController searchController;
-
 
     private List<PatientRoomDTO> roomList;
     private List<PatientRoomDTO> bhtList;
@@ -116,7 +115,10 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
 
         roomList = new ArrayList<>();
         List<Room> rooms = roomController.getItems();
-
+        if (rooms == null) {
+            return roomList;
+        }
+        
         for (Room r : rooms) {
             PatientEncounter p = null;
             PatientRoomDTO prDTO = new PatientRoomDTO();
@@ -128,7 +130,7 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
                 prDTO.setCurrentRoomNo(r.getName());
                 prDTO.setInPatient(Boolean.TRUE);
             } else {
-                prDTO.setAdmissionId(0L);
+                prDTO.setAdmissionId(null);
                 prDTO.setBhtNo("N/A");
                 prDTO.setCurrentRoomNo(r.getName());
                 prDTO.setInPatient(Boolean.FALSE);
@@ -167,46 +169,6 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
         bhtList = patientEncounterFacade.findLightsByJpql(jpql, params);
 
         return bhtList;
-    }
-
-    @Override
-    public Patient getPatient() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setPatient(Patient patient) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isPatientDetailsEditable() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void toggalePatientEditable() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public PaymentMethod getPaymentMethod() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void listnerForPaymentMethodChange() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public List<PatientRoomDTO> getRoomList() {
@@ -252,9 +214,11 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
             if (value == null) {
                 return null;
             }
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
         String getStringKey(java.lang.Long value) {
@@ -276,7 +240,7 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + NursingWorkBenchController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Admission.class.getName());
             }
         }
     }

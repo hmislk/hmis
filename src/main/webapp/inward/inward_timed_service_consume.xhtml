@@ -152,7 +152,7 @@
                             <in:bhtDetail admission="#{inwardTimedItemController.current.patientEncounter}"/>
                         </p:panel>
                     </div>
-                    
+
                     <div class="col-6">
                         <p:panel header="">
                             <f:facet name="header">
@@ -169,13 +169,13 @@
                                         <p:autoComplete 
                                             class="mx-2" 
                                             id="it" 
-                                            forceSelection="false" 
-                                                        value="#{inwardTimedItemController.current.item}"
-                                                        completeMethod="#{timedItemController.completeTimedService}" 
-                                                        var="ix" 
-                                                        itemLabel="#{ix.name}" 
-                                                        itemValue="#{ix}" 
-                                                        size="40" >
+                                            forceSelection="true" 
+                                            value="#{inwardTimedItemController.current.item}"
+                                            completeMethod="#{timedItemController.completeTimedService}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" 
+                                            size="40" >
                                             <p:column headerText="Service">
                                                 <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                                             </p:column>
@@ -231,18 +231,18 @@
                         <p:column headerText="Start Time">
                             <p:datePicker 
                                 showTime="true"
-                                          timeInput="true" 
-                                          value="#{ti.fromTime}" 
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                timeInput="true" 
+                                value="#{ti.fromTime}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:datePicker>      
 
                         </p:column>                               
                         <p:column headerText="Stopped Time">
                             <p:datePicker 
                                 showTime="true"
-                                          timeInput="true"  
-                                          value="#{ti.toTime}" 
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                timeInput="true"  
+                                value="#{ti.toTime}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:datePicker> 
                         </p:column>
                         <p:column headerText="Total" styleClass="averageNumericColumn">

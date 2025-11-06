@@ -104,8 +104,8 @@
                                         ajax="false"
                                         icon="fa fa-id-card"
                                         class="ui-button-secondary" 
-                                        action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                        ><f:setPropertyActionListener 
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                        <f:setPropertyActionListener 
                                             target="#{admissionController.current.patient}" 
                                             value="#{inwardProfessionalBillController.current.patient}" >
                                         </f:setPropertyActionListener>
