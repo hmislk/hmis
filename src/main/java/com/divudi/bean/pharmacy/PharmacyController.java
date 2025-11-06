@@ -3020,6 +3020,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Category Wise Report");
@@ -3107,10 +3110,11 @@ public class PharmacyController implements Serializable {
             }
 
             workbook.write(out);
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-
+            context.responseComplete();
         }
     }
 
@@ -3120,6 +3124,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.pdf");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -3195,9 +3202,11 @@ public class PharmacyController implements Serializable {
             document.add(table);
 
             document.close();
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -3207,6 +3216,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Consumption Report");
@@ -3286,10 +3298,12 @@ public class PharmacyController implements Serializable {
             }
 
             workbook.write(out);
+            out.flush();
             context.responseComplete();
 
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -3299,6 +3313,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.pdf");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -3359,9 +3376,11 @@ public class PharmacyController implements Serializable {
 
             document.add(table);
             document.close();
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
