@@ -107,6 +107,10 @@ public enum Privileges {
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Nurse">
+    NursingWorkBench("Nursing Work Bench"),
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
@@ -970,6 +974,9 @@ public enum Privileges {
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
                 return "Approval";
+            
+            case NursingWorkBench:
+                return "Nursing Work Bench";
                 
             default:
                 return this.toString();
