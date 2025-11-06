@@ -37,7 +37,7 @@
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueForRequestsController.onEditDepartmentTransfer(bItm)}" /> 
 
                                 <p:column headerText="Item Name" width="10em">
-                                    <div style="min-width: 5em; display: flex; align-items: center;">
+                                    <div style="min-width: 10em; display: flex; align-items: center;">
 
                                         <h:outputText id="item" value="#{bItm.item.name}" />
 
@@ -74,8 +74,8 @@
 
                                 <p:column
                                     class="text-warning"
-                                    headerText="Reuested Qty" 
-                                    width="3em">
+                                    headerText="Requested Qty" 
+                                    width="4em">
                                     <h:outputLabel 
                                         value="#{bItm.referanceBillItem.qty}"
                                         />                        
@@ -89,7 +89,7 @@
                                 <p:column 
                                     headerText="Remaining Qty" 
                                     class="text-danger"
-                                    width="3em">
+                                    width="4em">
                                     <h:outputLabel value="#{bItm.referanceBillItem.qty - bItm.referanceBillItem.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
 
