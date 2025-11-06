@@ -1905,14 +1905,14 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProBillFee(temBi);
-                temProfFee += cit.getTotal();
+                temProfFee += cit.getAdjustedTotal();
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProBillFeeForDocAndNeurses(temBi);;
                     }
                 }
-                temHosFee += cit.getTotal();
+                temHosFee += cit.getAdjustedTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
@@ -1946,14 +1946,14 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProTempBillFee(temBi);
-                temProfFee += cit.getTotal();
+                temProfFee += cit.getAdjustedTotal();
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProTempBillFeeForDocAndNeurses(temBi);;
                     }
                 }
-                temHosFee += cit.getTotal();
+                temHosFee += cit.getAdjustedTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
@@ -1989,9 +1989,9 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProBillFee(temBi);
-                temProfFee += cit.getTotal();
+                temProfFee += cit.getAdjustedTotal();
             } else {
-                temHosFee += cit.getTotal();
+                temHosFee += cit.getAdjustedTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {

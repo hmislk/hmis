@@ -9,30 +9,69 @@
     <ui:define name="subcontent">
         <h:form enctype="multipart/form-data">
             <p:panel>
-            <h:outputLabel value="Import Pharmaceutical Items" ></h:outputLabel>
-            <p>Please make sure the following order of Columns.</p>
-            <p>Leave First Row for Row Headings.</p>
-            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
-            <p:panelGrid columns="14" style="border: 1px solid blue;" layout="tabular">
-                <h:outputLabel value ="0. No(Optional)" ></h:outputLabel>
-                <h:outputLabel value ="1. Category"></h:outputLabel>
-                <h:outputLabel value ="2. Product " ></h:outputLabel>
-                <h:outputLabel value ="3. Code" ></h:outputLabel>
-                <h:outputLabel value ="4. Bar Code" ></h:outputLabel>
-                <h:outputLabel value ="5. Generic Name" ></h:outputLabel>
-                <h:outputLabel value ="6. Strength" ></h:outputLabel>
-                <h:outputLabel value ="7. Strength Unit" ></h:outputLabel>
-                <h:outputLabel value ="8. Pack Size" ></h:outputLabel>
-                <h:outputLabel value ="9. Issue Unit" ></h:outputLabel>
-                <h:outputLabel value ="10. Pack Unit" ></h:outputLabel>
-                <h:outputLabel value ="11. Distributor" ></h:outputLabel>
-                <h:outputLabel value ="12. Manufacturer" ></h:outputLabel>
-                <h:outputLabel value ="13. Importer" ></h:outputLabel>
-            </p:panelGrid>
+                <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+                <p:commandButton ajax="false" value="Submit"
+                                 action="#{pharmacyItemExcelManager.importToExcel}"/>
 
-            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
-            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcel}"/>
-            
+                <p:panel header="Import Pharmaceutical Items" >
+                    <h:outputLabel value="Instructions" ></h:outputLabel>
+                    <p:panel >
+                        <h:outputText value="Import Pharmaceutical Items" />
+                        <p>Please make sure the following order of Columns in the uploading Excel File.</p>
+                        <p>Leave First Row for Row Headings.</p>
+
+                        <p>Please make sure all the names and categories are NOT empty.</p>
+                        <p >Use only *.xlsx files. <b><i>NOT</i> xls files.</b></p>
+                    </p:panel>
+
+                </p:panel>
+
+                <p:panel header="Excel Column Format" styleClass="p-2">
+                    <h:panelGrid columns="2" styleClass="table table-sm table-bordered w-100 text-start">
+                        <h:outputText value="A" />
+                        <h:outputText value="Serial No" />
+
+                        <h:outputText value="B" />
+                        <h:outputText value="Category" />
+
+                        <h:outputText value="C" />
+                        <h:outputText value="Product" />
+
+                        <h:outputText value="D" />
+                        <h:outputText value="Code" />
+
+                        <h:outputText value="E" />
+                        <h:outputText value="Bar Code" />
+
+                        <h:outputText value="F" />
+                        <h:outputText value="Generic Name" />
+
+                        <h:outputText value="G" />
+                        <h:outputText value="Strength" />
+
+                        <h:outputText value="H" />
+                        <h:outputText value="Strength Unit" />
+
+                        <h:outputText value="I" />
+                        <h:outputText value="Pack Size" />
+
+                        <h:outputText value="J" />
+                        <h:outputText value="Issue Unit" />
+
+                        <h:outputText value="K" />
+                        <h:outputText value="Pack Unit" />
+
+                        <h:outputText value="L" />
+                        <h:outputText value="Distributor" />
+
+                        <h:outputText value="M" />
+                        <h:outputText value="Manufacturer" />
+
+                        <h:outputText value="N" />
+                        <h:outputText value="Importer" />
+                    </h:panelGrid>
+                </p:panel>
+
             </p:panel>
         </h:form>
 

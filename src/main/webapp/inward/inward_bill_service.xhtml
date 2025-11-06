@@ -18,9 +18,25 @@
                     <h:panelGroup>
                         <p:panel >
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
-                                <p:outputLabel value="Patient Details" class="m-2"/>
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
+                                        <p:outputLabel value="Patient Details" class="m-2"/>
+                                    </div>
+                                    <div>
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <p:commandButton 
+                                                value="Back to WorkBench" 
+                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                                ajax="false"
+                                                class="ui-button-operating-theatre"
+                                                icon="fa fa-arrow-left">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
                             </f:facet>
+
                             <div>
                                 <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
 
@@ -73,69 +89,73 @@
                 <p:panel>
                     <f:facet name="header">
                         <div class="d-flex justify-content-between">
-                            <div >
+                            <div>
                                 <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" />
                                 <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
                             </div>
-                            <div class="d-flex justify-content-end align-items-center" >
-                                <h:panelGrid columns="4">
-                                    <p:commandButton
-                                        class="w-100 ui-button-warning"
-                                        action="#{billBhtController.resetBillData}"
-                                        style="float: right"
-                                        icon="fa fa-plus"
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    class="ui-button-warning"
+                                    action="#{billBhtController.resetBillData}"
+                                    icon="fa fa-plus"
+                                    ajax="false"
+                                    value="New Bill" >
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    class="ui-button-secondary"
+                                    value="Go To Add Outside"
+                                    ajax="false"
+                                    icon="fa fa-plus"
+                                    action="/inward/inward_bill_outside_charge?faces-redirect=true" >
+                                </p:commandButton>
+
+                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Search Patients"
+                                            icon="fa fa-search"
+                                            class="ui-button-warning "
+                                            action="#{patientController.navigateToSearchPatients()}"
+                                            >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Patient Profile"
+                                            icon="fa fa-user"
+                                            class="ui-button-success"
+                                            action="#{patientController.navigateToOpdPatientProfile()}"
+                                            >
+                                            <f:setPropertyActionListener
+                                                value="#{billBhtController.patientEncounter.patient}"
+                                                target="#{patientController.current}" >
+                                            </f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Inpatient Dashboard"
+                                            icon="fa fa-id-card"
+                                            class="ui-button-secondary"
+                                            action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                            >
+                                            <f:setPropertyActionListener
+                                                value="#{billBhtController.patientEncounter}"
+                                                target="#{admissionController.current}" >
+                                            </f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton 
+                                        value="Back to WorkBench" 
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                         ajax="false"
-                                        value="New Bill" />
-                                    <p:spacer width="5"/>
-                                    <p:commandButton
-                                        class="w-100 ui-button-secondary"
-                                        value="Go To Add Outside"
-                                        ajax="false"
-                                        icon="fa fa-arrow-right"
-                                        style="float: right"
-                                        action="/inward/inward_bill_outside_charge" />
-                                    <p:spacer width="5"/>
-                                </h:panelGrid>
-                                <p:spacer width="35"/>
-                                <h:panelGrid columns="5">
-                                    <p:commandButton
-                                        style="float: right;"
-                                        ajax="false"
-                                        value="Search Patients"
-                                        icon="fa fa-search"
-                                        class="ui-button-warning "
-                                        action="#{patientController.navigateToSearchPatients()}"
-                                        >
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
                                     </p:commandButton>
-                                    <p:spacer width="5"/>
-                                    <p:commandButton
-                                        style="float: right;"
-                                        ajax="false"
-                                        value="Patient Profile"
-                                        icon="fa fa-user"
-                                        class="ui-button-success"
-                                        action="#{patientController.navigateToOpdPatientProfile()}"
-                                        >
-                                        <f:setPropertyActionListener
-                                            value="#{billBhtController.patientEncounter.patient}"
-                                            target="#{patientController.current}" >
-                                        </f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:spacer width="5"/>
-                                    <p:commandButton
-                                        style="float: right;"
-                                        ajax="false"
-                                        value="Inpatient Dashboard"
-                                        icon="fa fa-id-card"
-                                        class="ui-button-secondary"
-                                        action="#{bhtSummeryController.navigateToInpatientProfile()}"
-                                        >
-                                        <f:setPropertyActionListener
-                                            value="#{billBhtController.patientEncounter}"
-                                            target="#{admissionController.current}" >
-                                        </f:setPropertyActionListener>
-                                    </p:commandButton>
-                                </h:panelGrid>
+                                </h:panelGroup>
                             </div>
                         </div>
                     </f:facet>
@@ -223,7 +243,7 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
-                                                
+
                                                 <div class="row">
 
                                                     <h:panelGroup  rendered="#{billBhtController.inwardItemDepartments ne null}" id="departments">
@@ -248,7 +268,7 @@
                                                             </div>
                                                         </div>
                                                     </h:panelGroup>
-                                                    
+
                                                     <div class="row mt-1 mb-2 mx-1">
                                                         <div class="col-3">
                                                             <h:outputLabel value="Investigation or Service"/>

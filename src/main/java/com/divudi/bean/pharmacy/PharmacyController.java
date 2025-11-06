@@ -223,6 +223,13 @@ public class PharmacyController implements Serializable {
     private double totalCashSaleValue;
     private double totalCostValue;
     private double totalRetailValue;
+    private double totalNetTotal;
+    private double totalCashNetTotal;
+    private double totalCreditNetTotal;
+    private double totalGrnNetTotal;
+    private double totalReturnAmount;
+    private double totalActualNetValue;
+    private double totalNetValueAdjustment;
     private double billTablePurchaseTotal;
     private double billTableRetailTotal;
     private double billTableCostTotal;
@@ -477,13 +484,13 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
     }
 
-    public String navigateToVariantCategoryStockByItem() {
-        return "/pharmacy/pharmacy_variant_category_stock_by_item?faces-redirect=true";
-    }
+//    public String navigateToVariantCategoryStockByItem() {
+//        return "/pharmacy/pharmacy_variant_category_stock_by_item?faces-redirect=true";
+//    }
 
-    public String navigateToVariantAdjustmentPreList() {
-        return "/pharmacy/pharmacy_variant_ajustment_pre_list?faces-redirect=true";
-    }
+//    public String navigateToVariantAdjustmentPreList() {
+//        return "/pharmacy/pharmacy_variant_ajustment_pre_list?faces-redirect=true";
+//    }
 
     public String navigateToImporters() {
         importerController.getItems();
@@ -1032,6 +1039,109 @@ public class PharmacyController implements Serializable {
                 calculateTotals(bills);
             }
         }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void generateGrnReturnVarianceReport() {
+        reportTimerController.trackReportExecution(() -> {
+            resetFields();
+
+            List<BillTypeAtomic> bta = new ArrayList<>();
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+
+            bills = new ArrayList<>();
+
+            String jpql = "SELECT b FROM Bill b "
+                    + " WHERE b.retired = false"
+                    + " and b.cancelled = false"
+                    + " and b.completed = true"
+                    + " and b.billTypeAtomic In :btas"
+                    + " and b.createdAt between :fromDate and :toDate";
+
+            Map<String, Object> params = new HashMap<>();
+
+            params.put("btas", bta);
+            params.put("fromDate", getFromDate());
+            params.put("toDate", getToDate());
+
+            if (institution != null) {
+                jpql += " and b.institution = :fIns";
+                params.put("fIns", institution);
+            }
+
+            if (site != null) {
+                jpql += " and b.department.site = :site";
+                params.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql += " and b.department = :dept";
+                params.put("dept", dept);
+            }
+
+            if (paymentMethod != null) {
+                jpql += " and b.paymentMethod = :pm";
+                params.put("pm", paymentMethod);
+            }
+
+            if (fromInstitution != null) {
+                jpql += " AND (b.fromInstitution = :supplier OR b.toInstitution = :supplier)";
+                params.put("supplier", fromInstitution);
+            }
+
+            jpql += " order by b.id desc";
+
+            try {
+                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage(e, " Something Went Wrong!");
+            }
+
+            calculateGrnReturnVarianceTotals(bills);
+        }, InventoryReports.GRN_RETURN_VARIANCE_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void calculateGrnReturnVarianceTotals(List<Bill> billList) {
+        totalGrnNetTotal = 0.0;
+        totalReturnAmount = 0.0;
+        totalActualNetValue = 0.0;
+        totalNetValueAdjustment = 0.0;
+
+        // Track unique GRN IDs to avoid double-counting when multiple returns reference the same GRN
+        Set<Long> processedGrnIds = new HashSet<>();
+
+        for (Bill bill : billList) {
+            // GRN Net Total (from reference bill) - only count each unique GRN once
+            if (bill.getReferenceBill() != null) {
+                Long grnId = bill.getReferenceBill().getId();
+                if (grnId != null && !processedGrnIds.contains(grnId)) {
+                    totalGrnNetTotal += bill.getReferenceBill().getNetTotal();
+                    processedGrnIds.add(grnId);
+                }
+            }
+
+            // Return Amount - apply negative sign for returns (following existing pattern)
+            double returnAmount = 0.0;
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetTotal() != null) {
+                returnAmount = bill.getBillFinanceDetails().getNetTotal().doubleValue();
+            } else {
+                returnAmount = bill.getNetTotal();
+            }
+            // Make negative if positive (returns should be negative in accounting)
+            totalReturnAmount += returnAmount > 0.0 ? -returnAmount : returnAmount;
+
+            // Actual Net Value - apply negative sign for returns
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getActualNetValue() != null) {
+                double actualNetValue = bill.getBillFinanceDetails().getActualNetValue().doubleValue();
+                totalActualNetValue += actualNetValue > 0.0 ? -actualNetValue : actualNetValue;
+            }
+
+            // Net Value Adjustment - apply negative sign for returns
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetValueAdjustment() != null) {
+                double netValueAdjustment = bill.getBillFinanceDetails().getNetValueAdjustment().doubleValue();
+                totalNetValueAdjustment += netValueAdjustment > 0.0 ? -netValueAdjustment : netValueAdjustment;
+            }
+        }
     }
 
     public static String formatDate(Date date) {
@@ -3017,6 +3127,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Category Wise Report");
@@ -3104,10 +3217,11 @@ public class PharmacyController implements Serializable {
             }
 
             workbook.write(out);
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-
+            context.responseComplete();
         }
     }
 
@@ -3117,6 +3231,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.pdf");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -3192,9 +3309,11 @@ public class PharmacyController implements Serializable {
             document.add(table);
 
             document.close();
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -3204,6 +3323,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Consumption Report");
@@ -3283,10 +3405,12 @@ public class PharmacyController implements Serializable {
             }
 
             workbook.write(out);
+            out.flush();
             context.responseComplete();
 
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -3296,6 +3420,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.pdf");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -3356,9 +3483,11 @@ public class PharmacyController implements Serializable {
 
             document.add(table);
             document.close();
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -3498,6 +3627,9 @@ public class PharmacyController implements Serializable {
         totalCashSaleValue = 0.0;
         totalCashCostValue = 0.0;
         totalCreditCostValue = 0.0;
+        totalNetTotal = 0.0;
+        totalCashNetTotal = 0.0;
+        totalCreditNetTotal = 0.0;
 
         for (Bill bill : billList) {
             // Get values directly from bill - use as-is from database
@@ -3520,46 +3652,69 @@ public class PharmacyController implements Serializable {
                         : 0.0;
             }
 
-            // Check payment method
-            if (bill.getPaymentMethod() == null) {
-                Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING,
-                        "Bill {0} has no payment method", bill.getId());
-                continue;
+            // Determine the correct payment method to use
+            // For return/refund/cancellation bills, use the original bill's payment method
+            PaymentMethod paymentMethod = null;
+            if (bill.getReferenceBill() != null) {
+                // This is a return/refund/cancellation bill - use reference bill's payment method
+                paymentMethod = bill.getReferenceBill().getPaymentMethod();
+            } else {
+                // Regular bill - use its own payment method
+                paymentMethod = bill.getPaymentMethod();
             }
 
+            // If payment method is still null, log warning and treat as non-credit (cash/other)
+            if (paymentMethod == null) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING,
+                        "Bill {0} has no payment method (treating as non-credit)", bill.getId());
+            }
+
+            // Get net total value
+            double netTotal = bill.getNetTotal();
+
             // Separate by Credit vs non-Credit (Cash and others)
-            if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+            // Treat null payment method as non-credit (cash/other)
+            if (paymentMethod == PaymentMethod.Credit) {
                 totalCreditPurchaseValue += purchaseValue;
                 totalCreditSaleValue += saleValue;
                 totalCreditCostValue += costValue;
+                totalCreditNetTotal += netTotal;
             } else {
                 // All non-credit payments (Cash, Card, Cheque, etc.) go to "Cash" totals
+                // This includes null payment methods
                 totalCashPurchaseValue += purchaseValue;
                 totalCashSaleValue += saleValue;
                 totalCashCostValue += costValue;
+                totalCashNetTotal += netTotal;
             }
 
             // Add to overall totals
             totalPurchase += purchaseValue;
             totalSaleValue += saleValue;
             totalCostValue += costValue;
+            totalNetTotal += netTotal;
         }
 
         // Add summary rows
-        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue, totalCashCostValue);
-        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue, totalCreditCostValue);
-        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue);
+        addIfNotZero(data, "Final Cash Total", totalCashPurchaseValue, totalCashSaleValue, totalCashCostValue, totalCashNetTotal);
+        addIfNotZero(data, "Final Credit Total", totalCreditPurchaseValue, totalCreditSaleValue, totalCreditCostValue, totalCreditNetTotal);
+        addIfNotZero(data, "Final Net Total", totalPurchase, totalSaleValue, totalCostValue, totalNetTotal);
 
         return data;
     }
 
     private void addIfNotZero(List<String1Value1> data, String label, double value, double value2, double value3) {
-        if (value != 0 || value2 != 0 || value3 != 0) {
+        addIfNotZero(data, label, value, value2, value3, 0.0);
+    }
+
+    private void addIfNotZero(List<String1Value1> data, String label, double value, double value2, double value3, double value4) {
+        if (value != 0 || value2 != 0 || value3 != 0 || value4 != 0) {
             String1Value1 entry = new String1Value1();
             entry.setString(label);
             entry.setValue(value);
             entry.setValue2(value2);
             entry.setValue3(value3);
+            entry.setValue4(value4);
             data.add(entry);
         }
     }
@@ -3677,14 +3832,20 @@ public class PharmacyController implements Serializable {
                 return;
             }
 
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             if ("issue".equals(transferType)) {
                 bt = BillType.PharmacyTransferIssue;
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             } else {
                 bt = BillType.PharmacyTransferReceive;
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
             }
 
             if ("summeryReport".equals(reportType)) {
-                generateReportAsSummary(bt);
+                generateReportAsSummary(billTypeAtomics);
 
             } else if ("detailReport".equals(reportType)) {
                 generateReportByBillItems(bt);
@@ -4175,64 +4336,218 @@ public class PharmacyController implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    public void generateReportAsSummary(BillType billType) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT b.department.name, SUM(b.netTotal), SUM(b.billFinanceDetails.totalCostValue) ");
-        if ("issue".equals(transferType)) {
-            sql.append(", SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.netTotal ELSE 0 END) ");
+    public void generateReportAsSummary(List<BillTypeAtomic> billTypeAtomics) {
+        departmentSummaries = new ArrayList<>();
+
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
+            return;
         }
-        sql.append("FROM Bill b ")
-                .append("WHERE b.retired = false ")
-                .append("AND b.billType = :billType ")
-                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("billType", billType);
-        parameters.put("fromDate", getFromDate());
-        parameters.put("toDate", getToDate());
+        StringBuilder sql = new StringBuilder();
+
+        // Select all department information plus aggregate values
+        sql.append("SELECT ")
+                .append("b.department.name, ")
+                .append("b.fromDepartment.name, ")
+                .append("b.toDepartment.name, ")
+                .append("SUM(b.billFinanceDetails.totalPurchaseValue), ")
+                .append("SUM(b.billFinanceDetails.totalCostValue), ")
+                .append("SUM(b.billFinanceDetails.totalRetailSaleValue) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billTypeAtomic IN :btAtomics ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        parameters.put("fromDate", fromDate);
+        parameters.put("toDate", toDate);
+        parameters.put("btAtomics", billTypeAtomics);
 
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        sql.append(" GROUP BY b.department.name ORDER BY SUM(b.netTotal) DESC");
+        // Group by all three department fields to satisfy MySQL ONLY_FULL_GROUP_BY
+        sql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
+        sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
 
         try {
-            List<Object[]> results = getBillFacade().findObjectsArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
-            Map<String, PharmacySummery> departmentMap = new HashMap<>();
-            departmentSummaries = new ArrayList<>();
-            double costTotal = 0.0;
-            double grandTotal = 0.0;
-            double goodInTransistTotal = 0.0;
+            List<Object[]> results = getBillFacade().findAggregates(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            // Create a map to group by main department (issued department)
+            Map<String, PharmacySummery> departmentMap = new LinkedHashMap<>();
+            Map<String, Map<String, List<PharmacySummery>>> departmentDetailsMap = new HashMap<>();
 
             for (Object[] result : results) {
-                String departmentName = (String) result[0];
-                double netTotal = (double) result[1];
-                double costValue = 0.0;
-                if (result[2] != null) {
-                    costValue = netTotal < 0
-                            ? -Math.abs(((BigDecimal) result[2]).doubleValue())
-                            : Math.abs(((BigDecimal) result[2]).doubleValue());
+                String mainDepartment = (String) result[0];        // department.name (main issuing dept)
+                String fromDepartment = (String) result[1];        // fromDepartment.name
+                String toDepartment = (String) result[2];          // toDepartment.name
+                BigDecimal purchaseValue = (BigDecimal) result[3];
+                BigDecimal costValue = (BigDecimal) result[4];
+                BigDecimal retailValue = (BigDecimal) result[5];
+
+                // Use the appropriate department based on transfer type
+                String keyDepartment = "issue".equals(transferType) ? fromDepartment : toDepartment;
+                if (keyDepartment == null) {
+                    keyDepartment = mainDepartment;
                 }
-                grandTotal += netTotal;
-                costTotal += costValue;
+
+                // Create or update main summary entry
+                PharmacySummery mainSummary = departmentMap.get(keyDepartment);
+                if (mainSummary == null) {
+                    mainSummary = new PharmacySummery();
+                    mainSummary.setDepartmentName(keyDepartment);
+                    mainSummary.setIssuedDeptName(keyDepartment);
+                    mainSummary.setTotalPurchaseValue(BigDecimal.ZERO);
+                    mainSummary.setTotalCostValue(BigDecimal.ZERO);
+                    mainSummary.setTotalRetailSaleValue(BigDecimal.ZERO);
+                    mainSummary.setSummeriesMap(new LinkedHashMap<>());
+                    departmentMap.put(keyDepartment, mainSummary);
+                    departmentDetailsMap.put(keyDepartment, new HashMap<>());
+                }
+
+                // Add to main totals
+                if (purchaseValue != null) {
+                    mainSummary.setTotalPurchaseValue(
+                            mainSummary.getTotalPurchaseValue().add(purchaseValue)
+                    );
+                }
+                if (costValue != null) {
+                    mainSummary.setTotalCostValue(
+                            mainSummary.getTotalCostValue().add(costValue)
+                    );
+                }
+                if (retailValue != null) {
+                    mainSummary.setTotalRetailSaleValue(
+                            mainSummary.getTotalRetailSaleValue().add(retailValue)
+                    );
+                }
+
+                // Create detail entry for breakdown
+                PharmacySummery detailSummary = new PharmacySummery();
+                detailSummary.setDepartmentName(mainDepartment);
+                detailSummary.setIssuedDeptName(fromDepartment);
+                detailSummary.setReceivedDeptName(toDepartment);
+                detailSummary.setTotalPurchaseValue(purchaseValue != null ? purchaseValue : BigDecimal.ZERO);
+                detailSummary.setTotalCostValue(costValue != null ? costValue : BigDecimal.ZERO);
+                detailSummary.setTotalRetailSaleValue(retailValue != null ? retailValue : BigDecimal.ZERO);
+
+                // Determine category for grouping details
+                String category;
                 if ("issue".equals(transferType)) {
-                    double goodInTransist = (double) result[3];
-                    goodInTransistTotal += goodInTransist;
-                    departmentSummaries.add(new PharmacySummery(departmentName, netTotal, goodInTransist, costValue));
+                    category = toDepartment != null ? "To: " + toDepartment : "Unknown Destination";
                 } else {
-                    PharmacySummery summary = new PharmacySummery(departmentName, netTotal);
-                    summary.setTotalCost(costValue);
-                    departmentSummaries.add(summary);
-                    departmentMap.put(departmentName, summary);
+                    category = fromDepartment != null ? "From: " + fromDepartment : "Unknown Source";
                 }
+
+                // Add to details map
+                Map<String, List<PharmacySummery>> categoryMap = departmentDetailsMap.get(keyDepartment);
+                List<PharmacySummery> categoryList = categoryMap.get(category);
+                if (categoryList == null) {
+                    categoryList = new ArrayList<>();
+                    categoryMap.put(category, categoryList);
+                }
+                categoryList.add(detailSummary);
             }
 
-            departmentSummaries.add(new PharmacySummery("Total", grandTotal, goodInTransistTotal, costTotal));
+            // Set the summeries map for each main summary
+            for (Map.Entry<String, PharmacySummery> entry : departmentMap.entrySet()) {
+                String dept = entry.getKey();
+                PharmacySummery summary = entry.getValue();
+                summary.setSummeriesMap(departmentDetailsMap.get(dept));
+            }
 
-            if ("receive".equals(transferType)) {
-                generateReportAsSummaryWithGiT(BillType.PharmacyTransferIssue, departmentMap);
+            // Convert to list and add totals row
+            departmentSummaries = new ArrayList<>(departmentMap.values());
+
+            // Calculate and add total row
+            if (!departmentSummaries.isEmpty()) {
+                PharmacySummery totalRow = new PharmacySummery();
+                totalRow.setDepartmentName("Total");
+                totalRow.setIssuedDeptName("Total");
+
+                BigDecimal totalPurchase = BigDecimal.ZERO;
+                BigDecimal totalCost = BigDecimal.ZERO;
+                BigDecimal totalRetail = BigDecimal.ZERO;
+
+                for (PharmacySummery summary : departmentSummaries) {
+                    if (summary.getTotalPurchaseValue() != null) {
+                        totalPurchase = totalPurchase.add(summary.getTotalPurchaseValue());
+                    }
+                    if (summary.getTotalCostValue() != null) {
+                        totalCost = totalCost.add(summary.getTotalCostValue());
+                    }
+                    if (summary.getTotalRetailSaleValue() != null) {
+                        totalRetail = totalRetail.add(summary.getTotalRetailSaleValue());
+                    }
+                }
+
+                totalRow.setTotalPurchaseValue(totalPurchase);
+                totalRow.setTotalCostValue(totalCost);
+                totalRow.setTotalRetailSaleValue(totalRetail);
+                totalRow.setSummeriesMap(new HashMap<>()); // Empty map for total row
+
+                departmentSummaries.add(totalRow);
+            }
+
+            // Calculate GIT amounts
+            calculateGoodInTransitAmounts(billTypeAtomics);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error generating summary report: " + e.getMessage());
+        }
+    }
+
+    private void calculateGoodInTransitAmounts(List<BillTypeAtomic> billTypeAtomics) {
+        // Create a map for quick lookup using combination of all three department names
+        Map<String, PharmacySummery> departmentMap = new HashMap<>();
+        for (PharmacySummery summary : departmentSummaries) {
+            if (!"Total".equals(summary.getDepartmentName())) {
+                String key = summary.getDepartmentName();
+                departmentMap.put(key, summary);
+            }
+        }
+
+        // Calculate GIT amounts
+        StringBuilder gitSql = new StringBuilder();
+        gitSql.append("SELECT ")
+                .append("b.department.name, ")
+//                .append("b.fromDepartment.name, ")
+//                .append("b.toDepartment.name, ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalRetailSaleValue ELSE 0 END) ")
+                .append("FROM Bill b ")
+                .append("WHERE b.retired = false ")
+                .append("AND b.billTypeAtomic IN :btAtomics ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        Map<String, Object> gitParameters = new HashMap<>();
+        gitParameters.put("fromDate", fromDate);
+        gitParameters.put("toDate", toDate);
+        gitParameters.put("btAtomics", billTypeAtomics);
+
+        additionalCommonFilltersForBillEntity(gitSql, gitParameters);
+        gitSql.append(" GROUP BY b.department.name ");
+
+        try {
+            List<Object[]> gitResults = getBillFacade().findObjectsArrayByJpql(gitSql.toString(), gitParameters, TemporalType.TIMESTAMP);
+
+            for (Object[] result : gitResults) {
+                String departmentName = (String) result[0];
+                BigDecimal gitAmountBD = (BigDecimal) result[1];
+                double gitAmount = gitAmountBD != null ? gitAmountBD.doubleValue() : 0.0;
+
+                // Handle null department names
+                if (departmentName == null || departmentName.trim().isEmpty()) {
+                    departmentName = "Unspecified Department";
+                }
+
+                String key = departmentName;
+                PharmacySummery summary = departmentMap.get(key);
+                if (summary != null) {
+                    summary.setGoodInTransistAmount(gitAmount);
+                }
             }
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "Something Went Wrong!");
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error calculating GIT amounts", e);
         }
     }
 
@@ -6152,8 +6467,6 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION); // GRN Cancelled
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        
-        
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
                 + "bi.bill.deptId, "
@@ -6244,8 +6557,6 @@ public class PharmacyController implements Serializable {
 //        BillItem b = new BillItem();
 //        b.getNetValue();
 //        b.getBillItemFinanceDetails().getFreeQuantity();
-        
-        
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyItemPurchaseDTO("
                 + "b.bill.id, "
                 + "b.bill.deptId, "
@@ -6257,8 +6568,8 @@ public class PharmacyController implements Serializable {
                 + "b.billItemFinanceDetails.retailSaleRate, " //  b.getBillItemFinanceDetails().getRetailSaleRate();
                 + "b.billItemFinanceDetails.quantity, " //  b.getBillItemFinanceDetails().getQuantity()
                 + "b.billItemFinanceDetails.freeQuantity, " // b.getBillItemFinanceDetails().getFreeQuantity();
-                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), "  // Use BigDecimal netTotal from finance details, handle null for legacy data
-                + "b.item.name) "  // item name
+                + "COALESCE(b.billItemFinanceDetails.netTotal, 0), " // Use BigDecimal netTotal from finance details, handle null for legacy data
+                + "b.item.name) " // item name
                 + "FROM BillItem b "
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
@@ -6500,7 +6811,7 @@ public class PharmacyController implements Serializable {
         }
 
         jpql += " ORDER BY bi.bill.createdAt DESC ";
-        
+
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets
@@ -7737,6 +8048,62 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCashPurchaseValue(double totalCashPurchaseValue) {
         this.totalCashPurchaseValue = totalCashPurchaseValue;
+    }
+
+    public double getTotalNetTotal() {
+        return totalNetTotal;
+    }
+
+    public void setTotalNetTotal(double totalNetTotal) {
+        this.totalNetTotal = totalNetTotal;
+    }
+
+    public double getTotalCashNetTotal() {
+        return totalCashNetTotal;
+    }
+
+    public void setTotalCashNetTotal(double totalCashNetTotal) {
+        this.totalCashNetTotal = totalCashNetTotal;
+    }
+
+    public double getTotalCreditNetTotal() {
+        return totalCreditNetTotal;
+    }
+
+    public void setTotalCreditNetTotal(double totalCreditNetTotal) {
+        this.totalCreditNetTotal = totalCreditNetTotal;
+    }
+
+    public double getTotalGrnNetTotal() {
+        return totalGrnNetTotal;
+    }
+
+    public void setTotalGrnNetTotal(double totalGrnNetTotal) {
+        this.totalGrnNetTotal = totalGrnNetTotal;
+    }
+
+    public double getTotalReturnAmount() {
+        return totalReturnAmount;
+    }
+
+    public void setTotalReturnAmount(double totalReturnAmount) {
+        this.totalReturnAmount = totalReturnAmount;
+    }
+
+    public double getTotalActualNetValue() {
+        return totalActualNetValue;
+    }
+
+    public void setTotalActualNetValue(double totalActualNetValue) {
+        this.totalActualNetValue = totalActualNetValue;
+    }
+
+    public double getTotalNetValueAdjustment() {
+        return totalNetValueAdjustment;
+    }
+
+    public void setTotalNetValueAdjustment(double totalNetValueAdjustment) {
+        this.totalNetValueAdjustment = totalNetValueAdjustment;
     }
 
     public double getTotalCreditCostValue() {

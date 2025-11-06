@@ -169,7 +169,7 @@
                                     disabled="#{!vmpController.editable}"/>
 
                                 <p:outputLabel for="selStrengthUnit" value="Strength Unit" styleClass="fw-bold"/>
-                                <p:selectOneMenu 
+                                <p:selectOneMenu
                                     id="selStrengthUnit"
                                     value="#{vmpController.current.strengthUnit}"
                                     styleClass="w-100"
@@ -178,10 +178,25 @@
                                     requiredMessage="Strength Unit is required"
                                     disabled="#{!vmpController.editable}">
                                     <f:selectItem itemLabel="-- Select Strength Unit --" itemValue="#{null}"/>
-                                    <f:selectItems 
-                                        value="#{measurementUnitController.items}" 
-                                        var="m" 
-                                        itemValue="#{m}" 
+                                    <f:selectItems
+                                        value="#{measurementUnitController.items}"
+                                        var="m"
+                                        itemValue="#{m}"
+                                        itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="selDoseUnit" value="Dose Unit" styleClass="fw-bold"/>
+                                <p:selectOneMenu
+                                    id="selDoseUnit"
+                                    value="#{vmpController.current.doseUnit}"
+                                    styleClass="w-100"
+                                    filter="true"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Dose Unit --" itemValue="#{null}"/>
+                                    <f:selectItems
+                                        value="#{measurementUnitController.items}"
+                                        var="m"
+                                        itemValue="#{m}"
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
