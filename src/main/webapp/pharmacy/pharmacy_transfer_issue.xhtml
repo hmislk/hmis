@@ -36,8 +36,8 @@
                                 <p:ajax event="rowEdit" listener="#{transferIssueForRequestsController.onEditDepartmentTransfer(bItm)}"  />  
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueForRequestsController.onEditDepartmentTransfer(bItm)}" /> 
 
-                                <p:column headerText="Item Name" style="min-width: 10em;">
-                                    <div style="min-width: 10em; display: flex; align-items: center;">
+                                <p:column headerText="Item Name" width="10em">
+                                    <div style="min-width: 5em; display: flex; align-items: center;">
 
                                         <h:outputText id="item" value="#{bItm.item.name}" />
 
@@ -75,21 +75,21 @@
                                 <p:column
                                     class="text-warning"
                                     headerText="Reuested Qty" 
-                                    width="4em">
+                                    width="3em">
                                     <h:outputLabel 
                                         value="#{bItm.referanceBillItem.qty}"
                                         />                        
                                 </p:column>
                                 <p:column 
                                     class="text-success"
-                                    headerText="Issued Qty" width="4em">
+                                    headerText="Issued Qty" width="3em">
                                     <h:outputLabel 
                                         value="#{bItm.referanceBillItem.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
                                 <p:column 
                                     headerText="Remaining Qty" 
                                     class="text-danger"
-                                    width="80px;">
+                                    width="3em">
                                     <h:outputLabel value="#{bItm.referanceBillItem.qty - bItm.referanceBillItem.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
 
@@ -105,7 +105,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Qty" width="8em" class="text-end">
+                                <p:column headerText="Qty" width="6em" class="text-end">
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.#" />
                                         <p:ajax event="keyup" process="@this"
