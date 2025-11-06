@@ -15,29 +15,36 @@
             <p:growl id="inpatientDashboardGrowl"/>
             <p:panel >
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa fa-id-card"/>
-                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="mt-2"/>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa fa-id-card"/>
+                            <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
+                        </div>
+                        <div>
+                            <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        value="Back to Search Admission" 
+                                        action="#{admissionController.navigateToSearchAdmissions()}"
+                                        ajax="false"
+                                        class="ui-button-warning"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </div>
+                            </h:panelGroup>
 
-                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
-                        <p:commandButton 
-                            value="Back to Search Admission" 
-                            action="#{admissionController.navigateToSearchAdmissions()}"
-                            ajax="false"
-                            class="ui-button-warning"
-                            icon="fa fa-arrow-left">
-                        </p:commandButton>
-                    </h:panelGroup>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                <p:commandButton 
+                                    value="Back to WorkBench" 
+                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                    ajax="false"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </h:panelGroup>
+                        </div>
+                    </div>
 
-                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                        <p:commandButton 
-                            value="Back to WorkBench" 
-                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
-                            ajax="false"
-                            class="ui-button-operating-theatre"
-                            icon="fa fa-arrow-left">
-                        </p:commandButton>
-                    </h:panelGroup>
-                    
                 </f:facet>
                 <div class="row" >
                     <div class="col-3" >
@@ -58,7 +65,7 @@
                                     action="#{admissionController.navigateToEditAdmission}" 
                                     icon="fa fa-edit"
                                     class="w-100 ">
-                                    
+
                                 </p:commandButton>
                                 <p:commandButton 
                                     disabled="#{admissionController.current.discharged eq true}"
