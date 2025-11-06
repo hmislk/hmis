@@ -1037,6 +1037,66 @@ public class PharmacyController implements Serializable {
         }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
     }
 
+    public void generateGrnReturnVarianceReport() {
+        reportTimerController.trackReportExecution(() -> {
+            resetFields();
+
+            List<BillTypeAtomic> bta = new ArrayList<>();
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+
+            bills = new ArrayList<>();
+
+            String jpql = "SELECT b FROM Bill b "
+                    + " WHERE b.retired = false"
+                    + " and b.cancelled = false"
+                    + " and b.completed = true"
+                    + " and b.billTypeAtomic In :btas"
+                    + " and b.createdAt between :fromDate and :toDate";
+
+            Map<String, Object> params = new HashMap<>();
+
+            params.put("btas", bta);
+            params.put("fromDate", getFromDate());
+            params.put("toDate", getToDate());
+
+            if (institution != null) {
+                jpql += " and b.institution = :fIns";
+                params.put("fIns", institution);
+            }
+
+            if (site != null) {
+                jpql += " and b.department.site = :site";
+                params.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql += " and b.department = :dept";
+                params.put("dept", dept);
+            }
+
+            if (paymentMethod != null) {
+                jpql += " and b.paymentMethod = :pm";
+                params.put("pm", paymentMethod);
+            }
+
+            if (fromInstitution != null) {
+                jpql += " AND (b.fromInstitution = :supplier OR b.toInstitution = :supplier)";
+                params.put("supplier", fromInstitution);
+            }
+
+            jpql += " order by b.id desc";
+
+            try {
+                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage(e, " Something Went Wrong!");
+            }
+
+            calculateTotals(bills);
+        }, InventoryReports.GRN_RETURN_VARIANCE_REPORT, sessionController.getLoggedUser());
+    }
+
     public static String formatDate(Date date) {
         if (date == null) {
             return "";
