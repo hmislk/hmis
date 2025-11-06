@@ -89,12 +89,17 @@ public class NursingWorkBenchController implements Serializable {
     }
 
     public String navigateToAdmissionProfilePage(Long admissionId) {
-        Admission admission = (Admission) patientEncounterFacade.find(admissionId);
+        PatientEncounter encounter = patientEncounterFacade.find(admissionId);
 
-        if (admission == null) {
+        if (encounter == null) {
             JsfUtil.addErrorMessage("No Admission Found");
             return "";
         }
+        if (!(encounter instanceof Admission)) {
+            JsfUtil.addErrorMessage("Invalid Admission");
+            return "";
+        }
+        Admission admission = (Admission) encounter;
         admissionController.setCurrent(admission);
         return admissionController.navigateToAdmissionProfilePage();
     }
@@ -118,7 +123,7 @@ public class NursingWorkBenchController implements Serializable {
         if (rooms == null) {
             return roomList;
         }
-        
+
         for (Room r : rooms) {
             PatientEncounter p = null;
             PatientRoomDTO prDTO = new PatientRoomDTO();

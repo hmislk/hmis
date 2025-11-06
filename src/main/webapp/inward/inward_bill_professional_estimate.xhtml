@@ -103,6 +103,7 @@
                                     <p:commandButton
                                         ajax="false"
                                         icon="fa fa-id-card"
+                                        title="View Inpatient Profile"
                                         class="ui-button-secondary" 
                                         action="#{bhtSummeryController.navigateToInpatientProfile()}">
                                         <f:setPropertyActionListener 
@@ -113,12 +114,14 @@
                                     <p:commandButton 
                                         ajax="false"
                                         icon="fa fa-search"
+                                        title="Search Patients"
                                         class="ui-button-warning mx-1" 
                                         action="#{patientController.navigateToSearchPatients()}" >
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false"
                                         icon="fa fa-user"
+                                        title="View OPD Patient Profile"
                                         class="ui-button-warning mx-1" 
                                         action="#{patientController.navigateToOpdPatientProfile()}" >
                                         <f:setPropertyActionListener 
