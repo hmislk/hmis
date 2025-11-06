@@ -582,10 +582,11 @@ public class QuickBookReportController implements Serializable {
             qbf.setQbClass(b.getDepartment().getName());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
             System.out.println("b.getInsId() = " + b.getInsId());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate));
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -639,10 +640,11 @@ public class QuickBookReportController implements Serializable {
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getBilledBill().getDeptId());
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -1107,10 +1109,11 @@ public class QuickBookReportController implements Serializable {
             qbf.setQbClass(b.getDepartment().getName());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
             System.out.println("b.getInsId() = " + b.getInsId());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate));
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -1164,10 +1167,11 @@ public class QuickBookReportController implements Serializable {
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getBilledBill().getDeptId());
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
