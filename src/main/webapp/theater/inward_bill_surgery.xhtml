@@ -82,8 +82,9 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h:outputText styleClass="fa-solid fa-bars-progress fa-lg" />
-                                <h:outputLabel value="Manage Surgeries"/> 
+                                <h:outputLabel value="Manage Surgeries" class="mx-2"/> 
                             </div>
+
                             <div class="d-flex gap-2">
                                 <p:commandButton 
                                     value="Clear All" 
@@ -138,29 +139,7 @@
                             </div>
                         </div>
 
-
-
-
-
-
-
-                        <div class="d-flex justify-content-between align-items-center" style="margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0;">
-
-
-                            <!-- Right aligned items with adjusted vertical spacing -->
-                            <div class="d-flex align-items-center">
-                                <!-- Each button has reduced margin and padding -->
-
-
-
-                            </div>
-                        </div>
                     </f:facet>
-
-
-
-
-
 
 
                     <div class="row">
@@ -191,8 +170,11 @@
                                                 forceSelection="true"
                                                 value="#{surgeryBillController.surgeryBill.procedure.item}" 
                                                 completeMethod="#{procedureController.completeProcedures}"
-                                                var="apt2" itemLabel="#{apt2.name}"
-                                                itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                                var="apt2" 
+                                                itemLabel="#{apt2.name}"
+                                                itemValue="#{apt2}" 
+                                                size="30"  
+                                                style="width: 400px;">
                                             </p:autoComplete>
                                         </div>
                                     </div>
@@ -202,17 +184,13 @@
                                                 value="Add New Surgery" ajax="false" class="w-100 ui-button-success m-2 "
                                                 style="float: right"
                                                 action="#{surgeryBillController.save()}" 
-                                                disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}" />
+                                                disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}" >
+                                            </p:commandButton>
                                         </div>
                                     </div>
 
                                 </div>
-
-
-
-
                             </p:panel>
-
 
                             <p:panel id="pBillDetails"  >
                                 <f:facet name="header">
@@ -229,8 +207,6 @@
 
                         </div>
                     </div>
-
-
 
                     <p:panelGrid columns="1" >
                         <p:panel header="Professional">                        
