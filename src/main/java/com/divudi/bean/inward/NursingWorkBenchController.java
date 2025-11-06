@@ -2,7 +2,10 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
@@ -60,6 +63,13 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
     InwardTimedItemController inwardTimedItemController;
     @Inject
     SurgeryBillController surgeryBillController;
+    @Inject
+    PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    PharmacySaleBhtController pharmacySaleBhtController;
+    @Inject
+    SearchController searchController;
+
 
     private List<PatientRoomDTO> roomList;
     private List<PatientRoomDTO> bhtList;
@@ -74,6 +84,9 @@ public class NursingWorkBenchController implements Serializable, ControllerWithP
         billBhtController.setPatientEncounter(null);
         admissionController.setCurrent(null);
         roomChangeController.setCurrent(null);
+        pharmacyRequestForBhtController.setPatientEncounter(null);
+        pharmacySaleBhtController.setPatientEncounter(null);
+        searchController.setPatientEncounter(null);
     }
 
     public String navigateToAdmissionProfilePage(Long admissionId) {
