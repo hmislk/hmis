@@ -125,7 +125,7 @@
                                              value="Process"
                                              action="#{pharmacyController.generateGrnReturnVarianceReport()}">
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print">
+                            <p:commandButton class="ui-button-primary mx-1" icon="fas fa-print" ajax="false" value="Print">
                                 <p:printer target="varianceTable"/>
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
@@ -148,16 +148,24 @@
 
                             <p:column headerText="Supplier" sortBy="#{b.toInstitution.name}">
                                 <h:outputText value="#{b.toInstitution != null ? b.toInstitution.name : (b.fromInstitution != null ? b.fromInstitution.name : '')}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total" styleClass="fw-bold"/>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="GRN Bill No" sortBy="#{b.referenceBill.deptId}">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.deptId : ''}"/>
                             </p:column>
 
-                            <p:column headerText="GRN Net Total" sortBy="#{b.referenceBill.netTotal}" styleClass="text-right">
+                            <p:column headerText="GRN Net Total" sortBy="#{b.referenceBill.netTotal}" styleClass="text-end">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.netTotal : 0.0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalGrnNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="GRN Date" sortBy="#{b.referenceBill.createdAt}">
@@ -170,22 +178,37 @@
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.paymentMethod : ''}"/>
                             </p:column>
 
-                            <p:column headerText="Return Amount" sortBy="#{b.billFinanceDetails.netTotal}" styleClass="text-right">
+                            <p:column headerText="Return Amount" sortBy="#{b.billFinanceDetails.netTotal}" styleClass="text-end">
                                 <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netTotal != null ? b.billFinanceDetails.netTotal : (b.netTotal != null ? b.netTotal : 0.0)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalReturnAmount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
-                            <p:column headerText="Actual Net Value" sortBy="#{b.billFinanceDetails.actualNetValue}" styleClass="text-right">
+                            <p:column headerText="Actual Net Value" sortBy="#{b.billFinanceDetails.actualNetValue}" styleClass="text-end">
                                 <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.actualNetValue != null ? b.billFinanceDetails.actualNetValue : 0.0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalActualNetValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}" styleClass="text-right">
+                            <p:column headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}" styleClass="text-end">
                                 <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netValueAdjustment != null ? b.billFinanceDetails.netValueAdjustment : 0.0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalNetValueAdjustment}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Return Comments">

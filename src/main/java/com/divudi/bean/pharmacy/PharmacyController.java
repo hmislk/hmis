@@ -226,6 +226,10 @@ public class PharmacyController implements Serializable {
     private double totalNetTotal;
     private double totalCashNetTotal;
     private double totalCreditNetTotal;
+    private double totalGrnNetTotal;
+    private double totalReturnAmount;
+    private double totalActualNetValue;
+    private double totalNetValueAdjustment;
     private double billTablePurchaseTotal;
     private double billTableRetailTotal;
     private double billTableCostTotal;
@@ -1093,8 +1097,39 @@ public class PharmacyController implements Serializable {
                 JsfUtil.addErrorMessage(e, " Something Went Wrong!");
             }
 
-            calculateTotals(bills);
+            calculateGrnReturnVarianceTotals(bills);
         }, InventoryReports.GRN_RETURN_VARIANCE_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void calculateGrnReturnVarianceTotals(List<Bill> billList) {
+        totalGrnNetTotal = 0.0;
+        totalReturnAmount = 0.0;
+        totalActualNetValue = 0.0;
+        totalNetValueAdjustment = 0.0;
+
+        for (Bill bill : billList) {
+            // GRN Net Total (from reference bill)
+            if (bill.getReferenceBill() != null && bill.getReferenceBill().getNetTotal() != null) {
+                totalGrnNetTotal += bill.getReferenceBill().getNetTotal();
+            }
+
+            // Return Amount (netTotal from BillFinanceDetails or Bill)
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetTotal() != null) {
+                totalReturnAmount += bill.getBillFinanceDetails().getNetTotal().doubleValue();
+            } else if (bill.getNetTotal() != null) {
+                totalReturnAmount += bill.getNetTotal();
+            }
+
+            // Actual Net Value
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getActualNetValue() != null) {
+                totalActualNetValue += bill.getBillFinanceDetails().getActualNetValue().doubleValue();
+            }
+
+            // Net Value Adjustment
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetValueAdjustment() != null) {
+                totalNetValueAdjustment += bill.getBillFinanceDetails().getNetValueAdjustment().doubleValue();
+            }
+        }
     }
 
     public static String formatDate(Date date) {
@@ -8025,6 +8060,38 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCreditNetTotal(double totalCreditNetTotal) {
         this.totalCreditNetTotal = totalCreditNetTotal;
+    }
+
+    public double getTotalGrnNetTotal() {
+        return totalGrnNetTotal;
+    }
+
+    public void setTotalGrnNetTotal(double totalGrnNetTotal) {
+        this.totalGrnNetTotal = totalGrnNetTotal;
+    }
+
+    public double getTotalReturnAmount() {
+        return totalReturnAmount;
+    }
+
+    public void setTotalReturnAmount(double totalReturnAmount) {
+        this.totalReturnAmount = totalReturnAmount;
+    }
+
+    public double getTotalActualNetValue() {
+        return totalActualNetValue;
+    }
+
+    public void setTotalActualNetValue(double totalActualNetValue) {
+        this.totalActualNetValue = totalActualNetValue;
+    }
+
+    public double getTotalNetValueAdjustment() {
+        return totalNetValueAdjustment;
+    }
+
+    public void setTotalNetValueAdjustment(double totalNetValueAdjustment) {
+        this.totalNetValueAdjustment = totalNetValueAdjustment;
     }
 
     public double getTotalCreditCostValue() {
