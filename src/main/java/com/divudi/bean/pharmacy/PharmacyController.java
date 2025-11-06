@@ -226,6 +226,10 @@ public class PharmacyController implements Serializable {
     private double totalNetTotal;
     private double totalCashNetTotal;
     private double totalCreditNetTotal;
+    private double totalGrnNetTotal;
+    private double totalReturnAmount;
+    private double totalActualNetValue;
+    private double totalNetValueAdjustment;
     private double billTablePurchaseTotal;
     private double billTableRetailTotal;
     private double billTableCostTotal;
@@ -1035,6 +1039,109 @@ public class PharmacyController implements Serializable {
                 calculateTotals(bills);
             }
         }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void generateGrnReturnVarianceReport() {
+        reportTimerController.trackReportExecution(() -> {
+            resetFields();
+
+            List<BillTypeAtomic> bta = new ArrayList<>();
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+
+            bills = new ArrayList<>();
+
+            String jpql = "SELECT b FROM Bill b "
+                    + " WHERE b.retired = false"
+                    + " and b.cancelled = false"
+                    + " and b.completed = true"
+                    + " and b.billTypeAtomic In :btas"
+                    + " and b.createdAt between :fromDate and :toDate";
+
+            Map<String, Object> params = new HashMap<>();
+
+            params.put("btas", bta);
+            params.put("fromDate", getFromDate());
+            params.put("toDate", getToDate());
+
+            if (institution != null) {
+                jpql += " and b.institution = :fIns";
+                params.put("fIns", institution);
+            }
+
+            if (site != null) {
+                jpql += " and b.department.site = :site";
+                params.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql += " and b.department = :dept";
+                params.put("dept", dept);
+            }
+
+            if (paymentMethod != null) {
+                jpql += " and b.paymentMethod = :pm";
+                params.put("pm", paymentMethod);
+            }
+
+            if (fromInstitution != null) {
+                jpql += " AND (b.fromInstitution = :supplier OR b.toInstitution = :supplier)";
+                params.put("supplier", fromInstitution);
+            }
+
+            jpql += " order by b.id desc";
+
+            try {
+                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage(e, " Something Went Wrong!");
+            }
+
+            calculateGrnReturnVarianceTotals(bills);
+        }, InventoryReports.GRN_RETURN_VARIANCE_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void calculateGrnReturnVarianceTotals(List<Bill> billList) {
+        totalGrnNetTotal = 0.0;
+        totalReturnAmount = 0.0;
+        totalActualNetValue = 0.0;
+        totalNetValueAdjustment = 0.0;
+
+        // Track unique GRN IDs to avoid double-counting when multiple returns reference the same GRN
+        Set<Long> processedGrnIds = new HashSet<>();
+
+        for (Bill bill : billList) {
+            // GRN Net Total (from reference bill) - only count each unique GRN once
+            if (bill.getReferenceBill() != null) {
+                Long grnId = bill.getReferenceBill().getId();
+                if (grnId != null && !processedGrnIds.contains(grnId)) {
+                    totalGrnNetTotal += bill.getReferenceBill().getNetTotal();
+                    processedGrnIds.add(grnId);
+                }
+            }
+
+            // Return Amount - apply negative sign for returns (following existing pattern)
+            double returnAmount = 0.0;
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetTotal() != null) {
+                returnAmount = bill.getBillFinanceDetails().getNetTotal().doubleValue();
+            } else {
+                returnAmount = bill.getNetTotal();
+            }
+            // Make negative if positive (returns should be negative in accounting)
+            totalReturnAmount += returnAmount > 0.0 ? -returnAmount : returnAmount;
+
+            // Actual Net Value - apply negative sign for returns
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getActualNetValue() != null) {
+                double actualNetValue = bill.getBillFinanceDetails().getActualNetValue().doubleValue();
+                totalActualNetValue += actualNetValue > 0.0 ? -actualNetValue : actualNetValue;
+            }
+
+            // Net Value Adjustment - apply negative sign for returns
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetValueAdjustment() != null) {
+                double netValueAdjustment = bill.getBillFinanceDetails().getNetValueAdjustment().doubleValue();
+                totalNetValueAdjustment += netValueAdjustment > 0.0 ? -netValueAdjustment : netValueAdjustment;
+            }
+        }
     }
 
     public static String formatDate(Date date) {
@@ -7965,6 +8072,38 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCreditNetTotal(double totalCreditNetTotal) {
         this.totalCreditNetTotal = totalCreditNetTotal;
+    }
+
+    public double getTotalGrnNetTotal() {
+        return totalGrnNetTotal;
+    }
+
+    public void setTotalGrnNetTotal(double totalGrnNetTotal) {
+        this.totalGrnNetTotal = totalGrnNetTotal;
+    }
+
+    public double getTotalReturnAmount() {
+        return totalReturnAmount;
+    }
+
+    public void setTotalReturnAmount(double totalReturnAmount) {
+        this.totalReturnAmount = totalReturnAmount;
+    }
+
+    public double getTotalActualNetValue() {
+        return totalActualNetValue;
+    }
+
+    public void setTotalActualNetValue(double totalActualNetValue) {
+        this.totalActualNetValue = totalActualNetValue;
+    }
+
+    public double getTotalNetValueAdjustment() {
+        return totalNetValueAdjustment;
+    }
+
+    public void setTotalNetValueAdjustment(double totalNetValueAdjustment) {
+        this.totalNetValueAdjustment = totalNetValueAdjustment;
     }
 
     public double getTotalCreditCostValue() {
