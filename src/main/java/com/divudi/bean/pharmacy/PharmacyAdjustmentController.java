@@ -938,7 +938,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
-    private void savePrAdjustmentBillItems(StockDTO dto, double oldPurchaseRate, double newPurchaseRate,
+    private PharmaceuticalBillItem savePrAdjustmentBillItems(StockDTO dto, double oldPurchaseRate, double newPurchaseRate,
             double purchaseRateChange, double changeValue) {
         BillItem tbi = new BillItem();
         tbi.setBill(getDeptAdjustmentPreBill());
@@ -1072,6 +1072,7 @@ public class PharmacyAdjustmentController implements Serializable {
         } else {
             getBillItemFacade().edit(tbi);
         }
+        return ph;
     }
 
     private double calculateCostRateChange(StockDTO dto) {
@@ -1092,7 +1093,7 @@ public class PharmacyAdjustmentController implements Serializable {
         return true;
     }
 
-    private void saveCrAdjustmentBillItems(StockDTO dto, double oldCostRate, double newCostRate,
+    private PharmaceuticalBillItem saveCrAdjustmentBillItems(StockDTO dto, double oldCostRate, double newCostRate,
             double costRateChange, double changeValue) {
         BillItem tbi = new BillItem();
         tbi.setBill(getDeptAdjustmentPreBill());
@@ -1203,6 +1204,7 @@ public class PharmacyAdjustmentController implements Serializable {
         } else {
             getBillItemFacade().edit(tbi);
         }
+        return ph;
     }
 
     private void deductBeforeAdjustmentItemFromStock() {
@@ -1243,7 +1245,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
-    private void saveRsrAdjustmentBillItems(StockDTO dto, double oldRetailRate, double newRetailRate,
+    private PharmaceuticalBillItem saveRsrAdjustmentBillItems(StockDTO dto, double oldRetailRate, double newRetailRate,
             double retailRateChange, double changeValue) {
         BillItem tbi = new BillItem();
         tbi.setBill(getDeptAdjustmentPreBill());
@@ -1358,6 +1360,7 @@ public class PharmacyAdjustmentController implements Serializable {
             Logger.getLogger(PharmacyAdjustmentController.class.getName()).log(Level.SEVERE, "Failed to create retail rate adjustment bill item", e);
             throw new RuntimeException("Failed to create retail rate adjustment bill item: " + e.getMessage(), e);
         }
+        return ph;
     }
 
     private void saveRsrAdjustmentBillItems() {
@@ -1448,7 +1451,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
-    private void saveExDateAdjustmentBillItems() {
+    private PharmaceuticalBillItem saveExDateAdjustmentBillItems() {
         billItem = null;
         BillItem tbi = getBillItem();
         ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
@@ -1482,6 +1485,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
+        return tbi.getPharmaceuticalBillItem();
     }
 
     private boolean errorCheck() {
@@ -1892,10 +1896,13 @@ public class PharmacyAdjustmentController implements Serializable {
             double purchaseRateChange = newPurchaseRate - oldPurchaseRate;
             double changeValue = dto.getStockQty() * purchaseRateChange;
 
-            savePrAdjustmentBillItems(dto, oldPurchaseRate, newPurchaseRate, purchaseRateChange, changeValue);
+            PharmaceuticalBillItem ph = savePrAdjustmentBillItems(dto, oldPurchaseRate, newPurchaseRate, purchaseRateChange, changeValue);
 
             s.getItemBatch().setPurcahseRate(newPurchaseRate);
             itemBatchFacade.edit(s.getItemBatch());
+
+            // Add to stock history so adjustment appears in stock ledger report
+            pharmacyBean.addToStockHistory(ph, s, getSessionController().getDepartment());
         }
 
         if (!any) {
@@ -1944,10 +1951,13 @@ public class PharmacyAdjustmentController implements Serializable {
             double costRateChange = newCostRate - oldCostRate;
             double changeValue = dto.getStockQty() * costRateChange;
 
-            saveCrAdjustmentBillItems(dto, oldCostRate, newCostRate, costRateChange, changeValue);
+            PharmaceuticalBillItem ph = saveCrAdjustmentBillItems(dto, oldCostRate, newCostRate, costRateChange, changeValue);
 
             s.getItemBatch().setCostRate(newCostRate);
             itemBatchFacade.edit(s.getItemBatch());
+
+            // Add to stock history so adjustment appears in stock ledger report
+            pharmacyBean.addToStockHistory(ph, s, getSessionController().getDepartment());
         }
 
         if (!any) {
@@ -1996,10 +2006,13 @@ public class PharmacyAdjustmentController implements Serializable {
             double retailRateChange = newRetailRate - oldRetailRate;
             double changeValue = dto.getStockQty() * retailRateChange;
 
-            saveRsrAdjustmentBillItems(dto, oldRetailRate, newRetailRate, retailRateChange, changeValue);
+            PharmaceuticalBillItem ph = saveRsrAdjustmentBillItems(dto, oldRetailRate, newRetailRate, retailRateChange, changeValue);
 
             s.getItemBatch().setRetailsaleRate(newRetailRate);
             itemBatchFacade.edit(s.getItemBatch());
+
+            // Add to stock history so adjustment appears in stock ledger report
+            pharmacyBean.addToStockHistory(ph, s, getSessionController().getDepartment());
         }
 
         if (!any) {
@@ -2039,9 +2052,13 @@ public class PharmacyAdjustmentController implements Serializable {
         }
 
         saveExpiryDateAdjustmentBill();
-        saveExDateAdjustmentBillItems();
+        PharmaceuticalBillItem ph = saveExDateAdjustmentBillItems();
         getStock().getItemBatch().setDateOfExpire(exDate);
         getItemBatchFacade().edit(getStock().getItemBatch());
+
+        // Add to stock history so adjustment appears in stock ledger report
+        pharmacyBean.addToStockHistory(ph, getStock(), getSessionController().getDepartment());
+
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 //        clearBill();
 //        clearBillItem();

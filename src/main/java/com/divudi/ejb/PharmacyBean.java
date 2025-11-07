@@ -888,6 +888,11 @@ public class PharmacyBean {
             params.put("doe", new Date());
         } else if (item instanceof Vmp) {
             List<Amp> amps = findAmpsForVmp((Vmp) item);
+
+            if (amps == null || amps.isEmpty()) {
+                return new ArrayList<>();
+            }
+
             jpql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item in :amps "
@@ -1200,7 +1205,6 @@ public class PharmacyBean {
             sh.setStockPurchaseValue(sh.getStockQty() * sh.getPurchaseRate());
 
             // This is the Item Batch Stock value at retail rate of the department
-
             sh.setInstitutionBatchStockValueAtPurchaseRate(institutionBatchStock * purchaseRate);
             sh.setTotalBatchStockValueAtPurchaseRate(totalBatchStock * purchaseRate);
 
@@ -1314,7 +1318,6 @@ public class PharmacyBean {
             sh.setStockPurchaseValue(sh.getStockQty() * sh.getPurchaseRate());
 
             // This is the Item Batch Stock value at retail rate of the department
-
             sh.setInstitutionBatchStockValueAtPurchaseRate(institutionBatchStock * purchaseRate);
             sh.setTotalBatchStockValueAtPurchaseRate(totalBatchStock * purchaseRate);
 

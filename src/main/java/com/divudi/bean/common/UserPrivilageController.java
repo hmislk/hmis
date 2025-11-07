@@ -740,6 +740,11 @@ public class UserPrivilageController implements Serializable {
         TreeNode billCancelRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.BillCancelRequestApproval, "Bill Cancel Approval"), requestNode);
         TreeNode itemRefundRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.ItemRefundRequestApproval, "Item Refund Approval"), requestNode);
         
+        // Request Privileges
+        TreeNode nurseNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Work Bench"), allNode);
+        TreeNode nursingWorkBench = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBench, "Nursing Work Bench"), nurseNode);
+        TreeNode showDrugCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowDrugCharges, "Show Drug Charges"), nurseNode);
+        
         // Admin Privileges
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);
         TreeNode editData = new DefaultTreeNode(new PrivilegeHolder(Privileges.EditData, "Edit Data"), superAdminNode);

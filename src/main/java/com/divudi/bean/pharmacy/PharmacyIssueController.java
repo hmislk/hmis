@@ -1304,13 +1304,15 @@ public class PharmacyIssueController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(stock.getItemBatch());
         getBillItem().setItem(stock.getItemBatch().getItem());
-        // Initialize with quantity 1 if no quantity is set
-        if (qty == null || qty == 0.0) {
-            qty = 1.0;
+        // Keep quantity field empty when item is selected - let user enter quantity
+        if (qty == null) {
+            qty = null; // Keep it null instead of setting to 1.0
         }
-        getBillItem().setQty(qty);
-        getBillItem().getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        updateFinancialsForIssue(billItem);
+        if (qty != null) {
+            getBillItem().setQty(qty);
+            getBillItem().getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
+            updateFinancialsForIssue(billItem);
+        }
         calTotal();
     }
 

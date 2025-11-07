@@ -22,17 +22,32 @@
                         <h:panelGroup>
                             <p:panel >
                                 <f:facet name="header">
-                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
-                                    <p:outputLabel value="Edit Admission Details" class="m-2"/>
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
+                                            <p:outputLabel value="Edit Admission Details" class="m-2"/>
+                                        </div>
+                                        <div>
+                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                                <p:commandButton 
+                                                    value="Back to WorkBench" 
+                                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                                    ajax="false"
+                                                    class="ui-button-operating-theatre"
+                                                    icon="fa fa-arrow-left">
+                                                </p:commandButton>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+
                                 </f:facet>
+
                                 <h:outputLabel value="Type Patient Name or BHT : "/>
 
                                 <p:autoComplete 
                                     widgetVar="aPt" 
                                     id="acPt" 
-                                    forceSelection="true" 
-                                    required="true" 
-                                    requiredMessage="Please select a patient"
+                                    forceSelection="true"
                                     value="#{bhtEditController.current}"
                                     completeMethod="#{bhtEditController.completePatient}" 
                                     var="myItem" 
@@ -40,6 +55,7 @@
                                     itemLabel="#{myItem.bhtNo}" 
                                     class="mx-2" 
                                     size="30">
+
                                     <p:column headerText="PHN" style="padding: 6px; width: 8em;">
                                         <h:outputLabel value="#{myItem.patient.phn}"/>
                                     </p:column>
@@ -80,7 +96,7 @@
                                     <h:outputText styleClass="fa-solid fa-hospital"></h:outputText>
                                     <h:outputLabel value="Admission Details" class="mx-4"></h:outputLabel>
                                 </div>
-                                <div>
+                                <div class="d-flex gap-2">
                                     <p:commandButton
                                         ajax="false" 
                                         value="Save" 
@@ -89,38 +105,48 @@
                                         class="ui-button-success">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        icon="fa fa-search"
-                                        value="Patient Lookup" 
-                                        class="ui-button-warning mx-1"
-                                        action="#{patientController.navigateToSearchPatients()}" >
-                                    </p:commandButton>
+                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
 
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        icon="fa fa-user"
-                                        value="Patient Profile" 
-                                        class="ui-button-warning"
-                                        action="#{patientController.navigateToOpdPatientProfile()}" >
-                                        <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-search"
+                                            value="Patient Lookup" 
+                                            class="ui-button-warning"
+                                            action="#{patientController.navigateToSearchPatients()}" >
+                                        </p:commandButton>
 
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        icon="fa fa-id-card"
-                                        value="Inpatient Dashboard" 
-                                        class="mx-1 ui-button-secondary"
-                                        action="#{admissionController.navigateToAdmissionProfilePage}" >
-                                        <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-user"
+                                            value="Patient Profile" 
+                                            class="ui-button-warning"
+                                            action="#{patientController.navigateToOpdPatientProfile()}" >
+                                            <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
 
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-id-card"
+                                            value="Inpatient Dashboard" 
+                                            class="ui-button-secondary"
+                                            action="#{admissionController.navigateToAdmissionProfilePage}" >
+                                            <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton 
+                                            value="Back to WorkBench" 
+                                            ajax="false"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
-
                             </div>
-
-
                         </f:facet>
+
                         <div class="row">
                             <div class="col-6">
                                 <common:patient_details_for_addmission controller="#{bhtEditController}" editable="true"></common:patient_details_for_addmission>
@@ -292,7 +318,7 @@
                                             <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                             <p:ajax process="@this" update="crd" event="change" />
                                         </p:selectOneMenu>
-                                        
+
                                     </h:panelGrid>
 
                                     <h:panelGroup id="crd" rendered="#{bhtEditController.current.paymentMethod eq 'Credit'}" >
@@ -481,9 +507,6 @@
                             </div>
                         </div>
                     </p:panel>
-
-
-
 
                 </h:panelGroup>
             </h:form>
