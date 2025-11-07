@@ -443,9 +443,31 @@ public class TransferReceiveController implements Serializable {
 
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
+            // Get quantity from user input (BillItemFinanceDetails) and convert to units
+            double qtyInPacks = 0.0;
+            if (i.getBillItemFinanceDetails() != null && i.getBillItemFinanceDetails().getQuantity() != null) {
+                qtyInPacks = i.getBillItemFinanceDetails().getQuantity().doubleValue();
+            }
+
+            // Convert packs to units for stock operations
+            double unitsPerPack = 1.0;
+            Item item = i.getItem();
+            if (item instanceof Ampp || item instanceof Vmpp) {
+                unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+            }
+            double qtyInUnits = qtyInPacks * unitsPerPack;
+
+            if (qtyInUnits == 0.0) {
                 continue;
             }
+
+            // Update the PharmaceuticalBillItem with the correct user-entered quantity
+            i.getPharmaceuticalBillItem().setQty(qtyInUnits);
+            i.getPharmaceuticalBillItem().setQtyPacks(qtyInPacks);
+
+            // Update the BillItem with the correct user-entered quantity (in packs)
+            i.setQty(qtyInPacks);
+
             if (errorCheck(i)) {
                 continue;
             }
@@ -456,7 +478,7 @@ public class TransferReceiveController implements Serializable {
             } else {
                 getBillItemFacade().edit(i);
             }
-            double qty = Math.abs(i.getPharmaceuticalBillItem().getQty());
+            double qty = Math.abs(qtyInUnits);
 
             boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getIssuedBill().getToStaff());
 
@@ -811,9 +833,30 @@ public class TransferReceiveController implements Serializable {
         List<BillItem> itemsToAdd = new ArrayList<>();
 
         for (BillItem i : getReceivedBill().getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+            // Get quantity from user input (BillItemFinanceDetails) and convert to units
+            double qtyInPacks = 0.0;
+            if (i.getBillItemFinanceDetails() != null && i.getBillItemFinanceDetails().getQuantity() != null) {
+                qtyInPacks = i.getBillItemFinanceDetails().getQuantity().doubleValue();
+            }
+
+            // Convert packs to units for stock operations
+            double unitsPerPack = 1.0;
+            Item item = i.getItem();
+            if (item instanceof Ampp || item instanceof Vmpp) {
+                unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+            }
+            double qtyInUnits = qtyInPacks * unitsPerPack;
+
+            if (qtyInUnits == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
+
+            // Update the PharmaceuticalBillItem with the correct user-entered quantity
+            i.getPharmaceuticalBillItem().setQty(qtyInUnits);
+            i.getPharmaceuticalBillItem().setQtyPacks(qtyInPacks);
+
+            // Update the BillItem with the correct user-entered quantity (in packs)
+            i.setQty(qtyInPacks);
 
             if (errorCheck(i)) {
                 continue;
@@ -839,7 +882,7 @@ public class TransferReceiveController implements Serializable {
 
             tmpPh.setItemBatch(tmpPh.getStaffStock().getItemBatch());
 
-            double qty = Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit());
+            double qty = Math.abs(qtyInUnits);
 
             // Deduct Staff Stock
             boolean returnFlag = getPharmacyBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
