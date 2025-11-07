@@ -1533,10 +1533,8 @@ public class BhtSummeryController implements Serializable {
         Bill bill = billFacade.findFirstByJpql(jpql, m);
 
         if (bill == null) {
-            System.out.println("Bill is not Found. ");
             return false;
         } else {
-            System.out.println("Found a Bill. ");
             return true;
         }
     }
