@@ -203,7 +203,9 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}" styleClass="text-end">
+                            <p:column 
+                                id="colNetValueAdjustment"
+                                headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}" styleClass="text-end">
                                 <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netValueAdjustment != null ? b.billFinanceDetails.netValueAdjustment : 0.0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
