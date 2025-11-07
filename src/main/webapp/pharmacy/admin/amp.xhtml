@@ -16,22 +16,7 @@
             <p:focus id="detailFocus" for="gpDetail" />
             <p:panel  >
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h:outputLabel value="Manage AMPs" class="fw-bold fs-5"></h:outputLabel>
-                            <div class="text-muted small">
-                                Actual Medicinal Products - specific branded pharmaceutical items
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <div class="badge bg-primary">
-                                Total AMPs: #{ampController.items.size()}
-                            </div>
-                            <div class="badge bg-warning ms-1" rendered="#{ampController.ampsNeedingCodeGenerationCount > 0}">
-                                Need Codes: #{ampController.ampsNeedingCodeGenerationCount}
-                            </div>
-                        </div>
-                    </div>
+                    <h:outputLabel value="Manage AMPs"></h:outputLabel>
                 </f:facet>
 
                 <div class="row" >
@@ -64,31 +49,14 @@
                             id="btnBulkCodeGen"
                             icon="fa fa-magic"
                             value="Generate All Codes"
-                            title="Generate codes for all AMPs missing codes or with codes shorter than #{configOptionApplicationController.getIntegerValueByKey('AMP_CODE_LENGTH', 4)} characters"
-                            onclick="if (#{ampController.ampsNeedingCodeGenerationCount} > 0) {
-                                       if (confirm('Are you sure you want to generate codes for #{ampController.ampsNeedingCodeGenerationCount} AMPs? This includes:\\n\\n- AMPs with missing codes\\n- AMPs with codes shorter than #{configOptionApplicationController.getIntegerValueByKey(\'AMP_CODE_LENGTH\', 4)} characters\\n\\nThis action cannot be undone.')) {
-                                         return true;
-                                       } else {
-                                         return false;
-                                       }
-                                     } else {
-                                       alert('No AMPs need code generation.');
-                                       return false;
-                                     }"
+                            title="Generate codes for all AMPs that need them"
+                            onclick="return confirm('Are you sure you want to generate codes for all AMPs? This action cannot be undone.');"
                             action="#{ampController.performBulkCodeGeneration()}"
                             update="acAmp msg @form"
                             process="btnBulkCodeGen"
-                            class="m-1 ui-button-info w-25"
-                            disabled="#{ampController.ampsNeedingCodeGenerationCount == 0}">
+                            class="m-1 ui-button-info w-25">
                         </p:commandButton>
 
-                        <!-- Show info about codes needing generation -->
-                        <p:outputPanel rendered="#{ampController.ampsNeedingCodeGenerationCount > 0}">
-                            <div class="alert alert-info mt-2" style="font-size: 0.9em;">
-                                <i class="fa fa-info-circle"></i>
-                                #{ampController.ampsNeedingCodeGenerationCount} AMPs need code generation or improvement.
-                            </div>
-                        </p:outputPanel>
 
 
                         <!-- Search section with better labeling -->
@@ -160,16 +128,7 @@
 
                     </div>
                     <div class="col-6" >
-                        <p:panel>
-                            <f:facet name="header">
-                                <div class="d-flex align-items-center">
-                                    <i class="fa fa-edit text-primary me-2"></i>
-                                    <span class="fw-bold">AMP Details</span>
-                                    <span class="ms-2 badge bg-light text-dark" rendered="#{ampController.current.id != null}">
-                                        ID: #{ampController.current.id}
-                                    </span>
-                                </div>
-                            </f:facet>
+                        <p:panel header="AMP Details">
                             <h:panelGrid id="gpDetail" columns="2" class="w-100">
                                 <!-- Name field with description -->
                                 <h:panelGroup class="w-100">
@@ -199,8 +158,8 @@
                                     <div class="input-group">
                                         <p:inputText id="code" autocomplete="off"
                                                    value="#{ampController.current.code}"
-                                                   placeholder="Enter #{configOptionApplicationController.getIntegerValueByKey('AMP_CODE_LENGTH', 4)}+ character unique code"
-                                                   styleClass="#{ampController.duplicateCode ? 'is-invalid' : (ampController.current.code != null and ampController.current.code.length() >= 4 ? 'is-valid' : '')}"
+                                                   placeholder="Enter unique code"
+                                                   styleClass="#{ampController.duplicateCode ? 'is-invalid' : ''}"
                                                    maxlength="20">
                                             <p:ajax event="blur" process="@this" update="codePanel msg btnSave codeValidationMsg" listener="#{ampController.checkCodeDuplicate}" />
                                         </p:inputText>
@@ -215,20 +174,12 @@
 
                                     <!-- Code validation feedback -->
                                     <h:panelGroup id="codeValidationMsg" class="w-100">
-                                        <div class="#{ampController.duplicateCode ? 'text-danger' : (ampController.current.code != null and ampController.current.code.length() >= 4 and !ampController.duplicateCode ? 'text-success' : 'text-muted')} small mt-1">
-                                            <h:panelGroup rendered="#{ampController.duplicateCode}">
+                                        <h:panelGroup rendered="#{ampController.duplicateCode}">
+                                            <div class="text-danger small mt-1">
                                                 <i class="fa fa-exclamation-triangle"></i>
                                                 Code already exists - please choose a different code or click Generate
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{!ampController.duplicateCode and ampController.current.code != null and ampController.current.code.length() >= 4}">
-                                                <i class="fa fa-check-circle"></i>
-                                                Code is valid and unique (#{ampController.current.code.length()} characters)
-                                            </h:panelGroup>
-                                            <h:panelGroup rendered="#{!ampController.duplicateCode and (ampController.current.code == null or ampController.current.code.length() < 4)}">
-                                                <i class="fa fa-info-circle"></i>
-                                                #{ampController.current.code != null and !ampController.current.code.isEmpty() ? 'Code too short - need ' + (4 - ampController.current.code.length()) + ' more characters' : 'Code required for saving'}
-                                            </h:panelGroup>
-                                        </div>
+                                            </div>
+                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
@@ -383,27 +334,17 @@
                                             update="acAmp msg @form"
                                             class="ui-button-success"
                                             icon="fas fa-save"
-                                            disabled="#{ampController.duplicateCode or ampController.current.name == null or ampController.current.name == ''}"
+                                            disabled="#{ampController.duplicateCode}"
                                             action="#{ampController.save}">
                                         </p:commandButton>
-
-                                        <h:panelGroup rendered="#{ampController.duplicateCode or ampController.current.name == null or ampController.current.name == ''}">
-                                            <div class="text-danger small mt-2">
-                                                <i class="fa fa-exclamation-circle"></i>
-                                                <h:panelGroup rendered="#{ampController.duplicateCode}">Code must be unique. </h:panelGroup>
-                                                <h:panelGroup rendered="#{ampController.current.name == null or ampController.current.name == ''}">Name is required. </h:panelGroup>
-                                            </div>
-                                        </h:panelGroup>
                                     </div>
 
                                     <div class="text-muted small">
                                         <h:panelGroup rendered="#{ampController.current.id != null}">
-                                            <div>Last updated: #{ampController.current.editedAt}</div>
-                                            <div>By: #{ampController.current.editer.webUserPerson.nameWithTitle}</div>
+                                            <div>Editing existing AMP</div>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{ampController.current.id == null}">
-                                            <i class="fa fa-plus-circle text-success"></i>
-                                            Creating new AMP
+                                            <div>Creating new AMP</div>
                                         </h:panelGroup>
                                     </div>
                                 </div>
