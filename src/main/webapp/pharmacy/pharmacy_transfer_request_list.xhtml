@@ -77,6 +77,7 @@
                             </p:column>  
                             <p:column width="100px" headerText="Action" >
                                 <p:commandButton
+                                    id="btnViewTransferRequest"
                                     ajax="false"
                                     title="View Request"
                                     icon="far fa-eye"
@@ -99,14 +100,17 @@
                             </p:column>
 
                             <p:column headerText="Issued" style="text-align: center;" >
-                                <p:dataTable var="b" value="#{p.issuedBills}">
+                                <p:dataTable var="b" value="#{p.issuedBills}" rowKey="#{b.billId}">
                                     <p:column headerText="Issue No." >
-                                        <p:commandLink
+                                        <p:commandButton
+                                            id="btnViewIssueBill"
                                             ajax="false"
                                             value="#{b.deptId}"
-                                            class="ui-button-success"
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.billId)}" >
-                                        </p:commandLink>
+                                            class="ui-button-success ui-button-sm"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}"
+                                            process="@this">
+                                            <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
+                                        </p:commandButton>
                                     </p:column>
                                     <p:column headerText="Date/Time" >
                                         <h:outputLabel value="#{b.createdAt}" >
