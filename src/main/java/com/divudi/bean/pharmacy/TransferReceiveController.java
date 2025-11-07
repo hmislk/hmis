@@ -485,8 +485,18 @@ public class TransferReceiveController implements Serializable {
             if (returnFlag) {
                 Stock addedStock = getPharmacyBean().addToStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getSessionController().getDepartment());
                 i.getPharmaceuticalBillItem().setStock(addedStock);
+                // Save the BillItem to ensure all changes (including quantity updates) are persisted
+                getBillItemFacade().edit(i);
             } else {
+                // If stock operation fails, set all quantities to 0 for consistency
                 i.getPharmaceuticalBillItem().setQty(0);
+                i.setQty(0.0); // Also update BillItem quantity to maintain consistency
+
+                // Reset BillItemFinanceDetails quantity if it exists
+                if (i.getBillItemFinanceDetails() != null) {
+                    i.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+                }
+
                 getBillItemFacade().edit(i);
             }
         }
