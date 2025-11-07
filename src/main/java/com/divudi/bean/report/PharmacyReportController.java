@@ -340,6 +340,7 @@ public class PharmacyReportController implements Serializable {
     private double totalCostValue;
     private double totalPurchaseValue;
     private double totalRetailValue;
+    private double totalSaleValue;
 
     //Constructor
     public PharmacyReportController() {
@@ -2283,6 +2284,18 @@ public class PharmacyReportController implements Serializable {
                     BillItemFinanceDetails::getRetailSaleRate,
                     PharmaceuticalBillItem::getRetailRate,
                     itemBatch -> itemBatch.getRetailsaleRate());
+
+            // Calculate totalSaleValue as retailRate * qty
+            double saleValue = 0.0;
+            PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+            if (pharmaceuticalBillItem != null) {
+                Double retailRate = pharmaceuticalBillItem.getRetailRate();
+                Double qty = pharmaceuticalBillItem.getQty();
+                if (retailRate != null && qty != null) {
+                    saleValue = retailRate * qty;
+                }
+            }
+            totalSaleValue += saleValue;
         }
     }
 
@@ -2404,6 +2417,7 @@ public class PharmacyReportController implements Serializable {
         totalCostValue = 0.0;
         totalPurchaseValue = 0.0;
         totalRetailValue = 0.0;
+        totalSaleValue = 0.0;
     }
 
     private void retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
@@ -2412,6 +2426,7 @@ public class PharmacyReportController implements Serializable {
             totalCostValue = 0.0;
             totalPurchaseValue = 0.0;
             totalRetailValue = 0.0;
+            totalSaleValue = 0.0;
             // STEP 1: Fetch all parent bills (CostOfGoodSoldBillDTOs) in one query.
             StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
                     .append("b, ")
@@ -2515,6 +2530,14 @@ public class PharmacyReportController implements Serializable {
                             .sum();
 
                     totalRetailValue += billRetail;
+
+                    // Calculate Sale Value for THIS bill (same as billRetail calculation)
+                    double billSaleValue = itemsForThisBill.stream()
+                            .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                            .sum();
+
+                    totalSaleValue += billSaleValue;
                 }
             }
         } catch (Exception e) {
@@ -3528,6 +3551,7 @@ public class PharmacyReportController implements Serializable {
 
         totalPurchaseValue = 0.0;
         totalRetailValue = 0.0;
+        totalSaleValue = 0.0;
 
         totalPurchaseValue = dtoList.stream()
                 .filter(DirectPurchaseReportDto.class::isInstance)
@@ -3536,6 +3560,12 @@ public class PharmacyReportController implements Serializable {
                 .sum();
 
         totalRetailValue = dtoList.stream()
+                .filter(DirectPurchaseReportDto.class::isInstance)
+                .map(DirectPurchaseReportDto.class::cast)
+                .mapToDouble(DirectPurchaseReportDto::getSaleValue)
+                .sum();
+
+        totalSaleValue = dtoList.stream()
                 .filter(DirectPurchaseReportDto.class::isInstance)
                 .map(DirectPurchaseReportDto.class::cast)
                 .mapToDouble(DirectPurchaseReportDto::getSaleValue)
@@ -3573,6 +3603,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setTotalRetailValue(double totalRetailValue) {
         this.totalRetailValue = totalRetailValue;
+    }
+
+    public double getTotalSaleValue() {
+        return totalSaleValue;
+    }
+
+    public void setTotalSaleValue(double totalSaleValue) {
+        this.totalSaleValue = totalSaleValue;
     }
 
     public Map<String, List<StockCorrectionRow>> getPositiveVarianceMap() {
