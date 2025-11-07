@@ -110,6 +110,7 @@ public enum Privileges {
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
     NursingWorkBench("Nursing Work Bench"),
+    ShowDrugCharges("Show Drug Charges"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
