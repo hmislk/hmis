@@ -2593,14 +2593,16 @@ public class ItemController implements Serializable {
                 // - Type is Amp or Ampp
                 // - Query matches name, code, or barcode (case-insensitive)
                 // - Department type is in allowed list
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                // - Using COALESCE to handle null codes and barcodes
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             } else {
                 // Criteria:
                 // - Not retired
                 // - Type is Amp or Ampp
                 // - Query matches name or code only
                 // - Department type is in allowed list
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                // - Using COALESCE to handle null codes
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             }
 
             tmpMap.put("amp", Amp.class);
@@ -2693,8 +2695,8 @@ public class ItemController implements Serializable {
                 + "AND TYPE(i) IN (:amp, :ampp, :vmp, :vmpp) "
                 + "AND i.departmentType in :dts "
                 + "AND (UPPER(i.name) LIKE :q "
-                + "OR UPPER(i.code) LIKE :q "
-                + (includeBarcode ? "OR UPPER(i.barcode) LIKE :q " : "")
+                + "OR UPPER(COALESCE(i.code, '')) LIKE :q "
+                + (includeBarcode ? "OR UPPER(COALESCE(i.barcode, '')) LIKE :q " : "")
                 + ") "
                 + "ORDER BY i.name";
 
