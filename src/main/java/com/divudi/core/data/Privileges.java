@@ -977,6 +977,7 @@ public enum Privileges {
                 return "Approval";
             
             case NursingWorkBench:
+            case ShowDrugCharges:
                 return "Nursing Work Bench";
                 
             default:
