@@ -156,6 +156,9 @@
                             <p:column headerText="GRN Bill No" sortBy="#{b.referenceBill.deptId}">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.deptId : ''}"/>
                             </p:column>
+                             <p:column headerText="GRN Return Bill No" sortBy="#{b.referenceBill.deptId}">
+                                <h:outputText value="#{b.deptId}"/>
+                            </p:column>
 
                             <p:column headerText="GRN Net Total" sortBy="#{b.referenceBill.netTotal}" styleClass="text-end">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.netTotal : 0.0}">
