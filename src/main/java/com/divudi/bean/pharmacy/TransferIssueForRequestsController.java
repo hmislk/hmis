@@ -693,9 +693,11 @@ public class TransferIssueForRequestsController implements Serializable {
         int serialNo = 0;
         for (BillItem b : getIssuedBill().getBillItems()) {
             double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
-            // Use absolute value for revenue calculation - money comes in (positive)
-            // Use pack quantity (b.getQty()) not unit quantity to match lineGrossRate (per-pack rate)
-            value += rate * Math.abs(b.getQty());
+            // Use user-entered quantity from BillItemFinanceDetails instead of BillItem.qty
+            // This ensures we use the actual issued quantity (e.g., 5) not the requested quantity (e.g., 10)
+            BigDecimal userEnteredQty = b.getBillItemFinanceDetails().getQuantity();
+            double qtyToUse = (userEnteredQty != null) ? Math.abs(userEnteredQty.doubleValue()) : Math.abs(b.getQty());
+            value += rate * qtyToUse;
             b.setSearialNo(serialNo++);
         }
         return value;
