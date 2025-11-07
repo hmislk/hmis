@@ -138,18 +138,33 @@ public class TransferIssueForRequestsController implements Serializable {
             return false; // Empty bills are not considered fully issued
         }
 
+        System.out.println("=== DEBUG: isFullyIssued Check ===");
+        System.out.println("Request Bill ID: " + requestBill.getId());
+
         for (BillItem requestItem : freshBillItems) {
             // Handle null remainingQty (legacy data) by using original quantity
             Double remainingQty = requestItem.getRemainingQty();
             if (remainingQty == null) {
                 remainingQty = requestItem.getQty();
             }
+
+            System.out.println("Item: " + requestItem.getItem().getName());
+            System.out.println("  Original qty: " + requestItem.getQty());
+            System.out.println("  Remaining qty: " + remainingQty);
+            System.out.println("  Issued qty: " + requestItem.getIssuedPhamaceuticalItemQty());
+
             // Use remainingQty field from database - if > 0, still has items to issue
             if (remainingQty > 0.001) { // Add small tolerance for floating point precision
+                System.out.println("  -> NOT fully issued (remaining > 0.001)");
+                System.out.println("=====================================");
                 return false; // Still has remaining quantity to issue
+            } else {
+                System.out.println("  -> This item is fully issued");
             }
         }
 
+        System.out.println("-> ALL ITEMS FULLY ISSUED");
+        System.out.println("=====================================");
         return true; // All items are fully issued
     }
 
@@ -492,11 +507,27 @@ public class TransferIssueForRequestsController implements Serializable {
                 Double currentIssued = originalOrderItem.getIssuedPhamaceuticalItemQty();
                 double currentIssuedValue = (currentIssued != null) ? currentIssued : 0.0;
                 double issuedQtyThisTime = Math.abs(billItemsInIssue.getQty()); // Use absolute value since qty is negative for issues
+
+                // DEBUG: Check for sign issue in remaining quantity calculation
+                Double userEnteredQty = billItemsInIssue.getBillItemFinanceDetails().getQuantity();
+                System.out.println("=== DEBUG: Remaining Qty Calculation ===");
+                System.out.println("Item: " + billItemsInIssue.getItem().getName());
+                System.out.println("billItemsInIssue.getQty(): " + billItemsInIssue.getQty());
+                System.out.println("userEnteredQty from BIFD: " + userEnteredQty);
+                System.out.println("issuedQtyThisTime (Math.abs(billItemsInIssue.getQty())): " + issuedQtyThisTime);
+                System.out.println("Original requested qty: " + originalOrderItem.getQty());
+
                 originalOrderItem.setIssuedPhamaceuticalItemQty(currentIssuedValue + issuedQtyThisTime);
                 // Update remaining quantity to track what's left to issue
                 Double remainingQty = originalOrderItem.getRemainingQty();
                 double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
-                originalOrderItem.setRemainingQty(currentRemaining - issuedQtyThisTime);
+                double newRemaining = currentRemaining - issuedQtyThisTime;
+
+                System.out.println("currentRemaining: " + currentRemaining);
+                System.out.println("newRemaining: " + newRemaining);
+                System.out.println("==========================================");
+
+                originalOrderItem.setRemainingQty(newRemaining);
 
                 billItemFacade.editAndCommit(originalOrderItem);
 
@@ -588,9 +619,11 @@ public class TransferIssueForRequestsController implements Serializable {
 
         // Check if Transfer Request is fully issued and update fullyIssued status
         if (getRequestedBill() != null && !getRequestedBill().isFullyIssued()) {
+            System.out.println("=== DEBUG: Checking if request bill should be marked as fully issued ===");
             // Refresh the requested bill with latest data from database to ensure accurate remainingQty values
             Bill freshRequestedBill = getBillFacade().findWithoutCache(getRequestedBill().getId());
             if (isFullyIssued(freshRequestedBill)) {
+                System.out.println("*** MARKING REQUEST BILL AS FULLY ISSUED ***");
                 freshRequestedBill.setFullyIssued(true);
                 freshRequestedBill.setFullyIssuedAt(new Date());
                 freshRequestedBill.setFullyIssuedBy(getSessionController().getLoggedUser());
@@ -599,6 +632,8 @@ public class TransferIssueForRequestsController implements Serializable {
                 getRequestedBill().setFullyIssued(true);
                 getRequestedBill().setFullyIssuedAt(freshRequestedBill.getFullyIssuedAt());
                 getRequestedBill().setFullyIssuedBy(freshRequestedBill.getFullyIssuedBy());
+            } else {
+                System.out.println("*** REQUEST BILL IS NOT FULLY ISSUED - KEEPING STATUS AS PARTIAL ***");
             }
         }
 
@@ -681,6 +716,9 @@ public class TransferIssueForRequestsController implements Serializable {
 
         // Update BillItem quantity to match user input (negative for issue)
         b.setQty(-qtyInPacks.doubleValue());
+
+        // Update BillItemFinanceDetails quantity to be negative (stock out)
+        f.setQuantity(BigDecimal.ZERO.subtract(qtyInPacks));
     }
 
     private void updateBillItemRateAndValueAndSave(BillItem b) {
