@@ -4378,6 +4378,15 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_bill_unit_issue?faces-redirect=true";
     }
 
+    public String navigateToViewPharmacyIssueBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected.");
+            return null;
+        }
+        // Navigate to pharmacy issue view page with transfer issue print formats
+        return "/pharmacy/pharmacy_issue_view?faces-redirect=true";
+    }
+
     /**
      * Bill id used by DTO report tables to fetch a bill directly.
      */

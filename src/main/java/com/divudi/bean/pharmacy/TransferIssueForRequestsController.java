@@ -506,15 +506,18 @@ public class TransferIssueForRequestsController implements Serializable {
                 // Null-safe handling for issuedPhamaceuticalItemQty to prevent NPE
                 Double currentIssued = originalOrderItem.getIssuedPhamaceuticalItemQty();
                 double currentIssuedValue = (currentIssued != null) ? currentIssued : 0.0;
-                double issuedQtyThisTime = Math.abs(billItemsInIssue.getQty()); // Use absolute value since qty is negative for issues
 
                 // DEBUG: Check for sign issue in remaining quantity calculation
-                Double userEnteredQty = billItemsInIssue.getBillItemFinanceDetails().getQuantity();
+                BigDecimal userEnteredQtyBD = billItemsInIssue.getBillItemFinanceDetails().getQuantity();
+                Double userEnteredQty = (userEnteredQtyBD != null) ? userEnteredQtyBD.doubleValue() : null;
+
+                // FIX: Use user-entered quantity from BIFD instead of billItem.qty for accurate remaining calculation
+                double issuedQtyThisTime = (userEnteredQty != null) ? Math.abs(userEnteredQty) : Math.abs(billItemsInIssue.getQty());
                 System.out.println("=== DEBUG: Remaining Qty Calculation ===");
                 System.out.println("Item: " + billItemsInIssue.getItem().getName());
                 System.out.println("billItemsInIssue.getQty(): " + billItemsInIssue.getQty());
                 System.out.println("userEnteredQty from BIFD: " + userEnteredQty);
-                System.out.println("issuedQtyThisTime (Math.abs(billItemsInIssue.getQty())): " + issuedQtyThisTime);
+                System.out.println("issuedQtyThisTime (FIXED - using user input): " + issuedQtyThisTime);
                 System.out.println("Original requested qty: " + originalOrderItem.getQty());
 
                 originalOrderItem.setIssuedPhamaceuticalItemQty(currentIssuedValue + issuedQtyThisTime);

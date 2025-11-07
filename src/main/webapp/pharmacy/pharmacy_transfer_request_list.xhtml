@@ -104,9 +104,8 @@
                                         <p:commandLink
                                             ajax="false"
                                             value="#{b.deptId}"
-                                            class="ui-button-info"
-                                            action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueById}" >
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{b.billId}"/>
+                                            class="ui-button-success"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.billId)}" >
                                         </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Date/Time" >
