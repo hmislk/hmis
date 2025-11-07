@@ -465,6 +465,9 @@ public class TransferReceiveController implements Serializable {
             i.getPharmaceuticalBillItem().setQty(qtyInUnits);
             i.getPharmaceuticalBillItem().setQtyPacks(qtyInPacks);
 
+            // Update the BillItem with the correct user-entered quantity (in packs)
+            i.setQty(qtyInPacks);
+
             if (errorCheck(i)) {
                 continue;
             }
@@ -851,6 +854,9 @@ public class TransferReceiveController implements Serializable {
             // Update the PharmaceuticalBillItem with the correct user-entered quantity
             i.getPharmaceuticalBillItem().setQty(qtyInUnits);
             i.getPharmaceuticalBillItem().setQtyPacks(qtyInPacks);
+
+            // Update the BillItem with the correct user-entered quantity (in packs)
+            i.setQty(qtyInPacks);
 
             if (errorCheck(i)) {
                 continue;
