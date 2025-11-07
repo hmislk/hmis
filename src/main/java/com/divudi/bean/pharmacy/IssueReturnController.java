@@ -723,7 +723,7 @@ public class IssueReturnController implements Serializable {
             returningBillItem.setReferenceBill(originalBill);
             returningBillItem.setReferanceBillItem(originalBillItem);
             returningBillItem.copy(originalBillItem);
-            returningBillItem.setQty(originalBillItem.getRemainingQty());
+            returningBillItem.setQty(0.0); // Set to 0 so user can enter actual return amount
             returningBillItem.setRemainingQty(originalBillItem.getRemainingQty());
 
             PharmaceuticalBillItem returningPbi = returningBillItem.getPharmaceuticalBillItem();
