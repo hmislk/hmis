@@ -63,7 +63,6 @@
                                     <h:outputLabel value="Requesting Department"/>
                                     <p:autoComplete
                                         value="#{pharmacyRequestForBhtController.department}"
-                                        required="true"
                                         class="col-md-12 mx-2"
                                         inputStyleClass="form-control"
                                         forceSelection="true"
@@ -415,7 +414,7 @@
                                     <p:panel class="mt-2">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus"  />
-                                            <h:outputLabel value="Drug Order" class="mx-4"/>
+                                            <h:outputLabel value="Drug Order" class="mx-2"/>
                                         </f:facet>
 
                                         <div class="row">
@@ -445,7 +444,8 @@
                                                     <p:ajax event="query" process="acItem"></p:ajax>
                                                     <p:ajax event="itemSelect"
                                                             listener="#{pharmacyRequestForBhtController.handleSelect}"
-                                                            update="focusQty" ></p:ajax>
+                                                            update="focusQty" >
+                                                    </p:ajax>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-md-2">
