@@ -138,17 +138,24 @@ public class TransferIssueForRequestsController implements Serializable {
             return false; // Empty bills are not considered fully issued
         }
 
+
         for (BillItem requestItem : freshBillItems) {
             // Handle null remainingQty (legacy data) by using original quantity
             Double remainingQty = requestItem.getRemainingQty();
             if (remainingQty == null) {
                 remainingQty = requestItem.getQty();
             }
+
+
+
             // Use remainingQty field from database - if > 0, still has items to issue
             if (remainingQty > 0.001) { // Add small tolerance for floating point precision
+
                 return false; // Still has remaining quantity to issue
+            } else {
             }
         }
+
 
         return true; // All items are fully issued
     }
@@ -491,12 +498,23 @@ public class TransferIssueForRequestsController implements Serializable {
                 // Null-safe handling for issuedPhamaceuticalItemQty to prevent NPE
                 Double currentIssued = originalOrderItem.getIssuedPhamaceuticalItemQty();
                 double currentIssuedValue = (currentIssued != null) ? currentIssued : 0.0;
-                double issuedQtyThisTime = Math.abs(billItemsInIssue.getQty()); // Use absolute value since qty is negative for issues
+
+                // DEBUG: Check for sign issue in remaining quantity calculation
+                BigDecimal userEnteredQtyBD = billItemsInIssue.getBillItemFinanceDetails().getQuantity();
+                Double userEnteredQty = (userEnteredQtyBD != null) ? userEnteredQtyBD.doubleValue() : null;
+
+                // FIX: Use user-entered quantity from BIFD instead of billItem.qty for accurate remaining calculation
+                double issuedQtyThisTime = (userEnteredQty != null) ? Math.abs(userEnteredQty) : Math.abs(billItemsInIssue.getQty());
+
                 originalOrderItem.setIssuedPhamaceuticalItemQty(currentIssuedValue + issuedQtyThisTime);
                 // Update remaining quantity to track what's left to issue
                 Double remainingQty = originalOrderItem.getRemainingQty();
                 double currentRemaining = (remainingQty != null) ? remainingQty : originalOrderItem.getQty();
-                originalOrderItem.setRemainingQty(currentRemaining - issuedQtyThisTime);
+                double newRemaining = currentRemaining - issuedQtyThisTime;
+
+
+
+                originalOrderItem.setRemainingQty(newRemaining);
 
                 billItemFacade.editAndCommit(originalOrderItem);
 
@@ -599,6 +617,7 @@ public class TransferIssueForRequestsController implements Serializable {
                 getRequestedBill().setFullyIssued(true);
                 getRequestedBill().setFullyIssuedAt(freshRequestedBill.getFullyIssuedAt());
                 getRequestedBill().setFullyIssuedBy(freshRequestedBill.getFullyIssuedBy());
+            } else {
             }
         }
 
@@ -681,6 +700,9 @@ public class TransferIssueForRequestsController implements Serializable {
 
         // Update BillItem quantity to match user input (negative for issue)
         b.setQty(-qtyInPacks.doubleValue());
+
+        // Update BillItemFinanceDetails quantity to be negative (stock out)
+        f.setQuantity(BigDecimal.ZERO.subtract(qtyInPacks));
     }
 
     private void updateBillItemRateAndValueAndSave(BillItem b) {
