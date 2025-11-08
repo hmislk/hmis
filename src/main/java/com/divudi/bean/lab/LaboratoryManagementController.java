@@ -86,6 +86,7 @@ public class LaboratoryManagementController implements Serializable {
     ReportTimerController reportTimerController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -477,6 +478,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         this.bills = null;
@@ -505,8 +507,8 @@ public class LaboratoryManagementController implements Serializable {
         this.type = null;
         this.referringDoctor = null;
         this.sampleSendingDepartment = null;
-        this.tempSelectedItems = new ArrayList();;
-        this.selectedItems = new ArrayList();;
+        this.tempSelectedItems = new ArrayList();
+        this.selectedItems = new ArrayList();
     }
     public void searchLabBillsForWorkSheet() {
         searchLabBills();
@@ -1641,6 +1643,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -1911,8 +1914,6 @@ public class LaboratoryManagementController implements Serializable {
     public void setSampleSendingDepartment(Department sampleSendingDepartment) {
         this.sampleSendingDepartment = sampleSendingDepartment;
     }
-
-// </editor-fold>
     public Department getSampleReceiveFromDepartment() {
         return sampleReceiveFromDepartment;
     }
@@ -1936,4 +1937,7 @@ public class LaboratoryManagementController implements Serializable {
     public void setTempSelectedItems(List<PatientInvestigation> tempSelectedItems) {
         this.tempSelectedItems = tempSelectedItems;
     }
+
+// </editor-fold>
+    
 }
