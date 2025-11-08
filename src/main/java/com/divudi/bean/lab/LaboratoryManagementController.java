@@ -353,13 +353,7 @@ public class LaboratoryManagementController implements Serializable {
     
     public void processWorkSheet(){
         selectedItems  = new ArrayList<>();
-        System.out.println("---------------------------------");
-        System.out.println("Temp Selected Items = " + tempSelectedItems.size());
-        System.out.println("---------------------------------");
-        System.out.println("Before Process SelectedItems = " + selectedItems.size());
         selectedItems.addAll(tempSelectedItems);
-        System.out.println("After Process SelectedItems = " + selectedItems.size());
-        System.out.println("---------------------------------");
     }
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
