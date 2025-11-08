@@ -192,6 +192,7 @@ public enum Privileges {
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
     DashBoardMenu("DashBoard Menu"),
     DashBoardBillSearch("DashBoard Bill Search"),
+    DashBoardWorksheet("DashBoard WorkSheet"),
     DashBoardSampleSearch("DashBoard Sample Search"),
     DashBoardInvestigationSearch("DashBoard Investigation Search"),
     DashBoardReportSearch("DashBoard Report Search"),
