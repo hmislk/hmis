@@ -347,12 +347,12 @@
                                     <f:setPropertyActionListener value="#{f.bill}"  target="#{billSearch.bill}" />
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    value="View Referance Bill" 
+                                <p:commandButton
+                                    value="View Reference Bill"
                                     rendered="#{f.bill.referenceBill ne null}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.bill.referenceBill}"  target="#{billSearch.bill}" />
                                 </p:commandButton>
