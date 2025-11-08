@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:body>
+        <cc:interface>
+            <cc:attribute name="patientInvestigation" required="true" />
+        </cc:interface>
+
+        <!-- Composite Component Implementation -->
+        <cc:implementation>
+
+            <style>
+                @media screen{
+                    .receipt-container {
+                        zoom: 1.4;
+                    }
+                }
+
+                .receipt-container {
+                    font-family: "Courier New", "Liberation Mono", monospace;
+                    width: 14cm !important;
+                    margin: auto;
+                    box-sizing: border-box;
+                    border: 1px solid #000;
+                    padding: 1cm 1cm 1cm 1cm;
+
+                    /* 📑 Flexbox for footer placement */
+                    display: flex;
+                    flex-direction: column;
+                    
+                }
+
+                .content {
+                    flex: 1; /* take all available space */
+                }
+
+                .footer {
+                    margin-top: auto; /* pushes footer to bottom */
+                    padding: 10px;
+                    text-align: center;
+                    font-size: 11px;
+                }
+                
+                @media print {
+                    @page {
+                        size: auto;
+                        margin: 0;
+                    }
+                    .receipt-container {
+                        width: 14cm !important;
+                        border: none;
+                        padding: 1cm 1cm 1cm 1cm;
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 100vh; /* full print page height */
+                    }
+                    .reportItem{
+                        line-height: 0.8;
+                    }
+                    .footer {
+                        font-size: 9px;
+                        margin-top: auto;
+                    }
+                }
+
+
+                /* Patient and Bill Info Table */
+                .info-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 2px;
+                }
+
+                .info-table td {
+                    font-size: 11px;
+                    padding: 5px;
+                }
+
+                .info-table tr {
+                    line-height: 0.9;
+                }
+
+                .info-table .label {
+                    font-weight: normal!important;
+                    text-align: left;
+                }
+
+                .info-table .value {
+                    text-align: left;
+                }
+
+                .info-table .spacer {
+                    width: 10px; /* Adds space between the two columns */
+                }
+
+                .reportItem{
+                    line-height: 1.2;
+                }
+
+            </style>
+
+            <div class="receipt-container">
+
+                <!-- Header Section -->
+                <div class="d-flex justify-content-center text-center" style="font-weight: 700; font-size: 18px; padding: 0px;">
+                    <h:outputLabel value="Worksheet"/>
+                </div>
+
+                <table class="info-table mt-2">
+                    <tr>
+                        <td style="padding: 2px; font-size: 11px;">Patient Name </td>
+                        <td style="padding: 2px; font-size: 11px;">
+                            <h:outputLabel value="#{cc.attrs.patientInvestigation.billItem.bill.patient.person.nameWithTitle}"/>
+                        </td>
+                    </tr>
+
+                    <tr> 
+                        <td style="padding: 2px; font-size: 11px;">Age / Gender</td>
+                        <td style="padding: 2px; font-size: 11px;">
+                            <h:outputText value="#{empty cc.attrs.patientInvestigation.billItem.bill.patient.person.ageAsShortString ? 'N/A' : cc.attrs.patientInvestigation.billItem.bill.patient.person.ageAsShortString} / #{cc.attrs.patientInvestigation.billItem.bill.patient.person.sex.label}"/>
+                        </td>
+                    </tr>
+
+                    <tr> 
+                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">
+                            <h:outputText value="Bill No"/>
+                        </td>
+                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">
+                            <h:outputText value="#{cc.attrs.patientInvestigation.billItem.bill.deptId}"/>
+                        </td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter ne null}">
+                        <tr>
+                            <td style="padding: 2px; font-size: 13px; font-weight: 700;">BHT No</td>
+                            <td style="padding: 2px; font-size: 13px; font-weight: 700;">
+                                <h:outputLabel value="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.bhtNo}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.collectingCentre ne null}">
+                        <tr> 
+                            <td style="padding: 2px; font-size: 11px;">CC Name</td>
+                            <td style="padding: 2px; font-size: 11px;">
+                                <h:outputText value="#{cc.attrs.patientInvestigation.billItem.bill.collectingCentre.name}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.referredBy ne null}">
+                        <tr>
+                            <td style="padding: 2px;">Ref. Doctor </td>
+                            <td style="padding: 2px;">
+                                <h:outputLabel value="#{cc.attrs.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr> 
+                        <td style="padding: 2px; font-size: 11px;">Bill At</td>
+                        <td style="padding: 2px; font-size: 11px;">
+                            <h:outputText value="#{cc.attrs.patientInvestigation.billItem.bill.createdAt}">
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm a" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <!--                
+                    After Update System Uncomment this
+                                            <tr> 
+                                            <td style="padding: 2px; font-size: 11px;">Generate At</td>
+                                            <td style="padding: 2px; font-size: 11px;">
+                                                <h:outputText value="#{cc.attrs.patientInvestigation.barcodeGeneratedAt}">
+                                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm a" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr> -->
+                    <tr> 
+                        <td style="padding: 2px; font-size: 11px;">Collected At</td>
+                        <td style="padding: 2px; font-size: 11px;">
+                            <h:outputText value="#{cc.attrs.patientInvestigation.sampleCollectedAt}">
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm a" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr> 
+                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">Investigation</td>
+                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">
+                            <h:outputText value="#{cc.attrs.patientInvestigation.billItem.item.name}"/>
+                        </td>
+                    </tr>
+
+                    <tr> 
+                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">Sample ID</td>
+                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">
+                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(cc.attrs.patientInvestigation)}" var="psc">
+                                <div class="d-flex gap-2">
+                                    <h:outputText value="#{psc.patientSample.id}"  />
+                                </div>
+                            </ui:repeat>
+                        </td>
+                    </tr>
+
+                </table>
+
+                <hr/>
+
+                <!--Outher Section-->
+                <h:panelGroup rendered="#{cc.attrs.patientInvestigation.investigation.reportType ne 'Microbiology'}" >
+                    <div class="reportItem">
+                        <ui:repeat value="#{cc.attrs.patientInvestigation.investigation.reportItems}" var="myix" >
+                            <h:panelGroup rendered="#{myix.retired==false and myix.ixItemType eq 'Value'}">
+                                <div class="row">
+                                    <div class="col-5"> 
+                                        <h:outputLabel value="#{myix.name}" style="font-size: 11px!important;" class="mt-1"></h:outputLabel>
+                                    </div>
+                                    <div class="col-7">
+                                        <h:outputLabel value="_______________________________"   style="font-size: 11px!important;"  ></h:outputLabel>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                        </ui:repeat>
+                    </div>
+
+                </h:panelGroup>
+
+                <div class="footer">
+                    <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
+                </div>
+
+            </div>
+
+        </cc:implementation>
+
+    </h:body>
+</html>
