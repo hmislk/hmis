@@ -32,7 +32,7 @@
                     /* 📑 Flexbox for footer placement */
                     display: flex;
                     flex-direction: column;
-                    
+
                 }
 
                 .content {
@@ -45,7 +45,7 @@
                     text-align: center;
                     font-size: 11px;
                 }
-                
+
                 @media print {
                     @page {
                         size: auto;
@@ -144,6 +144,15 @@
                         </tr>
                     </h:panelGroup>
 
+                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter ne null}">
+                        <tr>
+                            <td style="padding: 2px; font-size: 11px;">Room No</td>
+                            <td style="padding: 2px; font-size: 11px;">
+                                <h:outputLabel value="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
                     <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.collectingCentre ne null}">
                         <tr> 
                             <td style="padding: 2px; font-size: 11px;">CC Name</td>
@@ -166,26 +175,25 @@
                         <td style="padding: 2px; font-size: 11px;">Bill At</td>
                         <td style="padding: 2px; font-size: 11px;">
                             <h:outputText value="#{cc.attrs.patientInvestigation.billItem.bill.createdAt}">
-                                <f:convertDateTime pattern="yyyy MMM dd hh:mm a" />
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
                             </h:outputText>
                         </td>
                     </tr>
 
-                    <!--                
-                    After Update System Uncomment this
-                                            <tr> 
-                                            <td style="padding: 2px; font-size: 11px;">Generate At</td>
-                                            <td style="padding: 2px; font-size: 11px;">
-                                                <h:outputText value="#{cc.attrs.patientInvestigation.barcodeGeneratedAt}">
-                                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm a" />
-                                                </h:outputText>
-                                            </td>
-                                        </tr> -->
                     <tr> 
                         <td style="padding: 2px; font-size: 11px;">Collected At</td>
                         <td style="padding: 2px; font-size: 11px;">
                             <h:outputText value="#{cc.attrs.patientInvestigation.sampleCollectedAt}">
-                                <f:convertDateTime pattern="yyyy MMM dd hh:mm a" />
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                    
+                    <tr> 
+                        <td style="padding: 2px; font-size: 11px;">Received At</td>
+                        <td style="padding: 2px; font-size: 11px;">
+                            <h:outputText value="#{cc.attrs.patientInvestigation.receivedAt}">
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
                             </h:outputText>
                         </td>
                     </tr>
