@@ -337,9 +337,10 @@ public class LaboratoryManagementController implements Serializable {
         return "/admin/lims/index?faces-redirect=true";
     }
     
-    public String navigateToBackDashBoard() {
+    public String navigateToBackDashBoardFromWorkSheet() {
         items = new ArrayList<>();
         activeIndex = 6;
+        listingEntity = ListingEntity.WORK_SHEET;
         selectedItems = new ArrayList<>();
         tempSelectedItems = new ArrayList<>();
         return "/lab/laboratory_management_dashboard?faces-redirect=true";
