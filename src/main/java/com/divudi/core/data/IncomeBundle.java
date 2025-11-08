@@ -766,6 +766,7 @@ public class IncomeBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+            groupRow.setTotalCostValue(groupRow.getTotalCostValue() + r.getTotalCostValue());
         }
 
         // Replace with grouped rows
@@ -842,6 +843,7 @@ public class IncomeBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+            groupRow.setTotalCostValue(groupRow.getTotalCostValue() + r.getTotalCostValue());
         }
 
         // Replace with grouped rows
@@ -917,6 +919,7 @@ public class IncomeBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+            groupRow.setTotalCostValue(groupRow.getTotalCostValue() + r.getTotalCostValue());
         }
 
         // Replace with grouped rows, sorted by combined key

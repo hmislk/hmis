@@ -435,9 +435,8 @@
                                         value="View"
                                         style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
                                         class="mx-1"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(billSearch.bill.id)}"
                                         ajax="false">
-                                    <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
                         </p:dataTable>
