@@ -417,6 +417,19 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Cost" width="10em" class="text-end"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cost Value in Pharmacy Reports', true)}"
+                                      style="padding: 0px!important; margin: 0px!important;">
+                                <h:outputText value="#{row.bill.billFinanceDetails.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.totalCostValue}"
+                                                  style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
                             <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
                                 <p:commandLink
                                         value="View"
@@ -613,6 +626,19 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Cost" width="10em" class="text-end"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cost Value in Pharmacy Reports', true)}"
+                                      style="padding: 0px!important; margin: 0px!important;">
+                                <h:outputText value="#{row.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.totalCostValue}"
+                                                  style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
                         </p:dataTable>
                     </h:panelGroup>
 
@@ -797,6 +823,19 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Cost" width="10em" class="text-end"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cost Value in Pharmacy Reports', true)}"
+                                      style="padding: 0px!important; margin: 0px!important;">
+                                <h:outputText value="#{row.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.totalCostValue}"
+                                                  style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
                         </p:dataTable>
                     </h:panelGroup>
 
@@ -970,6 +1009,19 @@
                                     <h:outputText
                                             value="#{pharmacySummaryReportController.bundle.summaryRow.actualTotal}"
                                             style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Cost" width="10em" class="text-end"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cost Value in Pharmacy Reports', true)}"
+                                      style="padding: 0px!important; margin: 0px!important;">
+                                <h:outputText value="#{row.totalCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.totalCostValue}"
+                                                  style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
