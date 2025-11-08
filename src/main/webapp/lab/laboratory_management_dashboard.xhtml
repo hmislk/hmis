@@ -36,17 +36,6 @@
                         </p:menuitem >
                         
                         <p:menuitem
-                            action="#{laboratoryManagementController.navigateToWorkSheet()}"
-                            actionListener="#{laboratoryManagementController.makeNull()}"
-                            ajax="false"
-                            class="d-flex justify-content-center"
-                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardWorksheet'))}"
-                            style="font-size: 22px; font-weight: 600; width: 10em;">
-                            <i class="fa-solid fa-file-lines fa-lg mx-3" />
-                            <h:outputText value="WorkSheet"/> 
-                        </p:menuitem >
-
-                        <p:menuitem
                             action="#{laboratoryManagementController.navigateToSamples()}"
                             ajax="false"
                             actionListener="#{laboratoryManagementController.makeNull()}"
@@ -55,6 +44,17 @@
                             class="d-flex justify-content-center">
                             <i class="fa-solid fa-vial fa-lg mx-3"/>
                             <h:outputText value="Samples"/> 
+                        </p:menuitem >
+                        
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToWorkSheet()}"
+                            actionListener="#{laboratoryManagementController.makeNull()}"
+                            ajax="false"
+                            class="d-flex justify-content-center"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardWorksheet'))}"
+                            style="font-size: 22px; font-weight: 600; width: 10em;">
+                            <i class="fa-solid fa-file-lines fa-lg mx-3" />
+                            <h:outputText value="WorkSheet"/> 
                         </p:menuitem >
 
                         <p:menuitem
