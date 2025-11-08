@@ -1136,10 +1136,10 @@ public class PharmacyController implements Serializable {
                 totalActualNetValue += actualNetValue > 0.0 ? -actualNetValue : actualNetValue;
             }
 
-            // Net Value Adjustment - apply negative sign for returns
+            // Net Value Adjustment - use actual values without sign manipulation to match row display
             if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetValueAdjustment() != null) {
                 double netValueAdjustment = bill.getBillFinanceDetails().getNetValueAdjustment().doubleValue();
-                totalNetValueAdjustment += netValueAdjustment > 0.0 ? -netValueAdjustment : netValueAdjustment;
+                totalNetValueAdjustment += netValueAdjustment;
             }
         }
     }

@@ -233,13 +233,14 @@
                                 </h:panelGrid>
                             </div>
                             <div class="col-md-4">
-                                <p:dataTable id="sum"
-                                             value="#{bhtSummeryController.chargeItemTotals}"
-                                             var="c"
-                                             scrollHeight="350"
-                                             scrollable="true"
-                                             scrollRows="10"
-                                             >
+                                <p:dataTable 
+                                    id="sum"
+                                    value="#{bhtSummeryController.chargeItemTotals}"
+                                    var="c"
+                                    scrollHeight="350"
+                                    scrollable="true"
+                                    scrollRows="10"
+                                    >
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill" />
                                         <p:outputLabel value="Charges" class="mx-2"/>
@@ -340,35 +341,36 @@
                                         <p:column headerText="Actions"  style="width: 10em;">
                                             <div class="d-inline-flex"> <!-- Bootstrap class for inline flex container -->
                                                 <!-- Discharge Button -->
-                                                <p:commandButton ajax="false"
-                                                                 icon="fa fa-check-square"
-                                                                 title="Discharge"
-                                                                 class="ui-button-warning"
-                                                                 action="#{roomChangeController.dischargeWithCurrentTime(rm)}" />
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    icon="fa fa-check-square"
+                                                    title="Discharge"
+                                                    class="ui-button-warning"
+                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}" >
+                                                </p:commandButton>
 
                                                 <!-- Cancel Discharge Button -->
-                                                <p:commandButton ajax="false"
-                                                                 icon="fa fa-times-circle"
-                                                                 title="Cancel Discharge"
-                                                                 class="ui-button-warning mx-2"
-                                                                 action="#{roomChangeController.dischargeCancel(rm)}" />
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    icon="fa fa-times-circle"
+                                                    title="Cancel Discharge"
+                                                    class="ui-button-warning mx-2"
+                                                    action="#{roomChangeController.dischargeCancel(rm)}" >
+                                                </p:commandButton>
                                                 <!-- Update Charges Button -->
-                                                <p:commandButton ajax="false"
-                                                                 icon="fa fa-pencil-square"
-                                                                 title="Update Charges"
-                                                                 action="#{bhtSummeryController.updatePatientRoom(rm)}"
-                                                                 class="ui-button-info" /> <!-- me-1 for margin-right -->
-
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    icon="fa fa-pencil-square"
+                                                    title="Update Charges"
+                                                    action="#{bhtSummeryController.updatePatientRoom(rm)}"
+                                                    class="ui-button-info" >
+                                                </p:commandButton>
 
                                             </div>
                                         </p:column>
 
-
-
-
                                     </p:dataTable>
                                 </p:tab>
-
 
                                 <p:tab id="tabTimed" title="Timed Service Details"  >
                                     <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
@@ -376,18 +378,22 @@
                                             <h:outputLabel value="#{pt.item.name}"/>
                                         </p:column>
                                         <p:column headerText="Start Time">
-                                            <p:datePicker showTime="true"
-                                                          timeInput="true"
-                                                          id="serviceStartTimeStamp"
-                                                          value="#{pt.fromTime}"
-                                                          pattern="dd/MM/yyyy  hh:mm:ss a" />
+                                            <p:datePicker 
+                                                showTime="true"
+                                                timeInput="true"
+                                                id="serviceStartTimeStamp"
+                                                value="#{pt.fromTime}"
+                                                pattern="dd/MM/yyyy  hh:mm:ss a" >
+                                            </p:datePicker>
                                         </p:column>
                                         <p:column headerText="Stopped Time">
-                                            <p:datePicker showTime="true"
-                                                          timeInput="true"
-                                                          id="serviceStoppedTimeStamp"
-                                                          value="#{pt.toTime}"
-                                                          pattern="dd/MM/yyyy  hh:mm:ss a" />
+                                            <p:datePicker 
+                                                showTime="true"
+                                                timeInput="true"
+                                                id="serviceStoppedTimeStamp"
+                                                value="#{pt.toTime}"
+                                                pattern="dd/MM/yyyy  hh:mm:ss a" >
+                                            </p:datePicker>
                                         </p:column>
                                         <p:column headerText="Total" >
                                             <h:outputLabel value="#{pt.serviceValue}">
@@ -407,12 +413,18 @@
                                             <h:outputLabel value="#{pt.item.inwardChargeType}"/>
                                         </p:column>
                                         <p:column >
-                                            <p:commandButton ajax="false" value="Update"
-                                                             action="#{bhtSummeryController.updatePatientItem(pt)}" />
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Update"
+                                                action="#{bhtSummeryController.updatePatientItem(pt)}" >
+                                            </p:commandButton>
                                         </p:column>
                                         <p:column>
-                                            <p:commandButton ajax="false" value="Remove "
-                                                             action="#{surgeryBillController.removeTimeService(pt)}" />
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Remove "
+                                                action="#{surgeryBillController.removeTimeService(pt)}" >
+                                            </p:commandButton>
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
@@ -447,7 +459,6 @@
                                                 <p:column >
                                                     <f:facet name="header">
                                                         <h:outputLabel value="View Bill"/>
-
                                                     </f:facet>
                                                 </p:column>
 
@@ -471,9 +482,11 @@
                                                 <h:outputLabel value="#{ser.inwardChargeType}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
                                             <p:column>
-                                                <p:commandButton ajax="false" rendered="#{ser.transBillItemCount ne 0}"
-                                                                 action="inward_edit_bill_item_view"
-                                                                 value="View Bill Items"  >
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    rendered="#{ser.transBillItemCount ne 0}"
+                                                    action="inward_edit_bill_item_view?faces-redirect=true"
+                                                    value="View Bill Items"  >
                                                     <f:setPropertyActionListener value="#{ser}" target="#{bhtSummeryController.item}"/>
                                                 </p:commandButton>
                                             </p:column>
@@ -544,7 +557,8 @@
                                                             action="#{billController.save(iss)}"
                                                             process="commentContainer"
                                                             update="pageForm:pageMessages"
-                                                            title="Save"/>
+                                                            title="Save">
+                                                        </p:commandButton>
                                                     </div>
                                                 </div>
 
@@ -552,13 +566,18 @@
                                             </h:panelGroup>
                                         </p:column>
                                         <p:column>
-                                            <p:commandButton ajax="false" action="pharmacy_reprint_bill_sale_bht"
-                                                             rendered="#{iss.billClass eq 'class com.divudi.core.entity.PreBill'}" value="View Issue"  >
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                action="pharmacy_reprint_bill_sale_bht?faces-redirect=true"
+                                                rendered="#{iss.billClass eq 'class com.divudi.core.entity.PreBill'}" 
+                                                value="View Issue"  >
                                                 <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
                                             </p:commandButton>
-                                            <p:commandButton ajax="false" action="pharmacy_reprint_bill_return_bht"
-                                                             rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
-                                                             value="View Return"  >
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                action="pharmacy_reprint_bill_return_bht?faces-redirect=true"
+                                                rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
+                                                value="View Return"  >
                                                 <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
                                             </p:commandButton>
                                         </p:column>
@@ -626,13 +645,18 @@
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
-                                            <p:commandButton ajax="false" action="store_reprint_bill_sale_bht"
-                                                             rendered="#{iss.billClass eq 'class com.divudi.core.entity.PreBill'}" value="View Issue"  >
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                action="store_reprint_bill_sale_bht?faces-redirect=true"
+                                                rendered="#{iss.billClass eq 'class com.divudi.core.entity.PreBill'}" 
+                                                value="View Issue"  >
                                                 <f:setPropertyActionListener value="#{iss}" target="#{storeBillSearch.bill}"/>
                                             </p:commandButton>
-                                            <p:commandButton ajax="false" action="store_reprint_bill_return_bht"
-                                                             rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
-                                                             value="View Return"  >
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                action="store_reprint_bill_return_bht?faces-redirect=true"
+                                                rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
+                                                value="View Return"  >
                                                 <f:setPropertyActionListener value="#{iss}" target="#{storeBillSearch.bill}"/>
                                             </p:commandButton>
                                         </p:column>
@@ -640,12 +664,15 @@
                                 </p:tab>
 
                                 <p:tab id="tabAdd" title="Out Side Charge Details"  >
-                                    <p:dataTable    scrollable="true" scrollHeight="300"
-                                                    value="#{bhtSummeryController.additionalChargeBill}" var="bil"
-                                                    rowStyleClass="#{((bil.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                                     or
-                                                                     (bil.billedBill eq null
-                                                                     and bil.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                    <p:dataTable    
+                                        scrollable="true" 
+                                        scrollHeight="300"
+                                        value="#{bhtSummeryController.additionalChargeBill}" 
+                                        var="bil"
+                                        rowStyleClass="#{((bil.billClass eq 'class com.divudi.core.entity.BilledBill')
+                                                         or
+                                                         (bil.billedBill eq null
+                                                         and bil.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
                                         <p:column headerText="Name">
                                             #{bil.comments}
                                         </p:column>
@@ -707,7 +734,7 @@
                                         </p:column>
 
                                         <p:column>
-                                            <p:commandButton ajax="false" action="inward_reprint_bill" value="View Bill" >
+                                            <p:commandButton ajax="false" action="inward_reprint_bill?faces-redirect=true" value="View Bill" >
                                                 <f:setPropertyActionListener value="#{bil}" target="#{inwardSearch.bill}"/>
                                             </p:commandButton>
 
@@ -716,12 +743,13 @@
                                     </p:dataTable>
                                 </p:tab>
 
-
-
                                 <p:tab id="tabPro" title="Professional Fees"  >
-                                    <p:dataTable  scrollable="true" scrollHeight="300"
-                                                  value="#{bhtSummeryController.profesionallFee}" var="pf"
-                                                  rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
+                                    <p:dataTable 
+                                        scrollable="true" 
+                                        scrollHeight="300"
+                                        value="#{bhtSummeryController.profesionallFee}" 
+                                        var="pf"
+                                        rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
                                         </p:column>
@@ -767,17 +795,20 @@
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
-                                            <p:commandButton ajax="false" action="inward_reprint_bill_professional" value="View " >
+                                            <p:commandButton ajax="false" action="inward_reprint_bill_professional?faces-redirect=true" value="View " >
                                                 <f:setPropertyActionListener value="#{pf.bill}" target="#{inwardSearch.bill}"/>
                                             </p:commandButton>
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
 
-
                                 <p:tab id="tabDoc" title="Assisting Fees"  >
-                                    <p:dataTable  scrollable="true" scrollHeight="300"  value="#{bhtSummeryController.doctorAndNurseFee}" var="pf"
-                                                  rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
+                                    <p:dataTable  
+                                        scrollable="true" 
+                                        scrollHeight="300"  
+                                        value="#{bhtSummeryController.doctorAndNurseFee}"
+                                        var="pf"
+                                        rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
                                         </p:column>
@@ -823,7 +854,7 @@
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
-                                            <p:commandButton ajax="false" action="inward_reprint_bill_professional" value="View Bill" >
+                                            <p:commandButton ajax="false" action="inward_reprint_bill_professional?faces-redirect=true" value="View Bill" >
                                                 <f:setPropertyActionListener value="#{pf.bill}" target="#{inwardSearch.bill}"/>
                                             </p:commandButton>
                                         </p:column>
@@ -831,12 +862,14 @@
                                 </p:tab>
 
                                 <p:tab id="tabP" title="Payments"  >
-                                    <p:dataTable  scrollable="true" scrollHeight="300"
-                                                  value="#{bhtSummeryController.paymentBill}"
-                                                  var="p"
-                                                  rowStyleClass="#{((p.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                                   or
-                                                                   (p.refundedBill eq null and p.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                    <p:dataTable  
+                                        scrollable="true" 
+                                        scrollHeight="300"
+                                        value="#{bhtSummeryController.paymentBill}"
+                                        var="p"
+                                        rowStyleClass="#{((p.billClass eq 'class com.divudi.core.entity.BilledBill')
+                                                         or
+                                                         (p.refundedBill eq null and p.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}" >
                                         <p:column headerText="Bill No">
                                             #{p.deptId}
                                         </p:column>
@@ -878,7 +911,7 @@
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
-                                            <p:commandButton ajax="false" action="inward_reprint_bill_payment" value="View Bill" >
+                                            <p:commandButton ajax="false" action="inward_reprint_bill_payment?faces-redirect=true" value="View Bill" >
                                                 <f:setPropertyActionListener value="#{p}" target="#{inwardSearch.bill}"/>
                                             </p:commandButton>
                                         </p:column>
@@ -888,33 +921,11 @@
                             </p:tabView>
                         </p:panel>
 
-
                     </p:panel>
-
-
-
-
-
-
-
-
-
-
-
                     <p:messages id="pageMessages" ></p:messages>
-
-
                 </h:form>
-
-
-
-
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
-
 </html>
 

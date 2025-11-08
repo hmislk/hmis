@@ -723,7 +723,7 @@ public class IssueReturnController implements Serializable {
             returningBillItem.setReferenceBill(originalBill);
             returningBillItem.setReferanceBillItem(originalBillItem);
             returningBillItem.copy(originalBillItem);
-            returningBillItem.setQty(originalBillItem.getRemainingQty());
+            returningBillItem.setQty(0.0); // Set to 0 so user can enter actual return amount
             returningBillItem.setRemainingQty(originalBillItem.getRemainingQty());
 
             PharmaceuticalBillItem returningPbi = returningBillItem.getPharmaceuticalBillItem();
@@ -1162,7 +1162,203 @@ public class IssueReturnController implements Serializable {
             return;
         }
         // Always calculate from returnBillItems for issue returns
-        calculateBillTotalFromItems(returnBillItems);
+        calculateReturnBillTotalFromItems(returnBillItems);
+    }
+
+    /**
+     * Calculate bill totals specifically for return bills, excluding items with zero quantity.
+     * This method is a copy of calculateBillTotalFromItems but modified to skip items
+     * with zero return quantity to ensure only items being returned are included in totals.
+     */
+    private void calculateReturnBillTotalFromItems(List<BillItem> billItems) {
+        // Initialize totals
+        double netTotal = 0.0;
+        double grossTotal = 0.0;
+        double totalDiscountValue = 0.0;
+        double totalTaxValue = 0.0;
+        double totalExpenseValue = 0.0;
+
+        // Initialize BillFinanceDetails aggregates
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalQuantityInUnits = BigDecimal.ZERO;
+        BigDecimal lineGrossTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+        BigDecimal lineDiscountTotal = BigDecimal.ZERO;
+        BigDecimal lineTaxTotal = BigDecimal.ZERO;
+        BigDecimal lineExpenseTotal = BigDecimal.ZERO;
+        BigDecimal lineCostTotal = BigDecimal.ZERO;
+
+        // Iterate through bill items and sum up totals
+        for (BillItem bi : billItems) {
+            if (bi == null) {
+                continue;
+            }
+
+            // Skip items with zero or negative quantity - they shouldn't be included in return total
+            if (bi.getQty() <= 0) {
+                continue;
+            }
+
+            // Recalculate values based on current quantity to ensure accuracy
+            double currentQty = bi.getQty();
+            double currentRate = bi.getRate();
+
+            // Safeguard: if rate is 0 or negative, skip this item
+            if (currentRate <= 0) {
+                continue;
+            }
+
+            double currentGrossValue = currentRate * currentQty;
+            double currentNetValue = currentGrossValue; // For returns, net = gross
+
+            netTotal += currentNetValue;
+            grossTotal += currentGrossValue;
+
+            // Add quantities
+            totalQuantity = totalQuantity.add(BigDecimal.valueOf(bi.getQty()));
+
+            // Add quantity in units (for AMPP conversion)
+            if (bi.getPharmaceuticalBillItem() != null) {
+                totalQuantityInUnits = totalQuantityInUnits.add(BigDecimal.valueOf(bi.getPharmaceuticalBillItem().getQty()));
+            } else {
+                totalQuantityInUnits = totalQuantityInUnits.add(BigDecimal.valueOf(bi.getQty()));
+            }
+
+            // Add line totals from BillItemFinanceDetails if available
+            if (bi.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+
+                if (bifd.getValueAtCostRate() != null) {
+                    totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+                }
+                if (bifd.getValueAtPurchaseRate() != null) {
+                    totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+                }
+                if (bifd.getValueAtRetailRate() != null) {
+                    totalRetailSaleValue = totalRetailSaleValue.add(bifd.getValueAtRetailRate());
+                }
+                if (bifd.getValueAtWholesaleRate() != null) {
+                    totalWholesaleValue = totalWholesaleValue.add(bifd.getValueAtWholesaleRate());
+                }
+
+                // Line-level totals
+                if (bifd.getLineGrossTotal() != null) {
+                    lineGrossTotal = lineGrossTotal.add(bifd.getLineGrossTotal());
+                }
+                if (bifd.getLineNetTotal() != null) {
+                    lineNetTotal = lineNetTotal.add(bifd.getLineNetTotal());
+                }
+                if (bifd.getLineDiscount() != null) {
+                    lineDiscountTotal = lineDiscountTotal.add(bifd.getLineDiscount());
+                }
+                if (bifd.getLineTax() != null) {
+                    lineTaxTotal = lineTaxTotal.add(bifd.getLineTax());
+                }
+                if (bifd.getLineExpense() != null) {
+                    lineExpenseTotal = lineExpenseTotal.add(bifd.getLineExpense());
+                }
+                if (bifd.getLineCost() != null) {
+                    lineCostTotal = lineCostTotal.add(bifd.getLineCost());
+                }
+            }
+
+            // NO discount, tax, and expense from bill items
+            // For return bills, these are typically zero but we sum them anyway
+        }
+
+        // Update Bill entity fields
+        getReturnBill().setTotal(grossTotal);
+        getReturnBill().setNetTotal(netTotal);
+        getReturnBill().setGrantTotal(netTotal); // Grant total typically equals net total for returns
+        getReturnBill().setBillTotal(netTotal); // Bill total typically equals net total for returns
+
+        // For return bills, discounts and taxes are typically zero
+        getReturnBill().setDiscount(totalDiscountValue);
+        getReturnBill().setTax(totalTaxValue);
+        getReturnBill().setVat(0.0); // VAT is typically zero for returns
+        getReturnBill().setVatPlusNetTotal(netTotal); // Net total without VAT
+
+        // Set expense total
+        getReturnBill().setExpenseTotal(totalExpenseValue);
+        getReturnBill().setExpensesTotalConsideredForCosting(totalExpenseValue);
+        getReturnBill().setExpensesTotalNotConsideredForCosting(0.0);
+
+        // Set sale and free values (for returns, free value is typically zero)
+        getReturnBill().setSaleValue(netTotal);
+        getReturnBill().setFreeValue(0.0);
+
+        // Initialize and populate BillFinanceDetails
+        if (getReturnBill().getBillFinanceDetails() == null) {
+            getReturnBill().setBillFinanceDetails(new BillFinanceDetails());
+        }
+
+        BillFinanceDetails bfd = getReturnBill().getBillFinanceDetails();
+
+        // Set discount totals
+        bfd.setBillDiscount(BigDecimal.ZERO); // Bill-level discount is zero for returns
+        bfd.setLineDiscount(lineDiscountTotal);
+        bfd.setTotalDiscount(lineDiscountTotal);
+
+        // Set expense totals
+        bfd.setBillExpense(BigDecimal.ZERO); // Bill-level expense is zero for returns
+        bfd.setLineExpense(lineExpenseTotal);
+        bfd.setTotalExpense(lineExpenseTotal);
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.ZERO);
+        bfd.setBillExpensesNotConsideredForCosting(BigDecimal.ZERO);
+
+        // Set cost totals
+        bfd.setBillCostValue(BigDecimal.ZERO); // Bill-level cost is zero for returns
+        bfd.setLineCostValue(lineCostTotal);
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalCostValueFree(BigDecimal.ZERO);
+        bfd.setTotalCostValueNonFree(totalCostValue);
+
+        // Set tax totals
+        bfd.setBillTaxValue(BigDecimal.ZERO); // Bill-level tax is zero for returns
+        bfd.setItemTaxValue(lineTaxTotal);
+        bfd.setTotalTaxValue(lineTaxTotal);
+
+        // Set purchase value totals
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalPurchaseValueFree(BigDecimal.ZERO);
+        bfd.setTotalPurchaseValueNonFree(totalPurchaseValue);
+
+        // Set retail and wholesale value totals
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+        bfd.setTotalRetailSaleValueFree(BigDecimal.ZERO);
+        bfd.setTotalRetailSaleValueNonFree(totalRetailSaleValue);
+
+        bfd.setTotalWholesaleValue(totalWholesaleValue);
+        bfd.setTotalWholesaleValueFree(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValueNonFree(totalWholesaleValue);
+
+        // Set quantity totals
+        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalFreeQuantity(BigDecimal.ZERO);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQuantityInUnits);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(BigDecimal.ZERO);
+
+        // Set gross and net totals
+        bfd.setLineGrossTotal(lineGrossTotal);
+        bfd.setBillGrossTotal(BigDecimal.ZERO); // Bill-level gross is zero for returns
+        bfd.setGrossTotal(BigDecimal.valueOf(grossTotal));
+
+        bfd.setLineNetTotal(lineNetTotal);
+        bfd.setBillNetTotal(BigDecimal.ZERO); // Bill-level net is zero for returns
+        bfd.setNetTotal(BigDecimal.valueOf(netTotal));
+
+        // Set free item values (typically zero for returns)
+        bfd.setTotalOfFreeItemValues(BigDecimal.ZERO);
+        bfd.setTotalOfFreeItemValuesFree(BigDecimal.ZERO);
+        bfd.setTotalOfFreeItemValuesNonFree(BigDecimal.ZERO);
+
+        // Set adjustment values (same as totals for returns)
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(grossTotal));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(netTotal));
     }
 
     private void calculateBillTotalFromItems(List<BillItem> billItems) {

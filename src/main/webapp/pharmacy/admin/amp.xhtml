@@ -44,18 +44,7 @@
 
                         </p:commandButton>
 
-                        <!-- Bulk Code Generation Button -->
-                        <p:commandButton
-                            id="btnBulkCodeGen"
-                            icon="fa fa-magic"
-                            value="Generate All Codes"
-                            title="Generate codes for all AMPs that need them"
-                            onclick="return confirm('Are you sure you want to generate codes for all AMPs? This action cannot be undone.');"
-                            action="#{ampController.performBulkCodeGeneration()}"
-                            update="acAmp msg @form"
-                            process="btnBulkCodeGen"
-                            class="m-1 ui-button-info w-25">
-                        </p:commandButton>
+
 
 
 
@@ -139,10 +128,10 @@
                                     </div>
                                 </h:panelGroup>
                                 <p:inputText autocomplete="off" id="txtName"
-                                           value="#{ampController.current.name}"
-                                           placeholder="Enter full product name"
-                                           styleClass="longText" class="w-100"
-                                           required="true" />
+                                             value="#{ampController.current.name}"
+                                             placeholder="Enter full product name"
+                                             styleClass="longText" class="w-100"
+                                             required="true" />
 
 
                                 <!-- Code field with enhanced descriptions -->
@@ -157,19 +146,19 @@
                                 <h:panelGroup id="codePanel" class="w-100">
                                     <div class="input-group">
                                         <p:inputText id="code" autocomplete="off"
-                                                   value="#{ampController.current.code}"
-                                                   placeholder="Enter unique code"
-                                                   styleClass="#{ampController.duplicateCode ? 'is-invalid' : ''}"
-                                                   maxlength="20">
+                                                     value="#{ampController.current.code}"
+                                                     placeholder="Enter unique code"
+                                                     styleClass="#{ampController.duplicateCode ? 'is-invalid' : ''}"
+                                                     maxlength="20">
                                             <p:ajax event="blur" process="@this" update="codePanel msg btnSave codeValidationMsg" listener="#{ampController.checkCodeDuplicate}" />
                                         </p:inputText>
                                         <p:commandButton id="generateCode" value="Generate"
-                                                       title="Generate unique code automatically"
-                                                       action="#{ampController.generateCode()}"
-                                                       process="generateCode codePanel"
-                                                       update="codePanel msg btnSave codeValidationMsg"
-                                                       class="ui-button-secondary"
-                                                       icon="pi pi-refresh" />
+                                                         title="Generate unique code automatically"
+                                                         action="#{ampController.generateCode()}"
+                                                         process="generateCode codePanel"
+                                                         update="codePanel msg btnSave codeValidationMsg"
+                                                         class="ui-button-secondary"
+                                                         icon="pi pi-refresh" />
                                     </div>
 
                                     <!-- Code validation feedback -->
@@ -193,9 +182,9 @@
                                     </div>
                                 </h:panelGroup>
                                 <p:inputText autocomplete="off"
-                                           value="#{ampController.current.barcode}"
-                                           placeholder="Enter product barcode"
-                                           class="w-100" />
+                                             value="#{ampController.current.barcode}"
+                                             placeholder="Enter product barcode"
+                                             class="w-100" />
 
                                 <!-- VMP field with description -->
                                 <h:panelGroup class="w-100">
@@ -359,6 +348,20 @@
 
             </p:panel>
         </h:form>
+        <h:form >
+            <!-- Bulk Code Generation Button -->
+            <p:commandButton
+                id="btnBulkCodeGen"
+                icon="fa fa-magic"
+                value="Generate All Codes"
+                title="Generate codes for all AMPs that need them"
+                onclick="return confirm('Are you sure you want to generate codes for all AMPs? This action cannot be undone.');"
+                action="#{ampController.performBulkCodeGeneration()}"
+                ajax="false"
+                class="m-1 ui-button-warning w-25">
+            </p:commandButton>
+        </h:form>
+
 
     </ui:define>
 

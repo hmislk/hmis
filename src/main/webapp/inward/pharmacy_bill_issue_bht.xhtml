@@ -203,8 +203,9 @@
                                                     <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
                                                 </p:column>
                                                 <p:column
+                                                    rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"
                                                     headerText="Rate" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
+                                                    <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
@@ -258,14 +259,15 @@
                                         <p:outputLabel
                                             id="lblRate"
                                             value="Rate"
-                                            styleClass="form-label text-end"></p:outputLabel>
+                                            styleClass="form-label text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
                                         <p:inputText
                                             class="w-100 form-control text-end"
                                             autocomplete="off"
                                             accesskey="q"
                                             disabled="true"
                                             id="txtRate"
-                                            value="#{pharmacySaleBhtController.billItem.rate + pharmacySaleBhtController.billItem.marginRate}" >
+                                            value="#{pharmacySaleBhtController.billItem.rate + pharmacySaleBhtController.billItem.marginRate}" 
+                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
                                     </div>
@@ -273,14 +275,15 @@
                                         <p:outputLabel
                                             id="lblValue"
                                             value="Value"
-                                            styleClass="form-label"></p:outputLabel>
+                                            styleClass="form-label" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}"></p:outputLabel>
                                         <p:inputText
                                             class="w-100 form-control text-end"
                                             autocomplete="off"
                                             accesskey="q"
                                             disabled="true"
                                             id="txtValue"
-                                            value="#{pharmacySaleBhtController.billItem.netValue}" >
+                                            value="#{pharmacySaleBhtController.billItem.netValue}" 
+                                            rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
                                     </div>
@@ -335,12 +338,12 @@
                                                 update=":bill:pBis" />
                                         </p:inputText>
                                     </p:column>
-                                    <p:column headerText="Rate"  width="8em"  class="text-end">
-                                        <h:outputText value="#{bi.netRate}" >
+                                    <p:column headerText="Rate"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bi.netRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Value"  width="8em"  class="text-end">
+                                    <p:column headerText="Value"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -457,8 +460,8 @@
                                 </div>
                             </div>
                         </f:facet>
-                        
-                        
+
+
                         <div class="d-flex m-2" style="float: right">
                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
