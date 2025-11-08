@@ -256,7 +256,7 @@
                                 <h:outputText value="#{0.0 - (f.qty)}"  rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE_RETURN' }">
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputText>
-                                <h:outputText value="#{f.qty}" rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE' or f.bill.billTypeAtomic eq 'PHARMACY_ISSUE_CANCELLED'}">
+                                <h:outputText value="#{f.qty}" rendered="#{f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE' or f.bill.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE_CANCELLED'}">
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputText>
                             </p:column>
