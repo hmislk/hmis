@@ -122,6 +122,8 @@ public class LaboratoryManagementController implements Serializable {
     private String comment;
     private Department sampleSendingDepartment;
     private Department sampleReceiveFromDepartment;
+    private List<PatientInvestigation> tempSelectedItems;
+    private List<PatientInvestigation> selectedItems;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -149,6 +151,14 @@ public class LaboratoryManagementController implements Serializable {
     public void navigateToInvestigation() {
         activeIndex = 2;
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        performingInstitution = null;
+        performingDepartment = null;
+        patientInvestigationStatus = null;
+    }
+    
+    public void navigateToWorkSheet() {
+        activeIndex = 6;
+        listingEntity = ListingEntity.WORK_SHEET;
         performingInstitution = null;
         performingDepartment = null;
         patientInvestigationStatus = null;
@@ -326,6 +336,31 @@ public class LaboratoryManagementController implements Serializable {
     public String navigateToLaboratoryAdministration() {
         return "/admin/lims/index?faces-redirect=true";
     }
+    
+    public String navigateToBackDashBoard() {
+        items = new ArrayList<>();
+        activeIndex = 6;
+        selectedItems = new ArrayList<>();
+        tempSelectedItems = new ArrayList<>();
+        return "/lab/laboratory_management_dashboard?faces-redirect=true";
+    }
+    
+    public String navigateToPrintWorkSheetFromSelectedBill(Bill bill) {
+        tempSelectedItems = new ArrayList<>();
+        navigateToInvestigationsFromSelectedBill(bill);
+        return "/lab/print_worksheet?faces-redirect=true";
+    }
+    
+    public void processWorkSheet(){
+        selectedItems  = new ArrayList<>();
+        System.out.println("---------------------------------");
+        System.out.println("Temp Selected Items = " + tempSelectedItems.size());
+        System.out.println("---------------------------------");
+        System.out.println("Before Process SelectedItems = " + selectedItems.size());
+        selectedItems.addAll(tempSelectedItems);
+        System.out.println("After Process SelectedItems = " + selectedItems.size());
+        System.out.println("---------------------------------");
+    }
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
@@ -342,9 +377,9 @@ public class LaboratoryManagementController implements Serializable {
         params.put("ret", false);
         params.put("bill", bill);
 
-        items = patientInvestigationFacade.findByJpql(jpql, params);
+        items = patientInvestigationFacade.findByJpqlWithoutCache(jpql, params);
     }
-
+    
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
         items = new ArrayList<>();
         if (patientInvestigation == null || patientInvestigation.getId() == null) {
@@ -475,6 +510,12 @@ public class LaboratoryManagementController implements Serializable {
         this.type = null;
         this.referringDoctor = null;
         this.sampleSendingDepartment = null;
+        this.tempSelectedItems = new ArrayList();;
+        this.selectedItems = new ArrayList();;
+    }
+    public void searchLabBillsForWorkSheet() {
+        searchLabBills();
+        listingEntity = ListingEntity.WORK_SHEET;
     }
 
     public void searchLabBills() {
@@ -1883,5 +1924,21 @@ public class LaboratoryManagementController implements Serializable {
 
     public void setSampleReceiveFromDepartment(Department sampleReceiveFromDepartment) {
         this.sampleReceiveFromDepartment = sampleReceiveFromDepartment;
+    }
+
+    public List<PatientInvestigation> getSelectedItems() {
+        return selectedItems;
+    }
+
+    public void setSelectedItems(List<PatientInvestigation> selectedItems) {
+        this.selectedItems = selectedItems;
+    }
+
+    public List<PatientInvestigation> getTempSelectedItems() {
+        return tempSelectedItems;
+    }
+
+    public void setTempSelectedItems(List<PatientInvestigation> tempSelectedItems) {
+        this.tempSelectedItems = tempSelectedItems;
     }
 }
