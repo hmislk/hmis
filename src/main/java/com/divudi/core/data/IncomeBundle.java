@@ -148,6 +148,7 @@ public class IncomeBundle implements Serializable {
         double sumOfTax = 0.0;
         double sumOfActualTotal = 0.0;
         double sumOfNetTotal = 0.0;
+        double sumOfTotalCostValue = 0.0;
 
         // Aggregate all rows
         for (IncomeRow r : rows) {
@@ -176,6 +177,7 @@ public class IncomeBundle implements Serializable {
             sumOfTax += r.getTax();
             sumOfActualTotal += r.getActualTotal();
             sumOfNetTotal += r.getNetTotal();
+            sumOfTotalCostValue += r.getTotalCostValue();
         }
 
         // Set summary row values
@@ -204,6 +206,7 @@ public class IncomeBundle implements Serializable {
         getSummaryRow().setTax(sumOfTax);
         getSummaryRow().setActualTotal(sumOfActualTotal);
         getSummaryRow().setNetTotal(sumOfNetTotal);
+        getSummaryRow().setTotalCostValue(sumOfTotalCostValue);
     }
 
     public void fixDiscountsAndMarginsInRows() {
