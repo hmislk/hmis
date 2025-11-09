@@ -2898,7 +2898,7 @@ public class GrnCostingController implements Serializable {
         return false;
     }
 
-    public void requestFinalizeWithSaveApprove() {
+    public void approveGrnWithSaveApprove() {
         // Always use bill's invoice number, ignore controller reference
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
@@ -3072,6 +3072,11 @@ public class GrnCostingController implements Serializable {
                 getBillFacade().edit(getApproveBill());
             }
         }
+
+        // Negate gross total and net total for approved GRN - take absolute value and negate
+        getCurrentGrnBillPre().setTotal(-Math.abs(getCurrentGrnBillPre().getTotal()));
+        getCurrentGrnBillPre().setNetTotal(-Math.abs(getCurrentGrnBillPre().getNetTotal()));
+        getBillFacade().edit(getCurrentGrnBillPre());
 
         JsfUtil.addSuccessMessage("GRN Finalized");
         printPreview = true;

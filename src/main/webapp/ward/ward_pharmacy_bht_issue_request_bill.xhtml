@@ -24,24 +24,45 @@
                         <p:panel
                             rendered="#{pharmacyRequestForBhtController.department eq null or pharmacyRequestForBhtController.patientEncounter eq null}">
                             <f:facet name="header">
-                                <h:outputLabel value="Start Pharmacy Request for Inpatients"/>
-                                <p:commandButton
-                                    ajax="false"
-                                    icon="fa-solid fa-address-card"
-                                    class="ui-button-secondary "
-                                    value="Inpatient Dashboard"
-                                    style="float: right;"
-                                    action="#{admissionController.navigateToAdmissionProfilePage}"
-                                    >
-                                    <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
-                                </p:commandButton>
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Start Pharmacy Request for Inpatients" class="mt-2"/>
+                                    </div>
+                                    <div>
+                                        <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa-solid fa-address-card"
+                                                    class="ui-button-secondary "
+                                                    value="Inpatient Dashboard"
+                                                    action="#{admissionController.navigateToAdmissionProfilePage}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{pharmacyRequestForBhtController.patientEncounter}" 
+                                                        target="#{admissionController.current}" >
+                                                    </f:setPropertyActionListener>
+                                                </p:commandButton>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <p:commandButton 
+                                                value="Back to WorkBench" 
+                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                                ajax="false"
+                                                class="ui-button-operating-theatre"
+                                                icon="fa fa-arrow-left">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
                             </f:facet>
+
                             <div class="d-flex gap-3 flex-wrap">
                                 <div class="d-flex flex-column">
                                     <h:outputLabel value="Requesting Department"/>
                                     <p:autoComplete
                                         value="#{pharmacyRequestForBhtController.department}"
-                                        required="true"
                                         class="col-md-12 mx-2"
                                         inputStyleClass="form-control"
                                         forceSelection="true"
@@ -111,64 +132,80 @@
                             >
                             <f:facet name="header" >
                                 <div class="d-flex justify-content-between">
-                                    <div class="d-flex mt-2">
+                                    <div>
                                         <i class="fas fa-exclamation-circle mt-2" />
-                                        <p:spacer width="10" height="1" ></p:spacer>
-                                        <h:outputLabel value="BHT ISSUE REQUEST FOR - "/>
-                                        <h:outputLabel value="#{pharmacyRequestForBhtController.department.name}" class="mx-2" />
+                                        <h:outputLabel value="BHT ISSUE REQUEST FOR - " class="mx-2" />
+                                        <h:outputLabel value="#{pharmacyRequestForBhtController.department.name}" />
                                     </div>
-                                    <div class="d-flex gap-2">
-
-                                        <p:commandButton
-                                            ajax="false"
-                                            icon="fa-solid fa-address-card"
-                                            class="ui-button-secondary "
-                                            value="Inpatient Dashboard"
-                                            action="#{bhtSummeryController.navigateToInpatientProfile()}">
-                                        </p:commandButton>
-
-                                        <p:commandButton
-                                            value="Lookup"
-                                            ajax="false"
-                                            icon="fa fa-search"
-                                            class="ui-button-warning "
-                                            action="#{patientController.navigateToSearchPatients()}"
-                                            >
-                                        </p:commandButton>
-                                        <p:commandButton
-                                            value="Profile"
-                                            ajax="false"
-                                            icon="fa fa-user"
-                                            class="ui-button-warning"
-                                            action="#{patientController.navigateToOpdPatientProfile()}"
-                                            >
-                                            <f:setPropertyActionListener
-                                                value="#{pharmacyRequestForBhtController.patientEncounter.patient}"
-                                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-
+                                    <div  class="d-flex gap-2">
                                         <p:commandButton
                                             accesskey="n"
                                             value="New Bill"
                                             ajax="false"
                                             icon="fas fa-file-invoice"
                                             class="ui-button-warning"
-                                            action="pharmacy_bill_issue_bht"
+                                            action="pharmacy_bill_issue_bht?faces-redirect=true"
                                             actionListener="#{pharmacyRequestForBhtController.resetAll}"  >
                                         </p:commandButton>
 
-                                        <p:commandButton
-                                            value="Settle Request"
-                                            class="ui-button-success"
-                                            icon="fa fa-check"
-                                            ajax="false"
-                                            action="#{pharmacyRequestForBhtController.settleBhtRequest}"
-                                            actionListener="#{pharmacyRequestForBhtController.calculateAllRates}"  >
-                                        </p:commandButton>
+                                        <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Lookup"
+                                                    ajax="false"
+                                                    icon="fa fa-search"
+                                                    class="ui-button-warning "
+                                                    action="#{patientController.navigateToSearchPatients()}">
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    value="Profile"
+                                                    ajax="false"
+                                                    icon="fa fa-user"
+                                                    class="ui-button-warning"
+                                                    action="#{patientController.navigateToOpdPatientProfile()}">
+                                                    <f:setPropertyActionListener
+                                                        value="#{pharmacyRequestForBhtController.patientEncounter.patient}"
+                                                        target="#{patientController.current}" >
+                                                    </f:setPropertyActionListener>
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa-solid fa-address-card"
+                                                    class="ui-button-secondary "
+                                                    value="Inpatient Dashboard"
+                                                    action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                                </p:commandButton>
+
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <p:commandButton 
+                                                value="Back to WorkBench" 
+                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                                ajax="false"
+                                                class="ui-button-operating-theatre"
+                                                icon="fa fa-arrow-left">
+                                            </p:commandButton>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
-
                             </f:facet>
+
+                            <div class="row mt-2 mb-3">
+                                <div class="d-flex  justify-content-end">
+                                    <p:commandButton
+                                        value="Settle Request"
+                                        class="ui-button-success"
+                                        icon="fa fa-check"
+                                        ajax="false"
+                                        action="#{pharmacyRequestForBhtController.settleBhtRequest}"
+                                        actionListener="#{pharmacyRequestForBhtController.calculateAllRates}"  >
+                                    </p:commandButton>
+                                </div>
+                            </div>
 
                             <div class="row">
                                 <div class="col-4">
@@ -188,9 +225,8 @@
                                             class="w-100" />
                                     </p:panel>
                                 </div>
+
                                 <div class="col-8">
-
-
 
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true)}" >
                                         <p:panel>
@@ -203,8 +239,9 @@
                                                     value="Save"
                                                     action="#{pharmacyRequestForBhtController.saveBhtIssueRequestFrompharmacy()}"
                                                     icon="pi pi-save"
-                                                    class="ui-button-success m-1"
-                                                    style="float: right;"/>
+                                                    class="ui-button-success"
+                                                    style="float: right;">
+                                                </p:commandButton>
                                             </f:facet>
 
 
@@ -371,16 +408,13 @@
                                                 </div>
                                             </div>
 
-
-
                                         </p:panel>
                                     </h:panelGroup>
 
-
-                                    <p:panel>
+                                    <p:panel class="mt-2">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus"  />
-                                            <h:outputLabel value="Drug Order" class="mx-4"/>
+                                            <h:outputLabel value="Drug Order" class="mx-2"/>
                                         </f:facet>
 
                                         <div class="row">
@@ -388,7 +422,7 @@
                                             <div class="col-md-2"><p:outputLabel value="Quantity" ></p:outputLabel></div>
                                             <div class="col-md-2"></div>
                                         </div>
-                                        
+
                                         <p:growl id="growl" showDetail="false" life="5500" />
 
                                         <div class="row mt-1">
@@ -410,7 +444,8 @@
                                                     <p:ajax event="query" process="acItem"></p:ajax>
                                                     <p:ajax event="itemSelect"
                                                             listener="#{pharmacyRequestForBhtController.handleSelect}"
-                                                            update="focusQty" ></p:ajax>
+                                                            update="focusQty" >
+                                                    </p:ajax>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-md-2">
@@ -441,15 +476,12 @@
                                             <p:focus id="focusItem" for="acItem" ></p:focus>
                                         </div>
 
-
-
                                         <div class="row mt-1">
                                             <div class="col-md-12">
                                                 <p:outputLabel value="Comment" />
                                                 <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
                                             </div>
                                         </div>
-
 
                                     </p:panel>
 
@@ -482,80 +514,91 @@
                                         </p:dataTable>
                                     </p:panel>
 
-
-
                                 </div>
                             </div>
 
-
-
                         </p:panel>
+
                     </h:panelGroup>
                 </h:form>
-
-
 
                 <h:form>
                     <p:panel id="printPanel"  rendered="#{pharmacyRequestForBhtController.billPreview}" >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <div class="col-md-4">
-                                    <h:outputLabel value="View Bill" class="mt-2"/>
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                                    <p:outputLabel value="View Bill" class="m-2"/>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <p:commandButton
-                                        accesskey="p"
                                         id="btnPrint"
                                         value="Print"
                                         ajax="false"
                                         class="ui-button-info"
-                                        icon="fa fa-print"> <!-- Font Awesome icon -->
+                                        icon="fa fa-print">
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
+
                                     <p:commandButton
-                                        accesskey="n"
                                         value="New Medicine Request for BHT"
                                         ajax="false"
                                         class="ui-button-success"
-                                        action="pharmacy_bill_issue_request"
+                                        action="pharmacy_bill_issue_request?faces-redirect=true"
                                         actionListener="#{pharmacyRequestForBhtController.resetAll()}"
                                         icon="fa fa-plus-circle"> <!-- Font Awesome icon -->
                                     </p:commandButton>
-                                    <p:commandButton
-                                        value="Lookup"
-                                        ajax="false"
-                                        icon="fa fa-search"
-                                        class="ui-button-warning "
-                                        action="#{patientController.navigateToSearchPatients()}"
-                                        >
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        value="Patient Profile"
-                                        ajax="false"
-                                        icon="fa fa-user"
-                                        class="ui-button-warning"
-                                        action="#{patientController.navigateToOpdPatientProfile()}"
-                                        >
-                                        <f:setPropertyActionListener
-                                            value="#{admissionController.current.patient}"
-                                            target="#{patientController.current}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        ajax="false"
-                                        icon="fa-solid fa-address-card"
-                                        class="ui-button-secondary "
-                                        value="Inpatient Dashboard"
-                                        style="float: right;"
-                                        action="#{admissionController.navigateToAdmissionProfilePage}"
-                                        >
-                                        <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
-                                    </p:commandButton>
+
+
+                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Lookup"
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                class="ui-button-warning "
+                                                action="#{patientController.navigateToSearchPatients()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Patient Profile"
+                                                ajax="false"
+                                                icon="fa fa-user"
+                                                class="ui-button-warning"
+                                                action="#{patientController.navigateToOpdPatientProfile()}">
+                                                <f:setPropertyActionListener
+                                                    value="#{admissionController.current.patient}"
+                                                    target="#{patientController.current}" >
+                                                </f:setPropertyActionListener>
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                icon="fa-solid fa-address-card"
+                                                class="ui-button-secondary "
+                                                value="Inpatient Dashboard"
+                                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{pharmacyRequestForBhtController.patientEncounter}" 
+                                                    target="#{admissionController.current}" >
+                                                </f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton 
+                                            value="Back to WorkBench" 
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                            ajax="false"
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
                             </div>
 
                         </f:facet>
-
-
 
                         <h:panelGroup id="gpBillPreview">
                             <ph:pharmacy_bht_issue_request_receipt 

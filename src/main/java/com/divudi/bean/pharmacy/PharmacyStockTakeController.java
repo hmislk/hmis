@@ -1779,6 +1779,23 @@ public class PharmacyStockTakeController implements Serializable {
             //LOGGER.log(Level.WARNING, "[StockTake] Approve failed. User lacks privilege PharmacyStockTakeApprove");
             return;
         }
+
+        // Validate that there is at least one item with variance
+        boolean hasVariance = false;
+        if (physicalCountBill.getBillItems() != null && !physicalCountBill.getBillItems().isEmpty()) {
+            for (BillItem bi : physicalCountBill.getBillItems()) {
+                if (bi.getAdjustedValue() != 0) {
+                    hasVariance = true;
+                    break;
+                }
+            }
+        }
+        if (!hasVariance) {
+            JsfUtil.addErrorMessage("Cannot approve. No variance found in any item. Please review the physical count.");
+            //LOGGER.log(Level.WARNING, "[StockTake] Approve failed. No variance in any items");
+            return;
+        }
+
         Department dept = physicalCountBill.getDepartment();
         this.adjustmentBill = new Bill();
         this.adjustmentBill.setBillType(BillType.PharmacyStockAdjustmentBill);

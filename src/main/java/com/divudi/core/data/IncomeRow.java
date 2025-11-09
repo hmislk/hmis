@@ -187,6 +187,7 @@ public class IncomeRow implements Serializable {
 
     private double totalRetailSaleValue;
     private double totalPurchaseValue;
+    private double totalCostValue;
 
     private long duration;
 
@@ -300,7 +301,13 @@ public class IncomeRow implements Serializable {
         BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
         billFinanceDetails.setTotalRetailSaleValue(dto.getTotalRetailSaleValue());
         billFinanceDetails.setTotalPurchaseValue(dto.getTotalPurchaseValue());
+        billFinanceDetails.setTotalCostValue(dto.getTotalCostValue());
         bill.setBillFinanceDetails(billFinanceDetails);
+
+        // Set direct properties on the IncomeRow
+        if (dto.getTotalCostValue() != null) {
+            this.totalCostValue = dto.getTotalCostValue().doubleValue();
+        }
 
         this.bill = bill;
     }
@@ -1637,6 +1644,14 @@ public class IncomeRow implements Serializable {
 
     public void setTotalPurchaseValue(double totalPurchaseValue) {
         this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public double getTotalCostValue() {
+        return totalCostValue;
+    }
+
+    public void setTotalCostValue(double totalCostValue) {
+        this.totalCostValue = totalCostValue;
     }
 
     public Double getItemValue() {

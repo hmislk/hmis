@@ -6,15 +6,17 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="content">
-        <h:form>
-            <div class="row">
-                <div class="col-12">
-                    <p:messages id="messages" showDetail="true" closable="true" />
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-2">
+        <div class="row">
+            <div class="col-12">
+                <p:messages id="messages" showDetail="true" closable="true" />
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-2">
+                <h:form>
                     <p:accordionPanel activeIndex="#{searchController.activeIndexForDisbursement}" >
                         <p:ajax event="tabChange" process="@this"/>
                         <p:tab title="Transfer Requests" >
@@ -96,37 +98,38 @@
                             </p:panelGrid>
                         </p:tab>
                     </p:accordionPanel>
-                </div>
-                <div class="col-10">
-                    <ui:insert name="subcontent">
-                        <p:panel header="Disbursement Management">
-                            <div class="text-center p-5">
-                                <h3>Welcome to Disbursement Management</h3>
-                                <p class="mt-3">
-                                    Please select a function from the left menu to get started.
-                                </p>
-                                <div class="mt-4">
-                                    <p:panelGrid columns="2" styleClass="mx-auto" style="max-width: 600px;">
-                                        <h:outputText value="Transfer Requests" styleClass="font-weight-bold"/>
-                                        <h:outputText value="Create, finalize, and approve transfer requests"/>
-
-                                        <h:outputText value="Issues" styleClass="font-weight-bold"/>
-                                        <h:outputText value="Issue items for requests or direct issues"/>
-
-                                        <h:outputText value="Receive" styleClass="font-weight-bold"/>
-                                        <h:outputText value="Receive issued items"/>
-
-                                        <h:outputText value="Reports" styleClass="font-weight-bold"/>
-                                        <h:outputText value="View transfer and disbursement reports"/>
-                                    </p:panelGrid>
-                                </div>
-                            </div>
-                        </p:panel>
-                    </ui:insert>
-                </div>
+                </h:form>
             </div>
+            <div class="col-10">
+                <ui:insert name="subcontent">
+                    <p:panel header="Disbursement Management">
+                        <div class="text-center p-5">
+                            <h3>Welcome to Disbursement Management</h3>
+                            <p class="mt-3">
+                                Please select a function from the left menu to get started.
+                            </p>
+                            <div class="mt-4">
+                                <p:panelGrid columns="2" styleClass="mx-auto" style="max-width: 600px;">
+                                    <h:outputText value="Transfer Requests" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Create, finalize, and approve transfer requests"/>
 
-        </h:form>
+                                    <h:outputText value="Issues" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Issue items for requests or direct issues"/>
+
+                                    <h:outputText value="Receive" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Receive issued items"/>
+
+                                    <h:outputText value="Reports" styleClass="font-weight-bold"/>
+                                    <h:outputText value="View transfer and disbursement reports"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                    </p:panel>
+                </ui:insert>
+            </div>
+        </div>
+
+
     </ui:define>
 
 </ui:composition>

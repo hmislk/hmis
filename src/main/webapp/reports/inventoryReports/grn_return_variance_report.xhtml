@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="GRN Return Variance Report">
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-calendar ml-5"/>
+                                <p:outputLabel value="From Date" class="mx-3" for="rfd">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar id="rfd"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{pharmacyController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-calendar ml-5"/>
+                                <p:outputLabel value="To Date" class="mx-3" for="rtd">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar id="rtd"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{pharmacyController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5"/>
+                                <p:outputLabel value="Institution" class="mx-3" for="phmIns">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100"
+                                             id="phmIns"
+                                             filter="true"
+                                             value="#{pharmacyController.institution}">
+                                <f:selectItem itemLabel="All"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                                <p:ajax process="phmIns" update="phmDept"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5"/>
+                                <p:outputLabel value="Site" class="mx-3" for="phmSite"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="phmSite"
+                                             class="w-100"
+                                             value="#{pharmacyController.site}">
+                                <f:selectItem itemLabel="All"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="phmSite" update="phmDept"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group mx-5">
+                                <h:outputText styleClass="fa fa-building ml-5"/>
+                                <p:outputLabel value="Department" class="mx-3" for="phmDept">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="phmDept"
+                                             class="w-100 mr-5"
+                                             value="#{pharmacyController.dept}">
+                                <f:selectItem itemLabel="All"/>
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}"
+                                    var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-credit-card ml-5"/>
+                                <p:outputLabel value="Payment Mode" class="mx-3" for="phmPM">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="phmPM"
+                                             class="w-100"
+                                             value="#{pharmacyController.paymentMethod}">
+                                <f:selectItem itemLabel="All"/>
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-tie ml-5"/>
+                                <p:outputLabel value="Supplier" class="mx-3" for="phmSuplier">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                id="phmSuplier"
+                                converter="deal"
+                                value="#{pharmacyController.fromInstitution}"
+                                forceSelection="true"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                completeMethod="#{dealerController.completeDealor}"
+                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="ui-button-warning mx-1"
+                                             icon="fas fa-cogs"
+                                             ajax="false"
+                                             value="Process"
+                                             action="#{pharmacyController.generateGrnReturnVarianceReport()}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-primary mx-1" icon="fas fa-print" ajax="false" value="Print">
+                                <p:printer target="varianceTable"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
+                                             value="Export to Excel">
+                                <p:dataExporter type="xlsx" target="varianceTable" fileName="grn_return_variance_report"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="varianceTable" fileName="grn_return_variance_report"/>
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable id="varianceTable"
+                                     value="#{pharmacyController.bills}"
+                                     var="b"
+                                     rendered="#{pharmacyController.bills != null and not empty pharmacyController.bills}"
+                                     paginator="true"
+                                     rows="25"
+                                     rowsPerPageTemplate="25,50,100,500,1000"
+                                     class="w-100">
+
+                            <p:column headerText="Supplier" sortBy="#{b.toInstitution.name}">
+                                <h:outputText value="#{b.toInstitution != null ? b.toInstitution.name : (b.fromInstitution != null ? b.fromInstitution.name : '')}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total" styleClass="fw-bold"/>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Department" sortBy="#{b.department.name}">
+                                <h:outputText value="#{b.department.name}"/>
+                            </p:column>
+
+                            <p:column headerText="GRN Bill No" sortBy="#{b.referenceBill.deptId}">
+                                <h:outputText value="#{b.referenceBill != null ? b.referenceBill.deptId : ''}"/>
+                            </p:column>
+                             <p:column headerText="GRN Return Bill No" sortBy="#{b.referenceBill.deptId}">
+                                <h:outputText value="#{b.deptId}"/>
+                            </p:column>
+
+                            <p:column
+                                id="colGrnNetTotal"
+                                headerText="GRN Net Total"
+                                sortBy="#{b.referenceBill.netTotal}"
+                                styleClass="text-end">
+                                <h:outputText value="#{b.referenceBill != null ? (b.referenceBill.netTotal lt 0 ? -b.referenceBill.netTotal : b.referenceBill.netTotal) : 0.0}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalGrnNetTotalAbsolute}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="GRN Date" sortBy="#{b.referenceBill.createdAt}">
+                                <h:outputText value="#{b.referenceBill != null ? b.referenceBill.createdAt : ''}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Return Date" sortBy="#{b.createdAt}">
+                                <h:outputText value="#{b.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="GRN Payment Method" sortBy="#{b.referenceBill.paymentMethod}">
+                                <h:outputText value="#{b.referenceBill != null ? b.referenceBill.paymentMethod : ''}"/>
+                            </p:column>
+
+                            <p:column headerText="Return Amount" sortBy="#{b.billFinanceDetails.netTotal}" styleClass="text-end">
+                                <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netTotal != null ? b.billFinanceDetails.netTotal : (b.netTotal != null ? b.netTotal : 0.0)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalReturnAmount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Actual Net Value" sortBy="#{b.billFinanceDetails.actualNetValue}" styleClass="text-end">
+                                <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.actualNetValue != null ? b.billFinanceDetails.actualNetValue : 0.0}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalActualNetValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column 
+                                id="colNetValueAdjustment"
+                                headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}" styleClass="text-end">
+                                <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netValueAdjustment != null ? b.billFinanceDetails.netValueAdjustment : 0.0}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyController.totalNetValueAdjustment}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Return Comments">
+                                <h:outputText value="#{b.comments != null ? b.comments : ''}"/>
+                            </p:column>
+
+                            <p:column headerText="Return Payment Method" sortBy="#{b.paymentMethod}">
+                                <h:outputText value="#{b.paymentMethod != null ? b.paymentMethod : ''}"/>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <h:panelGroup rendered="#{pharmacyController.bills == null or empty pharmacyController.bills}">
+                            <p:messages id="messages" showDetail="true" closable="true">
+                                <p:autoUpdate/>
+                            </p:messages>
+                            <h:outputText value="No data found for the selected criteria." styleClass="text-muted"/>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

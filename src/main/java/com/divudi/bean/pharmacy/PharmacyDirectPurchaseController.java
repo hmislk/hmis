@@ -1234,7 +1234,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
             f.setLineNetRate(itemNet.divide(qty, 4, RoundingMode.HALF_UP));
         } else {
-            f.setLineNetRate(BigDecimal.ZERO);
+            // When quantity is zero, preserve the user's entered purchase rate as line net rate
+            // This ensures the purchase rate is retained for free items
+            f.setLineNetRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()));
         }
 
         // Calculate cost value (line cost = net total for purchases)
@@ -1274,14 +1276,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
             f.setGrossRate(itemGross.divide(qty, 4, RoundingMode.HALF_UP));
         } else {
-            f.setGrossRate(BigDecimal.ZERO);
+            // When quantity is zero, preserve the user's entered purchase rate (lineGrossRate)
+            // This is needed for free items where user enters purchase rate but quantity is zero
+            f.setGrossRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()));
         }
 
         // 2b. Calculate and set net rate (netTotal divided by quantity)
         if (qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
             f.setNetRate(itemNet.divide(qty, 4, RoundingMode.HALF_UP));
         } else {
-            f.setNetRate(BigDecimal.ZERO);
+            // When quantity is zero, preserve the user's entered purchase rate as net rate
+            // This ensures consistency for free items
+            f.setNetRate(BigDecimalUtil.valueOrZero(f.getLineGrossRate()));
         }
 
         // 3. Calculate and set line cost rate per unit

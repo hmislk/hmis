@@ -943,8 +943,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         h.put("pe", ad);
         ads = getBillFacade().findByJpql(sql, h);
 
-        System.out.println("ads.size() = " + ads.size());
-
         if (ads.size() > 0 || !ads.isEmpty()) {
             return true;
         } else {

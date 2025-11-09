@@ -42,10 +42,6 @@
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h2 class="mb-0">Review Physical Count</h2>
-
-                                    <p:commandButton value="Pending Approvals" icon="fa fa-clock" ajax="false"
-                                                     action="/pharmacy/pharmacy_physical_count_pending?faces-redirect=true"/>
-
                                 </div>
                                 <div class="card-body">
                                     <h:panelGroup rendered="#{empty pharmacyStockTakeController.physicalCountBill}">
@@ -65,7 +61,7 @@
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                         <h:outputText value="Upload Comments:"/>
-                                        <p:inputTextarea value="#{pharmacyStockTakeController.comments}" ></p:inputTextarea>
+                                        <p:inputTextarea class="w-100" value="#{pharmacyStockTakeController.comments}" ></p:inputTextarea>
 
                                         <p:spacer ></p:spacer>
                                         <p:commandButton value="Approve and Make Stock Adjustments" icon="fa fa-check"

@@ -1993,7 +1993,7 @@ public class GrnController implements Serializable {
         JsfUtil.addSuccessMessage("GRN Saved");
     }
 
-    public void requestFinalizeWithSaveApprove() {
+    public void approveGrnWithSaveApprove() {
         // Always use bill's invoice number, ignore controller reference
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");

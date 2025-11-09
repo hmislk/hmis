@@ -49,6 +49,11 @@ public class JsfUtil {
         FacesContext.getCurrentInstance().addMessage("successInfo", facesMsg);
     }
 
+    public static void addInfoMessage(String string) {
+        FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, string, string);
+        FacesContext.getCurrentInstance().addMessage(null, facesMsg);
+    }
+
     public static String getRequestParameter(String key) {
         return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
     }

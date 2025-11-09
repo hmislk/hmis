@@ -47,6 +47,7 @@ import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.PatientInvestigationDTO;
 import com.divudi.core.data.reports.LaboratoryReport;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.InvestigationFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -287,12 +288,22 @@ public class LaborataryReportController implements Serializable {
         setToDepartment(sessionController.getDepartment());
         return "/reportLab/test_wise_count_dto?faces-redirect=true";
     }
+    
+    private List<BillLight> billLights ;
+    
+    public String navigateToBillItemListForCreditCompany(){
+        toDate = null;
+        fromDate = null;
+        creditCompany = null;
+        billLights = new ArrayList<>();
+        return "/reportLab/credit_company_bill_item_list?faces-redirect=true";
+    }
 
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Functions">
-// Simple tab persistence - no complex event handling needed
-    // The activeIndex binding handles persistence automatically
+    
+
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
         setInstitution(null);
@@ -333,7 +344,7 @@ public class LaborataryReportController implements Serializable {
         totalDiscount = 0.0;
         totalServiceCharge = 0.0;
 
-        testWiseCounts = new ArrayList<>();;
+        testWiseCounts = new ArrayList<>();
         totalNetHosFee = 0.0;
         totalAdditionalFee = 0.0;
         totalCCFee = 0.0;
@@ -341,8 +352,140 @@ public class LaborataryReportController implements Serializable {
         totalHosFee = 0.0;
         totalCount = 0.0;
         investigation = null;
-
+        billLights = new ArrayList<>();
     }
+    
+    public void processBillItemListForCreditCompany(){
+        
+        if (creditCompany == null) {
+            JsfUtil.addErrorMessage("Select the Credit Company");
+            return;
+        }
+        
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+
+        //Add All OPD BillTypes
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        
+        //Add All Package BillTypes
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select new com.divudi.core.light.common.BillLight("
+                + " bill.id,"
+                + " bill.deptId, "
+                + " bill.createdAt,"
+                + " bill.patient.id ) "
+                
+                + " from Bill bill"
+                + " where bill.retired=:ret "
+                + " and bill.creditCompany=:creditc "
+                + " and bill.billTypeAtomic IN :bType "
+                + " and bill.cancelled =:can";
+
+        jpql += " and bill.createdAt between :fromDate and :toDate ";
+
+        if (institution != null) {
+            jpql += " and bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bill.department=:dep ";
+            params.put("dep", department);
+        }
+        
+        if (webUser != null) {
+            jpql += " and bill.creater=:user ";
+            params.put("user", webUser);
+        }
+        
+        if (toInstitution != null) {
+            jpql += " and bill.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bill.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+        
+        jpql += " order by bill.createdAt asc  ";
+        
+        params.put("creditc", creditCompany);
+        params.put("ret", false);
+        params.put("can", false);
+        params.put("bType", billTypeAtomics);
+        params.put("toDate", toDate);
+        params.put("fromDate", fromDate);
+        
+        List<BillLight> bls = billFacade.findDTOsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        billLights = new ArrayList<>();
+        
+        if(bls != null || !bls.isEmpty()) {
+            for(BillLight billLight : bls){
+                
+                List<BillItemDTO> lst = getBillItemNames(billLight.getId());
+                
+                String testStr = "";
+                String nameWithTitle = "";
+                String ageAndSex = "";
+                
+                if(lst != null || !lst.isEmpty()){
+                    testStr = lst.stream()
+                        .map(BillItemDTO::getItemName)
+                        .collect(Collectors.joining(" / "));
+                }else{
+                    testStr = "N/A";
+                }
+                
+                Patient pt = patientFacade.find(billLight.getPatientId());
+
+                if (pt == null || pt.getPerson() == null) {
+                    nameWithTitle = "N/A";
+                    ageAndSex = "N/A";
+                }else{
+                    nameWithTitle = pt.getPerson().getNameWithTitle();
+                    ageAndSex = pt.getShortageOnBilledDate(billLight.getBillDate()) + " / " + pt.getPerson().getSex().getLabel();
+                }
+                
+                BillLight newLight = new BillLight();
+                newLight.setBillNo(billLight.getBillNo());
+                newLight.setBillDate(billLight.getBillDate());
+                newLight.setPatientName(nameWithTitle);
+                newLight.setPatientAge(ageAndSex);
+                newLight.setBillItemNames(testStr);
+                
+                billLights.add(newLight);
+            }
+        }
+    }
+    
+    public List<BillItemDTO> getBillItemNames(Long billId){
+        List<BillItemDTO> list  = new ArrayList<>();
+        
+        String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.item.name ) "
+                + " from BillItem bi "
+                + " where bi.bill.id=:billId "
+                + " and bi.retired=:ret "
+                + " and bi.refunded =:ref";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("ref", false);
+        m.put("billId", billId);
+        
+        list = billItemFacade.findDTOsByJpql(j, m);
+        
+        return list;
+    }
+    
+  
+    @EJB
+    BillFacade billFacade;
+    
 
     public void processLaboratoryCardIncomeReport() {
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -540,10 +683,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     public void processLaboratorySummary() {
-        System.out.println("processLaboratorySummary");
-
         bundle = new IncomeBundle(bills);
-
     }
 
     public void processLabTestWiseCountReport() {
@@ -2385,4 +2525,12 @@ public class LaborataryReportController implements Serializable {
     }
     
     // </editor-fold>
+
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
+
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
+    }
 }

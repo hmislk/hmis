@@ -118,7 +118,7 @@
                                                 maxResults="10"
                                                 minQueryLength="3"
                                                 value="#{pharmacyIssueController.stockDto}"
-                                                completeMethod="#{pharmacyIssueController.completeAvailableStocksDto}"
+                                                completeMethod="#{pharmacyIssueController.completeAvailableStocksWithConsumptionFilter}"
                                                 converter="#{pharmacyIssueController.stockDtoConverter}"
                                                 var="i"
                                                 itemLabel="#{i.itemName}"
@@ -187,7 +187,8 @@
                                                  accesskey="q"
                                                  id="txtQty"
                                                  value="#{pharmacyIssueController.qty}"
-                                                 class="w-100">
+                                                 class="w-100 text-end"
+                                                 onfocus="this.select();">
                                                  <f:convertNumber integerOnly="#{!pharmacyIssueController.stockDto.allowFractions}" />
                                                  <p:ajax
                                                      event="keyup"
