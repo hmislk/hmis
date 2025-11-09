@@ -7903,11 +7903,13 @@ public class SearchController implements Serializable {
         //   searchBillItems = new LazyBillItem(tmp);
     }
 
+    @Deprecated // Use LaborataryReportController.navigateToBillItemListForCreditCompany()
     public String toCreateBillItemListForCreditCompany() {
         billItems = new ArrayList<>();
         return "/reportLab/credit_company_bill_item_list";
     }
 
+    @Deprecated // LaborataryReportController.processBillItemListForCreditCompany()
     public void createBillItemListForCreditCompany() {
         String sql;
         Map m = new HashMap();
