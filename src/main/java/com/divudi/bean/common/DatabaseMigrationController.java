@@ -11,9 +11,8 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.MigrationDiscoveryService;
 import com.divudi.core.util.MigrationInfo;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,8 +25,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.sql.DataSource;
-import javax.annotation.Resource;
 
 /**
  * Controller for managing database migrations
@@ -52,8 +49,6 @@ public class DatabaseMigrationController implements Serializable {
     @Inject
     private SessionController sessionController;
 
-    @Resource(lookup = "java:jboss/datasources/hmisDatasource")
-    private DataSource dataSource;
 
     // UI properties
     private List<MigrationInfo> availableMigrations;
@@ -248,31 +243,28 @@ public class DatabaseMigrationController implements Serializable {
     }
 
     /**
-     * Execute SQL script
+     * Execute SQL script using EntityManager through facade
      */
-    private void executeSqlScript(String sql, StringBuilder logBuilder) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(false);
+    private void executeSqlScript(String sql, StringBuilder logBuilder) throws Exception {
+        try {
+            // Split SQL into individual statements (simple approach)
+            String[] statements = sql.split(";");
 
-            try (Statement statement = connection.createStatement()) {
-                // Split SQL into individual statements (simple approach)
-                String[] statements = sql.split(";");
+            for (String stmt : statements) {
+                String trimmedStmt = stmt.trim();
+                if (!trimmedStmt.isEmpty() && !trimmedStmt.startsWith("--")) {
+                    logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\\n");
 
-                for (String stmt : statements) {
-                    String trimmedStmt = stmt.trim();
-                    if (!trimmedStmt.isEmpty() && !trimmedStmt.startsWith("--")) {
-                        logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\\n");
-                        statement.execute(trimmedStmt);
-                    }
+                    // Use facade to execute native SQL
+                    migrationFacade.executeNativeSql(trimmedStmt);
                 }
-
-                connection.commit();
-                logBuilder.append("All statements executed successfully\\n");
-
-            } catch (SQLException e) {
-                connection.rollback();
-                throw e;
             }
+
+            logBuilder.append("All statements executed successfully\\n");
+
+        } catch (Exception e) {
+            logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\\n");
+            throw e;
         }
     }
 
@@ -311,7 +303,7 @@ public class DatabaseMigrationController implements Serializable {
 
                 JsfUtil.addSuccessMessage("Migration " + version + " rolled back successfully");
 
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 migration.setStatus(MigrationStatus.ROLLBACK_FAILED);
                 migration.setErrorMessage("Rollback failed: " + e.getMessage());
                 migrationFacade.edit(migration);
