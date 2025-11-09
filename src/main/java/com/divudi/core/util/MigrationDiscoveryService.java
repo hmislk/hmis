@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,7 +57,10 @@ public class MigrationDiscoveryService {
                 return versions;
             }
 
-            File migrationsDir = new File(migrationsUrl.getFile());
+            // Convert URL to URI to properly handle percent-encoding (e.g., %20 for spaces)
+            URI migrationsUri = migrationsUrl.toURI();
+            File migrationsDir = new File(migrationsUri);
+
             if (migrationsDir.exists() && migrationsDir.isDirectory()) {
                 File[] versionDirs = migrationsDir.listFiles(File::isDirectory);
                 if (versionDirs != null) {
@@ -67,6 +72,8 @@ public class MigrationDiscoveryService {
                     }
                 }
             }
+        } catch (URISyntaxException e) {
+            LOGGER.log(Level.SEVERE, "Invalid URL format for migrations directory: " + MIGRATIONS_BASE_PATH, e);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error discovering migration versions", e);
         }
