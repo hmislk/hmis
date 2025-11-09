@@ -72,6 +72,8 @@ public class Patient implements Serializable, RetirableEntity {
     @Transient
     private String ageOnBilledDate;
     @Transient
+    private String shortAgeOnBilledDate;
+    @Transient
     Long ageInDays;
     @Transient
     private Long ageInDaysOnBilledDate;
@@ -263,6 +265,47 @@ public class Patient implements Serializable, RetirableEntity {
                 ageOnBilledDate = period.getMonths() + " Months and " + period.getDays() + " Days.";
             } else {
                 ageOnBilledDate = period.getDays()+ " Days.";
+            }
+        }
+        period = new Period(dob, date, PeriodType.days());
+        ageInDaysOnBilledDate = (long) period.getDays();
+    }
+    
+    public void calShortAgeFromDob(Date billedDate) {
+        shortAgeOnBilledDate = "";
+        ageInDaysOnBilledDate = 0l;
+        ageMonthsOnBilledDate = 0;
+        ageDaysOnBilledDate = 0;
+        ageYearsonBilledDate = 0;
+        if (person == null) {
+            shortAgeOnBilledDate = "No Person";
+            return;
+        }
+        if (person.getDob() == null) {
+            shortAgeOnBilledDate = "Date of birth NOT recorded.";
+            return;
+        }
+
+        LocalDate dob = new LocalDate(person.getDob());
+        LocalDate date = new LocalDate(billedDate);
+
+        Period period = new Period(dob, date, PeriodType.yearMonthDay());
+        ageYearsonBilledDate = period.getYears();
+        ageMonthsOnBilledDate = period.getMonths();
+        ageDaysOnBilledDate = period.getDays();
+        if (ageYearsonBilledDate > 12) {
+            shortAgeOnBilledDate = period.getYears() + " Y";
+        } else if (ageYearsonBilledDate > 0) {
+            if (period.getMonths() > 0) {
+                shortAgeOnBilledDate = period.getYears() + " Y " + period.getMonths() + " M";
+            } else {
+                shortAgeOnBilledDate = period.getYears() + " Y";
+            }
+        } else {
+            if (period.getMonths() > 0) {
+                shortAgeOnBilledDate = period.getMonths() + " M " + period.getDays() + " D";
+            } else {
+                shortAgeOnBilledDate = period.getDays()+ " D";
             }
         }
         period = new Period(dob, date, PeriodType.days());
@@ -657,5 +700,14 @@ public class Patient implements Serializable, RetirableEntity {
 
         }
         return m;
+    }
+
+    public void setShortAgeOnBilledDate(String shortAgeOnBilledDate) {
+        this.shortAgeOnBilledDate = shortAgeOnBilledDate;
+    }
+
+    public String getShortageOnBilledDate(Date billDate) {
+        calShortAgeFromDob(billDate);
+        return shortAgeOnBilledDate;
     }
 }
