@@ -1281,7 +1281,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return false;
     }
 
-    
     public double calculateMultiplePaymentMethodTotal() {
         System.out.println(">>> CALCULATE MULTIPLE PAYMENT START");
         double multiplePaymentMethodTotalValue = 0;
@@ -1564,16 +1563,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage("Already Paid");
             return null;
         }
-
+        // Calculate and record costing values for stock valuation
+        calculateAndRecordCostingValues(getPreBill());
         saveSaleBill();
 //        saveSaleBillItems();
 
         List<Payment> payments = createPaymentsForBill(getSaleBill());
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems();
-
-        // Calculate and record costing values for stock valuation
-        calculateAndRecordCostingValues(getSaleBill());
 
         getBillFacade().editAndCommit(getPreBill());
 
@@ -2499,9 +2496,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     /**
-     * Calculates and records costing values for the settled bill.
-     * This method iterates through bill items to calculate stock valuations
-     * and then aggregates values to update bill finance details.
+     * Calculates and records costing values for the settled bill. This method
+     * iterates through bill items to calculate stock valuations and then
+     * aggregates values to update bill finance details.
      *
      * @param bill The settled bill for which to calculate costing values
      */
@@ -2538,8 +2535,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
 
             // Get quantity - default to 0 if null
-            java.math.BigDecimal quantity = billItem.getQty() != null ?
-                java.math.BigDecimal.valueOf(billItem.getQty()) : java.math.BigDecimal.ZERO;
+            java.math.BigDecimal quantity = billItem.getQty() != null
+                    ? java.math.BigDecimal.valueOf(billItem.getQty()) : java.math.BigDecimal.ZERO;
 
             // Calculate stock valuations for this item based on pharmaceutical bill item rates
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
@@ -2569,9 +2566,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 }
 
                 // Calculate value at wholesale rate (use retail rate if wholesale rate not available)
-                double wholesaleRate = pharmaItem.getWholesaleRate() > 0 ?
-                    pharmaItem.getWholesaleRate() :
-                    (pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
+                double wholesaleRate = pharmaItem.getWholesaleRate() > 0
+                        ? pharmaItem.getWholesaleRate()
+                        : (pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
 
                 if (wholesaleRate > 0) {
                     java.math.BigDecimal wholsaleRateBd = java.math.BigDecimal.valueOf(wholesaleRate);
