@@ -295,6 +295,13 @@
                                     offLabel="No"
                                     class="w-100" />
 
+                                <h:outputText  value="Consumption Allowed" class="w-100"></h:outputText>
+                                <p:selectBooleanButton
+                                    value="#{ampController.current.consumptionAllowed}"
+                                    onLabel="Yes"
+                                    offLabel="No"
+                                    class="w-100" />
+
                                 <h:outputText  value="Issue Unit" class="w-100"></h:outputText>
                                 <p:selectOneMenu value="#{ampController.current.issueUnit}"
                                                  styleClass="w-100" autoWidth="false">

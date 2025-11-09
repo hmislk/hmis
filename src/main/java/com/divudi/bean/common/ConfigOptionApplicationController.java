@@ -170,6 +170,9 @@ public class ConfigOptionApplicationController implements Serializable {
         // Quantity Validation Configuration
         getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
 
+        // Consumption Restriction Configuration
+        getBooleanValueByKey("Restrict Consumption to Items with Consumption Allowed Flag", true);
+
         // Bill Numbering Configuration Options - Added for improved bill numbering functionality
         // These options enable configurable bill numbering strategies across different bill types
         // Future development: Apply these patterns to additional bill types as needed

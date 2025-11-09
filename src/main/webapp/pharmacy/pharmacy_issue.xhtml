@@ -118,7 +118,7 @@
                                                 maxResults="10"
                                                 minQueryLength="3"
                                                 value="#{pharmacyIssueController.stockDto}"
-                                                completeMethod="#{pharmacyIssueController.completeAvailableStocksDto}"
+                                                completeMethod="#{pharmacyIssueController.completeAvailableStocksWithConsumptionFilter}"
                                                 converter="#{pharmacyIssueController.stockDtoConverter}"
                                                 var="i"
                                                 itemLabel="#{i.itemName}"
