@@ -1,0 +1,318 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+    <h:body>
+        <ui:composition template="/template.xhtml">
+            <ui:define name="content">
+                <h:form id="migrationForm">
+                    <div class="container-fluid">
+                        <!-- Page Header -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h1 class="h3 mb-0">
+                                            <i class="fa fa-database text-primary me-2"></i>
+                                            Database Migration Management
+                                        </h1>
+                                        <p class="text-muted mb-0">Manage database schema migrations and version control</p>
+                                    </div>
+                                    <div>
+                                        <p:commandButton value="Refresh"
+                                                         action="#{databaseMigrationController.refreshMigrationLists()}"
+                                                         update="migrationForm"
+                                                         class="ui-button-secondary me-2"
+                                                         icon="pi pi-refresh" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Migration Status Overview -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card border-primary">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-primary">Current Version</h5>
+                                        <h3 class="mb-0">#{databaseMigrationController.lastExecutedVersion}</h3>
+                                        <small class="text-muted">Database Schema</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-info">Application Version</h5>
+                                        <h3 class="mb-0">#{databaseMigrationController.applicationVersion}</h3>
+                                        <small class="text-muted">Available</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-warning">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-warning">Pending Migrations</h5>
+                                        <h3 class="mb-0">#{databaseMigrationController.pendingMigrationsCount}</h3>
+                                        <small class="text-muted">Need Execution</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-success">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title text-success">Status</h5>
+                                        <h3 class="mb-0">
+                                            <i class="#{databaseMigrationController.migrationInProgress ? 'fa fa-spinner fa-spin text-info' : 'fa fa-check text-success'}"></i>
+                                        </h3>
+                                        <small class="text-muted">#{databaseMigrationController.migrationInProgress ? 'In Progress' : 'Ready'}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Migration Progress (shown when migration is in progress) -->
+                        <div class="row mb-4" rendered="#{databaseMigrationController.migrationInProgress}">
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fa fa-spinner fa-spin me-2"></i>
+                                            Migration in Progress
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Current: #{databaseMigrationController.currentMigrationVersion}</span>
+                                                <span>#{databaseMigrationController.completedSteps}/#{databaseMigrationController.totalSteps}</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                     style="width: #{databaseMigrationController.progressPercentage}%"></div>
+                                            </div>
+                                        </div>
+                                        <p class="mb-0 text-muted">#{databaseMigrationController.currentStep}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Migrations Section -->
+                        <div class="row mb-4" rendered="#{databaseMigrationController.hasPendingMigrations and not databaseMigrationController.migrationInProgress}">
+                            <div class="col-12">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5 class="mb-0">
+                                            <i class="fa fa-exclamation-triangle me-2"></i>
+                                            Pending Migrations
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-3">
+                                            There are <strong>#{databaseMigrationController.pendingMigrationsCount}</strong>
+                                            pending migrations that need to be executed to bring your database up to date.
+                                        </p>
+
+                                        <p:dataTable value="#{databaseMigrationController.pendingMigrations}"
+                                                     var="migration"
+                                                     styleClass="table table-striped">
+                                            <p:column headerText="Version">
+                                                <h:outputText value="#{migration.version}" />
+                                            </p:column>
+                                            <p:column headerText="Description">
+                                                <h:outputText value="#{migration.description}" />
+                                            </p:column>
+                                            <p:column headerText="Estimated Duration">
+                                                <h:outputText value="#{migration.estimatedDurationMinutes} min" />
+                                            </p:column>
+                                            <p:column headerText="Downtime Required">
+                                                <span class="badge #{migration.requiresDowntime ? 'bg-warning' : 'bg-success'}">
+                                                    #{migration.requiresDowntime ? 'Yes' : 'No'}
+                                                </span>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <div class="mt-3">
+                                            <p:commandButton value="Execute All Pending Migrations"
+                                                             action="#{databaseMigrationController.executeAllPendingMigrations()}"
+                                                             update="migrationForm"
+                                                             class="ui-button-warning"
+                                                             icon="pi pi-play"
+                                                             onclick="return confirm('Are you sure you want to execute all pending migrations? This action cannot be undone easily.')">
+                                                <p:confirm header="Confirm Migration Execution"
+                                                           message="This will execute all pending migrations. Continue?"
+                                                           icon="pi pi-exclamation-triangle" />
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Available Migrations Tab Panel -->
+                        <div class="row">
+                            <div class="col-12">
+                                <p:tabView>
+                                    <!-- Available Migrations Tab -->
+                                    <p:tab title="Available Migrations">
+                                        <p:dataTable value="#{databaseMigrationController.availableMigrations}"
+                                                     var="migration"
+                                                     styleClass="table table-striped"
+                                                     paginator="true"
+                                                     rows="10">
+                                            <p:column headerText="Version" sortBy="#{migration.version}">
+                                                <h:outputText value="#{migration.version}" />
+                                            </p:column>
+                                            <p:column headerText="Description">
+                                                <h:outputText value="#{migration.description}" />
+                                            </p:column>
+                                            <p:column headerText="Author">
+                                                <h:outputText value="#{migration.author}" />
+                                            </p:column>
+                                            <p:column headerText="Affects">
+                                                <h:outputText value="#{migration.affectedModulesDisplay}" />
+                                            </p:column>
+                                            <p:column headerText="Status">
+                                                <span class="badge #{databaseMigrationController.isMigrationExecuted(migration.version) ? 'bg-success' : 'bg-secondary'}">
+                                                    #{databaseMigrationController.isMigrationExecuted(migration.version) ? 'Executed' : 'Pending'}
+                                                </span>
+                                            </p:column>
+                                            <p:column headerText="Actions">
+                                                <p:commandButton value="View Details"
+                                                                 action="#{databaseMigrationController.setSelectedMigration(migration)}"
+                                                                 update="migrationDetailsDialog"
+                                                                 oncomplete="PF('migrationDetailsDialog').show()"
+                                                                 class="ui-button-secondary ui-button-sm"
+                                                                 icon="pi pi-eye" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+
+                                    <!-- Executed Migrations Tab -->
+                                    <p:tab title="Execution History">
+                                        <p:dataTable value="#{databaseMigrationController.executedMigrations}"
+                                                     var="execution"
+                                                     styleClass="table table-striped"
+                                                     paginator="true"
+                                                     rows="10">
+                                            <p:column headerText="Version" sortBy="#{execution.version}">
+                                                <h:outputText value="#{execution.version}" />
+                                            </p:column>
+                                            <p:column headerText="Description">
+                                                <h:outputText value="#{execution.description}" />
+                                            </p:column>
+                                            <p:column headerText="Status">
+                                                <span class="#{execution.status.cssClass}">
+                                                    <i class="#{execution.status.iconClass} me-1"></i>
+                                                    #{execution.status.label}
+                                                </span>
+                                            </p:column>
+                                            <p:column headerText="Executed At">
+                                                <h:outputText value="#{execution.executedAt}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Duration">
+                                                <h:outputText value="#{execution.executionTimeDisplay}" />
+                                            </p:column>
+                                            <p:column headerText="Executed By">
+                                                <h:outputText value="#{execution.executedBy.name}" />
+                                            </p:column>
+                                            <p:column headerText="Actions">
+                                                <p:commandButton value="Rollback"
+                                                                 action="#{databaseMigrationController.rollbackMigration(execution.version)}"
+                                                                 update="migrationForm"
+                                                                 rendered="#{execution.successful}"
+                                                                 class="ui-button-danger ui-button-sm"
+                                                                 icon="pi pi-undo"
+                                                                 onclick="return confirm('Are you sure you want to rollback this migration?')" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+
+                                    <!-- Migration Log Tab -->
+                                    <p:tab title="Execution Log" rendered="#{not empty databaseMigrationController.migrationLog}">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">Migration Execution Log</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <pre style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto;">#{databaseMigrationController.migrationLog}</pre>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+                                </p:tabView>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Migration Details Dialog -->
+                    <p:dialog header="Migration Details"
+                              widgetVar="migrationDetailsDialog"
+                              id="migrationDetailsDialog"
+                              modal="true"
+                              width="800"
+                              height="600"
+                              resizable="true">
+                        <div rendered="#{not empty databaseMigrationController.selectedMigration}">
+                            <h:panelGrid columns="2" class="w-100" columnClasses="col-4,col-8">
+                                <h:outputLabel value="Version:" class="fw-bold" />
+                                <h:outputText value="#{databaseMigrationController.selectedMigration.version}" />
+
+                                <h:outputLabel value="Description:" class="fw-bold" />
+                                <h:outputText value="#{databaseMigrationController.selectedMigration.description}" />
+
+                                <h:outputLabel value="Author:" class="fw-bold" />
+                                <h:outputText value="#{databaseMigrationController.selectedMigration.author}" />
+
+                                <h:outputLabel value="Estimated Duration:" class="fw-bold" />
+                                <h:outputText value="#{databaseMigrationController.selectedMigration.estimatedDurationMinutes} minutes" />
+
+                                <h:outputLabel value="Requires Downtime:" class="fw-bold" />
+                                <span class="badge #{databaseMigrationController.selectedMigration.requiresDowntime ? 'bg-warning' : 'bg-success'}">
+                                    #{databaseMigrationController.selectedMigration.requiresDowntime ? 'Yes' : 'No'}
+                                </span>
+
+                                <h:outputLabel value="Affected Tables:" class="fw-bold" />
+                                <h:outputText value="#{databaseMigrationController.selectedMigration.affectedTablesDisplay}" />
+
+                                <h:outputLabel value="Affected Modules:" class="fw-bold" />
+                                <h:outputText value="#{databaseMigrationController.selectedMigration.affectedModulesDisplay}" />
+                            </h:panelGrid>
+
+                            <div class="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasPreRequisites()}">
+                                <h6 class="fw-bold">Prerequisites:</h6>
+                                <ul>
+                                    <ui:repeat value="#{databaseMigrationController.selectedMigration.preRequisites}" var="prereq">
+                                        <li>#{prereq}</li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
+
+                            <div class="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasMigrationSteps()}">
+                                <h6 class="fw-bold">Migration Steps:</h6>
+                                <ol>
+                                    <ui:repeat value="#{databaseMigrationController.selectedMigration.migrationSteps}" var="step">
+                                        <li><strong>#{step.description}</strong></li>
+                                    </ui:repeat>
+                                </ol>
+                            </div>
+                        </div>
+                    </p:dialog>
+
+                    <!-- Progress Polling for Active Migrations -->
+                    <p:poll interval="2"
+                            update="migrationForm"
+                            rendered="#{databaseMigrationController.migrationInProgress}"
+                            autoStart="true" />
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
