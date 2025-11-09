@@ -3153,6 +3153,21 @@ public class PharmacyController implements Serializable {
             titleCell.setCellStyle(headerStyle);
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 4));
 
+            if (departmentCategoryMap == null || departmentCategoryMap.isEmpty()) {
+                // If no data, create an empty sheet with just headers
+                Row headerRow = sheet.createRow(rowIndex);
+                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
+                for (int i = 0; i < headers.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(headers[i]);
+                    cell.setCellStyle(headerStyle);
+                }
+                workbook.write(out);
+                out.flush();
+                context.responseComplete();
+                return;
+            }
+
             for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
                 String departmentName = deptEntry.getKey();
 
@@ -3170,9 +3185,13 @@ public class PharmacyController implements Serializable {
                     cell.setCellStyle(headerStyle);
                 }
 
-                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                Map<String, List<DepartmentCategoryWiseItems>> categoryMap = deptEntry.getValue();
+                if (categoryMap == null) continue;
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : categoryMap.entrySet()) {
                     String categoryName = categoryEntry.getKey();
                     List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+                    if (items == null || items.isEmpty()) continue;
 
                     Row categoryRow = sheet.createRow(rowIndex++);
                     Cell categoryCell = categoryRow.createCell(0);
@@ -3181,40 +3200,67 @@ public class PharmacyController implements Serializable {
                     sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 4));
 
                     for (DepartmentCategoryWiseItems item : items) {
+                        if (item == null) continue;
                         Row dataRow = sheet.createRow(rowIndex++);
                         dataRow.createCell(0).setCellValue(item.getItem() != null ? item.getItem().getName() : "");
-                        dataRow.createCell(1).setCellValue(item.getPurchaseRate());
+                        dataRow.createCell(1).setCellValue(item.getPurchaseRate() != null ? item.getPurchaseRate() : 0.0);
                         dataRow.createCell(2).setCellValue(item.getQty());
-                        dataRow.createCell(3).setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
-                        dataRow.getCell(3).setCellStyle(amountStyle);
+                        Cell costValueCell = dataRow.createCell(3);
+                        costValueCell.setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
+                        costValueCell.setCellStyle(amountStyle);
                         Cell valueCell = dataRow.createCell(4);
-                        valueCell.setCellValue(item.getNetTotal());
+                        valueCell.setCellValue(item.getNetTotal() != null ? item.getNetTotal() : 0.0);
                         valueCell.setCellStyle(amountStyle);
                     }
 
                     Row categoryTotalRow = sheet.createRow(rowIndex++);
                     categoryTotalRow.createCell(1).setCellValue("");
                     categoryTotalRow.createCell(2).setCellValue("Category Total:");
-                    categoryTotalRow.createCell(3).setCellValue(getCategoryCostTotalForConsumptionReport(departmentName, categoryName));
+                    Cell categoryCostCell = categoryTotalRow.createCell(3);
+                    double categoryCostTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[1];
+                    categoryCostCell.setCellValue(categoryCostTotal);
+                    categoryCostCell.setCellStyle(amountStyle);
                     Cell categoryTotalCell = categoryTotalRow.createCell(4);
-                    categoryTotalCell.setCellValue(getCategoryTotalForConsumptionReport(departmentName, categoryName));
+                    double categoryTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[3];
+                    categoryTotalCell.setCellValue(categoryTotal);
                     categoryTotalCell.setCellStyle(amountStyle);
                 }
 
                 Row departmentTotalRow = sheet.createRow(rowIndex++);
                 departmentTotalRow.createCell(1).setCellValue("");
                 departmentTotalRow.createCell(2).setCellValue("Department Total:");
-                departmentTotalRow.createCell(3).setCellValue(getDepartmentCostTotalForConsumptionReport(departmentName));
-                departmentTotalRow.getCell(3).setCellStyle(amountStyle);
+                Cell deptCostCell = departmentTotalRow.createCell(3);
+                double deptCostTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[1])
+                        .sum();
+                deptCostCell.setCellValue(deptCostTotal);
+                deptCostCell.setCellStyle(amountStyle);
                 Cell departmentTotalCell = departmentTotalRow.createCell(4);
-                departmentTotalCell.setCellValue(getDepartmentTotalForConsumptionReport(departmentName));
+                double deptTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[3])
+                        .sum();
+                departmentTotalCell.setCellValue(deptTotal);
                 departmentTotalCell.setCellStyle(amountStyle);
             }
 
             Row finalTotalRow = sheet.createRow(rowIndex++);
             finalTotalRow.createCell(0).setCellValue("Total");
-            finalTotalRow.createCell(3).setCellValue(String.format("%.2f", totalCostValue));
-            finalTotalRow.createCell(4).setCellValue(String.format("%.2f", totalSaleValue));
+            Cell finalCostCell = finalTotalRow.createCell(3);
+            finalCostCell.setCellValue(totalCostValue);
+            finalCostCell.setCellStyle(amountStyle);
+            Cell finalTotalCell = finalTotalRow.createCell(4);
+            finalTotalCell.setCellValue(totalSaleValue);
+            finalTotalCell.setCellStyle(amountStyle);
 
             for (int i = 0; i < 4; i++) {
                 sheet.autoSizeColumn(i);
@@ -3254,6 +3300,14 @@ public class PharmacyController implements Serializable {
             com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
             DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
 
+            if (departmentCategoryMap == null || departmentCategoryMap.isEmpty()) {
+                document.add(new Paragraph("No data available for the selected criteria.", normalFont));
+                document.close();
+                out.flush();
+                context.responseComplete();
+                return;
+            }
+
             for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
                 String departmentName = deptEntry.getKey();
                 document.add(new Paragraph("Department: " + departmentName, boldFont));
@@ -3270,9 +3324,13 @@ public class PharmacyController implements Serializable {
                     table.addCell(cell);
                 }
 
-                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                Map<String, List<DepartmentCategoryWiseItems>> categoryMap = deptEntry.getValue();
+                if (categoryMap == null) continue;
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : categoryMap.entrySet()) {
                     String categoryName = categoryEntry.getKey();
                     List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+                    if (items == null || items.isEmpty()) continue;
 
                     PdfPCell categoryCell = new PdfPCell(new Phrase(categoryName, boldFont));
                     categoryCell.setColspan(5);
@@ -3280,11 +3338,12 @@ public class PharmacyController implements Serializable {
                     table.addCell(categoryCell);
 
                     for (DepartmentCategoryWiseItems item : items) {
+                        if (item == null) continue;
                         table.addCell(new PdfPCell(new Phrase(item.getItem() != null ? item.getItem().getName() : "", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getPurchaseRate()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getPurchaseRate() != null ? decimalFormat.format(item.getPurchaseRate()) : "0.00", normalFont)));
                         table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQty()), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getNetTotal()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getNetTotal() != null ? decimalFormat.format(item.getNetTotal()) : "0.00", normalFont)));
                     }
 
                     table.addCell(new PdfPCell(new Phrase("", normalFont)));
