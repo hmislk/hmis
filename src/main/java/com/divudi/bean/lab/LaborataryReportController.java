@@ -430,7 +430,7 @@ public class LaborataryReportController implements Serializable {
                 
                 List<BillItemDTO> lst = getBillItemNames(billLight.getId());
                 
-                String testStr = testStr = lst.stream()
+                String testStr = lst.stream()
                         .map(BillItemDTO::getItemName)
                         .collect(Collectors.joining(" / "));
                 

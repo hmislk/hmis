@@ -2,7 +2,6 @@ package com.divudi.core.light.common;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.Title;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
 import java.math.BigDecimal;
