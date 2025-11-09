@@ -3185,9 +3185,13 @@ public class PharmacyController implements Serializable {
                     cell.setCellStyle(headerStyle);
                 }
 
-                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                Map<String, List<DepartmentCategoryWiseItems>> categoryMap = deptEntry.getValue();
+                if (categoryMap == null) continue;
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : categoryMap.entrySet()) {
                     String categoryName = categoryEntry.getKey();
                     List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+                    if (items == null || items.isEmpty()) continue;
 
                     Row categoryRow = sheet.createRow(rowIndex++);
                     Cell categoryCell = categoryRow.createCell(0);
@@ -3196,6 +3200,7 @@ public class PharmacyController implements Serializable {
                     sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 4));
 
                     for (DepartmentCategoryWiseItems item : items) {
+                        if (item == null) continue;
                         Row dataRow = sheet.createRow(rowIndex++);
                         dataRow.createCell(0).setCellValue(item.getItem() != null ? item.getItem().getName() : "");
                         dataRow.createCell(1).setCellValue(item.getPurchaseRate() != null ? item.getPurchaseRate() : 0.0);
@@ -3295,6 +3300,14 @@ public class PharmacyController implements Serializable {
             com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
             DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
 
+            if (departmentCategoryMap == null || departmentCategoryMap.isEmpty()) {
+                document.add(new Paragraph("No data available for the selected criteria.", normalFont));
+                document.close();
+                out.flush();
+                context.responseComplete();
+                return;
+            }
+
             for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
                 String departmentName = deptEntry.getKey();
                 document.add(new Paragraph("Department: " + departmentName, boldFont));
@@ -3311,9 +3324,13 @@ public class PharmacyController implements Serializable {
                     table.addCell(cell);
                 }
 
-                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                Map<String, List<DepartmentCategoryWiseItems>> categoryMap = deptEntry.getValue();
+                if (categoryMap == null) continue;
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : categoryMap.entrySet()) {
                     String categoryName = categoryEntry.getKey();
                     List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+                    if (items == null || items.isEmpty()) continue;
 
                     PdfPCell categoryCell = new PdfPCell(new Phrase(categoryName, boldFont));
                     categoryCell.setColspan(5);
@@ -3321,11 +3338,12 @@ public class PharmacyController implements Serializable {
                     table.addCell(categoryCell);
 
                     for (DepartmentCategoryWiseItems item : items) {
+                        if (item == null) continue;
                         table.addCell(new PdfPCell(new Phrase(item.getItem() != null ? item.getItem().getName() : "", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getPurchaseRate()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getPurchaseRate() != null ? decimalFormat.format(item.getPurchaseRate()) : "0.00", normalFont)));
                         table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQty()), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getNetTotal()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getNetTotal() != null ? decimalFormat.format(item.getNetTotal()) : "0.00", normalFont)));
                     }
 
                     table.addCell(new PdfPCell(new Phrase("", normalFont)));
