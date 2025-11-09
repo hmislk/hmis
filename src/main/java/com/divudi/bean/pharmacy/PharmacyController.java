@@ -3153,6 +3153,21 @@ public class PharmacyController implements Serializable {
             titleCell.setCellStyle(headerStyle);
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 4));
 
+            if (departmentCategoryMap == null || departmentCategoryMap.isEmpty()) {
+                // If no data, create an empty sheet with just headers
+                Row headerRow = sheet.createRow(rowIndex);
+                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
+                for (int i = 0; i < headers.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(headers[i]);
+                    cell.setCellStyle(headerStyle);
+                }
+                workbook.write(out);
+                out.flush();
+                context.responseComplete();
+                return;
+            }
+
             for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
                 String departmentName = deptEntry.getKey();
 
@@ -3183,12 +3198,13 @@ public class PharmacyController implements Serializable {
                     for (DepartmentCategoryWiseItems item : items) {
                         Row dataRow = sheet.createRow(rowIndex++);
                         dataRow.createCell(0).setCellValue(item.getItem() != null ? item.getItem().getName() : "");
-                        dataRow.createCell(1).setCellValue(item.getPurchaseRate());
+                        dataRow.createCell(1).setCellValue(item.getPurchaseRate() != null ? item.getPurchaseRate() : 0.0);
                         dataRow.createCell(2).setCellValue(item.getQty());
-                        dataRow.createCell(3).setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
-                        dataRow.getCell(3).setCellStyle(amountStyle);
+                        Cell costValueCell = dataRow.createCell(3);
+                        costValueCell.setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
+                        costValueCell.setCellStyle(amountStyle);
                         Cell valueCell = dataRow.createCell(4);
-                        valueCell.setCellValue(item.getNetTotal());
+                        valueCell.setCellValue(item.getNetTotal() != null ? item.getNetTotal() : 0.0);
                         valueCell.setCellStyle(amountStyle);
                     }
 
