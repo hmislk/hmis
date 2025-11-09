@@ -742,6 +742,7 @@ public class Patient implements Serializable, RetirableEntity {
 
     public void setBlacklistedBy(WebUser blacklistedBy) {
         this.blacklistedBy = blacklistedBy;
+    }
 
     public void setShortAgeOnBilledDate(String shortAgeOnBilledDate) {
         this.shortAgeOnBilledDate = shortAgeOnBilledDate;
