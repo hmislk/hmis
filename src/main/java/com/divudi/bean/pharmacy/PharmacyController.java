@@ -227,6 +227,7 @@ public class PharmacyController implements Serializable {
     private double totalCashNetTotal;
     private double totalCreditNetTotal;
     private double totalGrnNetTotal;
+    private double totalGrnNetTotalAbsolute;
     private double totalReturnAmount;
     private double totalActualNetValue;
     private double totalNetValueAdjustment;
@@ -1103,6 +1104,7 @@ public class PharmacyController implements Serializable {
 
     private void calculateGrnReturnVarianceTotals(List<Bill> billList) {
         totalGrnNetTotal = 0.0;
+        totalGrnNetTotalAbsolute = 0.0;
         totalReturnAmount = 0.0;
         totalActualNetValue = 0.0;
         totalNetValueAdjustment = 0.0;
@@ -1115,7 +1117,9 @@ public class PharmacyController implements Serializable {
             if (bill.getReferenceBill() != null) {
                 Long grnId = bill.getReferenceBill().getId();
                 if (grnId != null && !processedGrnIds.contains(grnId)) {
-                    totalGrnNetTotal += bill.getReferenceBill().getNetTotal();
+                    double grnNetTotal = bill.getReferenceBill().getNetTotal();
+                    totalGrnNetTotal += grnNetTotal;
+                    totalGrnNetTotalAbsolute += (grnNetTotal < 0 ? -grnNetTotal : grnNetTotal);
                     processedGrnIds.add(grnId);
                 }
             }
@@ -8080,6 +8084,14 @@ public class PharmacyController implements Serializable {
 
     public void setTotalGrnNetTotal(double totalGrnNetTotal) {
         this.totalGrnNetTotal = totalGrnNetTotal;
+    }
+
+    public double getTotalGrnNetTotalAbsolute() {
+        return totalGrnNetTotalAbsolute;
+    }
+
+    public void setTotalGrnNetTotalAbsolute(double totalGrnNetTotalAbsolute) {
+        this.totalGrnNetTotalAbsolute = totalGrnNetTotalAbsolute;
     }
 
     public double getTotalReturnAmount() {
