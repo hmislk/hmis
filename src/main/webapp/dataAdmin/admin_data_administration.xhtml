@@ -262,8 +262,15 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton
                                                 ajax="false" 
-                                                action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
+                                                action="#{databaseMigrationController.navigateToCheckMissingFields()}" 
                                                 value="Update Database Structure"  
+                                                class="w-100 m-1"
+                                                />
+                                            
+                                            <p:commandButton
+                                                ajax="false" 
+                                                action="#{dataAdministrationController.navigateToDatabaseMigration()}" 
+                                                value="Database Migration"  
                                                 class="w-100 m-1"
                                                 />
 

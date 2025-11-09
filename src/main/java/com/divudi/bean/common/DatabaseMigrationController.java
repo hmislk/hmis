@@ -78,6 +78,10 @@ public class DatabaseMigrationController implements Serializable {
         refreshMigrationLists();
     }
 
+    public String navigateToDatabaseMigration(){
+        return "/admin/database_migration?faces-redirect=true";
+    }
+    
     /**
      * Refresh migration lists from database and filesystem
      */
