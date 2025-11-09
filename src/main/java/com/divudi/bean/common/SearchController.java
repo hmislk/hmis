@@ -4847,8 +4847,8 @@ public class SearchController implements Serializable {
 
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
