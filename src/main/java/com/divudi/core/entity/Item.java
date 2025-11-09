@@ -304,6 +304,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     private boolean refundsAllowed = false;
 
+    private boolean consumptionAllowed = true;
+
     public double getVatPercentage() {
         return 0;
     }
@@ -1573,6 +1575,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setRefundsAllowed(boolean refundsAllowed) {
         this.refundsAllowed = refundsAllowed;
+    }
+
+    public boolean isConsumptionAllowed() {
+        return consumptionAllowed;
+    }
+
+    public void setConsumptionAllowed(boolean consumptionAllowed) {
+        this.consumptionAllowed = consumptionAllowed;
     }
 
     public MeasurementUnit getIssueMultipliesUnit() {

@@ -492,6 +492,82 @@ public class PharmacyIssueController implements Serializable {
         return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
     }
 
+    // New consumption-aware autocomplete method
+    public List<StockDTO> completeAvailableStocksWithConsumptionFilter(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry.toUpperCase() + "%");
+
+        // Check if consumption restriction is enabled
+        boolean restrictConsumption = configOptionApplicationController.getBooleanValueByKey(
+                "Restrict Consumption to Items with Consumption Allowed Flag", true);
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+
+        if (searchByBarcode) {
+            parameters.put("queryExact", qry.toUpperCase());
+        }
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+        boolean showRatesAndValues = configOptionApplicationController.getBooleanValueByKey(
+                "Consumption - Show Rate and Value", false);
+
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(");
+
+        if (showRatesAndValues) {
+            // Constructor with all rates: id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate, costRate, allowFractions
+            sql.append("s.id, s.id, s.itemBatch.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
+                .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.batchNo, ")
+                .append("s.itemBatch.purcahseRate, s.itemBatch.wholesaleRate, s.itemBatch.costRate, ")
+                .append("s.itemBatch.item.allowFractions) ");
+        } else {
+            // Simple constructor: id, itemName, code, genericName, retailRate, stockQty, dateOfExpire, allowFractions
+            sql.append("s.id, s.itemBatch.item.name, s.itemBatch.item.code, s.itemBatch.item.vmp.name, ")
+                .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.allowFractions) ");
+        }
+
+        sql.append("FROM Stock s ")
+            .append("WHERE s.stock > :stockMin ")
+            .append("AND s.department = :department ");
+
+        // Add consumption allowed filter if enabled
+        if (restrictConsumption) {
+            sql.append("AND s.itemBatch.item.consumptionAllowed = true ");
+        }
+
+        sql.append("AND (");
+
+        sql.append("UPPER(s.itemBatch.item.name) LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR UPPER(s.itemBatch.item.code) LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR UPPER(s.itemBatch.item.barcode) = :queryExact ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR UPPER(s.itemBatch.item.vmp.name) LIKE :query ");
+        }
+
+        sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+    }
+
     public BillItem getBillItem() {
         if (billItem == null) {
             billItem = new BillItem();
