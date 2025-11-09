@@ -430,15 +430,28 @@ public class LaborataryReportController implements Serializable {
                 
                 List<BillItemDTO> lst = getBillItemNames(billLight.getId());
                 
-                String testStr = lst.stream()
+                String testStr = "";
+                String nameWithTitle = "";
+                String ageAndSex = "";
+                
+                if(lst != null || !lst.isEmpty()){
+                    testStr = lst.stream()
                         .map(BillItemDTO::getItemName)
                         .collect(Collectors.joining(" / "));
+                }else{
+                    testStr = "N/A";
+                }
                 
                 Patient pt = patientFacade.find(billLight.getPatientId());
-                String nameWithTitle = pt.getPerson().getNameWithTitle();
 
-                String ageAndSex = pt.getShortageOnBilledDate(billLight.getBillDate()) + " / " + pt.getPerson().getSex().getLabel();
-
+                if (pt == null || pt.getPerson() == null) {
+                    nameWithTitle = "N/A";
+                    ageAndSex = "N/A";
+                }else{
+                    nameWithTitle = pt.getPerson().getNameWithTitle();
+                    ageAndSex = pt.getShortageOnBilledDate(billLight.getBillDate()) + " / " + pt.getPerson().getSex().getLabel();
+                }
+                
                 BillLight newLight = new BillLight();
                 newLight.setBillNo(billLight.getBillNo());
                 newLight.setBillDate(billLight.getBillDate());
