@@ -272,6 +272,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
+    private String blacklistComment;
+
+    public String getBlacklistComment() {
+        return blacklistComment;
+    }
+
+    public void setBlacklistComment(String blacklistComment) {
+        this.blacklistComment = blacklistComment;
+    }
 
     /**
      *
@@ -2953,6 +2962,55 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String savePatientAndThenNavigateToPatientProfile() {
         saveSelectedPatient();
         return toViewPatient();
+    }
+    
+    public void toggleBlacklistPatient( boolean blacklist){
+        Patient patient = this.current;
+        if(patient == null || patient.getId() == null){
+            return;   
+        }
+
+        if(blacklist && !patient.isBlacklisted()){
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
+                return;
+            }
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(true);
+            newb.setBlacklistedAt(new Date());
+            getFacade().edit(newb);
+            newb.setBlacklistedBy(sessionController.getLoggedUser());
+            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment  : blacklistComment);
+//            getFacade().edit(patient);
+
+            getFacade().editAndCommit(newb);
+            this.current = getFacade().findWithoutCache(newb.getId());
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient is blacklisted.");
+            
+        }else if(!blacklist && patient.isBlacklisted()){
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for revert blacklisting. ");
+                return;
+            }
+
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(false);
+            getFacade().edit(newb);
+            newb.setReasonForBlacklist(patient.getReasonForBlacklist() +" at " 
+                    + newb.getBlacklistedAt() + " by " 
+                    + newb.getBlacklistedBy() 
+                    + " / revert by " + sessionController.getWebUser() 
+                    + " at "+new Date() + " revert comment - " + blacklistComment);
+            
+            newb.setBlacklistedAt(null);
+            newb.setBlacklistedBy(null);
+
+            getFacade().editAndCommit(newb);
+
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
+        }
     }
 
     public String deletePatient() {

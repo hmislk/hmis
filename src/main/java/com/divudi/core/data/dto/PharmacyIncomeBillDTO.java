@@ -25,6 +25,7 @@ public class PharmacyIncomeBillDTO implements Serializable {
     private PaymentScheme paymentScheme;
     private BigDecimal totalRetailSaleValue;
     private BigDecimal totalPurchaseValue;
+    private BigDecimal totalCostValue;
 
     public PharmacyIncomeBillDTO() {
     }
@@ -47,6 +48,29 @@ public class PharmacyIncomeBillDTO implements Serializable {
         this.paymentScheme = paymentScheme;
         this.totalRetailSaleValue = totalRetailSaleValue;
         this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    // New constructor with totalCostValue support
+    public PharmacyIncomeBillDTO(Long billId, String deptId, String patientName, BillTypeAtomic billTypeAtomic, Date createdAt, Double netTotal,
+                                 PaymentMethod paymentMethod, Double total, PatientEncounter patientEncounter, Double discount, Double margin,
+                                 Double serviceCharge, PaymentScheme paymentScheme, BigDecimal totalRetailSaleValue, BigDecimal totalPurchaseValue,
+                                 BigDecimal totalCostValue) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.patientName = patientName;
+        this.billTypeAtomic = billTypeAtomic;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+        this.paymentMethod = paymentMethod;
+        this.total = total;
+        this.patientEncounter = patientEncounter;
+        this.discount = discount;
+        this.margin = margin;
+        this.serviceCharge = serviceCharge;
+        this.paymentScheme = paymentScheme;
+        this.totalRetailSaleValue = totalRetailSaleValue;
+        this.totalPurchaseValue = totalPurchaseValue;
+        this.totalCostValue = totalCostValue;
     }
 
     public String getDeptId() {
@@ -167,5 +191,13 @@ public class PharmacyIncomeBillDTO implements Serializable {
 
     public void setBillId(Long billId) {
         this.billId = billId;
+    }
+
+    public BigDecimal getTotalCostValue() {
+        return totalCostValue;
+    }
+
+    public void setTotalCostValue(BigDecimal totalCostValue) {
+        this.totalCostValue = totalCostValue;
     }
 }

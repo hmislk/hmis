@@ -152,6 +152,10 @@
                                     <h:outputText value="Total" styleClass="fw-bold"/>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:column headerText="Department" sortBy="#{b.department.name}">
+                                <h:outputText value="#{b.department.name}"/>
+                            </p:column>
 
                             <p:column headerText="GRN Bill No" sortBy="#{b.referenceBill.deptId}">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.deptId : ''}"/>
@@ -177,6 +181,12 @@
 
                             <p:column headerText="GRN Date" sortBy="#{b.referenceBill.createdAt}">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.createdAt : ''}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Return Date" sortBy="#{b.createdAt}">
+                                <h:outputText value="#{b.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>

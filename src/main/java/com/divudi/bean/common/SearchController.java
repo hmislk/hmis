@@ -4847,8 +4847,8 @@ public class SearchController implements Serializable {
 
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
-        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+//        bts.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyItemPurchaseDTO(");
@@ -7903,11 +7903,13 @@ public class SearchController implements Serializable {
         //   searchBillItems = new LazyBillItem(tmp);
     }
 
+    @Deprecated // Use LaborataryReportController.navigateToBillItemListForCreditCompany()
     public String toCreateBillItemListForCreditCompany() {
         billItems = new ArrayList<>();
         return "/reportLab/credit_company_bill_item_list";
     }
 
+    @Deprecated // LaborataryReportController.processBillItemListForCreditCompany()
     public void createBillItemListForCreditCompany() {
         String sql;
         Map m = new HashMap();
