@@ -2,6 +2,7 @@ package com.divudi.core.light.common;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ public class BillLight {
     private String departmentName;
     private String userName;
     private String patientName;
+    private String patientAge;
     private String patientPhone;
     private Double grossValue;
     private Double discount;
@@ -44,6 +46,7 @@ public class BillLight {
     private BigDecimal totalRetailSaleValue;
     private PaymentMethod paymentMethod;
     private PatientEncounter patientEncounter;
+    private String billItemNames;
 
     public BillLight() {
     }
@@ -64,6 +67,13 @@ public class BillLight {
         this.count = count;
     }
 
+    public BillLight(Long id, String billNo, Date billDate, Long patientId) {
+        this.id = id;
+        this.billNo = billNo;
+        this.billDate = billDate;
+        this.patientId = patientId;
+    }
+    
     public BillLight(Long id, String billNo, Date billDate, Date billTime, String patientName, Double netValue) {
         this.id = id;
         this.billNo = billNo;
@@ -414,6 +424,22 @@ public class BillLight {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+    }
+
+    public String getBillItemNames() {
+        return billItemNames;
+    }
+
+    public void setBillItemNames(String billItemNames) {
+        this.billItemNames = billItemNames;
+    }
+
+    public String getPatientAge() {
+        return patientAge;
+    }
+
+    public void setPatientAge(String patientAge) {
+        this.patientAge = patientAge;
     }
 
 }
