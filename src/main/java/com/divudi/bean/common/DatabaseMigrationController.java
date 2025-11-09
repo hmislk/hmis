@@ -355,11 +355,41 @@ public class DatabaseMigrationController implements Serializable {
     }
 
     /**
-     * Compare two versions
+     * Compare two versions using semantic versioning rules
+     * Returns -1 if version1 < version2, 0 if equal, 1 if version1 > version2
      */
     private int compareVersions(String version1, String version2) {
-        // Simple implementation - could be enhanced
-        return version1.compareTo(version2);
+        if (version1 == null && version2 == null) return 0;
+        if (version1 == null) return -1;
+        if (version2 == null) return 1;
+
+        // Remove 'v' prefix if present
+        String v1 = version1.startsWith("v") ? version1.substring(1) : version1;
+        String v2 = version2.startsWith("v") ? version2.substring(1) : version2;
+
+        String[] parts1 = v1.split("\\.");
+        String[] parts2 = v2.split("\\.");
+
+        int maxLength = Math.max(parts1.length, parts2.length);
+
+        for (int i = 0; i < maxLength; i++) {
+            String part1 = i < parts1.length ? parts1[i] : "0";
+            String part2 = i < parts2.length ? parts2[i] : "0";
+
+            try {
+                int num1 = Integer.parseInt(part1);
+                int num2 = Integer.parseInt(part2);
+
+                if (num1 < num2) return -1;
+                if (num1 > num2) return 1;
+            } catch (NumberFormatException e) {
+                // Fall back to string comparison for non-numeric segments
+                int stringCompare = part1.compareTo(part2);
+                if (stringCompare != 0) return stringCompare;
+            }
+        }
+
+        return 0;
     }
 
     /**
