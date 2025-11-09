@@ -110,6 +110,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadReportMethodConfigurationDefaults();
             loadAllCashierSummaryConfigurationDefaults();
             loadOpdBillingConfigurationDefaults();
+            loadDatabaseVersionConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
         }
@@ -118,6 +119,17 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadDatabaseVersionConfigurationDefaults() {
+        // Database migration system configuration
+        getLongTextValueByKey("Database Schema Version", "1.0.0");
+        getLongTextValueByKey("Application Version", "2.1.0");
+        getBooleanValueByKey("Auto Execute Database Migrations", false);
+        getBooleanValueByKey("Show Migration Management to Admins", true);
+        getBooleanValueByKey("Require Migration Confirmation", true);
+        getBooleanValueByKey("Enable Migration Progress Tracking", true);
+        getBooleanValueByKey("Log Migration Execution Details", true);
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
