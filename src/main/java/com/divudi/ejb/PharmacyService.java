@@ -128,7 +128,7 @@ public class PharmacyService {
             atm = amp.getAtm();
             vmp = amp.getVmp();
          
-        } else if (amp == null) {
+        } else if (amp == null && vmp != null) {
             vtm = (Vtm) vmp.getVtm();
         }
 
