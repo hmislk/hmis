@@ -304,6 +304,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     private boolean refundsAllowed = false;
 
+    @Column(nullable = false)
     private boolean consumptionAllowed = true;
 
     public double getVatPercentage() {
