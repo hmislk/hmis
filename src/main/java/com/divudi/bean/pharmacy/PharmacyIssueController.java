@@ -542,9 +542,9 @@ public class PharmacyIssueController implements Serializable {
             .append("WHERE s.stock > :stockMin ")
             .append("AND s.department = :department ");
 
-        // Add consumption allowed filter if enabled
+        // Add consumption allowed filter if enabled (null-safe for legacy data)
         if (restrictConsumption) {
-            sql.append("AND s.itemBatch.item.consumptionAllowed = true ");
+            sql.append("AND (s.itemBatch.item.consumptionAllowed = true OR s.itemBatch.item.consumptionAllowed IS NULL) ");
         }
 
         sql.append("AND (");
