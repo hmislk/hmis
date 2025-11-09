@@ -78,6 +78,12 @@ public class BillItemDTO implements Serializable {
         this.discount = discount;
         this.marginValue = marginValue;
     }
+
+    //Use OPD BILL ITEM LIST FOR CREDIT COMPANIES Report
+    public BillItemDTO( Long id, String itemName) {
+        this.id = id;
+        this.itemName = itemName;
+    }
     
         
     // Calculated fields (Cost Value and Sale Value are calculated in JSF)
