@@ -3195,26 +3195,51 @@ public class PharmacyController implements Serializable {
                     Row categoryTotalRow = sheet.createRow(rowIndex++);
                     categoryTotalRow.createCell(1).setCellValue("");
                     categoryTotalRow.createCell(2).setCellValue("Category Total:");
-                    categoryTotalRow.createCell(3).setCellValue(getCategoryCostTotalForConsumptionReport(departmentName, categoryName));
+                    Cell categoryCostCell = categoryTotalRow.createCell(3);
+                    double categoryCostTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[1];
+                    categoryCostCell.setCellValue(categoryCostTotal);
+                    categoryCostCell.setCellStyle(amountStyle);
                     Cell categoryTotalCell = categoryTotalRow.createCell(4);
-                    categoryTotalCell.setCellValue(getCategoryTotalForConsumptionReport(departmentName, categoryName));
+                    double categoryTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[3];
+                    categoryTotalCell.setCellValue(categoryTotal);
                     categoryTotalCell.setCellStyle(amountStyle);
                 }
 
                 Row departmentTotalRow = sheet.createRow(rowIndex++);
                 departmentTotalRow.createCell(1).setCellValue("");
                 departmentTotalRow.createCell(2).setCellValue("Department Total:");
-                departmentTotalRow.createCell(3).setCellValue(getDepartmentCostTotalForConsumptionReport(departmentName));
-                departmentTotalRow.getCell(3).setCellStyle(amountStyle);
+                Cell deptCostCell = departmentTotalRow.createCell(3);
+                double deptCostTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[1])
+                        .sum();
+                deptCostCell.setCellValue(deptCostTotal);
+                deptCostCell.setCellStyle(amountStyle);
                 Cell departmentTotalCell = departmentTotalRow.createCell(4);
-                departmentTotalCell.setCellValue(getDepartmentTotalForConsumptionReport(departmentName));
+                double deptTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[3])
+                        .sum();
+                departmentTotalCell.setCellValue(deptTotal);
                 departmentTotalCell.setCellStyle(amountStyle);
             }
 
             Row finalTotalRow = sheet.createRow(rowIndex++);
             finalTotalRow.createCell(0).setCellValue("Total");
-            finalTotalRow.createCell(3).setCellValue(String.format("%.2f", totalCostValue));
-            finalTotalRow.createCell(4).setCellValue(String.format("%.2f", totalSaleValue));
+            Cell finalCostCell = finalTotalRow.createCell(3);
+            finalCostCell.setCellValue(totalCostValue);
+            finalCostCell.setCellStyle(amountStyle);
+            Cell finalTotalCell = finalTotalRow.createCell(4);
+            finalTotalCell.setCellValue(totalSaleValue);
+            finalTotalCell.setCellStyle(amountStyle);
 
             for (int i = 0; i < 4; i++) {
                 sheet.autoSizeColumn(i);
