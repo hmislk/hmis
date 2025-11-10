@@ -56,10 +56,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -636,7 +638,11 @@ public class InwardBeanController implements Serializable {
         list.addAll(bills);
         list.addAll(bills2);
 
-        return list;
+        List<Bill> sortedList = list.stream()
+            .sorted(Comparator.comparing(Bill::getCreatedAt))
+            .collect(Collectors.toList());
+        
+        return sortedList;
     }
 
     public List<BillItem> fetchPharmacyIssueBillItem(PatientEncounter patientEncounter, BillType billType) {
@@ -916,15 +922,17 @@ public class InwardBeanController implements Serializable {
     public double getAdmissionCharge(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         Double total = 0.0;
         List<PatientEncounter> pts = new ArrayList<>();
+        
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
-
+        
         for (PatientEncounter pt : pts) {
-            total = total + pt.getAdmissionType().getAdmissionFee();
+            if(pt.getAdmissionType() != null){
+                total = total + pt.getAdmissionType().getAdmissionFee();
+            }
         }
-
         return total;
     }
 
