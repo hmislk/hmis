@@ -897,8 +897,9 @@
                                             <br/>
                                             <h:panelGroup rendered="#{p.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
-                                                               value="#{p.cancelledBill.creater.webUserPerson.name}" >
+                                                <h:outputLabel 
+                                                    style="color: red;" rendered="#{p.cancelled}"
+                                                    value="#{p.cancelledBill.creater.webUserPerson.name}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
