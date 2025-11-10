@@ -44,19 +44,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <p:panel header="Add Items">
-
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fas fa-cube" />
-                                        <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
+                                        <h:outputLabel value="Add Items" styleClass="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="6" >
-                                        <h:panelGrid columns="1" class="w-100">
+
+                                    <div class="row">
+                                        <div class="col-lg-8 col-md-12">
                                             <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                            <p:autoComplete accesskey="i"    id="acStock"
+                                            <p:autoComplete accesskey="i" id="acStock"
                                                             value="#{pharmacySaleBhtController.tmpStock}"
                                                             completeMethod="#{stockController.completeAvailableStocks}"
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="10" size="100"
-                                                            >
+                                                            styleClass="w-100"
+                                                            inputStyleClass="w-100 form-control">
                                                 <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
                                                         &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
@@ -64,7 +65,6 @@
                                                                      severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
                                                     </h:outputLabel>
                                                 </p:column>
-
                                                 <p:column headerText="Code" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                                                commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
@@ -86,49 +86,45 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiry" style="padding: 4px" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                                               commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <p:column headerText="Expiry" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                                                 commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
                                                                    style="width: 100px!important;" >
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
+                                                <p:ajax event="itemSelect" update="txtQty btnAdd focusQty" ></p:ajax>
                                             </p:autoComplete>
-                                        </h:panelGrid>
+                                        </div>
 
-                                        <h:panelGrid columns="1" class="w-100">
+                                        <div class="col-lg-2 col-md-6">
                                             <p:outputLabel value="Quantity" ></p:outputLabel>
                                             <p:inputText
                                                 accesskey="q"
                                                 autocomplete="off"
                                                 id="txtQty"
                                                 value="#{pharmacySaleBhtController.qty}"
-                                                class="w-100">
-
+                                                styleClass="w-100">
                                             </p:inputText>
-                                        </h:panelGrid>
+                                        </div>
 
-                                        <h:panelGrid columns="1" class="w-100" >
-                                            <p:outputLabel value="&nbsp;" ></p:outputLabel>
+                                        <div class="col-lg-2 col-md-6 d-flex align-items-end">
                                             <p:commandButton  
                                                 accesskey="a"
                                                 id="btnAdd"
                                                 icon="fa fa-plus"
                                                 value="Add"
-                                                class="ui-button-success mx-1"
+                                                styleClass="ui-button-success w-100"
                                                 action="#{pharmacySaleBhtController.addBillItemNew}"
                                                 ajax="false"
-                                                style="float: right;"
-                                                update="focusItem"
-                                                >
+                                                update="focusItem">
                                             </p:commandButton>
-                                        </h:panelGrid>
+                                        </div>
+                                    </div>
 
-                                        <p:focus id="focusQty" for="txtQty"></p:focus>
-                                        <p:focus id="focusItem" for="acStock"></p:focus>
+                                    <p:focus id="focusQty" for="txtQty"></p:focus>
+                                    <p:focus id="focusItem" for="acStock"></p:focus>
 
-                                    </h:panelGrid>
                                 </p:panel>
                             </div>
 
