@@ -639,9 +639,9 @@ public class InwardBeanController implements Serializable {
         list.addAll(bills2);
 
         List<Bill> sortedList = list.stream()
-            .sorted(Comparator.comparing(Bill::getCreatedAt))
-            .collect(Collectors.toList());
-        
+                .sorted(Comparator.comparing(Bill::getCreatedAt))
+                .collect(Collectors.toList());
+
         return sortedList;
     }
 
@@ -922,14 +922,14 @@ public class InwardBeanController implements Serializable {
     public double getAdmissionCharge(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         Double total = 0.0;
         List<PatientEncounter> pts = new ArrayList<>();
-        
+
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
-        
+
         for (PatientEncounter pt : pts) {
-            if(pt.getAdmissionType() != null){
+            if (pt.getAdmissionType() != null) {
                 total = total + pt.getAdmissionType().getAdmissionFee();
             }
         }
@@ -1930,6 +1930,26 @@ public class InwardBeanController implements Serializable {
             margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
             billFee.setFeeMargin(margin);
             billFeeFacade.edit(billFee);
+        }
+
+        double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
+
+        billFee.setFeeValue(net);
+    }
+
+    public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter) {
+        double margin = 0;
+
+        if (billFee == null || item.isMarginNotAllowed()) {
+            return;
+        }
+
+        if (patientEncounter.getAdmissionType().isAllowToCalculateMargin()) {
+            if (billFee.getFee().getFeeType() != FeeType.Staff && priceMatrix != null) {
+                margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
+                billFee.setFeeMargin(margin);
+                billFeeFacade.edit(billFee);
+            }
         }
 
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
