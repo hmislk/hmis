@@ -33,8 +33,8 @@ jobs:
               exit 1
             fi
           elif [[ "$TARGET" == "staging" ]]; then
-            if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" ]]; then
-              echo "❌ Only hims-qa1 and hims-qa2 can merge to $TARGET (staging restriction)."
+            if [[ "$SOURCE" != "hims-qa1" && "$SOURCE" != "hims-qa2" && "$SOURCE" != "hims-qa3" ]]; then
+              echo "❌ Only hims-qa1, hims-qa2 and hims-qa3 can merge to $TARGET (staging restriction)."
               exit 1
             fi
           fi
