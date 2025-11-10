@@ -1943,7 +1943,7 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()) {
             return;
         }
-        if (patientEncounter.getAdmissionType() == null){
+        if (patientEncounter == null || patientEncounter.getAdmissionType() == null){
             return;
         }
 
