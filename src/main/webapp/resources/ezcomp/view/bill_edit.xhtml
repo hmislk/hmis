@@ -107,9 +107,9 @@
                     
                     <p:outputLabel value="Service Charge" />
                     <p:inputText value="#{cc.attrs.bill.serviceCharge}" styleClass="w-100" />
+                    <p:outputLabel value="Margin" />
+                    <p:inputText value="#{cc.attrs.bill.margin}" styleClass="w-100" />
 
-                    <p:outputLabel value="Tax" />
-                    <p:inputText value="#{cc.attrs.bill.tax}" styleClass="w-100" />
                     <p:outputLabel value="Cash Paid" />
                     <p:inputText value="#{cc.attrs.bill.cashPaid}" styleClass="w-100" />
 
@@ -132,6 +132,8 @@
                     <p:inputText value="#{cc.attrs.bill.catId}" styleClass="w-100" />
                     <p:outputLabel value="Tendered Amount" />
                     <p:inputText value="#{cc.attrs.bill.tenderedAmount}" styleClass="w-100" />
+                    <p:outputLabel value="Tax" />
+                    <p:inputText value="#{cc.attrs.bill.tax}" styleClass="w-100" />
                 </p:panelGrid>
             </p:tab>
 
