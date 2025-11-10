@@ -38,7 +38,7 @@ Results showed:
 Added consistent `fullyIssued` logic to all GRN finalization methods:
 1. `settle()` (around line 709-717) - **ADDED**
 2. `settleWholesale()` (around line 835-843) - **ADDED** 
-3. `requestFinalizeWithSaveApprove()` (around line 2025-2033) - **ALREADY EXISTED**
+3. `approveGrnWithSaveApprove()` (around line 2025-2033) - **ALREADY EXISTED**
 
 ### Code Added
 ```java

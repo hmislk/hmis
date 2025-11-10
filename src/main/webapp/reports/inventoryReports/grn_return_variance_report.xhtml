@@ -152,17 +152,28 @@
                                     <h:outputText value="Total" styleClass="fw-bold"/>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:column headerText="Department" sortBy="#{b.department.name}">
+                                <h:outputText value="#{b.department.name}"/>
+                            </p:column>
 
                             <p:column headerText="GRN Bill No" sortBy="#{b.referenceBill.deptId}">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.deptId : ''}"/>
                             </p:column>
+                             <p:column headerText="GRN Return Bill No" sortBy="#{b.referenceBill.deptId}">
+                                <h:outputText value="#{b.deptId}"/>
+                            </p:column>
 
-                            <p:column headerText="GRN Net Total" sortBy="#{b.referenceBill.netTotal}" styleClass="text-end">
-                                <h:outputText value="#{b.referenceBill != null ? b.referenceBill.netTotal : 0.0}">
+                            <p:column
+                                id="colGrnNetTotal"
+                                headerText="GRN Net Total"
+                                sortBy="#{b.referenceBill.netTotal}"
+                                styleClass="text-end">
+                                <h:outputText value="#{b.referenceBill != null ? (b.referenceBill.netTotal lt 0 ? -b.referenceBill.netTotal : b.referenceBill.netTotal) : 0.0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.totalGrnNetTotal}">
+                                    <h:outputText value="#{pharmacyController.totalGrnNetTotalAbsolute}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -170,6 +181,12 @@
 
                             <p:column headerText="GRN Date" sortBy="#{b.referenceBill.createdAt}">
                                 <h:outputText value="#{b.referenceBill != null ? b.referenceBill.createdAt : ''}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Return Date" sortBy="#{b.createdAt}">
+                                <h:outputText value="#{b.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
@@ -200,7 +217,9 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}" styleClass="text-end">
+                            <p:column 
+                                id="colNetValueAdjustment"
+                                headerText="Net Value Adjustment" sortBy="#{b.billFinanceDetails.netValueAdjustment}" styleClass="text-end">
                                 <h:outputText value="#{b.billFinanceDetails != null and b.billFinanceDetails.netValueAdjustment != null ? b.billFinanceDetails.netValueAdjustment : 0.0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

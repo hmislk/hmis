@@ -398,7 +398,7 @@
                                         <h:outputText styleClass="fa-solid fa-person-shelter"></h:outputText>
                                         <h:outputLabel value="Room Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <p:dataTable value="#{bhtEditController.patientRoom}" var="rm">
+                                    <p:dataTable value="#{bhtEditController.current.currentPatientRoom}" var="rm">
                                         <p:column headerText="Room Name">
                                             #{rm.roomFacilityCharge.name}
                                         </p:column>      

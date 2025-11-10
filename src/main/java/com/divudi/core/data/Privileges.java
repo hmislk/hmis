@@ -110,6 +110,7 @@ public enum Privileges {
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
     NursingWorkBench("Nursing Work Bench"),
+    ShowDrugCharges("Show Drug Charges"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
@@ -192,6 +193,7 @@ public enum Privileges {
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
     DashBoardMenu("DashBoard Menu"),
     DashBoardBillSearch("DashBoard Bill Search"),
+    DashBoardWorksheet("DashBoard WorkSheet"),
     DashBoardSampleSearch("DashBoard Sample Search"),
     DashBoardInvestigationSearch("DashBoard Investigation Search"),
     DashBoardReportSearch("DashBoard Report Search"),
@@ -976,6 +978,7 @@ public enum Privileges {
                 return "Approval";
             
             case NursingWorkBench:
+            case ShowDrugCharges:
                 return "Nursing Work Bench";
                 
             default:

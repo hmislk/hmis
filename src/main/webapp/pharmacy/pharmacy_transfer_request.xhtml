@@ -361,86 +361,89 @@
                 </h:panelGroup>
             </p:panel>
 
-            <!-- Configuration Dialog -->
-            <p:dialog id="transferRequestConfigDialog"
-                      header="Transfer Request Receipt Printer Configuration"
-                      widgetVar="transferRequestConfigDialog"
-                      modal="true"
-                      width="700"
-                      height="500"
-                      resizable="true"
-                      maximizable="true"
-                      closeOnEscape="true">
-
-                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferRequestConfigForm" />
-
-                <h:form id="transferRequestConfigForm">
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card config-section">
-                                <div class="card-header">
-                                    <h6><i class="fas fa-file-alt"></i> Transfer Request Receipt Paper Settings</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferRequestA4"
-                                            value="#{pharmacyConfigController.transferRequestA4}" />
-                                        <p:outputLabel for="transferRequestA4" value="A4 Receipt Format" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Standard A4 size paper format for transfer request receipts</small>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferRequestCustom1"
-                                            value="#{pharmacyConfigController.transferRequestCustom1}" />
-                                        <p:outputLabel for="transferRequestCustom1" value="Custom Format 1" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Custom transfer request receipt template design 1</small>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <p:selectBooleanCheckbox
-                                            id="transferRequestCustom2"
-                                            value="#{pharmacyConfigController.transferRequestCustom2}" />
-                                        <p:outputLabel for="transferRequestCustom2" value="Custom Format 2" class="ms-2" />
-                                        <small class="form-text text-muted d-block">Custom transfer request receipt template design 2</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <p:messages id="transferRequestConfigMessages" showDetail="true" closable="true" />
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="d-flex gap-2">
-                                            <p:commandButton
-                                                value="Apply &amp; Close"
-                                                icon="fas fa-save"
-                                                class="ui-button-success"
-                                                ajax="false"
-                                                action="#{pharmacyConfigController.saveConfig}" />
-                                            <p:commandButton
-                                                value="Cancel"
-                                                icon="fas fa-times"
-                                                class="ui-button-secondary"
-                                                onclick="PF('transferRequestConfigDialog').hide(); return false;"
-                                                type="button" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </h:form>
-            </p:dialog>
 
         </h:form>
+
+
+        <!-- Configuration Dialog -->
+        <p:dialog id="transferRequestConfigDialog"
+                  header="Transfer Request Receipt Printer Configuration"
+                  widgetVar="transferRequestConfigDialog"
+                  modal="true"
+                  width="700"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferRequestConfigForm" />
+
+            <h:form id="transferRequestConfigForm">
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> Transfer Request Receipt Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="transferRequestA4"
+                                        value="#{pharmacyConfigController.transferRequestA4}" />
+                                    <p:outputLabel for="transferRequestA4" value="A4 Receipt Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 size paper format for transfer request receipts</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="transferRequestCustom1"
+                                        value="#{pharmacyConfigController.transferRequestCustom1}" />
+                                    <p:outputLabel for="transferRequestCustom1" value="Custom Format 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom transfer request receipt template design 1</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="transferRequestCustom2"
+                                        value="#{pharmacyConfigController.transferRequestCustom2}" />
+                                    <p:outputLabel for="transferRequestCustom2" value="Custom Format 2" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom transfer request receipt template design 2</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="transferRequestConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.saveConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('transferRequestConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+
+        </p:dialog>
+
     </ui:define>
 
 </ui:composition>

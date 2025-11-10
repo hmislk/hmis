@@ -240,6 +240,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode labDashBoardNode = new DefaultTreeNode(new PrivilegeHolder(null, "Laboratory DashBoard"), labNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardMenu, "DashBoard Menu"), labDashBoardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardBillSearch, "Search Bill Bills"), labDashBoardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardWorksheet, "Work Sheet"), labDashBoardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardSampleSearch, "Search Sample"), labDashBoardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardInvestigationSearch, "Search Investigation"), labDashBoardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DashBoardReportSearch, "Report Search"), labDashBoardNode);
@@ -743,6 +744,7 @@ public class UserPrivilageController implements Serializable {
         // Request Privileges
         TreeNode nurseNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Work Bench"), allNode);
         TreeNode nursingWorkBench = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBench, "Nursing Work Bench"), nurseNode);
+        TreeNode showDrugCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowDrugCharges, "Show Drug Charges"), nurseNode);
         
         // Admin Privileges
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);

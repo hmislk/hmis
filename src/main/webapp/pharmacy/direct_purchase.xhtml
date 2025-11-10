@@ -433,7 +433,9 @@
                                 </p:column>
 
                                 <p:column headerText="P. Rate"  styleClass="text-end">
-                                    <h:outputLabel value="#{ph.billItemFinanceDetails.grossRate}">
+                                    <h:outputLabel
+                                        id="txtPurchaseRateOfBillItem"
+                                        value="#{ph.billItemFinanceDetails.grossRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
