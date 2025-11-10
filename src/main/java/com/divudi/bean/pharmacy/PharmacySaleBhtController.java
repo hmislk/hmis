@@ -48,6 +48,8 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.data.dto.StockDTO;
+import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -77,6 +79,9 @@ import javax.persistence.TemporalType;
 
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
+import java.math.BigDecimal;
+import java.util.Optional;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import java.util.logging.Level;
@@ -645,7 +650,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         getPreBill().setPatient(pt);
         getPreBill().setPatientEncounter(getPatientEncounter());
-
         getPreBill().setToDepartment(null);
         getPreBill().setToInstitution(null);
         getPreBill().setBillDate(new Date());
@@ -904,6 +908,17 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
+        
+        if (bhtRequestBill == null) {
+            JsfUtil.addErrorMessage("No BHT request selected.");
+            return;
+        }
+        
+        if( bhtRequestBill.isCompleted()){
+            JsfUtil.addErrorMessage("This request has already been completed..");
+            return;
+        }
+        
         if (hasAllergyConflicts(getBillItems())) {
             return;
         }
@@ -913,6 +928,17 @@ public class PharmacySaleBhtController implements Serializable {
         Department matrixDept = determineMatrixDepartment();
 
         settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
+        
+        //update Bill
+        if(completed){
+            bhtRequestBill.setCompleted(true);
+            bhtRequestBill.setCompletedAt(new Date());
+            bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
+            
+            billFacade.edit(bhtRequestBill);
+            System.out.println("Update BHT Request Bill = " + bhtRequestBill.getDeptId() );
+        }
+        completed = false;
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -1102,7 +1128,170 @@ public class PharmacySaleBhtController implements Serializable {
 
         calTotal();
     }
+    
+    private BillItem itemForSubstitution;
+    private Stock selectedSubstituteStock;
+    private List<Stock> substituteStocks;
+    
+    private boolean completed;
+    
+    @Inject
+    VmpController vmpController;
+    @EJB
+    PharmacyCostingService pharmacyCostingService;
+    
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi != null && bi.getItem() instanceof Amp) {
+            Amp amp = (Amp) bi.getItem();
+            if (amp.getVmp() != null) {
+                List<Amp> amps = vmpController.ampsOfVmp(amp.getVmp());
+                for (Amp substituteAmp : amps) {
+                    List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
+                    if (stocks != null) {
+                        for (Stock stock : stocks) {
+                            if (stock.getStock() > 0 && stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null) {
+                                Date currentDate = new Date();
+                                if (stock.getItemBatch().getDateOfExpire().after(currentDate)) {
+                                    substituteStocks.add(stock);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
 
+        // Update the bill item with selected stock details
+        itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
+
+        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            phItem = new PharmaceuticalBillItem();
+            phItem.setBillItem(itemForSubstitution);
+            itemForSubstitution.setPharmaceuticalBillItem(phItem);
+        }
+
+        // Set stock and batch details
+        phItem.setStock(selectedSubstituteStock);
+        phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
+        phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
+        phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+
+        // Update rates in pharmaceutical bill item
+        phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
+        phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
+
+        // Update financials
+        BillItemFinanceDetails financeDetails = itemForSubstitution.getBillItemFinanceDetails();
+        if (financeDetails != null) {
+            BigDecimal transferRate = determineTransferRate(selectedSubstituteStock.getItemBatch());
+            financeDetails.setLineGrossRate(transferRate);
+            financeDetails.setLineNetRate(transferRate);
+
+            // Update cost and retail rates
+            financeDetails.setLineCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()));
+            financeDetails.setRetailSaleRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()));
+
+            // Update values at different rates
+            BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
+            financeDetails.setValueAtCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()).multiply(qty));
+            financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getPurcahseRate()).multiply(qty));
+            financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
+        }
+
+        calculateBillTotalsForTransferIssue(getPreBill());
+
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
+    }
+    
+    private void calculateBillTotalsForTransferIssue(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return;
+        }
+
+        BigDecimal grossTotal = BigDecimal.ZERO;
+        BigDecimal netTotal = BigDecimal.ZERO;
+        BigDecimal lineGrossTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+
+        int serialNo = 1;
+
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.isRetired()) {
+                continue;
+            }
+
+            bi.setSearialNo(serialNo++);
+
+            // For transfer issue: stock goes out so qty is negative
+            double absQty = Math.abs(bi.getQty());
+            bi.setQty(-absQty);
+
+            // Revenue is positive (we receive money/value for stock going out)
+            double netValue = absQty * bi.getRate();
+            bi.setNetValue(netValue);
+
+            grossTotal = grossTotal.add(BigDecimal.valueOf(netValue));
+            netTotal = netTotal.add(BigDecimal.valueOf(netValue));
+            lineGrossTotal = lineGrossTotal.add(BigDecimal.valueOf(netValue));
+            lineNetTotal = lineNetTotal.add(BigDecimal.valueOf(netValue));
+        }
+
+        // Set bill totals as positive (revenue)
+        bill.setTotal(grossTotal.doubleValue());
+        bill.setNetTotal(netTotal.doubleValue());
+
+        // Set bill finance details totals as positive (revenue)
+        if (bill.getBillFinanceDetails() != null) {
+            bill.getBillFinanceDetails().setGrossTotal(grossTotal);
+            bill.getBillFinanceDetails().setLineGrossTotal(lineGrossTotal);
+            bill.getBillFinanceDetails().setNetTotal(netTotal);
+            bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
+        }
+
+//        getBillFacade().edit(bill);
+    }
+    
+    public double getRemainingQuantityForItem(BillItem referenceItem) {
+        if (referenceItem == null) {
+            return 0.0;
+        }
+        double requestedQty = referenceItem.getQty();
+        double alreadyIssued = referenceItem.getIssuedPhamaceuticalItemQty();
+        return Math.max(0.0, requestedQty - alreadyIssued);
+    }
+    
+    private BigDecimal determineTransferRate(ItemBatch itemBatch) {
+        if (itemBatch == null) {
+            return BigDecimal.ZERO;
+        }
+
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+
+        if (pharmacyTransferIsByPurchaseRate) {
+            return BigDecimal.valueOf(itemBatch.getPurcahseRate());
+        } else if (pharmacyTransferIsByCostRate) {
+            return BigDecimal.valueOf(itemBatch.getCostRate());
+        } else {
+            return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+        }
+    }
+    
     private void settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
@@ -1722,6 +1911,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("No Bill");
             return "";
         }
+        setCompleted(false);
         generateIssueBillComponentsForBhtRequest(bhtRequestBill);
         return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }
@@ -2282,6 +2472,38 @@ public class PharmacySaleBhtController implements Serializable {
     // Getter method for JSF to access the converter
     public StockDtoConverter getStockDtoConverter() {
         return new StockDtoConverter();
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
+    }
+
+    public Stock getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<Stock> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<Stock> substituteStocks) {
+        this.substituteStocks = substituteStocks;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     // StockDTO Converter for JSF

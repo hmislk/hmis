@@ -226,6 +226,11 @@ public class PharmacyController implements Serializable {
     private double totalNetTotal;
     private double totalCashNetTotal;
     private double totalCreditNetTotal;
+    private double totalGrnNetTotal;
+    private double totalGrnNetTotalAbsolute;
+    private double totalReturnAmount;
+    private double totalActualNetValue;
+    private double totalNetValueAdjustment;
     private double billTablePurchaseTotal;
     private double billTableRetailTotal;
     private double billTableCostTotal;
@@ -1035,6 +1040,112 @@ public class PharmacyController implements Serializable {
                 calculateTotals(bills);
             }
         }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void generateGrnReturnVarianceReport() {
+        reportTimerController.trackReportExecution(() -> {
+            resetFields();
+
+            List<BillTypeAtomic> bta = new ArrayList<>();
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+
+            bills = new ArrayList<>();
+
+            String jpql = "SELECT b FROM Bill b "
+                    + " WHERE b.retired = false"
+                    + " and b.cancelled = false"
+                    + " and b.completed = true"
+                    + " and b.billTypeAtomic In :btas"
+                    + " and b.createdAt between :fromDate and :toDate";
+
+            Map<String, Object> params = new HashMap<>();
+
+            params.put("btas", bta);
+            params.put("fromDate", getFromDate());
+            params.put("toDate", getToDate());
+
+            if (institution != null) {
+                jpql += " and b.institution = :fIns";
+                params.put("fIns", institution);
+            }
+
+            if (site != null) {
+                jpql += " and b.department.site = :site";
+                params.put("site", site);
+            }
+
+            if (dept != null) {
+                jpql += " and b.department = :dept";
+                params.put("dept", dept);
+            }
+
+            if (paymentMethod != null) {
+                jpql += " and b.paymentMethod = :pm";
+                params.put("pm", paymentMethod);
+            }
+
+            if (fromInstitution != null) {
+                jpql += " AND (b.fromInstitution = :supplier OR b.toInstitution = :supplier)";
+                params.put("supplier", fromInstitution);
+            }
+
+            jpql += " order by b.id desc";
+
+            try {
+                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage(e, " Something Went Wrong!");
+            }
+
+            calculateGrnReturnVarianceTotals(bills);
+        }, InventoryReports.GRN_RETURN_VARIANCE_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void calculateGrnReturnVarianceTotals(List<Bill> billList) {
+        totalGrnNetTotal = 0.0;
+        totalGrnNetTotalAbsolute = 0.0;
+        totalReturnAmount = 0.0;
+        totalActualNetValue = 0.0;
+        totalNetValueAdjustment = 0.0;
+
+        // Track unique GRN IDs to avoid double-counting when multiple returns reference the same GRN
+        Set<Long> processedGrnIds = new HashSet<>();
+
+        for (Bill bill : billList) {
+            // GRN Net Total (from reference bill) - only count each unique GRN once
+            if (bill.getReferenceBill() != null) {
+                Long grnId = bill.getReferenceBill().getId();
+                if (grnId != null && !processedGrnIds.contains(grnId)) {
+                    double grnNetTotal = bill.getReferenceBill().getNetTotal();
+                    totalGrnNetTotal += grnNetTotal;
+                    totalGrnNetTotalAbsolute += (grnNetTotal < 0 ? -grnNetTotal : grnNetTotal);
+                    processedGrnIds.add(grnId);
+                }
+            }
+
+            // Return Amount - apply negative sign for returns (following existing pattern)
+            double returnAmount = 0.0;
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetTotal() != null) {
+                returnAmount = bill.getBillFinanceDetails().getNetTotal().doubleValue();
+            } else {
+                returnAmount = bill.getNetTotal();
+            }
+            // Make negative if positive (returns should be negative in accounting)
+            totalReturnAmount += returnAmount > 0.0 ? -returnAmount : returnAmount;
+
+            // Actual Net Value - apply negative sign for returns
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getActualNetValue() != null) {
+                double actualNetValue = bill.getBillFinanceDetails().getActualNetValue().doubleValue();
+                totalActualNetValue += actualNetValue > 0.0 ? -actualNetValue : actualNetValue;
+            }
+
+            // Net Value Adjustment - use actual values without sign manipulation to match row display
+            if (bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getNetValueAdjustment() != null) {
+                double netValueAdjustment = bill.getBillFinanceDetails().getNetValueAdjustment().doubleValue();
+                totalNetValueAdjustment += netValueAdjustment;
+            }
+        }
     }
 
     public static String formatDate(Date date) {
@@ -3020,6 +3131,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Category Wise Report");
@@ -3039,6 +3153,21 @@ public class PharmacyController implements Serializable {
             titleCell.setCellStyle(headerStyle);
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 4));
 
+            if (departmentCategoryMap == null || departmentCategoryMap.isEmpty()) {
+                // If no data, create an empty sheet with just headers
+                Row headerRow = sheet.createRow(rowIndex);
+                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
+                for (int i = 0; i < headers.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(headers[i]);
+                    cell.setCellStyle(headerStyle);
+                }
+                workbook.write(out);
+                out.flush();
+                context.responseComplete();
+                return;
+            }
+
             for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
                 String departmentName = deptEntry.getKey();
 
@@ -3056,9 +3185,13 @@ public class PharmacyController implements Serializable {
                     cell.setCellStyle(headerStyle);
                 }
 
-                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                Map<String, List<DepartmentCategoryWiseItems>> categoryMap = deptEntry.getValue();
+                if (categoryMap == null) continue;
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : categoryMap.entrySet()) {
                     String categoryName = categoryEntry.getKey();
                     List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+                    if (items == null || items.isEmpty()) continue;
 
                     Row categoryRow = sheet.createRow(rowIndex++);
                     Cell categoryCell = categoryRow.createCell(0);
@@ -3067,50 +3200,78 @@ public class PharmacyController implements Serializable {
                     sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 4));
 
                     for (DepartmentCategoryWiseItems item : items) {
+                        if (item == null) continue;
                         Row dataRow = sheet.createRow(rowIndex++);
                         dataRow.createCell(0).setCellValue(item.getItem() != null ? item.getItem().getName() : "");
-                        dataRow.createCell(1).setCellValue(item.getPurchaseRate());
+                        dataRow.createCell(1).setCellValue(item.getPurchaseRate() != null ? item.getPurchaseRate() : 0.0);
                         dataRow.createCell(2).setCellValue(item.getQty());
-                        dataRow.createCell(3).setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
-                        dataRow.getCell(3).setCellStyle(amountStyle);
+                        Cell costValueCell = dataRow.createCell(3);
+                        costValueCell.setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
+                        costValueCell.setCellStyle(amountStyle);
                         Cell valueCell = dataRow.createCell(4);
-                        valueCell.setCellValue(item.getNetTotal());
+                        valueCell.setCellValue(item.getNetTotal() != null ? item.getNetTotal() : 0.0);
                         valueCell.setCellStyle(amountStyle);
                     }
 
                     Row categoryTotalRow = sheet.createRow(rowIndex++);
                     categoryTotalRow.createCell(1).setCellValue("");
                     categoryTotalRow.createCell(2).setCellValue("Category Total:");
-                    categoryTotalRow.createCell(3).setCellValue(getCategoryCostTotalForConsumptionReport(departmentName, categoryName));
+                    Cell categoryCostCell = categoryTotalRow.createCell(3);
+                    double categoryCostTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[1];
+                    categoryCostCell.setCellValue(categoryCostTotal);
+                    categoryCostCell.setCellStyle(amountStyle);
                     Cell categoryTotalCell = categoryTotalRow.createCell(4);
-                    categoryTotalCell.setCellValue(getCategoryTotalForConsumptionReport(departmentName, categoryName));
+                    double categoryTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[3];
+                    categoryTotalCell.setCellValue(categoryTotal);
                     categoryTotalCell.setCellStyle(amountStyle);
                 }
 
                 Row departmentTotalRow = sheet.createRow(rowIndex++);
                 departmentTotalRow.createCell(1).setCellValue("");
                 departmentTotalRow.createCell(2).setCellValue("Department Total:");
-                departmentTotalRow.createCell(3).setCellValue(getDepartmentCostTotalForConsumptionReport(departmentName));
-                departmentTotalRow.getCell(3).setCellStyle(amountStyle);
+                Cell deptCostCell = departmentTotalRow.createCell(3);
+                double deptCostTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[1])
+                        .sum();
+                deptCostCell.setCellValue(deptCostTotal);
+                deptCostCell.setCellStyle(amountStyle);
                 Cell departmentTotalCell = departmentTotalRow.createCell(4);
-                departmentTotalCell.setCellValue(getDepartmentTotalForConsumptionReport(departmentName));
+                double deptTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[3])
+                        .sum();
+                departmentTotalCell.setCellValue(deptTotal);
                 departmentTotalCell.setCellStyle(amountStyle);
             }
 
             Row finalTotalRow = sheet.createRow(rowIndex++);
             finalTotalRow.createCell(0).setCellValue("Total");
-            finalTotalRow.createCell(3).setCellValue(String.format("%.2f", totalCostValue));
-            finalTotalRow.createCell(4).setCellValue(String.format("%.2f", totalSaleValue));
+            Cell finalCostCell = finalTotalRow.createCell(3);
+            finalCostCell.setCellValue(totalCostValue);
+            finalCostCell.setCellStyle(amountStyle);
+            Cell finalTotalCell = finalTotalRow.createCell(4);
+            finalTotalCell.setCellValue(totalSaleValue);
+            finalTotalCell.setCellStyle(amountStyle);
 
             for (int i = 0; i < 4; i++) {
                 sheet.autoSizeColumn(i);
             }
 
             workbook.write(out);
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-
+            context.responseComplete();
         }
     }
 
@@ -3120,6 +3281,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Category_Wise_Consumption_Report.pdf");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -3135,6 +3299,14 @@ public class PharmacyController implements Serializable {
             com.itextpdf.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
             com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
             DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+
+            if (departmentCategoryMap == null || departmentCategoryMap.isEmpty()) {
+                document.add(new Paragraph("No data available for the selected criteria.", normalFont));
+                document.close();
+                out.flush();
+                context.responseComplete();
+                return;
+            }
 
             for (Map.Entry<String, Map<String, List<DepartmentCategoryWiseItems>>> deptEntry : departmentCategoryMap.entrySet()) {
                 String departmentName = deptEntry.getKey();
@@ -3152,9 +3324,13 @@ public class PharmacyController implements Serializable {
                     table.addCell(cell);
                 }
 
-                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : deptEntry.getValue().entrySet()) {
+                Map<String, List<DepartmentCategoryWiseItems>> categoryMap = deptEntry.getValue();
+                if (categoryMap == null) continue;
+
+                for (Map.Entry<String, List<DepartmentCategoryWiseItems>> categoryEntry : categoryMap.entrySet()) {
                     String categoryName = categoryEntry.getKey();
                     List<DepartmentCategoryWiseItems> items = categoryEntry.getValue();
+                    if (items == null || items.isEmpty()) continue;
 
                     PdfPCell categoryCell = new PdfPCell(new Phrase(categoryName, boldFont));
                     categoryCell.setColspan(5);
@@ -3162,11 +3338,12 @@ public class PharmacyController implements Serializable {
                     table.addCell(categoryCell);
 
                     for (DepartmentCategoryWiseItems item : items) {
+                        if (item == null) continue;
                         table.addCell(new PdfPCell(new Phrase(item.getItem() != null ? item.getItem().getName() : "", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getPurchaseRate()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getPurchaseRate() != null ? decimalFormat.format(item.getPurchaseRate()) : "0.00", normalFont)));
                         table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQty()), normalFont)));
                         table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getNetTotal()), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getNetTotal() != null ? decimalFormat.format(item.getNetTotal()) : "0.00", normalFont)));
                     }
 
                     table.addCell(new PdfPCell(new Phrase("", normalFont)));
@@ -3195,9 +3372,11 @@ public class PharmacyController implements Serializable {
             document.add(table);
 
             document.close();
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -3207,6 +3386,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.xlsx");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Consumption Report");
@@ -3286,10 +3468,12 @@ public class PharmacyController implements Serializable {
             }
 
             workbook.write(out);
+            out.flush();
             context.responseComplete();
 
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -3299,6 +3483,9 @@ public class PharmacyController implements Serializable {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Consumption_Report.pdf");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -3359,9 +3546,11 @@ public class PharmacyController implements Serializable {
 
             document.add(table);
             document.close();
+            out.flush();
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            context.responseComplete();
         }
     }
 
@@ -7946,6 +8135,46 @@ public class PharmacyController implements Serializable {
 
     public void setTotalCreditNetTotal(double totalCreditNetTotal) {
         this.totalCreditNetTotal = totalCreditNetTotal;
+    }
+
+    public double getTotalGrnNetTotal() {
+        return totalGrnNetTotal;
+    }
+
+    public void setTotalGrnNetTotal(double totalGrnNetTotal) {
+        this.totalGrnNetTotal = totalGrnNetTotal;
+    }
+
+    public double getTotalGrnNetTotalAbsolute() {
+        return totalGrnNetTotalAbsolute;
+    }
+
+    public void setTotalGrnNetTotalAbsolute(double totalGrnNetTotalAbsolute) {
+        this.totalGrnNetTotalAbsolute = totalGrnNetTotalAbsolute;
+    }
+
+    public double getTotalReturnAmount() {
+        return totalReturnAmount;
+    }
+
+    public void setTotalReturnAmount(double totalReturnAmount) {
+        this.totalReturnAmount = totalReturnAmount;
+    }
+
+    public double getTotalActualNetValue() {
+        return totalActualNetValue;
+    }
+
+    public void setTotalActualNetValue(double totalActualNetValue) {
+        this.totalActualNetValue = totalActualNetValue;
+    }
+
+    public double getTotalNetValueAdjustment() {
+        return totalNetValueAdjustment;
+    }
+
+    public void setTotalNetValueAdjustment(double totalNetValueAdjustment) {
+        this.totalNetValueAdjustment = totalNetValueAdjustment;
     }
 
     public double getTotalCreditCostValue() {

@@ -134,6 +134,8 @@ public class PharmacyIssueController implements Serializable {
     private PharmacyCostingService pharmacyCostingService;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private StockController stockController;
 
     @EJB
     private CashTransactionBean cashTransactionBean;
@@ -490,6 +492,82 @@ public class PharmacyIssueController implements Serializable {
         return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
     }
 
+    // New consumption-aware autocomplete method
+    public List<StockDTO> completeAvailableStocksWithConsumptionFilter(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry.toUpperCase() + "%");
+
+        // Check if consumption restriction is enabled
+        boolean restrictConsumption = configOptionApplicationController.getBooleanValueByKey(
+                "Restrict Consumption to Items with Consumption Allowed Flag", true);
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+
+        if (searchByBarcode) {
+            parameters.put("queryExact", qry.toUpperCase());
+        }
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+        boolean showRatesAndValues = configOptionApplicationController.getBooleanValueByKey(
+                "Consumption - Show Rate and Value", false);
+
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(");
+
+        if (showRatesAndValues) {
+            // Constructor with all rates: id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate, costRate, allowFractions
+            sql.append("s.id, s.id, s.itemBatch.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
+                .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.batchNo, ")
+                .append("s.itemBatch.purcahseRate, s.itemBatch.wholesaleRate, s.itemBatch.costRate, ")
+                .append("s.itemBatch.item.allowFractions) ");
+        } else {
+            // Simple constructor: id, itemName, code, genericName, retailRate, stockQty, dateOfExpire, allowFractions
+            sql.append("s.id, s.itemBatch.item.name, s.itemBatch.item.code, s.itemBatch.item.vmp.name, ")
+                .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.allowFractions) ");
+        }
+
+        sql.append("FROM Stock s ")
+            .append("WHERE s.stock > :stockMin ")
+            .append("AND s.department = :department ");
+
+        // Add consumption allowed filter if enabled (null-safe for legacy data)
+        if (restrictConsumption) {
+            sql.append("AND (s.itemBatch.item.consumptionAllowed = true OR s.itemBatch.item.consumptionAllowed IS NULL) ");
+        }
+
+        sql.append("AND (");
+
+        sql.append("UPPER(s.itemBatch.item.name) LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR UPPER(s.itemBatch.item.code) LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR UPPER(s.itemBatch.item.barcode) = :queryExact ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR UPPER(s.itemBatch.item.vmp.name) LIKE :query ");
+        }
+
+        sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+    }
+
     public BillItem getBillItem() {
         if (billItem == null) {
             billItem = new BillItem();
@@ -728,8 +806,18 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private boolean checkItemBatch() {
+        if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null ||
+            getBillItem().getPharmaceuticalBillItem().getStock() == null) {
+            return false;
+        }
+
         for (BillItem bItem : getPreBill().getBillItems()) {
-            if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
+            if (bItem == null || bItem.getPharmaceuticalBillItem() == null ||
+                bItem.getPharmaceuticalBillItem().getStock() == null) {
+                continue;
+            }
+            if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(),
+                              getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
                 return true;
             }
         }
@@ -737,8 +825,99 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void addBillItem() {
+        if (configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy disposal issue", true)) {
+            addBillItemMultipleBatches();
+        } else {
+            addBillItemSingleItem();
+        }
+        setActiveIndex(1);
+    }
+
+    public Double addBillItemSingleItem() {
         errorMessage = null;
 
+        editingQty = null;
+
+        if (billItem == null) {
+            return 0.0;
+        }
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return 0.0;
+        }
+
+        if (getToDepartment() == null) {
+            errorMessage = "Please Select To Department";
+            JsfUtil.addErrorMessage("Please Select To Department");
+            return 0.0;
+        }
+
+        if (getStock() == null) {
+            errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
+            JsfUtil.addErrorMessage("Please Enter Item");
+            return 0.0;
+        }
+        if (getQty() == null) {
+            errorMessage = "Please enter a quentity";
+            JsfUtil.addErrorMessage("Please enter a quentity");
+            return 0.0;
+        }
+
+        Stock fetchStock = getStockFacade().find(getStock().getId());
+
+        if (getQty() > fetchStock.getStock()) {
+            errorMessage = "No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+            return 0.0;
+        }
+
+        // Set the stock early so checkItemBatch() can access it
+        billItem.getPharmaceuticalBillItem().setStock(stock);
+        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+
+        if (checkItemBatch()) {
+            JsfUtil.addErrorMessage("Already added this item batch");
+            return 0.0;
+        }
+        //Checking User Stock Entity
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+            errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            return 0.0;
+        }
+
+//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
+//            errorMessage = "This batch is Expire With in 31 Days.";
+//            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
+//            return 0.0;
+//        }
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
+        billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
+
+        calculateBillItem();
+
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
+
+        billItem.setItem(getStock().getItemBatch().getItem());
+        billItem.setBill(getPreBill());
+
+        billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
+        getPreBill().getBillItems().add(billItem);
+
+        //User Stock Container Save if New Bill
+        userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
+        billItem.setTransUserStock(us);
+
+        calTotal();
+
+        // Create a new billItem for the next iteration in multi-batch mode
+        Double currentQty = getQty();
+        clearBillItem();
+        return currentQty;
+    }
+
+    public void addBillItemMultipleBatches() {
+        errorMessage = null;
         editingQty = null;
 
         if (billItem == null) {
@@ -764,55 +943,68 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a quentity");
             return;
         }
-
-        Stock fetchStock = getStockFacade().find(getStock().getId());
-
-        if (getQty() > fetchStock.getStock()) {
-            errorMessage = "No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
-            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+        if (getQty() == 0.0) {
+            errorMessage = "Please enter a quentity";
+            JsfUtil.addErrorMessage("Quentity Zero?");
             return;
         }
 
-        if (checkItemBatch()) {
-            JsfUtil.addErrorMessage("Already added this item batch");
+        Stock userSelectedStock = stock;
+        double requestedQty = getQty();
+        double addedQty = 0.0;
+        double remainingQty = getQty();
+
+        if (getQty() <= getStock().getStock()) {
+            Double thisTimeAddingQty = addBillItemSingleItem();
+            if (thisTimeAddingQty == null || thisTimeAddingQty == 0.0) {
+                return;
+            }
+            if (thisTimeAddingQty >= requestedQty) {
+                return;
+            } else {
+                addedQty += thisTimeAddingQty;
+                remainingQty = remainingQty - thisTimeAddingQty;
+            }
+        } else {
+            qty = getStock().getStock();
+            Double thisTimeAddingQty = addBillItemSingleItem();
+            if (thisTimeAddingQty == null || thisTimeAddingQty == 0.0) {
+                return;
+            }
+            addedQty += thisTimeAddingQty;
+            remainingQty = remainingQty - thisTimeAddingQty;
+        }
+
+        // Only proceed with multiple batches if we need more quantity
+        if (remainingQty <= 0) {
             return;
         }
-        //Checking User Stock Entity
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
-            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
-            return;
+
+        List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
+        for (Stock s : availableStocks) {
+            // Initialize billItem for each iteration since clearBillItem() sets it to null
+            getBillItem(); // This will create a new BillItem if null
+            stock = s;
+            if (remainingQty < s.getStock()) {
+                qty = remainingQty;
+            } else {
+                qty = s.getStock();
+            }
+            Double thisTimeAddingQty = addBillItemSingleItem();
+            if (thisTimeAddingQty == null || thisTimeAddingQty == 0.0) {
+                continue; // Skip this stock and try the next one
+            }
+            addedQty += thisTimeAddingQty;
+            remainingQty = remainingQty - thisTimeAddingQty;
+
+            if (remainingQty <= 0) {
+                break; // Exit the loop when we have enough quantity
+            }
         }
-
-//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-//            errorMessage = "This batch is Expire With in 31 Days.";
-//            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
-//            return;
-//        }
-        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
-        billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        billItem.getPharmaceuticalBillItem().setStock(stock);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-
-        calculateBillItem();
-
-        billItem.setInwardChargeType(InwardChargeType.Medicine);
-
-        billItem.setItem(getStock().getItemBatch().getItem());
-        billItem.setBill(getPreBill());
-
-        billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
-        getPreBill().getBillItems().add(billItem);
-
-        //User Stock Container Save if New Bill
-        userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
-        billItem.setTransUserStock(us);
-
-        calTotal();
-
-        clearBillItem();
-        setActiveIndex(1);
+        if (addedQty < requestedQty) {
+            errorMessage = "Quantity is not Enough...!";
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) + " is Available from the Requested Quantity");
+        }
     }
 
     public void calTotal() {
@@ -1188,13 +1380,15 @@ public class PharmacyIssueController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(stock.getItemBatch());
         getBillItem().setItem(stock.getItemBatch().getItem());
-        // Initialize with quantity 1 if no quantity is set
-        if (qty == null || qty == 0.0) {
-            qty = 1.0;
+        // Keep quantity field empty when item is selected - let user enter quantity
+        if (qty == null) {
+            qty = null; // Keep it null instead of setting to 1.0
         }
-        getBillItem().setQty(qty);
-        getBillItem().getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        updateFinancialsForIssue(billItem);
+        if (qty != null) {
+            getBillItem().setQty(qty);
+            getBillItem().getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
+            updateFinancialsForIssue(billItem);
+        }
         calTotal();
     }
 

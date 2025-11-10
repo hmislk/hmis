@@ -18,9 +18,26 @@
                     <h:panelGroup>
                         <p:panel >
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
-                                <p:outputLabel value="Patient Details" class="m-2"/>
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                                        <p:outputLabel value="Patient Details" class="m-2"/>
+                                    </div>
+                                    <div>
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <p:commandButton 
+                                                value="Back to WorkBench" 
+                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                                ajax="false"
+                                                class="ui-button-operating-theatre"
+                                                icon="fa fa-arrow-left">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
                             </f:facet>
+
+
                             <h:outputLabel value="Type Patient Name or BHT : "/>
 
                             <p:autoComplete 
@@ -56,73 +73,82 @@
                             <p:commandButton
                                 id="btnSelect"
                                 ajax="false"
-                                value="Select"
-                                />
+                                value="Select">  
+                            </p:commandButton>
 
                         </p:panel>
-
-
                     </h:panelGroup>
-
                 </div>
-
             </h:panelGroup>
-
-
 
             <p:panel rendered="#{inwardProfessionalBillController.current.patientEncounter ne null}">
                 <f:facet name="header" >
-                    <div class="row">
-                        <div class="col-9">
+                    <div class="d-flex justify-content-between">
+                        <div>
                             <h:outputText styleClass="fa fa-money-bill-wave fa-lg" />
                             <h:outputLabel class="m-2" value="Inward Estimated Professional Charges" />
                         </div>
-                        <div class="col-3">
-                            <p:commandButton
-                                ajax="false"
-                                icon="fa fa-id-card"
-                                style="float: right"
-                                class="ui-button-secondary" 
-                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                ><f:setPropertyActionListener 
-                                    target="#{admissionController.current.patient}" 
-                                    value="#{inwardProfessionalBillController.current.patient}" ></f:setPropertyActionListener>
-                            </p:commandButton>
+                        <div class="d-flex gap-2">
+
                             <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa fa-search"
-                                class="ui-button-warning mx-1" 
-                                action="#{patientController.navigateToSearchPatients()}" 
-                                >
-                            </p:commandButton>
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning mx-1" 
-                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                >
-                                <f:setPropertyActionListener 
-                                    value="#{inwardProfessionalBillController.current.patient}" 
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                                class=" ui-button-success "
+                                value="New Bill" 
+                                icon="fa fa-plus"
+                                ajax="false" 
+                                actionListener="#{inwardProfessionalBillController.makeNull()}" >
                             </p:commandButton>
 
-                            <p:commandButton class=" ui-button-success "
-                                             style="float: right"
-                                             value="New Bill" 
-                                             icon="fa fa-plus"
-                                             ajax="false" 
-                                             actionListener="#{inwardProfessionalBillController.makeNull()}" >
-                            </p:commandButton>
+                            <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <div class="d-flex gap-2">
+                                    
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-id-card"
+                                        title="View Inpatient Profile"
+                                        class="ui-button-secondary" 
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                        <f:setPropertyActionListener 
+                                            target="#{admissionController.current.patient}" 
+                                            value="#{inwardProfessionalBillController.current.patient}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        ajax="false"
+                                        icon="fa fa-search"
+                                        title="Search Patients"
+                                        class="ui-button-warning mx-1" 
+                                        action="#{patientController.navigateToSearchPatients()}" >
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        ajax="false"
+                                        icon="fa fa-user"
+                                        title="View OPD Patient Profile"
+                                        class="ui-button-warning mx-1" 
+                                        action="#{patientController.navigateToOpdPatientProfile()}" >
+                                        <f:setPropertyActionListener 
+                                            value="#{inwardProfessionalBillController.current.patient}" 
+                                            target="#{patientController.current}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    
+                                </div>
+                            </h:panelGroup>
 
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                <p:commandButton 
+                                    value="Back to WorkBench" 
+                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                    ajax="false"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </h:panelGroup>
                         </div>
                     </div>
 
-
                 </f:facet>
-
-
 
                 <div class="row">
                     <div class="col-5" >
@@ -185,13 +211,16 @@
                                             <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
                                         </div>
                                         <div class="col-8">
-                                            <p:autoComplete   forceSelection="true" 
-                                                              value="#{inwardProfessionalBillController.currentBillFee.staff}" 
-                                                              id="scStaff"
-                                                              completeMethod="#{inwardProfessionalBillController.completeStaff}" 
-                                                              var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                              size="50"
-                                                              >
+                                            <p:autoComplete   
+                                                forceSelection="true" 
+                                                value="#{inwardProfessionalBillController.currentBillFee.staff}" 
+                                                id="scStaff"
+                                                completeMethod="#{inwardProfessionalBillController.completeStaff}" 
+                                                var="mys" 
+                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                itemValue="#{mys}"
+                                                size="50"
+                                                >
                                                 <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails"  />
                                             </p:autoComplete>
                                         </div>
@@ -201,9 +230,13 @@
                                             <h:outputLabel value="Professional Fee"/>
                                         </div>
                                         <div class="col-8">
-                                            <p:inputText autocomplete="off" 
-                                                         id="prof" value="#{inwardProfessionalBillController.currentBillFee.feeValue}"
-                                                         size="50"/>
+                                            <p:inputText 
+                                                autocomplete="off" 
+                                                id="prof" 
+                                                value="#{inwardProfessionalBillController.currentBillFee.feeValue}"
+                                                size="50">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
                                         </div>
                                     </div>
                                     <div class="row m-1">
@@ -211,14 +244,15 @@
                                             <h:outputLabel value="Fee At"/>
                                         </div>
                                         <div class="col-8">
-                                            <p:datePicker styleClass="dateTimePicker" 
-                                                          id="feeAt" 
-                                                          value="#{inwardProfessionalBillController.currentBillFee.feeAt}" 
-                                                          size="50"
-                                                          showTime="true"
-                                                          showButtonBar="true"
-                                                          timeInput="true"
-                                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                            <p:datePicker 
+                                                styleClass="dateTimePicker" 
+                                                id="feeAt" 
+                                                value="#{inwardProfessionalBillController.currentBillFee.feeAt}" 
+                                                size="50"
+                                                showTime="true"
+                                                showButtonBar="true"
+                                                timeInput="true"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                                 <f:ajax event="dateSelect"  render="feeAt"/>
                                             </p:datePicker>
                                         </div>
@@ -248,6 +282,7 @@
                                         <p:ajax event="blur" process="txtFeeVal"
                                                 update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                 listener="#{inwardProfessionalBillController.feeChanged(bif)}" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:inputText>
                                 </p:column>
                                 <p:column>

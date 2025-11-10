@@ -125,7 +125,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup> 
                                     </p:column>                                                     
-                                    <p:column >
+                                    <p:column rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                         <h:outputLabel value="#{b.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  

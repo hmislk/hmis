@@ -966,14 +966,14 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (getPreBill().getId() == null) {
             getPreBill().setCreatedAt(new Date());
             getPreBill().setCreater(sessionController.getLoggedUser());
-            getPreBill().setCompleted(true);
-            getPreBill().setCompletedAt(new Date());
-            getPreBill().setCompletedBy(sessionController.getLoggedUser());
+//            getPreBill().setCompleted(true);
+//            getPreBill().setCompletedAt(new Date());
+//            getPreBill().setCompletedBy(sessionController.getLoggedUser());
             billFacade.create(getPreBill());
         } else {
-            getPreBill().setCompleted(true);
-            getPreBill().setCompletedAt(new Date());
-            getPreBill().setCompletedBy(sessionController.getLoggedUser());
+//            getPreBill().setCompleted(true);
+//            getPreBill().setCompletedAt(new Date());
+//            getPreBill().setCompletedBy(sessionController.getLoggedUser());
             billFacade.edit(getPreBill());
         }
         for (BillItem savingBillItem : getPreBill().getBillItems()) {

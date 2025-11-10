@@ -24,6 +24,8 @@
                                         <i class="fas fa-undo text-warning me-2"></i>
                                         <h:outputText value="Pharmacy Issue Return" styleClass="fw-bold"/>
                                     </div>
+
+                                    <!-- Center - Navigation Buttons -->
                                     <div class="d-flex align-items-center gap-2">
                                         <p:commandButton
                                             value="List Issues To Create Return"
@@ -61,6 +63,10 @@
                                             rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
                                             title="View Completed Disposal Returns">
                                         </p:commandButton>
+                                    </div>
+
+                                    <!-- Right - Action Buttons -->
+                                    <div class="d-flex align-items-center gap-2">
                                         <p:commandButton
                                             icon="fas fa-save"
                                             styleClass="ui-button-secondary"
@@ -110,34 +116,11 @@
                             </div>
                         </p:panel>
 
-                        <!-- Return Summary Panel -->
+                        <!-- Main Content Row: Returning Items and Return Summary -->
                         <div class="row mb-3">
-                            <div class="col-lg-6">
-                                <p:panel header="Return Summary" styleClass="shadow-sm">
-                                    <p:panelGrid 
-                                        layout="tabular"
-                                        columns="2" 
-                                        styleClass="w-100">
-                                        <h:outputText value="Return Comment:" styleClass="fw-bold"/>
-                                        <p:inputTextarea
-                                            id="comments"
-                                            class="w-100"
-                                            value="#{issueReturnController.returnBill.comments}">
-                                        </p:inputTextarea>
-                                        <h:outputText value="Receivable Amount:" styleClass="fw-bold"/>
-                                        <h:outputText
-                                            id="total"
-                                            value="#{issueReturnController.returnBill.netTotal}"
-                                            styleClass="text-success fw-bold">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </p:panelGrid>
-                                </p:panel>
-                            </div>
-                        </div>
-
-                        <!-- Returning Items Data Table -->
-                        <p:panel header="Returning Items" styleClass="shadow-sm">
+                            <!-- Returning Items - 8 Columns -->
+                            <div class="col-lg-8">
+                                <p:panel header="Returning Items" styleClass="shadow-sm h-100">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
@@ -253,8 +236,36 @@
                                     </p:commandButton>
                                 </p:column>
 
-                            </p:dataTable>
-                        </p:panel>
+                                </p:dataTable>
+                                </p:panel>
+                            </div>
+
+                            <!-- Return Summary - 4 Columns -->
+                            <div class="col-lg-4">
+                                <p:panel header="Return Summary" styleClass="shadow-sm h-100">
+                                    <div class="d-flex flex-column h-100">
+                                        <div class="mb-3">
+                                            <h:outputText value="Return Comment:" styleClass="fw-bold d-block mb-2"/>
+                                            <p:inputTextarea
+                                                id="comments"
+                                                class="w-100"
+                                                value="#{issueReturnController.returnBill.comments}"
+                                                rows="3">
+                                            </p:inputTextarea>
+                                        </div>
+                                        <div class="mt-auto">
+                                            <h:outputText value="Receivable Amount:" styleClass="fw-bold d-block mb-2"/>
+                                            <h:outputText
+                                                id="total"
+                                                value="#{issueReturnController.returnBill.netTotal}"
+                                                styleClass="text-success fw-bold fs-4">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
 
                         <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
                             <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>

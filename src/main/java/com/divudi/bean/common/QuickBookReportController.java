@@ -367,7 +367,7 @@ public class QuickBookReportController implements Serializable {
                 continue;
             }
             QuickBookFormat qbf = new QuickBookFormat();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             qbf.setRowType("TRNS");
             qbf.setTrnsType("INVOICE");
             qbf.setDate(sdf.format(fromDate));
@@ -405,7 +405,7 @@ public class QuickBookReportController implements Serializable {
                 qbfs.addAll(createInwardIncomes(fromDate, toDate, pe, null, PaymentMethod.Credit, null));
                 if (grantTot != 0.0) {
                     QuickBookFormat qbf = new QuickBookFormat();
-                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     qbf.setRowType("TRNS");
                     qbf.setTrnsType("INVOICE");
                     qbf.setDate(sdf.format(pe.getDateOfDischarge()));
@@ -450,7 +450,7 @@ public class QuickBookReportController implements Serializable {
                 qbfs.addAll(createInwardIncomes(fromDate, toDate, null, getReportKeyWord().getAdmissionType(), PaymentMethod.Cash, null));
                 if (grantTot != 0.0) {
                     QuickBookFormat qbf = new QuickBookFormat();
-                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     qbf.setRowType("TRNS");
                     qbf.setTrnsType("INVOICE");
                     qbf.setDate(sdf.format(fromDate));
@@ -491,7 +491,7 @@ public class QuickBookReportController implements Serializable {
                     qbfs.addAll(createInwardIncomes(fromDate, toDate, null, atype, PaymentMethod.Cash, null));
                     if (grantTot != 0.0) {
                         QuickBookFormat qbf = new QuickBookFormat();
-                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         qbf.setRowType("TRNS");
                         qbf.setTrnsType("INVOICE");
                         qbf.setDate(sdf.format(fromDate));
@@ -565,7 +565,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -575,17 +575,18 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
+            qbf.setAmount(b.getNetTotal());
 //            qbf.setAmount(0 - b.getTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
             System.out.println("b.getInsId() = " + b.getInsId());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate));
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -598,14 +599,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -624,7 +625,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -634,15 +635,16 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
+            qbf.setAmount(b.getNetTotal());
 //            qbf.setAmount(0 - b.getTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getBilledBill().getDeptId());
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -655,14 +657,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -682,7 +684,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -742,7 +744,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -752,7 +754,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
+            qbf.setAmount(b.getNetTotal());
 //            qbf.setAmount(0 - b.getTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
@@ -775,14 +777,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -831,7 +833,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -887,7 +889,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -944,7 +946,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1001,7 +1003,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1090,7 +1092,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1107,10 +1109,11 @@ public class QuickBookReportController implements Serializable {
             qbf.setQbClass(b.getDepartment().getName());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
             System.out.println("b.getInsId() = " + b.getInsId());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate));
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -1149,7 +1152,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1159,15 +1162,16 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
+            qbf.setAmount(b.getNetTotal());
 //            qbf.setAmount(0 - b.getTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
+            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getBilledBill().getDeptId());
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -1180,14 +1184,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -1207,7 +1211,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1267,7 +1271,7 @@ public class QuickBookReportController implements Serializable {
         for (Bill b : bills) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1277,7 +1281,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getNetTotal());
+            qbf.setAmount(b.getNetTotal());
 //            qbf.setAmount(0 - b.getTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
@@ -1300,14 +1304,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -1625,7 +1629,7 @@ public class QuickBookReportController implements Serializable {
             Long proBillCount = countResult != null ? countResult.longValue() : 0L;
             Double proFeeValue = sumResult != null ? sumResult.doubleValue() : 0.0;
 
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Item itemBefore = null;
 
             QuickBookFormat qbf = new QuickBookFormat();

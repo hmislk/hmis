@@ -299,6 +299,7 @@ public class BillSearch implements Serializable {
     private String txtSearch;
     private Bill bill;
     private BillLight billLight;
+    private Long selectedBillId;
     private Bill printingBill;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
@@ -3386,6 +3387,14 @@ public class BillSearch implements Serializable {
         this.bill = bill;
     }
 
+    public Long getSelectedBillId() {
+        return selectedBillId;
+    }
+
+    public void setSelectedBillId(Long selectedBillId) {
+        this.selectedBillId = selectedBillId;
+    }
+
     public String navigateToCancelOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3948,14 +3957,36 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewBillByAtomicBillTypeByBillId(Long BillId) {
+        System.out.println("navigateToViewBillByAtomicBillTypeByBillId");
+        System.out.println("BillId = " + BillId);
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
         }
 
         Bill foundBill = billFacade.find(BillId);
+        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        this.bill = foundBill;
+        return navigateToViewBillByAtomicBillType();
+    }
+
+    public String navigateToViewBillByAtomicBillTypeBySelectedId() {
+        System.out.println("navigateToViewBillByAtomicBillTypeBySelectedId called");
+        System.out.println("selectedBillId = " + selectedBillId);
+        if (selectedBillId == null) {
+            JsfUtil.addErrorMessage("No Bill ID is selected");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(selectedBillId);
+        System.out.println("foundBill = " + foundBill);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for ID: " + selectedBillId);
             return null;
         }
 
@@ -4051,6 +4082,7 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewBillByAtomicBillType() {
+        System.out.println("navigateToViewBillByAtomicBillType");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
@@ -4244,6 +4276,8 @@ public class BillSearch implements Serializable {
             case PHARMACY_ISSUE_RETURN:
                 return navigateToPharmacyIssueReturn();
             case PHARMACY_ISSUE:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyIssueBill();
             case PHARMACY_DISPOSAL_ISSUE:
 //                return navigateToPharmacyIssue();
                 pharmacyBillSearch.setBill(bill);
@@ -4512,7 +4546,8 @@ public class BillSearch implements Serializable {
             case PHARMACY_ISSUE_RETURN:
                 return navigateToPharmacyIssueReturn();
             case PHARMACY_ISSUE:
-                return navigateToPharmacyIssue();
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyIssueBill();
             case PHARMACY_ISSUE_CANCELLED:
                 return navigateToPharmacyIssueCancelled();
 

@@ -23,9 +23,26 @@
 
                     <p:panel rendered="#{pharmacySaleBhtController.batchBill eq null}">
                         <f:facet name="header" >
-                            <h:outputText styleClass="fas fa-mortar-pestle" />
-                            <h:outputLabel value="Direct Issue of Pharmaceuticals for Surgeries" class="m-2"></h:outputLabel>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-mortar-pestle" />
+                                    <h:outputLabel value="Direct Issue of Pharmaceuticals for Surgeries" class="m-2"></h:outputLabel>
+                                </div>
+                                <div>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton 
+                                            value="Back to WorkBench" 
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                            ajax="false"
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+
                         </f:facet>
+
                         <h:outputLabel value="Type Surgery Name or BHT : "/>
                         <p:autoComplete 
                             forceSelection="true"
@@ -35,10 +52,8 @@
                             itemLabel="#{apt2.patientEncounter.bhtNo}"
                             itemValue="#{apt2}" 
                             size="40" 
-                            required="true" 
-                            class="m-2"
-                            requiredMessage="Please enter patient details" >
-                            
+                            class="m-2" >
+
                             <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2"
                                     listener="#{pharmacySaleBhtController.selectSurgeryBillListener()}"/>
                             <p:column headerText="Surgery Name" style="padding: 6px; width: 200px;">
@@ -48,17 +63,17 @@
                                 <h:outputLabel value="#{apt2.patient.phn}"/>
                             </p:column>
                             <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                <h:outputLabel value="#{apt2.bhtNo}"/>
+                                <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/>
                             </p:column>
                             <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
-                                <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
+                                <h:outputLabel value="#{apt2.patientEncounter.patient.person.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                <h:outputLabel value="#{apt2.patientEncounter.currentPatientRoom.roomFacilityCharge.name}"/>
                             </p:column>
                             <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
-                                <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
+                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.patientEncounter.discharged}" />
+                                <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.patientEncounter.discharged}" />
                             </p:column>
                             <p:column headerText="From Time" style="padding: 6px; width: 16em;">
                                 <h:outputLabel value="#{apt2.procedure.fromTime}">
@@ -72,20 +87,38 @@
                             </p:column>
 
                         </p:autoComplete>
+
                         <p:commandButton
                             id="btnSelect"
                             value="Select"
-                            ajax="false"/>
+                            ajax="false">
+                        </p:commandButton>
                     </p:panel>
 
 
                     <p:panel rendered="#{!pharmacySaleBhtController.billPreview}"  >
 
-
                         <p:panel rendered="#{pharmacySaleBhtController.batchBill ne null}">
                             <f:facet name="header" >
-                                <h:outputLabel styleClass="fas fa-cut"/>
-                                <h:outputLabel value="Surgery Issue" class="mx-2" />
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h:outputLabel styleClass="fas fa-cut"/>
+                                        <h:outputLabel value="Surgery Issue" class="mx-2" />
+                                    </div>
+                                    <div>
+
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                            <p:commandButton 
+                                                value="Back to WorkBench" 
+                                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                                ajax="false"
+                                                class="ui-button-operating-theatre"
+                                                icon="fa fa-arrow-left">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
                             </f:facet>
 
                             <div class="d-flex justify-content-end gap-2" >
@@ -340,34 +373,57 @@
 
                 <h:form>
                     <p:panel  rendered="#{pharmacySaleBhtController.billPreview}" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                                    <p:outputLabel value="Admitted Patient Room" class="m-2"/>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        class="ui-button-info" 
+                                        icon="fas fa-print" 
+                                        id="btnPrint" 
+                                        value="Print" 
+                                        ajax="false">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        class="ui-button-warning mx-2"
+                                        icon="fas fa-plus"
+                                        accesskey="n" value="New Pharmacy Bill"
+                                        ajax="false"
+                                        action="inward_bill_surgery_issue"
+                                        actionListener="#{pharmacySaleBhtController.resetAll()}"  >
+                                    </p:commandButton>
 
-                        <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;"  ></p:commandButton>
-                        <p:defaultCommand  target="btnPrint" />
+                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                icon="fa-solid fa-address-card"
+                                                class="ui-button-secondary "
+                                                value="Inpatient Dashboard"
+                                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                                >
+                                                <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
 
-                        <div class="" >
-                            <p:commandButton class="ui-button-info" icon="fas fa-print" accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton
-                                class="ui-button-warning mx-2"
-                                icon="fas fa-plus"
-                                accesskey="n" value="New Pharmacy Bill"
-                                ajax="false"
-                                action="inward_bill_surgery_issue"
-                                actionListener="#{pharmacySaleBhtController.resetAll()}"  >
-                            </p:commandButton>
-                            <p:commandButton
-                                ajax="false"
-                                icon="fa-solid fa-address-card"
-                                class="ui-button-secondary "
-                                value="Inpatient Dashboard"
-                                style="float: right;"
-                                action="#{admissionController.navigateToAdmissionProfilePage}"
-                                >
-                                <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill.patientEncounter}" target="#{admissionController.current}" />
-                            </p:commandButton>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton 
+                                            value="Back to WorkBench" 
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                            ajax="false"
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </f:facet>
 
-                        </div>
                         <div >
                             <h:panelGroup   id="gpBillPreview">
                                 <phi:issueBill bill="#{pharmacySaleBhtController.printBill}"/>

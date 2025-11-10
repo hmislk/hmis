@@ -32,7 +32,7 @@
                     title="Home">
                 </p:menuitem>
 
-
+<!--            OPD Section-->
                 <p:submenu 
                     id="smOpd"
                     icon="fa fa-fw fa-user-md"
@@ -290,6 +290,7 @@
 
                 </p:submenu>
 
+<!--            Membership Section-->
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                     <p:menuitem 
                         ajax="false" 
@@ -324,6 +325,7 @@
                         icon="fa fa-bar-chart"></p:menuitem>
                 </p:submenu>
 
+<!--            Inward Section-->
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
                     <p:submenu label="Admissions" icon="fa fa-sign-in-alt" rendered="#{webUserController.hasPrivilege('InwardAdmissions')}">
                         <p:menuitem ajax="false"
@@ -525,6 +527,16 @@
 
                 </p:submenu>
 
+<!--            Nurce Section-->
+                <p:menuitem
+                    ajax="false" 
+                    id="smNursingWorkBench"
+                    style="zoom: 1.2;"
+                    icon="fa-solid fa-user-nurse"
+                    action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">   
+                </p:menuitem>
+                
+<!--            Collecting Centre Section-->
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
                     <p:menuitem 
                         ajax="false" 
@@ -639,6 +651,7 @@
 
                 </p:submenu>
 
+<!--            Laboratory Section-->
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
 
                     <p:submenu
@@ -780,6 +793,7 @@
                     </p:menuitem>
                 </p:submenu>
 
+<!--            Courier Section-->
                 <p:menuitem 
                     id="courier"
                     ajax="false"
@@ -793,6 +807,7 @@
                         src="https://img.icons8.com/external-kmg-design-detailed-outline-kmg-design/64/external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design.png" alt="external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design"/>
                 </p:menuitem>
 
+<!--            Lab Doctor Section-->
                 <p:menuitem 
                     id="smLabDocDashboard"
                     ajax="false"
@@ -804,6 +819,7 @@
                     title="Lab Doctor Dashboard">
                 </p:menuitem>
 
+<!--            Pharmacy Section-->
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                     <p:menuitem 
                         ajax="false" 
@@ -1048,18 +1064,8 @@
                             icon="fas fa-dolly-flatbed"
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
-                        <p:menuitem  
-                            id="mnuPurchaseReturnsAndCancellations"
-                            ajax="false" 
-                            action="/pharmacy/purchase_returns_and_cancellations_index?faces-redirect=true"  
-                            value="Purchase Returns and Cancellations" 
-                            title="Purchase Returns and Cancellations"
-                            icon="fas fa-undo-alt"
-                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods') or webUserController.hasPrivilege('CreateGrnReturn') or webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('ApproveGrnReturn') or webUserController.hasPrivilege('CreateDirectPurchaseReturn') or webUserController.hasPrivilege('FinalizeDirectPurchaseReturn') or webUserController.hasPrivilege('ApproveDirectPurchaseReturn') or webUserController.hasPrivilege('ReturnWithoutRecipt') or webUserController.hasPrivilege('PharmacyOrderCancellation')}" ></p:menuitem>
+
                     </p:submenu>
-
-
-
                     <p:submenu label="Disposal" icon="fas fa-trash-alt" rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}">
                         <p:menuitem
                             ajax="false"
@@ -1151,6 +1157,7 @@
 
                 </p:submenu>
 
+<!--            Theatre Section-->
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
                     <p:menuitem  ajax="false"  action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
                                  value="Add Surgeries"
@@ -1280,6 +1287,7 @@
                         rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
                 </p:submenu>
 
+<!--            Store Section-->
                 <p:submenu   
                     id="smStore"  icon="fa fa-fw fa-store"  rendered="#{webUserController.hasPrivilege('Store')}">                                                           
                     <p:submenu label="BHT Issue" icon="fas fa-procedures" rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}">
@@ -1346,6 +1354,7 @@
 
                 </p:submenu>
 
+<!--            Channelling Section-->
                 <p:submenu
                     id="smChannelling"
                     icon="fa fa-fw fa-calendar-check" 
@@ -1441,6 +1450,7 @@
                     </p:menuitem>
                 </p:submenu>
 
+<!--            Clinic Section-->
                 <p:submenu
                     id="smClinics"
                     icon="fa fa-fw fa-clinic-medical" 
@@ -1496,7 +1506,7 @@
 
                 </p:submenu>
 
-
+<!--            Optician Section-->
                 <p:submenu id="smOpdOptician"  icon="fa fa-eye" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Optician Module')}"  >
                     <p:menuitem value="Patient Management" action="#{opticianController.navigateToOpticianPatientManagement()}" ajax="false" icon="fa fa-users" />
                     <p:menuitem value="Appointment Management" action="#{opticianController.navigateToOpticianAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" />
@@ -1506,7 +1516,7 @@
                     <p:menuitem value="Product Catalog" action="#{opticianController.navigateToOpticianProductCatalog()}" ajax="false" icon="fa fa-book-open" />
                 </p:submenu>
 
-
+<!--            Payment Section-->
                 <p:submenu id="smPayment" icon="fa fa-fw fa-money-bill-wave"  rendered="#{webUserController.hasPrivilege('Payment')}">  
                     <p:menuitem  
                         ajax="false"  
@@ -1711,6 +1721,7 @@
                     </p:submenu>
                 </p:submenu>
 
+<!--            HR Section-->
                 <p:submenu 
                     id="smHr"
                     icon="fa fa-fw fa-users"
@@ -1752,7 +1763,7 @@
 
                 </p:submenu>
 
-
+<!--            Clinical Section-->
                 <p:submenu  
                     id="smEmr"
                     icon="fa fa-fw fa-stethoscope"
@@ -1766,6 +1777,7 @@
                     <p:menuitem ajax="false" action="#{emrController.navigateToEmrAdmin()}" icon="pi pi-sliders-h" value="Administration"/>
                 </p:submenu>
 
+<!--            Reports Section-->
                 <p:submenu id="smReports" icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
@@ -1786,6 +1798,7 @@
 
                 </p:submenu>
 
+<!--            UserMenu Section-->
                 <p:submenu
                     id="smSettings" 
                     icon="pi pi-cog" 
@@ -1832,6 +1845,7 @@
 
                 </p:submenu>
 
+<!--            Administration Section-->
                 <p:submenu label="Administration" icon="fa fa-wrench" rendered="#{webUserController.hasPrivilege('Admin')}">
                     <p:menuitem  
                         ajax="false"  

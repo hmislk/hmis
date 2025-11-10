@@ -3006,6 +3006,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
     }
 
+    public String navigateToGrnReturnVarianceReport() {
+
+        return "/reports/inventoryReports/grn_return_variance_report?faces-redirect=true";
+    }
+
     public String navigateToSlowFastNoneMovement() {
 
         return "/reports/inventoryReports/slow_fast_none_movement?faces-redirect=true";
@@ -3110,6 +3115,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToAdmissionCategoryWiseAdmission() {
 
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
+    }
+    
+    public String navigateToAdmissionReport(){
+        return "/reports/inpatientReports/ip_admission_report?faces-redirect=true";
+    }
+    
+    public String navigateToIpServiceReport(){
+        return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
     }
     
     
