@@ -2025,8 +2025,12 @@ public class PharmacyReportController implements Serializable {
         );
         retrieveBillItems(btas, getCreditPaymentMethods());
     }
-
+    
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
+        retrieveBillItemsCompleted(billTypeValue, null);
+    }
+
+    private void retrieveBillItemsCompleted(List<BillTypeAtomic> billTypeValue, Boolean completed) {
         try {
             billItems = new ArrayList<>();
             netTotal = 0.0;
@@ -2046,6 +2050,10 @@ public class PharmacyReportController implements Serializable {
             params.put("billTypes", billTypeValue);
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
+
+            if (completed != null) {
+                addFilter(jpql, params, "b.completed", "completed", true);
+            }
 
             addFilter(jpql, params, "b.institution", "ins", institution);
             addFilter(jpql, params, "b.department.site", "sit", site);
@@ -2661,7 +2669,7 @@ public class PharmacyReportController implements Serializable {
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
         btasToGetBillItems.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
-        retrieveBillItems(btasToGetBillItems);
+        retrieveBillItemsCompleted(btasToGetBillItems, true);
         calculateStockConsumptionTotals(billItems);
     }
 

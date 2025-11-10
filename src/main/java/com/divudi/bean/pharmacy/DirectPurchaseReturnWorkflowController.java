@@ -1515,18 +1515,19 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         String sql = "Select sum(b.billItemFinanceDetails.quantityByUnits) "
-                + "from BillItem b where b.referanceBillItem=:refBi "
-                + "and b.bill.billType=:bt and b.bill.cancelled=:can "
-                + "and b.retired=:ret and b.bill.completed=:comp";
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.retired=false "
+                + " and b.referanceBillItem=:refBi "
+                + " and b.bill.completed=true "
+                + " and b.bill.billTypeAtomic=:bta";
 
         Map<String, Object> params = new HashMap<>();
         params.put("refBi", referanceBillItem);
-        params.put("bt", BillType.PurchaseReturn);
-        params.put("can", false);
-        params.put("comp", true);
-        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
-        return billItemFacade.findDoubleByJpql(sql, params);
+        Double result = billItemFacade.findDoubleByJpql(sql, params);
+        return result != null ? Math.abs(result) : 0.0;
     }
 
     public double getAlreadyReturnedFreeQuantity(BillItem referanceBillItem) {
@@ -1536,18 +1537,19 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         String sql = "Select sum(b.billItemFinanceDetails.freeQuantityByUnits) "
-                + "from BillItem b where b.referanceBillItem=:refBi "
-                + "and b.bill.billType=:bt and b.bill.cancelled=:can "
-                + "and b.retired=:ret and b.bill.completed=:comp";
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.retired=false "
+                + " and b.referanceBillItem=:refBi "
+                + " and b.bill.completed=true "
+                + " and b.bill.billTypeAtomic=:bta";
 
         Map<String, Object> params = new HashMap<>();
         params.put("refBi", referanceBillItem);
-        params.put("bt", BillType.PurchaseReturn);
-        params.put("can", false);
-        params.put("comp", true);
-        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
-        return billItemFacade.findDoubleByJpql(sql, params);
+        Double result = billItemFacade.findDoubleByJpql(sql, params);
+        return result != null ? Math.abs(result) : 0.0;
     }
 
     // Comprehensive validation methods based on legacy DirectPurchaseReturnWithCostingController pattern
