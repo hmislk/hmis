@@ -227,7 +227,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
         
         if(!reservation.getReservedFrom().after(new Date())){
-            JsfUtil.addErrorMessage("Please select a valid Reservation date today onwards.");
+            JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
+            return;
+        }
+        
+        if(reservation.getReservedTo() != null && (!reservation.getReservedTo().after(new Date()) || !reservation.getReservedTo().after(reservation.getReservedFrom()))){
+            JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
             return;
         }
 
