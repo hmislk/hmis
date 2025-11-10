@@ -10,44 +10,55 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Admission Discharge" >
-                        <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value=" Admission From Date">
-                            </p:outputLabel>
+                        <p:panelGrid columns="6" class="w-100">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                            <p:outputLabel value=" Admission From Date **" class="m-3"/>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" ></p:datePicker>
-                            <p:outputLabel value=" Admission To Date" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                 <p:outputLabel value=" Admission To Date **" class="m-3" />
+                            </h:panelGroup>              
+
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=""></p:datePicker>
-
-                            <p:outputLabel value=" Discharge From Date">
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                 <p:outputLabel value=" Discharge From Date **" class="m-3" />
+                            </h:panelGroup>              
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" ></p:datePicker>
-                            <p:outputLabel value=" Discharge To Date" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                 <p:outputLabel value=" Discharge To Date **" class="m-3" />
+                            </h:panelGroup>  
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=""></p:datePicker>
-
-                            <p:outputLabel value=" Settled From Date">
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                 <p:outputLabel value=" Settled From Date **" class="m-3" />
+                            </h:panelGroup> 
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" ></p:datePicker>
-                            <p:outputLabel value=" Settled To Date" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                 <p:outputLabel value=" Settled To Date **" class="m-3" />
+                            </h:panelGroup> 
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=""></p:datePicker>
-
-                            <p:outputLabel value="Branch" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-building mr-2"/>
+                                 <p:outputLabel value="Branch *" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu 
-
                                 value="" 
                                 filter="true"
                                 class="w-100 ">
@@ -57,9 +68,10 @@
                                                itemLabel=""
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Department" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-building mr-2"/>
+                                 <p:outputLabel value="Department" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu 
                                 id="cmdFromDepartment"
                                 value="#{reportController.fromDepartment}" 
@@ -71,9 +83,10 @@
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Service Center" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-building mr-2"/>
+                                 <p:outputLabel value="Service Center" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -83,9 +96,10 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
-
-                            <p:outputLabel value="Discharge Type" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-medkit mr-2"/>
+                                 <p:outputLabel value="Discharge Type" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -94,9 +108,10 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Consultant" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-user-md mr-2"/>
+                                 <p:outputLabel value="Consultant" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -105,9 +120,11 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Sponsor" >
-                            </p:outputLabel>
+                            
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-user mr-2"/>
+                                 <p:outputLabel value="Sponsor" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -116,9 +133,10 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Patient Category" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-user mr-2"/>
+                                 <p:outputLabel value="Patient Category" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -127,9 +145,10 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Sponsor" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-user mr-2"/>
+                                 <p:outputLabel value="Admission Status" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -138,9 +157,10 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Admission Status" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-user mr-2"/>
+                                 <p:outputLabel value="Admission Type" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -149,9 +169,10 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Admission Type" >
-                            </p:outputLabel>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-suitcase mr-2"/>
+                                 <p:outputLabel value="Occupation" class="m-3" />
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -160,15 +181,48 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-map-marker mr-2"/>
+                                 <p:outputLabel value="Area" class="m-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:panelGroup>
+                                 <h:outputText styleClass="fa fa-building mr-2"/>
+                                 <p:outputLabel value="Insurance Company" class="m-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
                         </p:panelGrid>
 
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                        <div class="d-flex align-items-center mt-3">
+                            <p:commandButton  class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
+                            <p:commandButton
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download Excel">
+                                <p:dataExporter type="xlsx" target="detailWise" fileName="Admission_Discharge_Report.xlsx"/>
+                            </p:commandButton>
+                           <p:commandButton class="ui-button-primary mx-1"
+                                             icon="fas fa-print"
+                                             ajax="false"
+                                             value="Print">
+                                <p:printer />
+                            </p:commandButton>
+                           <p:commandButton
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                action="#">
                             </p:commandButton>
                         </div>
 
@@ -179,23 +233,21 @@
                             <p:column headerText="S.No">
                                 <h:outputText value="" />
                             </p:column>
-
                             <p:column headerText="MRN">
                                 <h:outputText value="" />
                             </p:column>
-
-                            <p:column headerText="Patient Mobile No">
+                            <p:column headerText="Patient Name">
                                 <h:outputText value="" />
                             </p:column>
-
-                            <p:column headerText="">
-                                <h:outputText value="Admission No" />
+                            <p:column headerText="Mobile No">
+                                <h:outputText value="" />
                             </p:column>
-
+                            <p:column headerText="Admission No">
+                                <h:outputText value="" />
+                            </p:column>
                             <p:column headerText="House No/ post">
                                 <h:outputText value="" />
                             </p:column>
-
                             <p:column headerText="Street / Village">
                                 <h:outputText value="" />
                             </p:column>
@@ -287,15 +339,15 @@
                             <p:column headerText="Sponcer ">
                                 <h:outputText value="" />
                             </p:column>
-
+                           <p:column headerText="Plan ">
+                                <h:outputText value="" />
+                            </p:column>
                             <p:column headerText="Patient Category ">
                                 <h:outputText value="" />
                             </p:column>
-
                             <p:column headerText="Referral Doctor ">
                                 <h:outputText value="" />
                             </p:column>
-
                             <p:column headerText="Referral Hospital ">
                                 <h:outputText value="" />
                             </p:column>
@@ -308,14 +360,17 @@
                                 <h:outputText value="" />
                             </p:column>
                             
-                            <p:column headerText="Professional Fees ">
+                            <p:column headerText="Advance ">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Professional Fees">
                                 <h:outputText value="" />
                             </p:column>
 
                             <p:column headerText="Hospital Amount ">
                                 <h:outputText value="" />
                             </p:column>
-
                             <p:column headerText="Sponsor Amount ">
                                 <h:outputText value="" />
                             </p:column>
@@ -347,11 +402,6 @@
                             <p:column headerText="Admission User ">
                                 <h:outputText value="" />
                             </p:column>
-
-                            <p:column headerText="Admission User ">
-                                <h:outputText value="" />
-                            </p:column>
-
                             <p:column headerText="Discharge User ">
                                 <h:outputText value="" />
                             </p:column>
