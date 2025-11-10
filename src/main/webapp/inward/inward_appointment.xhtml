@@ -144,7 +144,7 @@
                                                             value="#{appointmentController.currentBill.referredBy}"
                                                             completeMethod="#{doctorController.completeDoctor}" 
                                                             var="doc" 
-                                                            itemLabel="#{doc.person.name}" 
+                                                            itemLabel="#{doc.person.nameWithTitle}" 
                                                             itemValue="#{doc}" 
                                                             size="30"  >
                                             </p:autoComplete>
