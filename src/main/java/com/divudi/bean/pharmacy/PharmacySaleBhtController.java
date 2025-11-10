@@ -908,10 +908,11 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
-        if(bhtRequestBill.isCompleted()){
-            JsfUtil.addErrorMessage("This request has already been completed..");
-            return;
-        }
+        
+//        if(bhtRequestBill.isCompleted()){
+//            JsfUtil.addErrorMessage("This request has already been completed..");
+//            return;
+//        }
         
         if (hasAllergyConflicts(getBillItems())) {
             return;
@@ -932,6 +933,7 @@ public class PharmacySaleBhtController implements Serializable {
             billFacade.edit(bhtRequestBill);
             System.out.println("Update BHT Request Bill = " + bhtRequestBill.getDeptId() );
         }
+        completed = false;
         userNotificationController.userNotificationRequestComplete();
 
     }
