@@ -909,7 +909,12 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         
-        if(bhtRequestBill.isCompleted()){
+        if (bhtRequestBill == null) {
+            JsfUtil.addErrorMessage("No BHT request selected.");
+            return;
+        }
+        
+        if( bhtRequestBill.isCompleted()){
             JsfUtil.addErrorMessage("This request has already been completed..");
             return;
         }
