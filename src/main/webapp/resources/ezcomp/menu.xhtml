@@ -1064,18 +1064,8 @@
                             icon="fas fa-dolly-flatbed"
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
-                        <p:menuitem  
-                            id="mnuPurchaseReturnsAndCancellations"
-                            ajax="false" 
-                            action="/pharmacy/purchase_returns_and_cancellations_index?faces-redirect=true"  
-                            value="Purchase Returns and Cancellations" 
-                            title="Purchase Returns and Cancellations"
-                            icon="fas fa-undo-alt"
-                            rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods') or webUserController.hasPrivilege('CreateGrnReturn') or webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('ApproveGrnReturn') or webUserController.hasPrivilege('CreateDirectPurchaseReturn') or webUserController.hasPrivilege('FinalizeDirectPurchaseReturn') or webUserController.hasPrivilege('ApproveDirectPurchaseReturn') or webUserController.hasPrivilege('ReturnWithoutRecipt') or webUserController.hasPrivilege('PharmacyOrderCancellation')}" ></p:menuitem>
+
                     </p:submenu>
-
-
-
                     <p:submenu label="Disposal" icon="fas fa-trash-alt" rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}">
                         <p:menuitem
                             ajax="false"
