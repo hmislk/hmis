@@ -16483,25 +16483,29 @@ public class SearchController implements Serializable {
             collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
 
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
-            List<BillTypeAtomic> pharmacyCreditBills = new ArrayList<>();
-            pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills);
+            List<BillTypeAtomic> pharmacyCreditBillTypes = new ArrayList<>();
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
+            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBillTypes, creditPaymentMethods);
             pharmacyCreditBillsBundle.setBundleType("PharmacyCreditBills");
             pharmacyCreditBillsBundle.setName("Pharmacy Credit Bills");
             bundle.getBundles().add(pharmacyCreditBillsBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditBillsBundle);
 
             List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
-            pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel);
+            pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel, creditPaymentMethods);
             pharmacyCreditCancelBundle.setBundleType("PharmacyCreditCancel");
             pharmacyCreditCancelBundle.setName("Pharmacy Credit Cancellations");
             bundle.getBundles().add(pharmacyCreditCancelBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditCancelBundle);
 
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
-            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
-            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
             pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
             pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
             bundle.getBundles().add(pharmacyCreditRefundBundle);
@@ -16863,25 +16867,29 @@ public class SearchController implements Serializable {
 //        bundle.getBundles().add(opdCreditRefundBundle);
 //        collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
-            List<BillTypeAtomic> pharmacyCreditBills = new ArrayList<>();
-            pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills);
+            List<BillTypeAtomic> pharmacyCreditBillTypes = new ArrayList<>();
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+            pharmacyCreditBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
+            ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBillTypes, creditPaymentMethods);
             pharmacyCreditBillsBundle.setBundleType("PharmacyCreditBills");
             pharmacyCreditBillsBundle.setName("Pharmacy Credit Bills");
             bundle.getBundles().add(pharmacyCreditBillsBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditBillsBundle);
 
             List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
-            pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel);
+            pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+            ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel, creditPaymentMethods);
             pharmacyCreditCancelBundle.setBundleType("PharmacyCreditCancel");
             pharmacyCreditCancelBundle.setName("Pharmacy Credit Cancellations");
             bundle.getBundles().add(pharmacyCreditCancelBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditCancelBundle);
 
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
-            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
-            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
             pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
             pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
             bundle.getBundles().add(pharmacyCreditRefundBundle);
