@@ -15,17 +15,33 @@
                     <f:facet name="header" >      
                         <div class="d-flex justify-content-between">
                             <div class="d-flex gap-3 mt-2">
-
-
-
+                                <h:outputText value="BHT Issue Return"  />  
                             </div>
-                            <div>
+                            <div class="d-flex gap-3">
+                                <h:outputLabel value="Reason for Return" class="mt-2" style="font-weight: 600;"/>
+                                <p:selectOneMenu
+                                    id="commentsMenu"
+                                    value="#{bhtIssueReturnController.returnComment}"
+                                    editable="true"
+                                    filter="true"
+                                    placeholder="Select or enter a comment"
+                                    filterMatchMode="contains"
+                                    style="width: 450px;"
+                                    >
+                                    <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems
+                                        value="#{configOptionApplicationController.getListOfCustomOptions('BHT Issue Return Comments')}"
+                                        var="option"
+                                        itemLabel="#{option}"
+                                        itemValue="#{option}"/>
+                                </p:selectOneMenu>
+
                                 <p:commandButton  
                                     value="Return" 
                                     icon="fa fa-undo"
                                     action="#{bhtIssueReturnController.settle}" 
                                     ajax="false" 
-                                    >
+                                    class="ui-button-warning">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -67,67 +83,74 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </p:outputLabel> 
                     </h:panelGrid>
-                    <p:dataTable var="ph" 
-                                 value="#{bhtIssueReturnController.billItems}"
-                                 scrollable="true" 
-                                 id="itemList" >  
 
-                        <f:facet name="header">  
-                            Returning Item 
-                        </f:facet>  
+                    <p:panel header="Returning Item" class="mt-3">
+                        <p:dataTable 
+                            var="ph" 
+                            rowIndexVar="i"
+                            value="#{bhtIssueReturnController.billItems}"
+                            id="itemList" >  
 
-                        <p:column headerText="Item Name" style="width:50px!important;">  
-                            <h:outputText value=" #{ph.item.name}"  />                     
-                        </p:column>  
+                            <p:column headerText="#" style="width:2em; padding: 9px;">  
+                                <h:outputText value=" #{i+1}"  />                     
+                            </p:column>
+                            
+                            <p:column headerText="Item Name" style=" padding: 9px;">  
+                                <h:outputText value=" #{ph.item.name}"  />                     
+                            </p:column>  
 
-                        <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.qty}">  
-                                <f:convertNumber pattern="#0" />
-                            </h:outputText>
-                        </p:column>  
+                            <p:column headerText="Balance Qty in Unit" style="padding: 9px; width: 12em;"> 
+                                <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" >  
+                                    <f:convertNumber pattern="#0" />
+                                </h:outputText>
+                            </p:column>  
 
-                        <p:column headerText="Gross Rate" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.rate}"  >
-                                <f:convertNumber pattern="#,##0.00" />                                
-                            </h:outputText>                      
-                        </p:column>   
+                            <p:column headerText="Gross Rate" style="padding: 9px; width: 9em;"> 
+                                <h:outputText value="#{ph.rate}">
+                                    <f:convertNumber pattern="#,##0.00" />                                
+                                </h:outputText>                      
+                            </p:column>   
 
-                        <p:column headerText="Margin Rate" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.marginRate}"  >
-                                <f:convertNumber pattern="#,##0.00" />                                
-                            </h:outputText>                      
-                        </p:column>   
+                            <p:column headerText="Margin Rate" style="padding: 9px; width: 9em;"> 
+                                <h:outputText value="#{ph.marginRate}">
+                                    <f:convertNumber pattern="#,##0.00" />                                
+                                </h:outputText>                      
+                            </p:column>   
 
-                        <p:column headerText="Net Rate" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.netRate}"  >
-                                <f:convertNumber pattern="#,##0.00" />                                
-                            </h:outputText>                      
-                        </p:column>                
+                            <p:column headerText="Net Rate" style="padding: 9px; width: 9em;"> 
+                                <h:outputText value="#{ph.netRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />                                
+                                </h:outputText>                      
+                            </p:column>                
 
-                        <p:column headerText="Batch No" style="width:25px!important;">                       
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" />                        
-                        </p:column>  
+                            <p:column headerText="Batch No" style="width:6em; padding: 9px; width: 9em;">                       
+                                <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
+                            </p:column>  
 
-                        <p:column headerText="Date of Expiry" style="width:25px!important;">                     
-                            <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}"> 
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
-                            </h:outputLabel>
-                        </p:column>
+                            <p:column headerText="Date of Expiry" style="padding: 9px; width: 10em;">                     
+                                <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}"> 
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                                </h:outputLabel>
+                            </p:column>
 
-                        <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
-                            <p:inputText autocomplete="off" value="#{ph.qty}" onfocus="this.select();">
-                                <f:ajax 
-                                    event="blur" 
-                                    render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
-                                    execute="@this" 
-                                    listener="#{bhtIssueReturnController.onEdit(ph)}" >
-                                </f:ajax>                               
-                                <f:convertNumber pattern="#,##" />
-                            </p:inputText>
-                        </p:column>  
+                            <p:column headerText="Returning Qty in Unit" style="padding: 9px; width: 11em;">                     
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    value="#{ph.qty}" 
+                                    style="width: 8em;"
+                                    onfocus="this.select();">
+                                    <f:ajax 
+                                        event="blur" 
+                                        render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
+                                        execute="@this" 
+                                        listener="#{bhtIssueReturnController.onEdit(ph)}" >
+                                    </f:ajax>                               
+                                    <f:convertNumber pattern="#,##" />
+                                </p:inputText>
+                            </p:column>  
 
-                    </p:dataTable>  
-
+                        </p:dataTable>  
+                    </p:panel>
                 </p:panel>
             </h:panelGroup>
 
@@ -248,10 +271,10 @@
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
-                                
-                                 <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
-                                     <phi:saleBill_Header_Return bill="#{bhtIssueReturnController.returnBill}" ></phi:saleBill_Header_Return>
-                            </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                    <phi:saleBill_Header_Return bill="#{bhtIssueReturnController.returnBill}" ></phi:saleBill_Header_Return>
+                                </h:panelGroup>
 
                             </h:panelGroup>
                         </p:panel>
