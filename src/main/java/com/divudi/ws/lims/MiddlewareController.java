@@ -109,7 +109,7 @@ public class MiddlewareController {
             System.out.println("AA");
 
             PatientRecord pr = new PatientRecord(0,
-                    ptSample.getPatient().getIdStr(),
+                    extractLastFromBillNumber(ptSample.getBill().getDeptId()),
                     ptSample.getIdStr(),
                     ptSample.getPatient().getPerson().getNameWithTitle(),
                     "", ptSample.getPatient().getPerson().getSex().getLabel(),
@@ -129,6 +129,16 @@ public class MiddlewareController {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred").build();
         }
+    }
+    
+    private static String extractLastFromBillNumber(String input) {
+        if (input == null || !input.contains("/")) {
+            return input; // return as-is if null or no slashes
+        }
+        int last = input.lastIndexOf('/');
+        String lastPart = input.substring(last + 1);
+        String billNumber = lastPart.replaceFirst("^0+", "");
+        return billNumber;
     }
 
     @POST
