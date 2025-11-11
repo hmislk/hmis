@@ -61,36 +61,18 @@
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Bill Type" />
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:selectOneMenu
-                                            class="w-100"
-                                            id="cmbBillType"
-                                            value="#{cashRecieveBillController.selectedBillType}">
-                                            <f:selectItem itemLabel="OPD Batch Bills" itemValue="OPD_BATCH"/>
-                                            <f:selectItem itemLabel="OPD Package Bills" itemValue="OPD_PACKAGE"/>
-                                            <f:selectItem itemLabel="Pharmacy Bills" itemValue="PHARMACY"/>
-                                            <p:ajax process="cmbBillType" update="acIx" event="change"
-                                                    listener="#{cashRecieveBillController.billTypeChanged()}" />
-                                        </p:selectOneMenu>
-                                    </div>
-                                </div>
-
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
                                         <p:outputLabel value="Select Bill" />
                                     </div>
                                     <div class="col-md-8">
                                         <p:autoComplete
                                             widgetVar="aIx"
                                             id="acIx"
-                                            placeholder="Type here to get suggestions"
+                                            placeholder="Type here to search OPD and Pharmacy credit bills"
                                             forceSelection="true"
                                             value="#{cashRecieveBillController.currentBillItem.referenceBill}"
                                             completeMethod="#{cashRecieveBillController.completeCombinedCreditBills}"
                                             var="ix"
-                                            itemLabel="#{cashRecieveBillController.selectedBillType eq 'PHARMACY' ? ix.deptId : ix.patient.person.name}"
+                                            itemLabel="#{ix.patient != null ? ix.patient.person.name : ix.deptId}"
                                             itemValue="#{ix}"
                                             class="w-100"
                                             inputStyleClass="w-100">
@@ -103,12 +85,12 @@
                                                 <h:outputLabel value="#{ix.deptId}"/>
                                             </p:column>
 
-                                            <!-- Patient/Company Column - Only show for non-pharmacy bills -->
-                                            <p:column rendered="#{cashRecieveBillController.selectedBillType ne 'PHARMACY'}">
+                                            <!-- Patient/Company Column -->
+                                            <p:column>
                                                 <f:facet name="header">
-                                                    <h:outputLabel value="Patient Name"/>
+                                                    <h:outputLabel value="Patient/Company"/>
                                                 </f:facet>
-                                                <h:outputLabel value="#{ix.patient.person.name}"/>
+                                                <h:outputLabel value="#{ix.patient != null ? ix.patient.person.name : 'Pharmacy Sale'}"/>
                                             </p:column>
 
                                             <!-- Credit Company Column -->
@@ -116,7 +98,7 @@
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Credit Company"/>
                                                 </f:facet>
-                                                <h:outputLabel value="#{cashRecieveBillController.selectedBillType eq 'PHARMACY' ? ix.toInstitution.name : ix.creditCompany.name}"/>
+                                                <h:outputLabel value="#{ix.creditCompany != null ? ix.creditCompany.name : ix.toInstitution.name}"/>
                                             </p:column>
 
                                             <!-- Date Column -->
@@ -134,7 +116,7 @@
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Due Amount"/>
                                                 </f:facet>
-                                                <h:outputLabel value="#{cashRecieveBillController.selectedBillType eq 'PHARMACY' ? ix.balance : (ix.netTotal+ix.vat - ix.paidAmount)}" style="color: red;">
+                                                <h:outputLabel value="#{ix.balance != null ? ix.balance : (ix.netTotal+ix.vat - ix.paidAmount)}" style="color: red;">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
@@ -276,10 +258,9 @@
                                         <p:outputLabel value="#{b.referenceBill.deptId}"/>
                                     </p:column>
 
-                                    <!-- Patient Name - Only for non-pharmacy bills -->
-                                    <p:column headerText="Patient Name"
-                                              rendered="#{not empty b.referenceBill.patient}">
-                                        <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>
+                                    <!-- Patient Name -->
+                                    <p:column headerText="Patient/Company">
+                                        <p:outputLabel value="#{b.referenceBill.patient != null ? b.referenceBill.patient.person.name : 'Pharmacy Sale'}"/>
                                     </p:column>
 
                                     <!-- Credit Company -->
@@ -297,30 +278,6 @@
                                     <!-- Paying this time -->
                                     <p:column headerText="Paying this time">
                                         <h:outputLabel value="#{b.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <!-- Total Paid Before by Company - Only for OPD bills -->
-                                    <p:column headerText="Total Paid Before by Company"
-                                              rendered="#{not empty b.referenceBill.patient}">
-                                        <h:outputLabel value="#{b.referenceBill.settledAmountBySponsor}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <!-- Total Paid Before by Patient - Only for OPD bills -->
-                                    <p:column headerText="Total Paid Before by Patient"
-                                              rendered="#{not empty b.referenceBill.patient}">
-                                        <h:outputLabel value="#{b.referenceBill.settledAmountByPatient}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <!-- Refund Value - Only for pharmacy bills -->
-                                    <p:column headerText="Refund Value"
-                                              rendered="#{empty b.referenceBill.patient}">
-                                        <h:outputLabel value="#{cashRecieveBillController.getRefundAmountForBill(b.referenceBill)}" style="color: red;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
