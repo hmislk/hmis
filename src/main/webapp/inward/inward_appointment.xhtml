@@ -144,7 +144,7 @@
                                                             value="#{appointmentController.currentBill.referredBy}"
                                                             completeMethod="#{doctorController.completeDoctor}" 
                                                             var="doc" 
-                                                            itemLabel="#{doc.person.name}" 
+                                                            itemLabel="#{doc.person.nameWithTitle}" 
                                                             itemValue="#{doc}" 
                                                             size="30"  >
                                             </p:autoComplete>
@@ -195,10 +195,11 @@
                                     <h:outputLabel value=":"/>
                                     <p:datePicker value="#{appointmentController.reservation.reservedFrom}" 
                                                   id="reserveFromTimeStamp"
-                                                  pattern="dd/MMM/yyyy" 
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                   styleClass="form-control w-100"
                                                   showButtonBar="true"
                                                   timeInput="true"
+                                                  showTime="true"
                                                   class="w-50 mx-4 my-2" 
                                                   inputStyleClass="w-100" >                               
                                     </p:datePicker>     
@@ -206,10 +207,11 @@
                                     <h:outputLabel value=":"/>
                                     <p:datePicker value="#{appointmentController.reservation.reservedTo}" 
                                                   id="reserveToTimeStamp"
-                                                  pattern="dd/MMM/yyyy" 
+                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                   styleClass="form-control w-100"
                                                   showButtonBar="true"
                                                   timeInput="true"
+                                                  showTime="true"
                                                   class="w-50 mx-4 my-2" 
                                                   inputStyleClass="w-100" >                               
                                     </p:datePicker>     

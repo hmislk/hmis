@@ -166,27 +166,27 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     private void saveReservation(Patient p, Appointment a) {
-        if (p == null) {
-            JsfUtil.addErrorMessage("No patient Selected");
-            return;
-        }
-        if (a == null) {
-            JsfUtil.addErrorMessage("No Appointment Selected");
-            return;
-        }
-        if (reservation.getRoom() == null) {
-            JsfUtil.addErrorMessage("No Room Selected");
-            return;
-        }
-        if (reservation.getReservedFrom() == null) {
-            JsfUtil.addErrorMessage("No Reserved From Date Selected");
-            return;
-        }
-
-        if (reservation.getReservedTo() == null) {
-            JsfUtil.addErrorMessage("No Reserved To Date Selected");
-            return;
-        }
+//        if (p == null) {
+//            JsfUtil.addErrorMessage("No patient Selected");
+//            return;
+//        }
+//        if (a == null) {
+//            JsfUtil.addErrorMessage("No Appointment Selected");
+//            return;
+//        }
+//        if (reservation.getRoom() == null) {
+//            JsfUtil.addErrorMessage("No Room Selected");
+//            return;
+//        }
+//        if (reservation.getReservedFrom() == null) {
+//            JsfUtil.addErrorMessage("No Reserved From Date Selected");
+//            return;
+//        }
+//
+//        if (reservation.getReservedTo() == null) {
+//            JsfUtil.addErrorMessage("No Reserved To Date Selected");
+//            return;
+//        }
 
         reservation.setAppointment(a);
         reservation.setPatient(p);
@@ -227,7 +227,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
         
         if(!reservation.getReservedFrom().after(new Date())){
-            JsfUtil.addErrorMessage("Please select a valid Reservation date today onwards.");
+            JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
+            return;
+        }
+        
+        if(reservation.getReservedTo() != null && (!reservation.getReservedTo().after(new Date()) || !reservation.getReservedTo().after(reservation.getReservedFrom()))){
+            JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
             return;
         }
 
@@ -320,8 +325,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("No patient Selected");
             return true;
         }
-        
-        if(getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null){
+
+        if(getPatient().getPerson().getMobile() == null && getPatient().getPerson().getPhone() == null){
             JsfUtil.addErrorMessage("Please provide a patient phone number.");
             return true;
         }

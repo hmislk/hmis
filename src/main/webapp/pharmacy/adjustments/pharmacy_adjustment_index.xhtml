@@ -28,7 +28,7 @@
                                                 rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockQTY')}" 
                                                 actionListener="#{pharmacyAdjustmentController.makeNull()}" 
                                                 styleClass="w-100"/>
-                                            <p:commandButton value="Single Item Quantity Adjustment" icon="fas fa-box" action="/pharmacy/adjustments/pharmacy_adjustment_department_by_item?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY') and webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                            <!--<p:commandButton value="Single Item Quantity Adjustment" icon="fas fa-box" action="/pharmacy/adjustments/pharmacy_adjustment_department_by_item?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY') and webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>-->
                                             <p:commandButton 
                                                 id="btnNavigateToStaffStockAdjustment"
                                                 value="Staff Stock Adjustment" icon="fas fa-user-check" action="/pharmacy/adjustments/pharmacy_adjustment_staff?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentStaffStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>

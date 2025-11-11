@@ -4215,10 +4215,35 @@ public class SearchController implements Serializable {
         }
         String jpql;
         Map params = new HashMap();
-        jpql = "select b from Bill b where b.retired=false and "
-                + " (type(b)=:class1 or type(b)=:class2) "
-                + " and b.department=:dep and b.billType = :billType "
-                + " and b.createdAt between :fromDate and :toDate ";
+
+        // Special handling for PharmacyAdjustment - use bill type atomics instead
+        if (billType == BillType.PharmacyAdjustment) {
+            jpql = "select b from Bill b where b.retired=false and "
+                    + " (type(b)=:class1 or type(b)=:class2) "
+                    + " and b.department=:dep and b.billTypeAtomic in :billTypeAtomics "
+                    + " and b.createdAt between :fromDate and :toDate ";
+
+            // Include all adjustment-related bill type atomics
+            List<BillTypeAtomic> adjustmentAtomics = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
+            );
+            params.put("billTypeAtomics", adjustmentAtomics);
+        } else {
+            jpql = "select b from Bill b where b.retired=false and "
+                    + " (type(b)=:class1 or type(b)=:class2) "
+                    + " and b.department=:dep and b.billType = :billType "
+                    + " and b.createdAt between :fromDate and :toDate ";
+            params.put("billType", billType);
+        }
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             jpql += " and  ((b.deptId) like :billNo )";
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
@@ -4287,7 +4312,10 @@ public class SearchController implements Serializable {
 
         params.put("class1", BilledBill.class);
         params.put("class2", PreBill.class);
-        params.put("billType", billType);
+        // Only set billType parameter if not using billTypeAtomics
+        if (billType != BillType.PharmacyAdjustment) {
+            params.put("billType", billType);
+        }
         params.put("dep", getSessionController().getDepartment());
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
@@ -5017,6 +5045,7 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
