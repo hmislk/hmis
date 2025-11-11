@@ -296,8 +296,6 @@ public class SearchController implements Serializable {
     private Bill selectedRequest;
     String settledBillType;
     private int activeIndexForDisbursement;
-    
-    
 
     public String getSettledBillType() {
         return settledBillType;
@@ -4544,7 +4542,6 @@ public class SearchController implements Serializable {
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-
         jpql += " order by b.createdAt desc";
 
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50, true);
@@ -5043,6 +5040,8 @@ public class SearchController implements Serializable {
 
         // Set bill type atomics for pharmacy adjustments
         List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
+                BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
                 BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
@@ -14690,8 +14689,8 @@ public class SearchController implements Serializable {
             sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
-        
-        if (getSearchKeyword().getNumber()!= null && !getSearchKeyword().getNumber().trim().equals("")) {
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
             sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
         }
@@ -15477,7 +15476,7 @@ public class SearchController implements Serializable {
         makeNull();
         return "/pharmacy/pharmacy_transfer_request_list_to_finalize?faces-redirect=true";
     }
-    
+
     public String navigateToTransferRequestApprove() {
         makeNull();
         return "/pharmacy/pharmacy_transfer_request_list_to_approve?faces-redirect=true";
