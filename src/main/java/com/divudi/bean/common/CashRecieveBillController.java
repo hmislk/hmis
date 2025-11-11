@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -52,6 +54,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class CashRecieveBillController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(CashRecieveBillController.class.getName());
 
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -100,6 +104,7 @@ public class CashRecieveBillController implements Serializable {
     
     private Institution creditCompany;
     private String comment;
+    private String selectedBillType;
 
     public void makeNull() {
         printPreview = false;
@@ -359,6 +364,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private boolean errorCheckForAdding() {
+        // Check if referenceBill is null first
+        if (getCurrentBillItem().getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Please select a bill to add");
+            return true;
+        }
+
         if (getCurrentBillItem().getReferenceBill().getCreditCompany() == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
@@ -396,6 +407,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private boolean errorCheckForAddingPharmacy() {
+        // Check if referenceBill is null first
+        if (getCurrentBillItem().getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Please select a bill to add");
+            return true;
+        }
+
         if (getCurrentBillItem().getReferenceBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
@@ -535,6 +552,51 @@ public class CashRecieveBillController implements Serializable {
         currentBillItem = null;
         calTotal();
 
+    }
+
+    /**
+     * Combined add to bill method that automatically detects the bill type from the selected bill
+     * and routes to appropriate method (addToBill() for OPD bills or addToBillPharmacy() for pharmacy bills)
+     * Does not depend on selectedBillType - automatically detects from bill properties
+     */
+    public void addToBillCombined() {
+        // Validate that referenceBill is not null before routing
+        if (getCurrentBillItem().getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Please select a bill to add");
+            return;
+        }
+
+        Bill referenceBill = getCurrentBillItem().getReferenceBill();
+
+        // Determine the bill type from the reference bill properties
+        // First check BillTypeAtomic for OPD bills
+        BillTypeAtomic billTypeAtomic = referenceBill.getBillTypeAtomic();
+        if (billTypeAtomic != null) {
+            // Check if it's an OPD Batch bill
+            if (billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                    || billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+                addToBill();
+                return;
+            }
+            // Check if it's an OPD Package bill
+            if (billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT
+                    || billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+                addToBill();
+                return;
+            }
+        }
+
+        // Check BillType for Pharmacy bills
+        BillType billType = referenceBill.getBillType();
+        if (billType != null) {
+            if (billType == BillType.PharmacySale || billType == BillType.PharmacyWholeSale) {
+                addToBillPharmacy();
+                return;
+            }
+        }
+
+        // If we reach here, the bill type is not supported
+        JsfUtil.addErrorMessage("Unsupported bill type. Cannot add this bill to the collection.");
     }
 
     private List<Bill> creditBills;
@@ -1518,6 +1580,7 @@ public class CashRecieveBillController implements Serializable {
         creditCompany = null;
         comment = null;
         selectedBill = null;
+        selectedBillType = null;
     }
 
     public String prepareNewBill() {
@@ -1747,6 +1810,98 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
         return creditBean.getRefundAmount(bill);
+    }
+
+    // Combined Credit Collection Methods
+
+    /**
+     * Legacy property - kept for backward compatibility with other pages
+     * The simplified combined credit collection page does not use this property
+     */
+    public String getSelectedBillType() {
+        return selectedBillType;
+    }
+
+    public void setSelectedBillType(String selectedBillType) {
+        this.selectedBillType = selectedBillType;
+    }
+
+    /**
+     * Legacy method - called when bill type dropdown changes to clear current selections
+     * Kept for backward compatibility with pages that still use bill type selection
+     */
+    public void billTypeChanged() {
+        makeNull();
+        selectedBillType = this.selectedBillType; // Preserve the selected bill type
+    }
+
+    /**
+     * Combined autocomplete method that searches across ALL bill types (OPD Batch, OPD Package, and Pharmacy)
+     * Does not depend on selectedBillType - searches all credit bills and combines results
+     * @param query The search query string
+     * @return List of bills matching the query from all bill types
+     */
+    public List<Bill> completeCombinedCreditBills(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Create combined list to hold results from all bill types
+        List<Bill> combinedResults = new ArrayList<>();
+
+        // Get results from OPD Batch bills
+        List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
+        if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
+            combinedResults.addAll(opdBatchBills);
+        }
+
+        // Get results from OPD Package bills
+        List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
+        if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
+            combinedResults.addAll(opdPackageBills);
+        }
+
+        // Get results from Pharmacy bills
+        List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
+        if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
+            combinedResults.addAll(pharmacyBills);
+        }
+
+        return combinedResults;
+    }
+
+    /**
+     * Combined settlement method that routes to appropriate settlement method based on bill types in the list
+     * Determines the bill type from the bills in the selectedBillItems list
+     */
+    public void settleCombinedCreditBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+
+        // Determine bill type from the first bill item
+        BillItem firstItem = getSelectedBillItems().get(0);
+        if (firstItem.getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Invalid bill reference");
+            return;
+        }
+
+        BillTypeAtomic billTypeAtomic = firstItem.getReferenceBill().getBillTypeAtomic();
+
+        // Route to appropriate settlement method based on bill type atomic
+        if (billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                || billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+            settleCreditForOpdBatchBills();
+        } else if (billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT
+                || billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+            settleCreditForOpdPackageBills();
+        } else if (firstItem.getReferenceBill().getBillType() == BillType.PharmacySale
+                || firstItem.getReferenceBill().getBillType() == BillType.PharmacyWholeSale) {
+            settleBillPharmacy();
+        } else {
+            JsfUtil.addErrorMessage("Unsupported bill type for settlement");
+        }
     }
 
 }
