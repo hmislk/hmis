@@ -439,23 +439,25 @@
                                                         <h:outputLabel value="Item Name"/>
                                                     </f:facet>
                                                 </p:column>
+
                                                 <p:column >
                                                     <f:facet name="header">
                                                         <h:outputLabel value="Count"/>
-
                                                     </f:facet>
                                                 </p:column>
+
                                                 <p:column >
                                                     <f:facet name="header">
                                                         <h:outputLabel value="Checked Count"/>
                                                     </f:facet>
                                                 </p:column>
+
                                                 <p:column >
                                                     <f:facet name="header">
                                                         <h:outputLabel value="Inward Charge Type"/>
-
                                                     </f:facet>
                                                 </p:column>
+
                                                 <p:column >
                                                     <f:facet name="header">
                                                         <h:outputLabel value="View Bill"/>
@@ -495,12 +497,15 @@
                                 </p:tab>
 
                                 <p:tab title="Medicine Issue">
-                                    <p:dataTable value="#{bhtSummeryController.pharmacyIssues}" var="iss" scrollable="true"
-                                                 scrollHeight="300"
-                                                 rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
-                                                                  or
-                                                                  (iss.billedBill ne null
-                                                                  and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                    <p:dataTable 
+                                        value="#{bhtSummeryController.pharmacyIssues}" 
+                                        var="iss" 
+                                        scrollable="true"
+                                        scrollHeight="300"
+                                        rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
+                                                         or
+                                                         (iss.billedBill ne null
+                                                         and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
                                         <p:column headerText="Bill No">
                                             <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
                                         </p:column>
@@ -892,8 +897,9 @@
                                             <br/>
                                             <h:panelGroup rendered="#{p.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
-                                                               value="#{p.cancelledBill.creater.webUserPerson.name}" >
+                                                <h:outputLabel 
+                                                    style="color: red;" rendered="#{p.cancelled}"
+                                                    value="#{p.cancelledBill.creater.webUserPerson.name}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>

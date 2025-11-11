@@ -48,18 +48,13 @@ public class BhtIssueReturnController implements Serializable {
     private Bill bill;
     private Bill returnBill;
     private boolean printPreview;
-    ////////
-
     private List<BillItem> billItems;
+    private String returnComment = "";
+    
+    
     ///////
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    private PharmaceuticalItemController pharmaceuticalItemController;
-    @Inject
-    private PharmacyController pharmacyController;
-    @Inject
-    private SessionController sessionController;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -70,8 +65,25 @@ public class BhtIssueReturnController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     BillService billService;
+    @EJB
+    private BillFeeFacade billFeeFacade;
+    
+    ////////
+    @Inject
+    PriceMatrixController priceMatrixController;
+    @Inject
+    InwardBeanController inwardBean;
+    @Inject
+    private PharmaceuticalItemController pharmaceuticalItemController;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PharmacyCalculation pharmacyRecieveBean;
+    
     
     public String navigateToReturnPharmacyDirectIssueToInpatients(Bill b) {
         if (b == null) {
@@ -87,10 +99,10 @@ public class BhtIssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        returnBill = null;
         printPreview = false;
         billItems = null;
-
+        returnComment = "";
+        
         if (bill.getDepartment() == null) {
             JsfUtil.addErrorMessage("No Department for the Bill");
             return null;
@@ -102,12 +114,12 @@ public class BhtIssueReturnController implements Serializable {
 //        }
         if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
             if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
-                JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+                JsfUtil.addErrorMessage("You can't return another department's Issue.please log to specific department");
                 return null;
             }
         } else {
             if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId()) && !getSessionController().getDepartment().getId().equals(bill.getFromDepartment().getId())) {
-                JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
+                JsfUtil.addErrorMessage("You can't return another department's Issue.please log to specific department");
                 return null;
             }
         }
@@ -169,9 +181,6 @@ public class BhtIssueReturnController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    @Inject
-    private PharmacyCalculation pharmacyRecieveBean;
-
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
@@ -191,7 +200,7 @@ public class BhtIssueReturnController implements Serializable {
         returnBill = null;
         printPreview = false;
         billItems = null;
-
+        returnComment = "";
     }
 
     private void saveReturnBill() {
@@ -200,7 +209,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setBillType(getBill().getBillType());
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
         getReturnBill().setBilledBill(getBill());
-
+        getReturnBill().setComments(returnComment);
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
 
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
@@ -232,7 +241,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setBilledBill(getBill());
 
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
-
+        getReturnBill().setComments(returnComment);
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
         getReturnBill().setMargin(0 - Math.abs(getReturnBill().getMargin()));
@@ -335,6 +344,12 @@ public class BhtIssueReturnController implements Serializable {
     }
 
     public void settle() {
+        
+        if (returnComment == null || returnComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return comment is Mandatory..");
+            return;
+        }
+        
 
         if (getBill().getBillItems() != null) {
 //            System.out.println("this = " + getBill().getBillItems().size() );
@@ -387,14 +402,11 @@ public class BhtIssueReturnController implements Serializable {
 
         /// setOnlyReturnValue();
         printPreview = true;
+        returnComment = "";
         JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 
-    @EJB
-    private BillFeeFacade billFeeFacade;
-    @Inject
-    InwardBeanController inwardBean;
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
@@ -403,9 +415,6 @@ public class BhtIssueReturnController implements Serializable {
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
     }
-
-    @Inject
-    PriceMatrixController priceMatrixController;
 
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
@@ -572,6 +581,14 @@ public class BhtIssueReturnController implements Serializable {
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
+    }
+
+    public String getReturnComment() {
+        return returnComment;
+    }
+
+    public void setReturnComment(String returnComment) {
+        this.returnComment = returnComment;
     }
 
 }
