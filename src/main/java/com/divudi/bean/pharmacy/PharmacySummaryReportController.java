@@ -1834,27 +1834,30 @@ public class PharmacySummaryReportController implements Serializable {
                     continue;
                 }
 
-                // Get quantities from PBI
+                // Get quantities from PBI (always positive)
                 double qty = Math.abs(pbi.getQty());
                 double freeQty = Math.abs(pbi.getFreeQty());
                 double totalQty = qty + freeQty;
 
-                // Get rates from ItemBatch and PBI
+                // Get rates from ItemBatch and PBI (always positive)
                 double retailRate = Math.abs(pbi.getRetailRate());
                 double purchaseRate = Math.abs(pbi.getItemBatch().getPurcahseRate());
                 double cRate = Math.abs(pbi.getItemBatch().getCostRate());
 
-                // Get values from BillItem
+                // Get values from BillItem - preserve original sign for netValue
                 double lineDiscount = Math.abs(bi.getDiscount());
-                double grossValue = Math.abs(bi.getGrossValue());
-                double netValue = Math.abs(bi.getNetValue());
+                double biGrossValue = bi.getGrossValue();  // Keep original sign
+                double biNetValue = bi.getNetValue();      // Keep original sign
+                double biRate = bi.getRate();              // Keep original sign
 
                 System.out.println("    GRN Item: " + bi.getItem().getName());
                 System.out.println("      pbi - qty: " + pbi.getQty() + ", freeQty: " + pbi.getFreeQty() + ", retailRate: " + pbi.getRetailRate());
                 System.out.println("      itemBatch - purchaseRate: " + pbi.getItemBatch().getPurcahseRate() + ", costRate: " + pbi.getItemBatch().getCostRate());
                 System.out.println("      bi - rate: " + bi.getRate() + ", discount: " + bi.getDiscount() + ", grossValue: " + bi.getGrossValue() + ", netValue: " + bi.getNetValue());
 
-                double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
+                // For GRNs: BillCategory.BILL means expense (negative), REFUND means money back (positive)
+                // This is opposite of sales, so we need to account for it
+                double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? 1 : -1;
 
                 double itemSaleValue = factor * retailRate * qty;
                 double itemPurchaseValue = factor * purchaseRate * qty;
@@ -1914,38 +1917,58 @@ public class PharmacySummaryReportController implements Serializable {
                     bifd.setRetailSaleRatePerUnit(BigDecimal.valueOf(retailRate));  // Assuming units, not packs
                 }
 
-                // Set lineGrossTotal (from BillItem grossValue or calculate)
+                // Set lineGrossTotal (from BillItem grossValue or calculate from purchase rate)
                 if (bifd.getLineGrossTotal() == null) {
-                    double lineTotal = (grossValue > 0) ? factor * grossValue : factor * purchaseRate * qty;
+                    double lineTotal;
+                    if (Math.abs(biGrossValue) > 0.01) {
+                        // Use existing value from BillItem if available
+                        lineTotal = biGrossValue;
+                    } else {
+                        // Calculate: for GRN (factor=-1), this will be negative
+                        lineTotal = factor * purchaseRate * qty;
+                    }
                     bifd.setLineGrossTotal(BigDecimal.valueOf(lineTotal));
                 }
 
-                // Set lineNetTotal (from BillItem netValue)
+                // Set lineNetTotal (from BillItem netValue or calculate)
                 if (bifd.getLineNetTotal() == null) {
-                    bifd.setLineNetTotal(BigDecimal.valueOf(factor * netValue));
+                    double lineNet;
+                    if (Math.abs(biNetValue) > 0.01) {
+                        // Use existing value from BillItem if available
+                        lineNet = biNetValue;
+                    } else {
+                        // Calculate: purchase rate * qty with factor
+                        lineNet = factor * purchaseRate * qty;
+                    }
+                    bifd.setLineNetTotal(BigDecimal.valueOf(lineNet));
                 }
 
-                // Set totalCost (cost for total qty including free)
+                // Set totalCost (cost for total qty including free - always positive)
                 if (bifd.getTotalCost() == null) {
-                    bifd.setTotalCost(BigDecimal.valueOf(itemCostValue));
+                    bifd.setTotalCost(BigDecimal.valueOf(Math.abs(itemCostValue)));
                 }
 
                 // Debug output for GRNs
+                System.out.println("      Calculated values:");
+                System.out.println("        factor: " + factor + " (bc: " + bc + ")");
+                System.out.println("        itemSaleValue: " + itemSaleValue);
+                System.out.println("        itemPurchaseValue: " + itemPurchaseValue);
+                System.out.println("        itemCostValue: " + itemCostValue);
                 System.out.println("      BIFD values set:");
-                System.out.println("      lineGrossRate: " + bifd.getLineGrossRate());
-                System.out.println("      quantity: " + bifd.getQuantity());
-                System.out.println("      freeQuantity: " + bifd.getFreeQuantity());
-                System.out.println("      totalQuantityByUnits: " + bifd.getTotalQuantityByUnits());
-                System.out.println("      lineGrossTotal: " + bifd.getLineGrossTotal());
-                System.out.println("      lineDiscountRate: " + bifd.getLineDiscountRate());
-                System.out.println("      retailSaleRate: " + bifd.getRetailSaleRate());
-                System.out.println("      lineNetTotal: " + bifd.getLineNetTotal());
-                System.out.println("      totalCost: " + bifd.getTotalCost());
+                System.out.println("        lineGrossRate: " + bifd.getLineGrossRate());
+                System.out.println("        quantity: " + bifd.getQuantity());
+                System.out.println("        freeQuantity: " + bifd.getFreeQuantity());
+                System.out.println("        totalQuantityByUnits: " + bifd.getTotalQuantityByUnits());
+                System.out.println("        lineGrossTotal: " + bifd.getLineGrossTotal());
+                System.out.println("        lineDiscountRate: " + bifd.getLineDiscountRate());
+                System.out.println("        retailSaleRate: " + bifd.getRetailSaleRate());
+                System.out.println("        lineNetTotal: " + bifd.getLineNetTotal());
+                System.out.println("        totalCost: " + bifd.getTotalCost());
 
-                // Totals
-                saleValue += itemSaleValue;
-                purchaseValue += itemPurchaseValue;
-                costValue += itemCostValue;
+                // Totals - for GRNs, all totals are positive (inventory values)
+                saleValue += Math.abs(itemSaleValue);
+                purchaseValue += Math.abs(itemPurchaseValue);
+                costValue += Math.abs(itemCostValue);
                 billItemFacade.edit(bi);
                 processedItems++;
             }
