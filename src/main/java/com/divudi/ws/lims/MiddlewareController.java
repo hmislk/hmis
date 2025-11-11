@@ -100,11 +100,18 @@ public class MiddlewareController {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
             }
             String referringDoc = "";
+            
+            if (ptSample.getBill() == null) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid bill data").build();
+            }
+            
             if (ptSample.getBill() == null || ptSample.getBill().getReferredBy() == null || ptSample.getBill().getReferredBy().getPerson() == null) {
 
             } else {
                 referringDoc = ptSample.getBill().getReferredBy().getPerson().getNameWithTitle();
             }
+            
+            
 
             System.out.println("AA");
 
