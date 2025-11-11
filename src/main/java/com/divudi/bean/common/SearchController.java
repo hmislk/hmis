@@ -4207,12 +4207,18 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByBillType() {
+        System.out.println("=== DEBUG: createTableByBillType() called ===");
         if (billType == null) {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
         String jpql;
         Map params = new HashMap();
+
+        System.out.println("DEBUG: Selected billType = " + billType);
+        System.out.println("DEBUG: FromDate = " + getFromDate());
+        System.out.println("DEBUG: ToDate = " + getToDate());
+        System.out.println("DEBUG: Current Department = " + (getSessionController().getDepartment() != null ? getSessionController().getDepartment().getId() + " - " + getSessionController().getDepartment().getName() : "NULL"));
 
         // Special handling for PharmacyAdjustment - use bill type atomics instead
         if (billType == BillType.PharmacyAdjustment) {
@@ -4235,6 +4241,9 @@ public class SearchController implements Serializable {
                     BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
             );
             params.put("billTypeAtomics", adjustmentAtomics);
+
+            System.out.println("DEBUG: Using PharmacyAdjustment branch");
+            System.out.println("DEBUG: Adjustment atomics included: " + adjustmentAtomics);
         } else {
             jpql = "select b from Bill b where b.retired=false and "
                     + " (type(b)=:class1 or type(b)=:class2) "
@@ -4318,7 +4327,39 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         //temMap.put("dep", getSessionController().getDepartment());
+
+        System.out.println("DEBUG: Final JPQL Query = " + jpql);
+        System.out.println("DEBUG: maxResult = " + maxResult);
+        System.out.println("DEBUG: Query parameters:");
+        for (Object key : params.keySet()) {
+            System.out.println("  " + key + " = " + params.get(key));
+        }
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
+
+        System.out.println("DEBUG: Query returned " + (bills != null ? bills.size() : 0) + " bills");
+        if (bills != null && bills.size() > 0) {
+            System.out.println("DEBUG: First few bill IDs returned:");
+            for (int i = 0; i < Math.min(5, bills.size()); i++) {
+                Bill b = bills.get(i);
+                System.out.println("  Bill ID: " + b.getId() + ", DeptId: " + b.getDeptId() + ", Atomic: " + b.getBillTypeAtomic() + ", Dept: " + (b.getDepartment() != null ? b.getDepartment().getId() : "NULL"));
+            }
+        }
+
+        // Check specifically for bill ID 1952864
+        boolean foundTargetBill = false;
+        if (bills != null) {
+            for (Bill b : bills) {
+                if (b.getId() != null && b.getId().equals(1952864L)) {
+                    foundTargetBill = true;
+                    System.out.println("DEBUG: *** TARGET BILL 1952864 FOUND IN RESULTS! ***");
+                    break;
+                }
+            }
+        }
+        if (!foundTargetBill) {
+            System.out.println("DEBUG: *** TARGET BILL 1952864 NOT FOUND IN RESULTS ***");
+        }
 
     }
 

@@ -100,6 +100,7 @@ public class CashRecieveBillController implements Serializable {
     
     private Institution creditCompany;
     private String comment;
+    private String selectedBillType;
 
     public void makeNull() {
         printPreview = false;
@@ -535,6 +536,30 @@ public class CashRecieveBillController implements Serializable {
         currentBillItem = null;
         calTotal();
 
+    }
+
+    /**
+     * Combined add to bill method that routes to appropriate method based on selectedBillType
+     * Routes to addToBill() for OPD bills or addToBillPharmacy() for pharmacy bills
+     */
+    public void addToBillCombined() {
+        if (selectedBillType == null || selectedBillType.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a bill type first");
+            return;
+        }
+
+        switch (selectedBillType) {
+            case "OPD_BATCH":
+            case "OPD_PACKAGE":
+                addToBill();
+                break;
+            case "PHARMACY":
+                addToBillPharmacy();
+                break;
+            default:
+                JsfUtil.addErrorMessage("Unsupported bill type: " + selectedBillType);
+                break;
+        }
     }
 
     private List<Bill> creditBills;
@@ -1518,6 +1543,7 @@ public class CashRecieveBillController implements Serializable {
         creditCompany = null;
         comment = null;
         selectedBill = null;
+        selectedBillType = null;
     }
 
     public String prepareNewBill() {
@@ -1747,6 +1773,80 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
         return creditBean.getRefundAmount(bill);
+    }
+
+    // Combined Credit Collection Methods
+
+    public String getSelectedBillType() {
+        return selectedBillType;
+    }
+
+    public void setSelectedBillType(String selectedBillType) {
+        this.selectedBillType = selectedBillType;
+    }
+
+    /**
+     * Called when bill type dropdown changes to clear current selections
+     */
+    public void billTypeChanged() {
+        makeNull();
+        selectedBillType = this.selectedBillType; // Preserve the selected bill type
+    }
+
+    /**
+     * Combined autocomplete method that routes to appropriate completion method based on selectedBillType
+     * @param query The search query string
+     * @return List of bills matching the query for the selected bill type
+     */
+    public List<Bill> completeCombinedCreditBills(String query) {
+        if (selectedBillType == null || selectedBillType.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        switch (selectedBillType) {
+            case "OPD_BATCH":
+                return billController.completeOpdCreditBatchBill(query);
+            case "OPD_PACKAGE":
+                return billController.completeOpdCreditPackageBatchBill(query);
+            case "PHARMACY":
+                return billController.completePharmacyCreditBill(query);
+            default:
+                return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Combined settlement method that routes to appropriate settlement method based on bill types in the list
+     * Determines the bill type from the bills in the selectedBillItems list
+     */
+    public void settleCombinedCreditBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+
+        // Determine bill type from the first bill item
+        BillItem firstItem = getSelectedBillItems().get(0);
+        if (firstItem.getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Invalid bill reference");
+            return;
+        }
+
+        BillTypeAtomic billTypeAtomic = firstItem.getReferenceBill().getBillTypeAtomic();
+
+        // Route to appropriate settlement method based on bill type atomic
+        if (billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                || billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+            settleCreditForOpdBatchBills();
+        } else if (billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT
+                || billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+            settleCreditForOpdPackageBills();
+        } else if (firstItem.getReferenceBill().getBillType() == BillType.PharmacySale
+                || firstItem.getReferenceBill().getBillType() == BillType.PharmacyWholeSale) {
+            settleBillPharmacy();
+        } else {
+            JsfUtil.addErrorMessage("Unsupported bill type for settlement");
+        }
     }
 
 }
