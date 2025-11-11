@@ -4282,6 +4282,9 @@ public class BillSearch implements Serializable {
 //                return navigateToPharmacyIssue();
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyDisposalIssueBill();
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyDisposalReturnBill();
             case PHARMACY_ISSUE_CANCELLED:
                 return navigateToPharmacyIssueCancelled();
 

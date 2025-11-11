@@ -524,6 +524,16 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             // Ensure bill reference is set
             bi.setBill(currentBill);
 
+            // DEBUG: Log referanceBillItem info
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
+            Long refBillItemId = bi.getReferanceBillItem() != null ? bi.getReferanceBillItem().getId() : null;
+
+            // DEBUG: Log all quantity fields BEFORE save
+            Double biQty = bi.getQty();
+            BigDecimal bifdQty = bi.getBillItemFinanceDetails() != null ? bi.getBillItemFinanceDetails().getQuantity() : null;
+            BigDecimal bifdQtyByUnits = bi.getBillItemFinanceDetails() != null ? bi.getBillItemFinanceDetails().getQuantityByUnits() : null;
+            Double phiQty = bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getQty() : null;
+
             // Set up pharmaceutical bill item relationship
             PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
             if (phi != null) {
@@ -551,6 +561,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             } else {
                 pharmaceuticalBillItemFacade.edit(phi);
             }
+
+            // DEBUG: Log all quantity fields AFTER save to see what was persisted
+            biQty = bi.getQty();
+            bifdQty = bi.getBillItemFinanceDetails() != null ? bi.getBillItemFinanceDetails().getQuantity() : null;
+            bifdQtyByUnits = bi.getBillItemFinanceDetails() != null ? bi.getBillItemFinanceDetails().getQuantityByUnits() : null;
+            phiQty = bi.getPharmaceuticalBillItem() != null ? bi.getPharmaceuticalBillItem().getQty() : null;
         }
     }
 
@@ -1011,13 +1027,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 }
 
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
-
                 // DEBUG: Log the rate setting
-                System.out.println("=== Bill Preparation DEBUG ===");
-                System.out.println("Item: " + itemName);
-                System.out.println("lineGrossRateForAUnit (from config): " + lineGrossRateForAUnit);
-                System.out.println("unitsPerPack: " + unitsPerPack);
-                System.out.println("lineGrossRateAsEntered (rate × upp): " + lineGrossRateAsEntered);
+
 
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
                 calculateLineTotal(newBillItemInReturnBill);
@@ -1514,19 +1525,34 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             return 0.0;
         }
 
+        String itemName = referanceBillItem.getItem() != null ? referanceBillItem.getItem().getName() : "Unknown";
+        Long refBillItemId = referanceBillItem.getId();
+        Long billId = referanceBillItem.getBill() != null ? referanceBillItem.getBill().getId() : null;
+        String billDeptId = referanceBillItem.getBill() != null ? referanceBillItem.getBill().getDeptId() : "N/A";
+
+        // Use the EXACT SAME query approach as getAlreadyReturnedQuantityWhenApproval which WORKS
         String sql = "Select sum(b.billItemFinanceDetails.quantityByUnits) "
-                + "from BillItem b where b.referanceBillItem=:refBi "
-                + "and b.bill.billType=:bt and b.bill.cancelled=:can "
-                + "and b.retired=:ret and b.bill.completed=:comp";
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.retired=false "
+                + " and b.referanceBillItem=:obi "
+                + " and b.bill.completed=true "
+                + " and b.bill.billTypeAtomic=:bta";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("refBi", referanceBillItem);
-        params.put("bt", BillType.PurchaseReturn);
-        params.put("can", false);
-        params.put("comp", true);
-        params.put("ret", false);
+        params.put("obi", referanceBillItem);  // Use the object, not just the ID
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
-        return billItemFacade.findDoubleByJpql(sql, params);
+
+        Object result = billItemFacade.findSingleScalar(sql, params);  // Use findSingleScalar like the working method
+        BigDecimal returnValue = BigDecimal.ZERO;
+
+        if (result != null) {
+            returnValue = safeToBigDecimal(result).abs();
+        }
+
+        double finalResult = returnValue.doubleValue();
+        return finalResult;
     }
 
     public double getAlreadyReturnedFreeQuantity(BillItem referanceBillItem) {
@@ -1535,19 +1561,31 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             return 0.0;
         }
 
+        String itemName = referanceBillItem.getItem() != null ? referanceBillItem.getItem().getName() : "Unknown";
+        Long refBillItemId = referanceBillItem.getId();
+
+        // Use the EXACT SAME query approach as getAlreadyReturnedFreeQuantityWhenApproval which WORKS
         String sql = "Select sum(b.billItemFinanceDetails.freeQuantityByUnits) "
-                + "from BillItem b where b.referanceBillItem=:refBi "
-                + "and b.bill.billType=:bt and b.bill.cancelled=:can "
-                + "and b.retired=:ret and b.bill.completed=:comp";
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.retired=false "
+                + " and b.referanceBillItem=:obi "
+                + " and b.bill.completed=true "
+                + " and b.bill.billTypeAtomic=:bta";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("refBi", referanceBillItem);
-        params.put("bt", BillType.PurchaseReturn);
-        params.put("can", false);
-        params.put("comp", true);
-        params.put("ret", false);
+        params.put("obi", referanceBillItem);  // Use the object, not just the ID
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
-        return billItemFacade.findDoubleByJpql(sql, params);
+        Object result = billItemFacade.findSingleScalar(sql, params);  // Use findSingleScalar like the working method
+        BigDecimal returnValue = BigDecimal.ZERO;
+
+        if (result != null) {
+            returnValue = safeToBigDecimal(result).abs();
+        }
+
+        double finalResult = returnValue.doubleValue();
+        return finalResult;
     }
 
     // Comprehensive validation methods based on legacy DirectPurchaseReturnWithCostingController pattern
@@ -2210,13 +2248,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // For Direct Purchase returns, line total = (quantity + free quantity) × rate
         BigDecimal totalQty = qty.add(freeQty);
         BigDecimal lineTotal = totalQty.multiply(rate);
-
         // DEBUG: Log the calculation
-        System.out.println("=== calculateLineTotal DEBUG ===");
-        System.out.println("Item: " + itemName);
-        System.out.println("Qty: " + qty + ", FreeQty: " + freeQty + ", TotalQty: " + totalQty);
-        System.out.println("Rate (lineGrossRate): " + rate);
-        System.out.println("Calculated lineTotal: " + lineTotal);
+
 
         // Set total quantity (in packs for AMPP, in units for AMP) - make negative for returns (stock moving out)
         fd.setTotalQuantity(totalQty.abs().negate());
@@ -2246,7 +2279,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         bi.setGrossValue(lineTotal.doubleValue());
         bi.setNetValue(lineTotal.doubleValue());
 
-        System.out.println("After setting: lineGrossTotal=" + fd.getLineGrossTotal() + ", lineNetTotal=" + fd.getLineNetTotal());
 
         // Calculate unit-based quantities (ALWAYS in units per HMIS standard)
         BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
@@ -2424,14 +2456,24 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
                 + "AND b.department = :dept "
-                + "ORDER BY b.createdAt DESC";
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        // Add additional search criteria from searchController
+        jpql += buildSearchCriteria();
+
+        jpql += "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PurchaseReturn);
         params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", searchController.getFromDate());
+        params.put("toDate", searchController.getToDate());
 
-        directPurchaseReturnsToFinalize = billFacade.findByJpql(jpql, params);
+        // Add search keyword parameters
+        addSearchParameters(params);
+
+        directPurchaseReturnsToFinalize = billFacade.findByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP, searchController.getMaxResult());
         if (directPurchaseReturnsToFinalize == null) {
             directPurchaseReturnsToFinalize = new ArrayList<>();
         }
@@ -2533,6 +2575,82 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error closing direct purchase return: " + e.getMessage());
             LOGGER.log(Level.SEVERE, "Error closing direct purchase return", e);
+        }
+    }
+
+    private String buildSearchCriteria() {
+        if (searchController == null || searchController.getSearchKeyword() == null) {
+            return "";
+        }
+
+        StringBuilder criteria = new StringBuilder();
+
+        if (searchController.getSearchKeyword().getToInstitution() != null
+                && !searchController.getSearchKeyword().getToInstitution().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.toInstitution.name) LIKE :toIns ");
+        }
+
+        if (searchController.getSearchKeyword().getCreator() != null
+                && !searchController.getSearchKeyword().getCreator().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.creater.webUserPerson.name) LIKE :creator ");
+        }
+
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.department.name) LIKE :deptName ");
+        }
+
+        if (searchController.getSearchKeyword().getRefBillNo() != null
+                && !searchController.getSearchKeyword().getRefBillNo().trim().isEmpty()) {
+            criteria.append("AND UPPER(b.deptId) LIKE :returnNo ");
+        }
+
+        if (searchController.getSearchKeyword().getTotal() != null
+                && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
+            criteria.append("AND CAST(ABS(b.total) AS string) LIKE :total ");
+        }
+
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            criteria.append("AND CAST(ABS(b.netTotal) AS string) LIKE :netTotal ");
+        }
+
+        return criteria.toString();
+    }
+
+    private void addSearchParameters(Map<String, Object> params) {
+        if (searchController == null || searchController.getSearchKeyword() == null) {
+            return;
+        }
+
+        if (searchController.getSearchKeyword().getToInstitution() != null
+                && !searchController.getSearchKeyword().getToInstitution().trim().isEmpty()) {
+            params.put("toIns", "%" + searchController.getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getCreator() != null
+                && !searchController.getSearchKeyword().getCreator().trim().isEmpty()) {
+            params.put("creator", "%" + searchController.getSearchKeyword().getCreator().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getDepartment() != null
+                && !searchController.getSearchKeyword().getDepartment().trim().isEmpty()) {
+            params.put("deptName", "%" + searchController.getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getRefBillNo() != null
+                && !searchController.getSearchKeyword().getRefBillNo().trim().isEmpty()) {
+            params.put("returnNo", "%" + searchController.getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getTotal() != null
+                && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
+            params.put("total", "%" + searchController.getSearchKeyword().getTotal().trim() + "%");
+        }
+
+        if (searchController.getSearchKeyword().getNetTotal() != null
+                && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
+            params.put("netTotal", "%" + searchController.getSearchKeyword().getNetTotal().trim() + "%");
         }
     }
 
