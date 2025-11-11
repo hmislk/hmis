@@ -3817,11 +3817,13 @@ public class PharmacyReportController implements Serializable {
                 billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             } else if ("rateAdjustmentDoc".equals(documentType)) {
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+                
+//                Rate adjustments should NOT be listed 
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
             } else {
                 billTypes.add(BillType.PharmacyBhtPre);
 
