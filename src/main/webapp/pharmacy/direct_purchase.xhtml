@@ -829,36 +829,51 @@
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase>
+
+
                         <pharmacy:purhcase
                             rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 (Custom 1)', true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:purhcase>
+
+
+
                         <pharmacy:direct_purhcase_with_costing
                             rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 Details',true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase_with_costing>
-                        <pharmacy:direct_purhcase_with_costing_custom_letter
-                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom Letter Format',true)}"
-                            bill="#{pharmacyDirectPurchaseController.bill}"
-                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                        </pharmacy:direct_purhcase_with_costing_custom_letter>
+
+
+
                         <pharmacy:direct_purhcase_with_costing_custom_1
                             rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom 1',true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase_with_costing_custom_1>
+
+
                         <pharmacy:direct_purhcase_with_costing_custom_2
                             rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom 2',true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase_with_costing_custom_2>
+
+
+                        <pharmacy:direct_purhcase_with_costing_custom_letter
+                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom Letter Format',true)}"
+                            bill="#{pharmacyDirectPurchaseController.bill}"
+                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                        </pharmacy:direct_purhcase_with_costing_custom_letter>
+
+
+
                     </h:panelGroup>
                 </p:panel>
             </h:panelGroup>
