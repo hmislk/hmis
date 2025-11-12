@@ -431,7 +431,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             }
         }
         // Apply patient name capitalization based on configuration settings
-        patientController.applyPatientNameCapitalization(getCurrent().getPatient());
+        //patientController.applyPatientNameCapitalization(getCurrent().getPatient());
 
         // Use editAndFlush to ensure changes are immediately committed and cached entities are cleared
         getPatientFacade().editAndFlush(getCurrent().getPatient());
