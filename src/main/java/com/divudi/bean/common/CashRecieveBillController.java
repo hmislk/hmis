@@ -358,8 +358,25 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void remove(BillItem billItem) {
-        getBillItems().remove(billItem.getSearialNo());
-        getSelectedBillItems().remove(billItem.getSearialNo());
+        // Check if the item is already persisted to database
+        if (billItem.getId() != null) {
+            // If saved, retire the item instead of deleting to maintain audit trail
+            billItem.setBill(null);  // Remove relationship
+            billItem.setRetired(true);
+            billItem.setRetiredAt(new Date());
+            billItem.setRetirer(getSessionController().getLoggedUser());
+            getBillItemFacade().edit(billItem);  // Persist the retired state
+
+            // Reload all bill items from database to reflect changes
+            if (getCurrent() != null && getCurrent().getId() != null) {
+                getCurrent().setBillItems(getBillFacade().find(getCurrent().getId()).getBillItems());
+            }
+        } else {
+            // If not previously persisted, just remove from lists
+            getBillItems().remove(billItem.getSearialNo());
+            getSelectedBillItems().remove(billItem.getSearialNo());
+        }
+
         calTotalWithResetingIndex();
     }
 
