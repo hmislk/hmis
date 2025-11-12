@@ -32,9 +32,8 @@
                         ajax="false" 
                         style="float: right;"
                         class="ui-button-success mb-3"
-                        onclick="PrimeFaces.monitorDownload(start, stop);" 
                         icon="fa fa-download">
-                        <p:fileDownload value="" />
+                        <p:fileDownload value="#{dataUploadController.templateForPharmacyItemImport}" />
                     </p:commandButton>
 
                     <table class="table">
