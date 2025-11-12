@@ -894,7 +894,8 @@ public class CashRecieveBillController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : getBillItems()) {
+        // Use defensive copy to avoid ConcurrentModificationException when modifying collections during iteration
+        for (BillItem savingBillItem : new ArrayList<>(getBillItems())) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
             savingBillItem.setBill(getCurrent());
@@ -955,7 +956,8 @@ public class CashRecieveBillController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : getBillItems()) {
+        // Use defensive copy to avoid ConcurrentModificationException when modifying collections during iteration
+        for (BillItem savingBillItem : new ArrayList<>(getBillItems())) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
             savingBillItem.setBill(getCurrent());
