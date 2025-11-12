@@ -470,7 +470,7 @@ public class BillBhtController implements Serializable {
 
             for (BillFee bf : billItem.getBillFees()) {
                 PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
-                getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix);
+                getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix,bill.getPatientEncounter());
                 getBillFeeFacade().edit(bf);
 
                 if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
@@ -874,7 +874,7 @@ public class BillBhtController implements Serializable {
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
             System.out.println("priceMatrix = " + priceMatrix);
 
-            getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
+            getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 
             billFeeList.add(billFee);
         }

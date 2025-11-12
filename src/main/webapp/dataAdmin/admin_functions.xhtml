@@ -252,18 +252,58 @@
                                 </tr>
 
                                 <tr>
-                                    <td><strong>Add Data to Bill Finance Details</strong></td>
+                                    <td><strong>Add Data to Bill Finance Details for Pharmacy Retail Sale</strong></td>
                                     <td>
-                                        Bill Finance Details is a newly added entity. Sll its data are not fully added while trnasactions.. This method willadd those data. Once all transactions are settled, this can be removed.
+                                        Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy Retail Sale bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Updates both Bill and BillItem financial details.
                                     </td>
 
                                     <td>
-                                        <p:commandButton 
-                                            value="Calculate Bill Finance Details for Pharmacy Sale Bills" 
+                                        <p:commandButton
+                                            value="Calculate Finance Details"
                                             ajax="false"
                                             styleClass="ui-button-warning m-1"
                                             icon="pi pi-cog"
                                             action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
+                                        </p:commandButton>
+                                    </td>
+                                    <td>
+                                        #{billController.output}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>Add Data to Bill Finance Details for Purchase Orders</strong></td>
+                                    <td>
+                                        Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy Purchase Orders. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all PO types including pre-bills, approvals, and cancellations.
+                                    </td>
+
+                                    <td>
+                                        <p:commandButton
+                                            value="Calculate Finance Details"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1"
+                                            icon="pi pi-cog"
+                                            action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyPurchaseOrdersFromBillItemData}">
+                                        </p:commandButton>
+                                    </td>
+                                    <td>
+                                        #{billController.output}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>Add Data to Bill Finance Details for GRNs</strong></td>
+                                    <td>
+                                        Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy GRN bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all GRN types including returns, cancellations, and wholesale GRNs.
+                                    </td>
+
+                                    <td>
+                                        <p:commandButton
+                                            value="Calculate Finance Details"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1"
+                                            icon="pi pi-cog"
+                                            action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyGRNsFromBillItemData}">
                                         </p:commandButton>
                                     </td>
                                     <td>

@@ -10,11 +10,9 @@ root {
     display: block;
 }
 
-/* Letter size print setup */
+/* A4 print setup - allows both portrait and landscape */
 @media print {
-    @page {
-        size: letter portrait;
-    }
+   
 
     .no-border-table {
         border: none !important;

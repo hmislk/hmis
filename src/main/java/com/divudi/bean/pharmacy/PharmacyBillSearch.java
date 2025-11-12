@@ -4378,6 +4378,15 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_bill_unit_issue?faces-redirect=true";
     }
 
+    public String navigateToViewPharmacyDisposalReturnBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected.");
+            return null;
+        }
+        // Navigate to disposal return reprint page
+        return "/pharmacy/pharmacy_disposal_return_reprint?faces-redirect=true";
+    }
+
     public String navigateToViewPharmacyIssueBill() {
         System.out.println("navigateToViewPharmacyIssueBill");
         System.out.println("bill = " + bill);
