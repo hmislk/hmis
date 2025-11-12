@@ -433,6 +433,13 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("Please select a department");
             return null;
         }
+       
+
+        if (sessionController.getDepartment() == null || !department.equals(sessionController.getDepartment())) {
+            System.out.println("DEPARTMENT VERIFICATION FAILED - departments do not match");
+            JsfUtil.addErrorMessage("Please log to the department you want to take the stock");
+            return null;
+        }
 
         // Generate unique job ID
         generationJobId = "stock-count-" + department.getId() + "-" + System.currentTimeMillis();
@@ -1160,6 +1167,16 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("Not authorized to upload/save physical count data");
             LOGGER.log(Level.WARNING, "[StockTake] User missing privilege 'Pharmacy' for upload/save");
             return null;
+        }
+
+        // Check department verification
+        
+        if (snapshotBill != null && snapshotBill.getDepartment() != null) {
+            if (sessionController.getDepartment() == null || !snapshotBill.getDepartment().equals(sessionController.getDepartment())) {
+                JsfUtil.addErrorMessage("Please log to the department you want to upload the stock data");
+                return null;
+            }
+        } else {
         }
         parseUploadedSheet();
         if (physicalCountBill == null) {
