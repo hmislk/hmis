@@ -1238,7 +1238,8 @@ public class CashRecieveBillController implements Serializable {
         }
 
         // Enhanced bill item processing with proper audit trails and settlement tracking
-        for (BillItem savingBillItem : getSelectedBillItems()) {
+        // Use defensive copy to avoid ConcurrentModificationException and iterate over the same collection as other settlement flows
+        for (BillItem savingBillItem : new ArrayList<>(getBillItems())) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
             savingBillItem.setBill(getCurrent());
