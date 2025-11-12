@@ -1193,17 +1193,18 @@ public class CashRecieveBillController implements Serializable {
     public void settleBillPharmacy() {
         // Enhanced pharmacy bill settlement with improved functionality
 
-        if (errorCheckPharmacy()) {
-            return;
-        }
-
         // Enhanced validation to ensure proper fromInstitution setting for pharmacy bills
+        // Auto-detection must happen BEFORE errorCheckPharmacy() to avoid early return
         if (getCurrent().getFromInstitution() == null && !getBillItems().isEmpty()) {
             // Auto-set fromInstitution from the first bill's toInstitution (credit company)
             BillItem firstItem = getBillItems().get(0);
             if (firstItem.getReferenceBill() != null && firstItem.getReferenceBill().getToInstitution() != null) {
                 getCurrent().setFromInstitution(firstItem.getReferenceBill().getToInstitution());
             }
+        }
+
+        if (errorCheckPharmacy()) {
+            return;
         }
 
         // Use enhanced total calculation method consistent with OPD settlements
