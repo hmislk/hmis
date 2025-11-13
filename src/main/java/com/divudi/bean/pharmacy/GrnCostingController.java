@@ -236,7 +236,12 @@ public class GrnCostingController implements Serializable {
                     currentGrnBillPre = billService.reloadBill(currentGrnBillPre);
                 }
             }
-            calTotal();
+            // Use comprehensive calculation methods to update totals and differences
+            ensureBillDiscountSynchronization();
+            calculateBillTotalsFromItems();
+            distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+            recalculateProfitMarginsForAllItems();
+            calDifference();
         }
     }
 
@@ -328,7 +333,12 @@ public class GrnCostingController implements Serializable {
         if (currentGrnBillPre.getId() != null) {
             currentGrnBillPre = billService.reloadBill(currentGrnBillPre);
         }
-        calTotal();
+        // Use comprehensive calculation methods to update totals and differences
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
+        calDifference();
         selectedBillItems = null;
     }
 
