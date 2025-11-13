@@ -406,7 +406,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Admission Category Wise Admission"  action="#{reportController.navigateToAdmissionCategoryWiseAdmission()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Service Reports"  action="#{reportController.navigateToIpServiceReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="6. Admission Reports"  action="#{reportController.navigateToAdmissionReport()}" />
-
+                                    
                                 </div>
                             </p:tab>
 
@@ -462,7 +462,7 @@
 
                             <p:tab title="Management Reports">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="1. Room Occupancy" action="/reports/managementReports/room_occupency" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="1. Room Occupancy" action="#{reportController.navigateToRoomOccupancyReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Surgery Survey" action="/reports/managementReports/surgery_survey"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Surgery Status" action="/reports/managementReports/surgery_status"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Surgery Cost Estimation" action="/reports/managementReports/surgery_cost_estimation"/>
