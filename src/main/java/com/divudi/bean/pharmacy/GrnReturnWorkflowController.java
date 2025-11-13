@@ -485,6 +485,7 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Get configuration options for bill numbering strategies
             boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count", false);
+            boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
             boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
             boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
 
@@ -493,6 +494,9 @@ public class GrnReturnWorkflowController implements Serializable {
             // Independent department ID generation
             if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
                 billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
+                currentBill.setDeptId(billId);
+            } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
                 currentBill.setDeptId(billId);
             } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
                 billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
