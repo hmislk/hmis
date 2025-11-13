@@ -2845,6 +2845,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/HRReports/late_leave_details?faces-redirect=true";
     }
+    
+    public String navigateToDoctorWiseIncomeReport(){
+        return "/reports/managementReports/doctor_wise_income?faces-redirect=true";
+    }
 
     public String navigateToLeaveSummeryReport() {
 
