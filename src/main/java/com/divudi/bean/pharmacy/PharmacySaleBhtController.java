@@ -306,13 +306,25 @@ public class PharmacySaleBhtController implements Serializable {
             return true;
         }
 
-        // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
-            if (tmp.getQty() % 1 != 0) {
-                setZeroToQty(tmp);
-                onEditCalculation(tmp);
-                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
-                return true;
+        // Validate quantity based on three-tier configuration hierarchy
+        // Priority 1: Check if decimals are allowed universally
+        boolean allowDecimalsUniversally = configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Allow Decimals Universally", false);
+
+        if (!allowDecimalsUniversally) {
+            // Priority 2: Check if the specific item allows fractions
+            Item item = tmp.getItem();
+            boolean itemAllowsFractions = (item != null && item.isAllowFractions());
+
+            if (!itemAllowsFractions) {
+                // Priority 3: Integer-only enforcement (existing behavior)
+                boolean mustBeInteger = configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
+
+                if (mustBeInteger && tmp.getQty() % 1 != 0) {
+                    setZeroToQty(tmp);
+                    onEditCalculation(tmp);
+                    JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
+                    return true;
+                }
             }
         }
 
@@ -1478,12 +1490,24 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a Quantity?");
             return;
         }
-        // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
-            if (getQty() % 1 != 0) {
-                errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed.";
-                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
-                return;
+        // Validate quantity based on three-tier configuration hierarchy
+        // Priority 1: Check if decimals are allowed universally
+        boolean allowDecimalsUniversally = configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Allow Decimals Universally", false);
+
+        if (!allowDecimalsUniversally) {
+            // Priority 2: Check if the specific item allows fractions
+            Item item = getStock().getItemBatch().getItem();
+            boolean itemAllowsFractions = (item != null && item.isAllowFractions());
+
+            if (!itemAllowsFractions) {
+                // Priority 3: Integer-only enforcement (existing behavior)
+                boolean mustBeInteger = configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
+
+                if (mustBeInteger && getQty() % 1 != 0) {
+                    errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed for this item.";
+                    JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
+                    return;
+                }
             }
         }
         if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
