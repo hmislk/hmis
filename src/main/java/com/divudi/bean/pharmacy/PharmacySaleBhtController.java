@@ -294,6 +294,42 @@ public class PharmacySaleBhtController implements Serializable {
         userStockController.updateUserStock(tmp.getTransUserStock(), availableQty);
     }
 
+    /**
+     * Validates if decimal quantities are allowed based on three-tier configuration hierarchy.
+     *
+     * Priority 1: Universal decimal allowance (application-wide setting)
+     * Priority 2: Item-specific configuration (Item.allowFractions field)
+     * Priority 3: Integer-only enforcement (existing behavior)
+     *
+     * @param qty The quantity to validate
+     * @param item The item being validated
+     * @return true if the quantity contains decimals and decimals are not allowed, false otherwise
+     */
+    private boolean isDecimalQuantityNotAllowed(Double qty, Item item) {
+        // If quantity is null or is already an integer, no validation needed
+        if (qty == null || qty % 1 == 0) {
+            return false;
+        }
+
+        // Priority 1: Check if decimals are allowed universally
+        boolean allowDecimalsUniversally = configOptionApplicationController.getBooleanValueByKey(
+            "Pharmacy Direct Issue to BHT - Allow Decimals Universally", false);
+        if (allowDecimalsUniversally) {
+            return false; // Decimals allowed universally
+        }
+
+        // Priority 2: Check if the specific item allows fractions
+        boolean itemAllowsFractions = (item != null && item.isAllowFractions());
+        if (itemAllowsFractions) {
+            return false; // Item-specific setting allows decimals
+        }
+
+        // Priority 3: Integer-only enforcement (existing behavior)
+        boolean mustBeInteger = configOptionApplicationController.getBooleanValueByKey(
+            "Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
+        return mustBeInteger; // Decimals not allowed if integer-only is enforced
+    }
+
     //Check when edititng Qty
     //
     public boolean onEdit(BillItem tmp) {
@@ -306,14 +342,12 @@ public class PharmacySaleBhtController implements Serializable {
             return true;
         }
 
-        // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
-            if (tmp.getQty() % 1 != 0) {
-                setZeroToQty(tmp);
-                onEditCalculation(tmp);
-                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
-                return true;
-            }
+        // Validate quantity based on three-tier configuration hierarchy
+        if (isDecimalQuantityNotAllowed(tmp.getQty(), tmp.getItem())) {
+            setZeroToQty(tmp);
+            onEditCalculation(tmp);
+            JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
+            return true;
         }
 
         Stock fetchedStock = getStockFacade().find(tmp.getPharmaceuticalBillItem().getStock().getId());
@@ -1478,13 +1512,11 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a Quantity?");
             return;
         }
-        // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
-            if (getQty() % 1 != 0) {
-                errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed.";
-                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
-                return;
-            }
+        // Validate quantity based on three-tier configuration hierarchy
+        if (isDecimalQuantityNotAllowed(getQty(), getStock().getItemBatch().getItem())) {
+            errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed for this item.";
+            JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
+            return;
         }
         if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
