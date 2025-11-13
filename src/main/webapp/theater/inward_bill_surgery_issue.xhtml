@@ -72,8 +72,11 @@
                                 <h:outputLabel value="#{apt2.patientEncounter.currentPatientRoom.roomFacilityCharge.name}"/>
                             </p:column>
                             <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.patientEncounter.discharged}" />
-                                <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.patientEncounter.discharged}" />
+                                <div class="d-flex justify-content-center">
+                                            <span class="#{apt2.patientEncounter.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                                #{apt2.patientEncounter.discharged ? 'Discharged' : 'Not Yet'}
+                                            </span>
+                                        </div>
                             </p:column>
                             <p:column headerText="From Time" style="padding: 6px; width: 16em;">
                                 <h:outputLabel value="#{apt2.procedure.fromTime}">
@@ -93,6 +96,27 @@
                             value="Select"
                             ajax="false">
                         </p:commandButton>
+                        
+                        <style>
+                                    .discharged-badge {
+                                        background-color: #f44336;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+
+                                    .not-discharged-badge {
+                                        background-color: #2196F3;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+                                </style>
+                        
                     </p:panel>
 
 
