@@ -209,10 +209,16 @@
                                                 <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup 
-                                                id="slip" 
+                                            <h:panelGroup
+                                                id="slip"
                                                 rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
                                                 <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                id="ewallet"
+                                                rendered="#{cashRecieveBillController.current.paymentMethod eq 'ewallet'}">
+                                                <pa:ewallet paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>
