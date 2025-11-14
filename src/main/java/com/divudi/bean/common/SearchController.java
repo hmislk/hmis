@@ -72,6 +72,7 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
+import com.divudi.core.data.dto.BillListReportDTO;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
@@ -265,6 +266,8 @@ public class SearchController implements Serializable {
     private List<PaymentMethod> allCashierCollectionExcludedMethods = new ArrayList<>();
     private List<Bill> bills;
     private List<Bill> filteredBills;
+    // DTO list for all bill list report optimization
+    private List<BillListReportDTO> billListReportDtos;
     // DTO list for pharmacy pre-bill search for return items and cash
     private List<PharmacyPreBillSearchDTO> preBillSearchDtos;
     // DTO list for cashier pharmacy pre-bill search
@@ -12549,6 +12552,169 @@ public class SearchController implements Serializable {
 
     }
 
+    /**
+     * Generate all bill list report using DTO approach for improved performance
+     * This method creates a direct DTO query avoiding entity relationship loading
+     */
+    public void listBillsDto() {
+        billListReportDtos = null;
+        Map<String, Object> params = new HashMap<>();
+
+        // Build JPQL query with constructor expression for direct DTO creation
+        StringBuilder jpql = new StringBuilder(
+            "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+            + "b.id, "
+            + "b.deptId, "
+            + "CONCAT(TYPE(b)), "  // billClass as string
+            + "CONCAT(b.billTypeAtomic), "  // billTypeAtomic as string
+            + "CONCAT(b.paymentMethod), "  // paymentMethod as string
+            + "b.patient.person.nameWithTitle, "
+            + "b.createdAt, "
+            + "b.creater.name, "
+            + "b.retired, "
+            + "b.cancelled, "
+            + "b.refunded, "
+            + "b.total, "
+            + "b.discount, "
+            + "b.netTotal) "
+            + "FROM Bill b "
+            + "WHERE 1=1 "
+        );
+
+        // Apply date range filter
+        if (toDate != null && fromDate != null) {
+            jpql.append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        // Apply institution filter
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" AND b.department.institution = :ins ");
+        }
+
+        // Apply refunded filter
+        if (refunded) {
+            params.put("ref", refunded);
+            jpql.append(" AND b.refunded = :ref ");
+        } else if (cancelled) {
+            params.put("can", cancelled);
+            jpql.append(" AND b.cancelled = :can ");
+        }
+
+        // Apply department filter
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" AND b.department = :dept ");
+        }
+
+        // Apply site filter
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" AND b.department.site = :site ");
+        }
+
+        // Apply user filter
+        if (webUser != null) {
+            jpql.append(" AND b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Apply bill class type filter
+        if (billClassType != null) {
+            jpql.append(" AND TYPE(b)=:billClassType ");
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+                    break;
+            }
+        }
+
+        // Apply bill type filter
+        if (billType != null) {
+            jpql.append(" AND b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        // Apply bill type atomic filter
+        if (billTypeAtomic != null) {
+            jpql.append(" AND b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" ORDER BY b.id ");
+
+        // Execute the query using findLightsByJpql for DTO queries
+        try {
+            billListReportDtos = getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            // Calculate totals directly from DTOs
+            total = 0.0;
+            netTotal = 0.0;
+            discount = 0.0;
+            if (billListReportDtos != null) {
+                for (BillListReportDTO dto : billListReportDtos) {
+                    if (dto != null) {
+                        total += (dto.getTotal() != null ? dto.getTotal().doubleValue() : 0.0);
+                        netTotal += (dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0);
+                        discount += (dto.getDiscount() != null ? dto.getDiscount().doubleValue() : 0.0);
+                    }
+                }
+            }
+
+            JsfUtil.addSuccessMessage("Report generated successfully with " +
+                    (billListReportDtos != null ? billListReportDtos.size() : 0) + " records");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating report: " + e.getMessage());
+            billListReportDtos = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Navigate to optimized DTO-based all bill list report
+     */
+    public String navigateToOptimizedBillListReport() {
+        return "/analytics/bills_dto.xhtml?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to legacy entity-based all bill list report
+     */
+    public String navigateToLegacyBillListReport() {
+        return "/analytics/bills.xhtml?faces-redirect=true";
+    }
+
+    /**
+     * Check if optimized method is enabled for All Bill List Report
+     */
+    public boolean isAllBillListReportOptimizedMethodEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("All Bill List Report - Optimized Method", false);
+    }
+
+    /**
+     * Check if legacy method is enabled for All Bill List Report
+     */
+    public boolean isAllBillListReportLegacyMethodEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("All Bill List Report - Legacy Method", true);
+    }
+
     public void listCancellationBills() {
         bills = null;
         Map<String, Object> params = new HashMap<>();
@@ -20644,6 +20810,14 @@ public class SearchController implements Serializable {
 
     public void setFilteredBills(List<Bill> filteredBills) {
         this.filteredBills = filteredBills;
+    }
+
+    public List<BillListReportDTO> getBillListReportDtos() {
+        return billListReportDtos;
+    }
+
+    public void setBillListReportDtos(List<BillListReportDTO> billListReportDtos) {
+        this.billListReportDtos = billListReportDtos;
     }
 
     public List<PharmacyPreBillSearchDTO> getPreBillSearchDtos() {
