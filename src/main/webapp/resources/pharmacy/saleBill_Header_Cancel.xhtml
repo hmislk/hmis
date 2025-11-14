@@ -41,12 +41,61 @@
         
 
             <div class="headingBill1" style="text-align: center">
-                <h:outputLabel class="SaleBillheader" value="CANCEL BILL"   />   
-                <h:outputLabel class="SaleBillheader" value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel class="SaleBillheader" value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel class="SaleBillheader" value="CANCELLATION RECEIPT"   />
+                <h:outputLabel class="SaleBillheader" value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
             <br/>
-            <div class="billDetails1" >
+
+            <!-- Original Bill Details Section -->
+            <div class="billDetails1">
+                <div style="text-align: center; font-weight: bold; padding: 5px 0;">
+                    <h:outputLabel value="ORIGINAL BILL DETAILS" class="billDetails1"/>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Date &amp;nbsp;&amp;nbsp;" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" class="billDetails1" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </h:panelGrid>
+                    </div>
+                    <div>
+                        <h:panelGrid columns="3">
+                            <h:outputLabel value="Time" class="billDetails1"/>
+                            <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                            <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" class="billDetails1">
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </h:panelGrid>
+                    </div>
+                </div>
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Bill No" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="User" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.billedBill.creater.name}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+            </div>
+
+            <div class="billline1" style="width: 100%;">
+                <hr/>
+            </div>
+
+            <!-- Cancellation Details Section -->
+            <div class="billDetails1">
+                <div style="text-align: center; font-weight: bold; padding: 5px 0;">
+                    <h:outputLabel value="CANCELLATION DETAILS" class="billDetails1"/>
+                </div>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div>
                         <h:panelGrid columns="3">
