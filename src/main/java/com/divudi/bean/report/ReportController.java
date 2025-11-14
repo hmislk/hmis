@@ -2839,6 +2839,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         
         return "/reports/managementReports/surgery_count_type?faces-redirect=true";
     }
+    
+    public String navigateToAdmissionCountPaymentTypeWise(){
+        
+        return "/reports/managementReports/admission_count_payment_type_wise?faces-redirect=true"; 
+    }
 
     public String navigateToOpdWeeklyReport() {
 
