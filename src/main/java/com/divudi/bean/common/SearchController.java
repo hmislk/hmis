@@ -12856,6 +12856,10 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        // Include deprecated pharmacy credit settle types for historical records
+        // These are being phased out in favor of unified OPD credit settlement
+        btas.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
 
         jpql.append(" and b.billTypeAtomic in :btas ");
         params.put("btas", btas);

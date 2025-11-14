@@ -1209,6 +1209,15 @@ public class CashRecieveBillController implements Serializable {
         return bills;
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit bills are now managed through settleBillCombined() method,
+     * which handles both OPD and Pharmacy credit bills using the unified OPD Credit Settle bill type.
+     * The separate Pharmacy Credit Settle bill type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED)
+     * is being deprecated in favor of the unified OPD Credit Settle bill type.
+     * Please use the Combined OPD Credit Collection page (/credit/credit_company_bill_opd_combined.xhtml) instead.
+     */
+    @Deprecated
     public void settleBillPharmacy() {
         // Enhanced pharmacy bill settlement with improved functionality
 
