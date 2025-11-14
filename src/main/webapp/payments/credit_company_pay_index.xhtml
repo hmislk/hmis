@@ -71,6 +71,19 @@
                                             </div>
                                         </p:tab>
 
+                                        <!-- DEPRECATED: Pharmacy Credit section - To be removed in next iteration
+                                             Pharmacy credit bills are now managed through "Combined OPD Credit Collection"
+                                             under the OPD Credit tab, which handles both OPD and Pharmacy credit bills.
+                                             The separate Pharmacy Credit Settle bill type is being deprecated in favor of
+                                             the unified OPD Credit Settle bill type.
+
+                                             Related pages to be removed:
+                                             - /credit/credit_company_pharmacy_due?faces-redirect=true
+                                             - /credit/credit_company_pharmacy_due_age?faces-redirect=true
+                                             - /credit/credit_compnay_bill_pharmacy?faces-redirect=true
+                                             - /credit/credit_compnay_bill_pharmacy_all?faces-redirect=true
+                                        -->
+                                        <!--
                                         <p:tab title="Pharmacy Credit">
                                             <div class="d-grid gap-2">
                                                 <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-list" value="Pharmacy Due Search" title="List outstanding pharmacy dues" action="/credit/credit_company_pharmacy_due?faces-redirect=true"/>
@@ -79,6 +92,7 @@
                                                 <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-briefcase" value="Pharmacy Payment by Company" title="Settle pharmacy bills company-wide" action="/credit/credit_compnay_bill_pharmacy_all?faces-redirect=true"/>
                                             </div>
                                         </p:tab>
+                                        -->
 
                                         <p:tab title="Reports &amp; Audits">
                                             <div class="d-grid gap-2">

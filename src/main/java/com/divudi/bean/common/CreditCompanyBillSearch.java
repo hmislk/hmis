@@ -434,6 +434,15 @@ public class CreditCompanyBillSearch implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit company payment cancellations are now handled through the unified OPD credit
+     * cancellation methods, as pharmacy credit bills are being consolidated with OPD credit bills.
+     * The separate Pharmacy Credit Settle bill type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED)
+     * and its cancellation type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION) are being deprecated
+     * in favor of the unified OPD Credit Settle bill type.
+     */
+    @Deprecated
     public void cancelPharmacyCreditCompanyPaymentBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {

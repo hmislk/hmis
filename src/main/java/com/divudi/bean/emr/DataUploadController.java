@@ -261,6 +261,9 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForCreditCompanyUpload;
     private StreamedContent templateForItemFeeUpload;
     private StreamedContent templateForDepartmentUpload;
+    private StreamedContent templateForPharmacyItemImport;
+    private StreamedContent templateForPharmacyItemImportWithStock;
+
 
     List<Item> itemsToSave;
     List<Item> itemsSaved;
@@ -7768,6 +7771,99 @@ public class DataUploadController implements Serializable {
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
+    }
+    
+    public void createTemplateForPharmacyItemImport() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Serial No", "Category", "Product", "Code", "Bar Code", "Generic Name", "Strength", "Strength Unit", "Pack Size", "Issue Unit", "Pack Unit",
+        "Distributor", "Manufacturer", "Importer"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading filetemplateForPharmacyItemImport
+        templateForPharmacyItemImport = DefaultStreamedContent.builder()
+                .name("template_for_pharmacy_item_import.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+    public void createTemplateForPharmacyItemImportWithStock() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Serial No", "Category", "Product", "Code", "Bar Code", "Generic Name", "Strength", "Strength Unit", "Pack Size", "Issue Unit", "Pack Unit",
+        "Distributor", "Manufacturer", "Importer", "Date of Expiry (M/d/yyyy)", "Batch", "Quantity", "Purchase Price", "Sale Price"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading filetemplateForPharmacyItemImport
+        templateForPharmacyItemImportWithStock = DefaultStreamedContent.builder()
+                .name("template_for_pharmacy_item_import_with_stock.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+     public StreamedContent getTemplateForPharmacyItemImportWithStock(){
+        try {
+            createTemplateForPharmacyItemImportWithStock();
+        } catch (IOException e){
+            // Handle IOException
+        }
+        return templateForPharmacyItemImportWithStock;
+    }
+    
+
+    public StreamedContent getTemplateForPharmacyItemImport(){
+        try {
+            createTemplateForPharmacyItemImport();
+        } catch (IOException e){
+            // Handle IOException
+        }
+        return templateForPharmacyItemImport;
     }
 
     public StreamedContent getTemplateForInvestigationUpload() {

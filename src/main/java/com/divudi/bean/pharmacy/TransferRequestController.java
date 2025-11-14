@@ -464,20 +464,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             getBill().getBillItems().add(b);
         }
@@ -585,20 +577,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             if (b.getId() == null || !getTransferRequestBillPre().getBillItems().contains(b)) {
                 getTransferRequestBillPre().getBillItems().add(b);

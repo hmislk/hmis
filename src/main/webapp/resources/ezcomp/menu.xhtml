@@ -328,19 +328,39 @@
 <!--            Inward Section-->
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
                     <p:submenu label="Admissions" icon="fa fa-sign-in-alt" rendered="#{webUserController.hasPrivilege('InwardAdmissions')}">
-                        <p:menuitem ajax="false"
-                                    action="#{patientController.navigatePatientAdmit()}"
-                                    value="Patient Admit"
-                                    icon="fa fa-user-plus"
-                                    rendered="true" />
-                        <p:menuitem ajax="false"
-                                    action="#{opdBillController.navigateToSearchPatients()}"
-                                    value="Patient Lookup &amp; Registration"
-                                    icon="fa fa-search"
-                                    rendered="true" />
-                        <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Details" icon="fa fa-edit" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" value="Inward Appointment" icon="fa fa-calendar-plus" rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" ></p:menuitem>
+                        <p:menuitem 
+                            ajax="false"
+                            action="#{patientController.navigatePatientAdmit()}"
+                            value="Patient Admit"
+                            icon="fa fa-user-plus"
+                            rendered="true">
+                        </p:menuitem>
+                        
+                        <p:menuitem 
+                            ajax="false"
+                            action="#{opdBillController.navigateToSearchPatients()}"
+                            value="Patient Lookup &amp; Registration"
+                            icon="fa fa-search"
+                            rendered="true" >
+                        </p:menuitem>
+                        
+                        <p:menuitem  
+                            ajax="false"  
+                            action="#{admissionController.navigateToEditAdmission()}" 
+                            value="Edit Admission Details" icon="fa fa-edit" 
+                            actionListener="#{bhtEditController.prepereForNew()}" 
+                            rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
+                        </p:menuitem>
+                        
+                        <p:menuitem  
+                            ajax="false"  
+                            action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" 
+                            value="Inward Appointment" 
+                            icon="fa fa-calendar-plus" 
+                            rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" >
+                        </p:menuitem>
                     </p:submenu>
+                    
                     <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem ajax="false" action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" value="Room Reservations" icon="fa fa-calendar-check" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="#{admissionController.navigateToRoomOccupancy()}" value="Room Occupancy" icon="fa fa-bed" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>

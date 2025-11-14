@@ -108,6 +108,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             return;
         }
         due = getFinalBillDue();
+        paymentMethodData = new PaymentMethodData();
 
     }
 
@@ -159,7 +160,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             return true;
         }
 
-        if (getTotal() == 0.0) {
+        if (getPaymentMethod() == PaymentMethod.Cash && getTotal() == 0.0) {
             JsfUtil.addErrorMessage("Please enter paying amount");
             return true;
         }
