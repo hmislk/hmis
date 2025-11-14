@@ -115,7 +115,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     private Bill selectedDirectPurchase;
     private Bill originalDirectPurchase;
     private List<Item> dealorItems;
-    
+
     // Payment method properties
     private PaymentMethodData paymentMethodData;
 
@@ -140,19 +140,18 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         return "/pharmacy/pharmacy_direct_purchase_return_request?faces-redirect=true";
     }
 
-
     public String navigateToCreateDirectPurchaseReturnFromPurchase() {
         if (selectedDirectPurchase == null) {
             JsfUtil.addErrorMessage("No Direct Purchase selected");
             return "";
         }
-        
+
         // Check for existing unapproved Direct Purchase returns
         if (hasUnapprovedDirectPurchaseReturns()) {
             JsfUtil.addErrorMessage("Cannot create new return. Please approve pending Direct Purchase returns first.");
             return "";
         }
-        
+
         // Follow legacy pattern - create return bill from selected Direct Purchase
         createReturnBillFromDirectPurchase(selectedDirectPurchase);
         printPreview = false;  // Ensure no print preview when creating new return
@@ -246,7 +245,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 //            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
 //            return;
 //        }
-
         saveBill(false);
         // Ensure bill items are properly associated for any subsequent operations
         ensureBillItemsForPreview();
@@ -356,11 +354,11 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                         JsfUtil.addSuccessMessage("Payment created successfully for Direct Purchase return.");
                     } else {
                         // This should not happen since validation was done upfront, but handle defensively
-                        String errorMsg = "Unexpected payment creation failure - no payments were created for " + 
-                            currentBill.getPaymentMethod().getLabel();
+                        String errorMsg = "Unexpected payment creation failure - no payments were created for "
+                                + currentBill.getPaymentMethod().getLabel();
                         JsfUtil.addErrorMessage(errorMsg);
-                        LOGGER.log(Level.SEVERE, errorMsg + " for bill: " + currentBill.getInsId() + 
-                            " - This should not occur after successful validation");
+                        LOGGER.log(Level.SEVERE, errorMsg + " for bill: " + currentBill.getInsId()
+                                + " - This should not occur after successful validation");
                     }
                 } catch (Exception e) {
                     // This should not happen since validation was done upfront, but handle defensively
@@ -480,10 +478,16 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             currentBill.setDepartment(sessionController.getDepartment());
             currentBill.setCreater(sessionController.getLoggedUser());
             currentBill.setCreatedAt(new Date());
+            String billNumber;
 
-            String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(
-                    sessionController.getDepartment(),
-                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Return - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false)) {
+                billNumber = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            } else {
+                billNumber = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                        sessionController.getDepartment(),BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            }
+
             currentBill.setDeptId(billNumber);
             currentBill.setInsId(billNumber);
         }
@@ -496,7 +500,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         calculateTotal();
 
         // Use create() for new bills, edit() for existing bills
-        if (currentBill.getId()==null) {
+        if (currentBill.getId() == null) {
             billFacade.create(currentBill);
         } else {
             billFacade.edit(currentBill);
@@ -590,7 +594,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             double absQty = Math.abs(totalQty);
             phi.setQty(-Math.abs(phi.getQty()));
             phi.setFreeQty(-Math.abs(phi.getFreeQty()));
-            
+
             // Save the pharmaceutical bill item with negative quantities
             pharmaceuticalBillItemFacade.edit(phi);
 
@@ -617,50 +621,51 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         if (currentBill == null) {
             return false;
         }
-        
+
         // Check if payment method is selected
         if (currentBill.getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
             return false;
         }
-        
+
         // If payment method is not Cash, validate payment method details
         if (!currentBill.getPaymentMethod().equals(PaymentMethod.Cash)) {
             PaymentMethodData pmd = getPaymentMethodData();
-            
+
             if (currentBill.getPaymentMethod().equals(PaymentMethod.Card)) {
-                if (pmd.getCreditCard() == null || 
-                    pmd.getCreditCard().getNo() == null || pmd.getCreditCard().getNo().trim().isEmpty()) {
+                if (pmd.getCreditCard() == null
+                        || pmd.getCreditCard().getNo() == null || pmd.getCreditCard().getNo().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Please enter credit card details");
                     return false;
                 }
             } else if (currentBill.getPaymentMethod().equals(PaymentMethod.Cheque)) {
-                if (pmd.getCheque() == null || 
-                    pmd.getCheque().getNo() == null || pmd.getCheque().getNo().trim().isEmpty()) {
+                if (pmd.getCheque() == null
+                        || pmd.getCheque().getNo() == null || pmd.getCheque().getNo().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Please enter cheque details");
                     return false;
                 }
             } else if (currentBill.getPaymentMethod().equals(PaymentMethod.Slip)) {
-                if (pmd.getSlip() == null || 
-                    pmd.getSlip().getNo() == null || pmd.getSlip().getNo().trim().isEmpty()) {
+                if (pmd.getSlip() == null
+                        || pmd.getSlip().getNo() == null || pmd.getSlip().getNo().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Please enter slip details");
                     return false;
                 }
             } else if (currentBill.getPaymentMethod().equals(PaymentMethod.ewallet)) {
-                if (pmd.getEwallet() == null || 
-                    pmd.getEwallet().getNo() == null || pmd.getEwallet().getNo().trim().isEmpty()) {
+                if (pmd.getEwallet() == null
+                        || pmd.getEwallet().getNo() == null || pmd.getEwallet().getNo().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Please enter e-wallet details");
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
 
     /**
-     * Pre-validates payment creation to prevent approval/finalization with payment issues
-     * This ensures healthcare financial integrity by catching payment problems early
+     * Pre-validates payment creation to prevent approval/finalization with
+     * payment issues This ensures healthcare financial integrity by catching
+     * payment problems early
      */
     private boolean validatePaymentCreation() {
         if (currentBill == null || currentBill.getPaymentMethod() == null) {
@@ -1028,7 +1033,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
                 // DEBUG: Log the rate setting
-
 
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
                 calculateLineTotal(newBillItemInReturnBill);
@@ -1497,7 +1501,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setDepartment(sessionController.getDepartment());
-        
+
         //Copy Payment Method from Direct Purchase
         currentBill.setPaymentMethod(originalDirectPurchase.getPaymentMethod());
 
@@ -1542,7 +1546,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("obi", referanceBillItem);  // Use the object, not just the ID
         params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-
 
         Object result = billItemFacade.findSingleScalar(sql, params);  // Use findSingleScalar like the working method
         BigDecimal returnValue = BigDecimal.ZERO;
@@ -1722,11 +1725,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // The rate was set at bill creation time based on configuration and should NEVER be changed
         // during validation or quantity changes. The lineGrossRate contains the configuration-based
         // return rate (cost rate, purchase rate, etc.) and must remain immutable after bill creation.
-
         // Note: The "Purchase Return - Changing Return Rate is allowed" configuration only controls
         // whether users can MANUALLY edit the rate in the UI, but has nothing to do with preserving
         // the configuration-based rate during validation.
-
         return isValid;
     }
 
@@ -2016,7 +2017,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                  * currentStock - returningQty < 0). That logic would be incorrect for return processing.
                  */
                 boolean allowNegativeStock = configOptionApplicationController.getBooleanValueByKey("Allow Negative Stock in Returns", true);
-                
+
                 // Validate that processing this return won't result in an impossible negative stock state
                 if (!allowNegativeStock && (currentStock + returningQty < 0)) {
                     JsfUtil.addErrorMessage("Insufficient stock for item: " + bi.getItem().getName()
@@ -2130,10 +2131,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     }
 
     /**
-     * Calculates the net value adjustment based on actual net value entered by user
-     * Adjustment = Net Total (calculated) - Actual Net Value
-     * Positive adjustment means calculated is higher than actual
-     * Negative adjustment means calculated is lower than actual
+     * Calculates the net value adjustment based on actual net value entered by
+     * user Adjustment = Net Total (calculated) - Actual Net Value Positive
+     * adjustment means calculated is higher than actual Negative adjustment
+     * means calculated is lower than actual
      */
     public void calculateNetValueAdjustment() {
         if (currentBill == null || currentBill.getBillFinanceDetails() == null) {
@@ -2250,7 +2251,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         BigDecimal lineTotal = totalQty.multiply(rate);
         // DEBUG: Log the calculation
 
-
         // Set total quantity (in packs for AMPP, in units for AMP) - make negative for returns (stock moving out)
         fd.setTotalQuantity(totalQty.abs().negate());
 
@@ -2278,7 +2278,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         bi.setNetRate(fd.getLineNetRate() != null ? fd.getLineNetRate().doubleValue() : 0.0);
         bi.setGrossValue(lineTotal.doubleValue());
         bi.setNetValue(lineTotal.doubleValue());
-
 
         // Calculate unit-based quantities (ALWAYS in units per HMIS standard)
         BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
@@ -2922,6 +2921,14 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
+    }
+
+    public BillNumberGenerator getBillNumberBean() {
+        return billNumberBean;
+    }
+
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
+        this.billNumberBean = billNumberBean;
     }
 
 }
