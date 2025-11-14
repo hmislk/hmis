@@ -688,6 +688,10 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
             return true;
         }
+        if (getBill().getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("You can't cancel. Because this BHT is Already Discharged.");
+            return true;
+        }
 
         if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment Method.");
