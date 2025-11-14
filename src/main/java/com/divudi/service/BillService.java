@@ -610,6 +610,11 @@ public class BillService {
      * as part of the credit consolidation initiative where pharmacy credit bills are managed
      * alongside OPD credit bills under the unified OPD Credit Settle bill type.
      * This includes pharmacy retail sales, wholesale sales, and sales settled at cashier.
+     *
+     * <p><strong>Important:</strong> This method returns atomics for ORIGINAL BILLS that can have
+     * outstanding balances (used by OPD Due Search, OPD Due Age queries), NOT settlement record atomics.
+     * Settlement records (PAYMENT_RECEIVED bills) are queried separately by
+     * {@code listBillsOpdCreditCompanySettle()} for "OPD Done Search" functionality.
      */
     public List<BillTypeAtomic> fetchBillTypeAtomicsForOpdFinance() {
         List<BillTypeAtomic> btas = new ArrayList<>();
