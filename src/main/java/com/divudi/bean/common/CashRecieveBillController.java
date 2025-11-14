@@ -1211,11 +1211,31 @@ public class CashRecieveBillController implements Serializable {
 
     /**
      * @deprecated This method will be removed in the next iteration.
-     * Pharmacy credit bills are now managed through settleBillCombined() method,
-     * which handles both OPD and Pharmacy credit bills using the unified OPD Credit Settle bill type.
-     * The separate Pharmacy Credit Settle bill type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED)
-     * is being deprecated in favor of the unified OPD Credit Settle bill type.
-     * Please use the Combined OPD Credit Collection page (/credit/credit_company_bill_opd_combined.xhtml) instead.
+     *
+     * <p><strong>Current Status:</strong> This method creates settlement bills with
+     * {@code BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED}, which is being deprecated.
+     *
+     * <p><strong>Current Routing:</strong> The Combined OPD Credit Collection page
+     * (/credit/credit_company_bill_opd_combined.xhtml) calls {@link #settleCombinedCreditBills()},
+     * which currently still routes pharmacy bills to this deprecated method.
+     *
+     * <p><strong>True Replacement:</strong> {@link #settleUniversalCreditBills()} is the intended
+     * replacement that uses the unified {@code BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}
+     * for all bill types (OPD, Package, and Pharmacy), eliminating the separate pharmacy credit
+     * settlement type.
+     *
+     * <p><strong>Migration Path:</strong> Migration to the unified bill type is DEFERRED. In the next
+     * iteration, either:
+     * <ul>
+     *   <li>Update {@link #settleCombinedCreditBills()} to route pharmacy bills to
+     *       {@link #settleUniversalCreditBills()}, OR</li>
+     *   <li>Replace the page action to call {@link #settleUniversalCreditBills()} directly</li>
+     * </ul>
+     * Once migrated, all new settlements will use {@code OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}
+     * regardless of source bill type (OPD or Pharmacy).
+     *
+     * <p><strong>Action Required:</strong> Do not create new references to this method.
+     * Use the Combined OPD Credit Collection page for all credit settlements.
      */
     @Deprecated
     public void settleBillPharmacy() {
@@ -1949,8 +1969,19 @@ public class CashRecieveBillController implements Serializable {
     }
 
     /**
-     * Combined settlement method that routes to appropriate settlement method based on bill types in the list
-     * Determines the bill type from the bills in the selectedBillItems list
+     * Combined settlement method that routes to appropriate settlement method based on bill types in the list.
+     * Determines the bill type from the bills in the selectedBillItems list.
+     *
+     * <p><strong>Action:</strong> This method is called by the Combined OPD Credit Collection page
+     * (/credit/credit_company_bill_opd_combined.xhtml).
+     *
+     * <p><strong>Current Limitation:</strong> This method still routes pharmacy bills to the deprecated
+     * {@link #settleBillPharmacy()} method, which creates {@code PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED}
+     * settlement bills. In the next iteration, pharmacy routing should be updated to call
+     * {@link #settleUniversalCreditBills()} instead, which uses the unified
+     * {@code OPD_CREDIT_COMPANY_PAYMENT_RECEIVED} bill type for all settlements.
+     *
+     * @see #settleUniversalCreditBills() for the unified replacement that handles all bill types
      */
     public void settleCombinedCreditBills() {
         if (getSelectedBillItems().isEmpty()) {
@@ -1983,10 +2014,24 @@ public class CashRecieveBillController implements Serializable {
     }
 
     /**
-     * Universal settlement method that handles all bill types (OPD, pharmacy, etc.)
-     * and creates settlements under OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
-     * This method consolidates pharmacy credit settlements with OPD settlements as per new requirement
-     * Based on settleCreditForOpdBatchBills but extended to handle all bill types
+     * Universal settlement method that handles all bill types (OPD, Package, Pharmacy, etc.)
+     * and creates settlements under the unified {@code BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}.
+     *
+     * <p>This method consolidates pharmacy credit settlements with OPD settlements as per the
+     * credit unification requirement, eliminating the separate {@code PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED}
+     * bill type.
+     *
+     * <p><strong>Status:</strong> This is the intended replacement for {@link #settleBillPharmacy()}
+     * but is not yet wired to the Combined OPD Credit Collection page. In the next iteration,
+     * {@link #settleCombinedCreditBills()} should be updated to route pharmacy bills here instead
+     * of to the deprecated {@link #settleBillPharmacy()} method.
+     *
+     * <p><strong>Bill Type Used:</strong> All settlements created by this method use
+     * {@code BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}, regardless of whether the
+     * source bills are OPD, Package, or Pharmacy bills.
+     *
+     * <p>Based on {@link #settleCreditForOpdBatchBills()} but extended to handle all bill types
+     * with proper credit company field detection (creditCompany for OPD, toInstitution for Pharmacy).
      */
     public void settleUniversalCreditBills() {
         if (getSelectedBillItems().isEmpty()) {
