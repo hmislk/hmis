@@ -2810,6 +2810,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         reportType = "Summary";
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
+    
+    public String navigateToSugeryStatus(){
+       return "/reports/managementReports/surgery_status";
+    }
 
     public String navigateToReferringDoctorWiseRevenue() {
 
