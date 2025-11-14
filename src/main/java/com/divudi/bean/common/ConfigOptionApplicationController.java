@@ -1054,12 +1054,6 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private void loadReportMethodConfigurationDefaults() {
-        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
-        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
-        // OPD Reports
-        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
-        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
-
         // Lab Reports
         getBooleanValueByKey("Lab Daily Summary Report - Legacy Method", true);
         getBooleanValueByKey("Lab Daily Summary Report - Optimized Method", false);

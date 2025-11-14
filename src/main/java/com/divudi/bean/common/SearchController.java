@@ -12565,9 +12565,9 @@ public class SearchController implements Serializable {
             "SELECT new com.divudi.core.data.dto.BillListReportDTO("
             + "b.id, "
             + "b.deptId, "
-            + "CONCAT(TYPE(b)), "  // billClass as string
-            + "CONCAT(b.billTypeAtomic), "  // billTypeAtomic as string
-            + "CONCAT(b.paymentMethod), "  // paymentMethod as string
+            + "b.billClass, "  // billClass is already a String field in Bill entity
+            + "b.billTypeAtomic, "  // billTypeAtomic enum - DTO will convert to string
+            + "b.paymentMethod, "  // paymentMethod enum - DTO will convert to string
             + "b.patient.person.nameWithTitle, "
             + "b.createdAt, "
             + "b.creater.name, "
@@ -12663,7 +12663,8 @@ public class SearchController implements Serializable {
 
         // Execute the query using findLightsByJpql for DTO queries
         try {
-            billListReportDtos = getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            // Explicit cast required for generic type safety
+            billListReportDtos = (List<BillListReportDTO>) (List<?>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             // Calculate totals directly from DTOs
             total = 0.0;

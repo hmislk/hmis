@@ -1,5 +1,7 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -32,7 +34,7 @@ public class BillListReportDTO implements Serializable {
     public BillListReportDTO() {
     }
 
-    // Constructor for comprehensive report fields matching the analytics/bills.xhtml view
+    // Original constructor for string-based parameters (preserved for backward compatibility)
     public BillListReportDTO(Long billId, String billNumber, String billClass,
                             String billTypeAtomic, String paymentMethod,
                             String patientName, Date createdAt,
@@ -45,6 +47,32 @@ public class BillListReportDTO implements Serializable {
         this.billClass = billClass;
         this.billTypeAtomic = billTypeAtomic;
         this.paymentMethod = paymentMethod;
+        this.patientName = patientName;
+        this.createdAt = createdAt;
+        this.createdUserName = createdUserName;
+        this.retired = retired;
+        this.cancelled = cancelled;
+        this.refunded = refunded;
+        this.total = total;
+        this.discount = discount;
+        this.netTotal = netTotal;
+    }
+
+    // Enhanced constructor accepting enums for JPQL DTO projection queries
+    // This constructor accepts BillTypeAtomic and PaymentMethod enums and converts them to strings
+    public BillListReportDTO(Long billId, String billNumber, String billClass,
+                            BillTypeAtomic billTypeAtomicEnum, PaymentMethod paymentMethodEnum,
+                            String patientName, Date createdAt,
+                            String createdUserName, Boolean retired,
+                            Boolean cancelled, Boolean refunded,
+                            BigDecimal total, BigDecimal discount,
+                            BigDecimal netTotal) {
+        this.billId = billId;
+        this.billNumber = billNumber;
+        this.billClass = billClass;
+        // Convert enums to string representations (null-safe)
+        this.billTypeAtomic = billTypeAtomicEnum != null ? billTypeAtomicEnum.toString() : null;
+        this.paymentMethod = paymentMethodEnum != null ? paymentMethodEnum.toString() : null;
         this.patientName = patientName;
         this.createdAt = createdAt;
         this.createdUserName = createdUserName;
