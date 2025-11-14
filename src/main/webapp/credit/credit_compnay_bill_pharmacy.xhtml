@@ -232,6 +232,12 @@
                                                     rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="ewallet"
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'ewallet'}">
+                                                    <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
                                     </div>
