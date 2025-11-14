@@ -122,7 +122,8 @@
                                             Assign username as code for all WebUsers where the code is empty. Skips users with existing non-empty codes.
                                         </td>
                                         <td>
-                                            <p:commandButton 
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 action="#{webUserController.addWebUserCodesFromUserNames()}"
                                                 ajax="false"
                                                 value="Add WebUser Codes"  />
@@ -137,7 +138,8 @@
                                             Copy user codes to related staff where staff.code is empty. Affects only staff linked to users with a non-empty user code.
                                         </td>
                                         <td>
-                                            <p:commandButton 
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 action="#{webUserController.addStaffCodesFromUserCodes()}"
                                                 ajax="false"
                                                 value="Add Staff Codes"  />
@@ -152,7 +154,8 @@
                                             Copy each Staff's existing code into Staff StaffCode where Staff StaffCode is empty.
                                         </td>
                                         <td>
-                                            <p:commandButton 
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 action="#{webUserController.addStaffStaffCodesFromCodes()}"
                                                 ajax="false"
                                                 value="Copy to StaffCode"  />
@@ -167,6 +170,7 @@
                         <p:tab title="Admin">
                             <div class="d-grid gap-2">
                                 <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('Admin')}"
                                     ajax="false"
                                     value="Bill DeptId Editor"
                                     action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
