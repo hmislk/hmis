@@ -84,9 +84,6 @@ public class PageMetadataRegistry implements Serializable {
         return registry.size();
     }
 
-    // Getters
-
-    public Map<String, PageMetadata> getRegistry() {
-        return registry;
-    }
+    // Note: getRegistry() method removed to prevent exposing mutable internal state.
+    // Use getAllPages(), getMetadata(pagePath), or getRegisteredPageCount() instead.
 }

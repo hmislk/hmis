@@ -61,15 +61,18 @@ public class PageAdminController implements Serializable {
     }
 
     /**
-     * Navigate back to the original page
-     * @return Navigation outcome (returns null to stay on current page per JSF convention)
+     * Navigate back to the original page.
+     * If no page path is set, returns to the main index page as a safe fallback.
+     *
+     * @return Navigation outcome - either the original page path or index page
      */
     public String navigateBackToPage() {
         if (selectedPagePath != null && !selectedPagePath.isEmpty()) {
             return "/" + selectedPagePath + "?faces-redirect=true";
         }
-        // Return null per JSF convention: null navigation outcome means "stay on current page"
-        return null;
+        // Safe fallback: return to index when no page path is known
+        LOGGER.log(Level.INFO, "No page path set, returning to index page");
+        return "/index?faces-redirect=true";
     }
 
     // Getters and Setters
