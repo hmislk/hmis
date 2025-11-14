@@ -264,6 +264,7 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForPharmacyItemImport;
     private StreamedContent templateForPharmacyItemImportWithStock;
 
+
     List<Item> itemsToSave;
     List<Item> itemsSaved;
     List<Item> itemsSkipped;
@@ -7855,6 +7856,7 @@ public class DataUploadController implements Serializable {
         return templateForPharmacyItemImportWithStock;
     }
     
+
     public StreamedContent getTemplateForPharmacyItemImport(){
         try {
             createTemplateForPharmacyItemImport();

@@ -1191,26 +1191,75 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void settleBillPharmacy() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+        // Enhanced pharmacy bill settlement with improved functionality
+
+        // Enhanced validation to ensure proper fromInstitution setting for pharmacy bills
+        // Auto-detection must happen BEFORE errorCheckPharmacy() to avoid early return
+        if (getCurrent().getFromInstitution() == null && !getBillItems().isEmpty()) {
+            // Auto-set fromInstitution from the first bill's toInstitution (credit company)
+            BillItem firstItem = getBillItems().get(0);
+            if (firstItem.getReferenceBill() != null && firstItem.getReferenceBill().getToInstitution() != null) {
+                getCurrent().setFromInstitution(firstItem.getReferenceBill().getToInstitution());
+            }
+        }
 
         if (errorCheckPharmacy()) {
             return;
         }
 
-        calTotal();
+        // Use enhanced total calculation method consistent with OPD settlements
+        calulateTotalForSettlingCreditForOpdBatchBills();
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-
         getCurrent().setTotal(getCurrent().getNetTotal());
 
-        saveBill(BillType.CashRecieveBill, BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        saveBillItem();
-        //   savePayments();
-        JsfUtil.addSuccessMessage("Bill Saved");
-        printPreview = true;
+        // Generate department bill number for proper tracking
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.CashRecieveBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
 
+        // Set additional required fields
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setComments(comment);
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+
+        // Save the main settlement bill
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+
+        // Enhanced bill item processing with proper audit trails and settlement tracking
+        for (BillItem savingBillItem : getSelectedBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+
+            // Enhanced settlement tracking - replaces simple updateReferenceBill with comprehensive settlement tracking
+            updateSettlingCreditBillSettledValues(savingBillItem);
+        }
+
+        // Add payment service integration for proper payment record keeping
+        paymentService.createPayment(current, getPaymentMethodData());
+
+        JsfUtil.addSuccessMessage("Pharmacy Bill Settled Successfully");
+        printPreview = true;
     }
 
     public void settleBillBht() {
@@ -1902,6 +1951,103 @@ public class CashRecieveBillController implements Serializable {
         } else {
             JsfUtil.addErrorMessage("Unsupported bill type for settlement");
         }
+    }
+
+    /**
+     * Universal settlement method that handles all bill types (OPD, pharmacy, etc.)
+     * and creates settlements under OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
+     * This method consolidates pharmacy credit settlements with OPD settlements as per new requirement
+     * Based on settleCreditForOpdBatchBills but extended to handle all bill types
+     */
+    public void settleUniversalCreditBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+        if (getCurrent().getFromInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Credit Company");
+            return;
+        }
+
+        // Enhanced validation to handle different credit company reference patterns
+        for (BillItem item : getBillItems()) {
+            Institution billCreditCompany = null;
+
+            // Handle different ways credit company is referenced in different bill types
+            if (item.getReferenceBill().getCreditCompany() != null) {
+                // OPD bills use creditCompany field
+                billCreditCompany = item.getReferenceBill().getCreditCompany();
+            } else if (item.getReferenceBill().getToInstitution() != null) {
+                // Pharmacy bills use toInstitution field
+                billCreditCompany = item.getReferenceBill().getToInstitution();
+            }
+
+            if (billCreditCompany == null || !Objects.equals(billCreditCompany.getId(), getCurrent().getFromInstitution().getId())) {
+                JsfUtil.addErrorMessage("All Bills Settling Should be from a one single company.");
+                return;
+            }
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            return;
+        }
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return;
+        }
+
+        // Generate department bill number for OPD credit company payment
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+
+        // Calculate total using the same method as OPD batch bills
+        calulateTotalForSettlingCreditForOpdBatchBills();
+
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.CashRecieveBill);
+
+        // IMPORTANT: All settlements now use OPD_CREDIT_COMPANY_PAYMENT_RECEIVED regardless of original bill type
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setComments(comment);
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+
+        // Save the main settlement bill
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+
+        // Save bill items and update reference bills
+        for (BillItem savingBillItem : getBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+
+            // Update settled values in reference bills (works for both OPD and pharmacy bills)
+            updateSettlingCreditBillSettledValues(savingBillItem);
+        }
+
+        // Create payment records
+        paymentService.createPayment(current, getPaymentMethodData());
+
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
     }
 
 }
