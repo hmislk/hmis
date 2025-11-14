@@ -217,14 +217,14 @@ public class PurchaseOrderController implements Serializable {
             configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL, "POA");
         }
 
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
 
         // Handle Department ID generation
         String deptId;
-        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.PHARMACY_ORDER_APPROVAL
             );
