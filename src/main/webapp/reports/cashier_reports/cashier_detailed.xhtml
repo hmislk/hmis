@@ -316,11 +316,13 @@
                                     <ez:inwardPaymentsRefund id="inwardPaymentsRefund" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
 
-                                    <!-- Credit Company Payments OPD -->
+                                    <!-- Credit Company Payments OPD - DEPRECATED: Now using unified OutpatientCreditSettling sections -->
+                                    <!--
                                     <ez:creditCompanyPaymentOpReceive id="creditCompanyPaymentOpReceive" bundle="#{myBundle}"
                                                                       rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
                                     <ez:creditCompanyPaymentOpCancel id="creditCompanyPaymentOpCancel" bundle="#{myBundle}"
                                                                      rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
+                                    -->
 
                                     <!-- Credit Company Payments Inpatient -->
                                     <ez:creditCompanyPaymentIpReceive id="creditCompanyPaymentIpReceive" bundle="#{myBundle}"
@@ -346,13 +348,29 @@
                                                                 <ez:opdCreditCancelled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditCancelled'}"/>
                                                                 <ez:opdCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>-->
 
-                                    <!-- Pharmacy Credit Bills -->
+                                    <!-- Pharmacy Credit Bills - DEPRECATED: Now using unified OutpatientCreditSettling sections -->
+                                    <!--
                                     <ez:pharmacyCreditBills id="pharmacyCreditBills" bundle="#{myBundle}"
                                                             rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
                                     <ez:pharmacyCreditCancel id="pharmacyCreditCancel" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
                                     <ez:pharmacyCreditRefund id="pharmacyCreditRefund" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
+                                    -->
+
+                                    <!-- Outpatient Credit Settling (Unified Sections) -->
+                                    <ez:outpatientCreditSettling
+                                        id="outpatientCreditSettling"
+                                        bundle="#{myBundle}"
+                                        rendered="#{myBundle.bundleType eq 'OutpatientCreditSettling'}"/>
+                                    <ez:outpatientCreditSettlingCancel
+                                        id="outpatientCreditSettlingCancel"
+                                        bundle="#{myBundle}"
+                                        rendered="#{myBundle.bundleType eq 'OutpatientCreditSettlingCancel'}"/>
+                                    <ez:outpatientCreditSettlingAdjustments
+                                        id="outpatientCreditSettlingAdjustments"
+                                        bundle="#{myBundle}"
+                                        rendered="#{myBundle.bundleType eq 'OutpatientCreditSettlingAdjustments'}"/>
 
                                     <ez:agencyDeposits id="agencyDeposits" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'AgencyDeposit'}"/>
 

@@ -15987,10 +15987,12 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(ccCollection);
             collectionForTheDay += getSafeTotal(ccCollection);
 
+            // COMMENTED OUT: Duplicate processing of OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
+            // This section was causing duplicate counting - now handled in unified Outpatient Credit Settling section
             // Generate OPD Credit Company Payment Collection and add to the main bundle
-            ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
-            bundle.getBundles().add(opdCreditCompanyCollection);
-            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
+//            ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
+//            bundle.getBundles().add(opdCreditCompanyCollection);
+//            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
 
             // Generate Inward Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
@@ -16561,27 +16563,68 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(inwardPaymentsRefundBundle);
             collectionForTheDay += getSafeTotal(inwardPaymentsRefundBundle);
 
+// COMMENTED OUT: Replaced by unified Outpatient Credit Settling section below
+// This section was incomplete - missing OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
 // Generate Credit Company Payment OP - Receive and add to the main bundle
-            List<BillTypeAtomic> creditCompanyPaymentOpReceive = new ArrayList<>();
-            creditCompanyPaymentOpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
-            creditCompanyPaymentOpReceive.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            
-            ReportTemplateRowBundle creditCompanyPaymentOpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpReceive);
-            creditCompanyPaymentOpReceiveBundle.setBundleType("CreditCompanyPaymentOPReceive");
-            creditCompanyPaymentOpReceiveBundle.setName("Credit Company OP Payment Reception");
-            bundle.getBundles().add(creditCompanyPaymentOpReceiveBundle);
-            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpReceiveBundle);
+//            List<BillTypeAtomic> creditCompanyPaymentOpReceive = new ArrayList<>();
+//            creditCompanyPaymentOpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+//            creditCompanyPaymentOpReceive.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+//
+//            ReportTemplateRowBundle creditCompanyPaymentOpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpReceive);
+//            creditCompanyPaymentOpReceiveBundle.setBundleType("CreditCompanyPaymentOPReceive");
+//            creditCompanyPaymentOpReceiveBundle.setName("Credit Company OP Payment Reception");
+//            bundle.getBundles().add(creditCompanyPaymentOpReceiveBundle);
+//            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpReceiveBundle);
+//
+//// Generate Credit Company Payment OP - Cancel and add to the main bundle
+//            List<BillTypeAtomic> creditCompanyPaymentOpCancel = new ArrayList<>();
+//            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
+//            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
+//            creditCompanyPaymentOpCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+//            ReportTemplateRowBundle creditCompanyPaymentOpCancelBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpCancel);
+//            creditCompanyPaymentOpCancelBundle.setBundleType("CreditCompanyPaymentOPCancel");
+//            creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
+//            bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
+//            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
 
-// Generate Credit Company Payment OP - Cancel and add to the main bundle
-            List<BillTypeAtomic> creditCompanyPaymentOpCancel = new ArrayList<>();
-            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
-            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
-            creditCompanyPaymentOpCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            ReportTemplateRowBundle creditCompanyPaymentOpCancelBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpCancel);
-            creditCompanyPaymentOpCancelBundle.setBundleType("CreditCompanyPaymentOPCancel");
-            creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
-            bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
-            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
+// Generate Outpatient Credit Settling - Unified section combining OPD and Pharmacy credit payments
+            List<BillTypeAtomic> outpatientCreditSettling = new ArrayList<>();
+            outpatientCreditSettling.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+            outpatientCreditSettling.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+            outpatientCreditSettling.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+
+            ReportTemplateRowBundle outpatientCreditSettlingBundle = generatePaymentMethodColumnsByBills(outpatientCreditSettling);
+            outpatientCreditSettlingBundle.setBundleType("OutpatientCreditSettling");
+            outpatientCreditSettlingBundle.setName("Outpatient Credit Settling");
+            bundle.getBundles().add(outpatientCreditSettlingBundle);
+            collectionForTheDay += getSafeTotal(outpatientCreditSettlingBundle);
+
+// Generate Outpatient Credit Settling Cancellations and Refunds
+            List<BillTypeAtomic> outpatientCreditSettlingCancel = new ArrayList<>();
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            // OPD_CREDIT_COMPANY_CREDIT_NOTE moved to Financial Adjustments section
+
+            ReportTemplateRowBundle outpatientCreditSettlingCancelBundle = generatePaymentMethodColumnsByBills(outpatientCreditSettlingCancel);
+            outpatientCreditSettlingCancelBundle.setBundleType("OutpatientCreditSettlingCancel");
+            outpatientCreditSettlingCancelBundle.setName("Outpatient Credit Settling - Cancellations and Refunds");
+            bundle.getBundles().add(outpatientCreditSettlingCancelBundle);
+            collectionForTheDay += getSafeTotal(outpatientCreditSettlingCancelBundle);
+
+// Generate Outpatient Credit Settling - Financial Adjustments (Debit/Credit Notes)
+            List<BillTypeAtomic> outpatientCreditSettlingAdjustments = new ArrayList<>();
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_DEBIT_NOTE);
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
+
+            ReportTemplateRowBundle outpatientCreditSettlingAdjustmentsBundle = generatePaymentMethodColumnsByBills(outpatientCreditSettlingAdjustments);
+            outpatientCreditSettlingAdjustmentsBundle.setBundleType("OutpatientCreditSettlingAdjustments");
+            outpatientCreditSettlingAdjustmentsBundle.setName("Outpatient Credit Settling - Financial Adjustments");
+            bundle.getBundles().add(outpatientCreditSettlingAdjustmentsBundle);
+            collectionForTheDay += getSafeTotal(outpatientCreditSettlingAdjustmentsBundle);
 
 // Generate Credit Company Payment IP - Receive and add to the main bundle
             List<BillTypeAtomic> creditCompanyPaymentIpReceive = new ArrayList<>();
@@ -16649,30 +16692,32 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(collectingCentrePaymentCancelBundle);
             collectionForTheDay += getSafeTotal(collectingCentrePaymentCancelBundle);
 
+// COMMENTED OUT: Duplicate processing of OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
+// This section was causing duplicate counting - now handled in unified Outpatient Credit Settling section
 // Generate OPD Credit, Cancellation, and Refund and add to the main bundle
-            List<BillTypeAtomic> opdCredit = new ArrayList<>();
-            opdCredit.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            ReportTemplateRowBundle opdCreditBundle = generatePaymentMethodColumnsByBills(opdCredit);
-            opdCreditBundle.setBundleType("OpdCredit");
-            opdCreditBundle.setName("OPD Credit Payments");
-            bundle.getBundles().add(opdCreditBundle);
-            collectionForTheDay += getSafeTotal(opdCreditBundle);
-
-            List<BillTypeAtomic> opdCreditCancel = new ArrayList<>();
-            opdCreditCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditCancel);
-            opdCreditCancelBundle.setBundleType("OpdCreditCancelled");
-            opdCreditCancelBundle.setName("OPD Credit Cancellations");
-            bundle.getBundles().add(opdCreditCancelBundle);
-            collectionForTheDay += getSafeTotal(opdCreditCancelBundle);
-
-            List<BillTypeAtomic> opdCreditRefund = new ArrayList<>();
-            opdCreditRefund.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
-            ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund);
-            opdCreditRefundBundle.setBundleType("OpdCreditRefund");
-            opdCreditRefundBundle.setName("OPD Credit Refunds");
-            bundle.getBundles().add(opdCreditRefundBundle);
-            collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
+//            List<BillTypeAtomic> opdCredit = new ArrayList<>();
+//            opdCredit.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+//            ReportTemplateRowBundle opdCreditBundle = generatePaymentMethodColumnsByBills(opdCredit);
+//            opdCreditBundle.setBundleType("OpdCredit");
+//            opdCreditBundle.setName("OPD Credit Payments");
+//            bundle.getBundles().add(opdCreditBundle);
+//            collectionForTheDay += getSafeTotal(opdCreditBundle);
+//
+//            List<BillTypeAtomic> opdCreditCancel = new ArrayList<>();
+//            opdCreditCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+//            ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditCancel);
+//            opdCreditCancelBundle.setBundleType("OpdCreditCancelled");
+//            opdCreditCancelBundle.setName("OPD Credit Cancellations");
+//            bundle.getBundles().add(opdCreditCancelBundle);
+//            collectionForTheDay += getSafeTotal(opdCreditCancelBundle);
+//
+//            List<BillTypeAtomic> opdCreditRefund = new ArrayList<>();
+//            opdCreditRefund.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
+//            ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund);
+//            opdCreditRefundBundle.setBundleType("OpdCreditRefund");
+//            opdCreditRefundBundle.setName("OPD Credit Refunds");
+//            bundle.getBundles().add(opdCreditRefundBundle);
+//            collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
 
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
             // COMMENTED OUT: Duplicate of pharmacy credit bills processing already done at lines 16310-16315
@@ -16943,29 +16988,71 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(inwardPaymentsRefundBundle);
             collectionForTheDay += getSafeTotal(inwardPaymentsRefundBundle);
 
-// Generate Credit Company Payment OP - Receive and add to the main bundle
-            List<BillTypeAtomic> creditCompanyPaymentOpReceive = new ArrayList<>();
-            creditCompanyPaymentOpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
-            creditCompanyPaymentOpReceive.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            creditCompanyPaymentOpReceive.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            ReportTemplateRowBundle creditCompanyPaymentOpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpReceive);
-            creditCompanyPaymentOpReceiveBundle.setBundleType("CreditCompanyPaymentOPReceive");
-            creditCompanyPaymentOpReceiveBundle.setName("Credit Company OP Payment Reception");
-            bundle.getBundles().add(creditCompanyPaymentOpReceiveBundle);
-            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpReceiveBundle);
+// COMMENTED OUT: These duplicate sections have been consolidated into the unified "Outpatient Credit Settling" sections below
+            // This avoids double-counting and provides clearer separation between outpatient (OPD + Pharmacy) and inpatient credit settling
+            // The consolidated sections include: Outpatient Credit Settling, Cancellations/Refunds, and Financial Adjustments
+//            // Generate Credit Company Payment OP - Receive and add to the main bundle
+//            List<BillTypeAtomic> creditCompanyPaymentOpReceive = new ArrayList<>();
+//            creditCompanyPaymentOpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+//            creditCompanyPaymentOpReceive.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+//            creditCompanyPaymentOpReceive.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+//            ReportTemplateRowBundle creditCompanyPaymentOpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpReceive);
+//            creditCompanyPaymentOpReceiveBundle.setBundleType("CreditCompanyPaymentOPReceive");
+//            creditCompanyPaymentOpReceiveBundle.setName("Credit Company OP Payment Reception");
+//            bundle.getBundles().add(creditCompanyPaymentOpReceiveBundle);
+//            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpReceiveBundle);
+//
+//            // Generate Credit Company Payment OP - Cancel and add to the main bundle
+//            List<BillTypeAtomic> creditCompanyPaymentOpCancel = new ArrayList<>();
+//            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
+//            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
+//            creditCompanyPaymentOpCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+//            creditCompanyPaymentOpCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+//
+//            ReportTemplateRowBundle creditCompanyPaymentOpCancelBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpCancel);
+//            creditCompanyPaymentOpCancelBundle.setBundleType("CreditCompanyPaymentOPCancel");
+//            creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
+//            bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
+//            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
 
-// Generate Credit Company Payment OP - Cancel and add to the main bundle
-            List<BillTypeAtomic> creditCompanyPaymentOpCancel = new ArrayList<>();
-            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
-            creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
-            creditCompanyPaymentOpCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            creditCompanyPaymentOpCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            // Generate Outpatient Credit Settling - Unified section combining OPD and Pharmacy credit payments
+            List<BillTypeAtomic> outpatientCreditSettling = new ArrayList<>();
+            outpatientCreditSettling.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+            outpatientCreditSettling.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+            outpatientCreditSettling.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
 
-            ReportTemplateRowBundle creditCompanyPaymentOpCancelBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpCancel);
-            creditCompanyPaymentOpCancelBundle.setBundleType("CreditCompanyPaymentOPCancel");
-            creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
-            bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
-            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
+            ReportTemplateRowBundle outpatientCreditSettlingBundle = generatePaymentMethodColumnsByBills(outpatientCreditSettling);
+            outpatientCreditSettlingBundle.setBundleType("OutpatientCreditSettling");
+            outpatientCreditSettlingBundle.setName("Outpatient Credit Settling");
+            bundle.getBundles().add(outpatientCreditSettlingBundle);
+            collectionForTheDay += getSafeTotal(outpatientCreditSettlingBundle);
+
+            // Generate Outpatient Credit Settling Cancellations and Refunds
+            List<BillTypeAtomic> outpatientCreditSettlingCancel = new ArrayList<>();
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            outpatientCreditSettlingCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            // Note: OPD_CREDIT_COMPANY_CREDIT_NOTE moved to Financial Adjustments section
+
+            ReportTemplateRowBundle outpatientCreditSettlingCancelBundle = generatePaymentMethodColumnsByBills(outpatientCreditSettlingCancel);
+            outpatientCreditSettlingCancelBundle.setBundleType("OutpatientCreditSettlingCancel");
+            outpatientCreditSettlingCancelBundle.setName("Outpatient Credit Settling - Cancellations and Refunds");
+            bundle.getBundles().add(outpatientCreditSettlingCancelBundle);
+            collectionForTheDay += getSafeTotal(outpatientCreditSettlingCancelBundle);
+
+            // Generate Outpatient Credit Settling - Financial Adjustments (Debit/Credit Notes)
+            List<BillTypeAtomic> outpatientCreditSettlingAdjustments = new ArrayList<>();
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_DEBIT_NOTE);
+            outpatientCreditSettlingAdjustments.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
+
+            ReportTemplateRowBundle outpatientCreditSettlingAdjustmentsBundle = generatePaymentMethodColumnsByBills(outpatientCreditSettlingAdjustments);
+            outpatientCreditSettlingAdjustmentsBundle.setBundleType("OutpatientCreditSettlingAdjustments");
+            outpatientCreditSettlingAdjustmentsBundle.setName("Outpatient Credit Settling - Financial Adjustments");
+            bundle.getBundles().add(outpatientCreditSettlingAdjustmentsBundle);
+            collectionForTheDay += getSafeTotal(outpatientCreditSettlingAdjustmentsBundle);
 
 // Generate Credit Company Payment IP - Receive and add to the main bundle
             List<BillTypeAtomic> creditCompanyPaymentIpReceive = new ArrayList<>();
