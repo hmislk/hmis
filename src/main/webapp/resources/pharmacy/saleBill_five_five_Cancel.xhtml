@@ -336,6 +336,7 @@
                         </td>
                     </tr>
 
+                    <!-- Note: Boolean expression copied from original saleBill_five_five.xhtml for consistency -->
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
 
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
@@ -408,6 +409,7 @@
 
                 <table style="width: 100%;">
 
+                    <!-- Note: Boolean expression copied from original saleBill_five_five.xhtml for consistency -->
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
                             <td class="totalsBlock" style="text-align: left; width: 60%;">
@@ -490,6 +492,7 @@
             </div>
             <div class="footer" style="text-align: center;">
                 <br/>
+                <!-- Note: Uses userPreference instead of loggedPreference to match original saleBill_five_five.xhtml -->
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
                 <br/>
             </div>
