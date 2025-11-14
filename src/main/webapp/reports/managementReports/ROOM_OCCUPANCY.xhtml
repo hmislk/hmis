@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="ROOM OCCUPANCY" styleClass="my-2" >
+
+                    <p:dataTable id="tb"
+                                 value="#"
+                                 var="var"
+                                 rowIndexVar="n"
+                                 paginator="true"
+                                 paginatorPosition="bottom"
+                                 rows="10"
+                                 rendered="true"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                 rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                 styleClass="table-sm"
+                                 >
+
+                        <p:columnGroup  type="header">
+                            <p:row>
+                                <p:column width="8em" rowspan="3" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Year"/></f:facet>
+                                </p:column>
+                                <p:column width="8em" rowspan="3" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Month"/></f:facet>
+                                </p:column>
+                                <p:column width="8em" rowspan="3" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Number of Admmisions"/></f:facet>
+                                </p:column>
+                                <p:column width="160em" colspan="20" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Rooms"/></f:facet>
+                                </p:column>
+                                <p:column width="32em" colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="I.C.U"/></f:facet>
+                                </p:column>
+                                <p:column width="32em" colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="WARD BED(Old)"/></f:facet>
+                                </p:column>
+                                <p:column width="32em" colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="WARD BED(New)"/></f:facet>
+                                </p:column>
+                                <p:column width="40em" colspan="5" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="INDOOR TOTAL"/></f:facet>
+                                </p:column>
+                                <p:column  width="40em" colspan="5" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="I.C.U &amp; WARD BED TOTAL"/></f:facet>
+                                </p:column>
+                            </p:row>
+
+                            <p:row>
+                                <p:column colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Normal Room"/></f:facet>
+                                </p:column>
+                                <p:column  colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="A/C Room"/></f:facet>
+                                </p:column>
+                                <p:column  colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Super Deluxe(Old)"/></f:facet>
+                                </p:column>
+                                <p:column colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Super Deluxe(New)"/></f:facet>
+                                </p:column>
+                                <p:column  colspan="4" styleClass="border-1 text-center">
+                                    <f:facet name="header"><h:outputText value="Deluxe"/></f:facet>
+                                </p:column>
+
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Beds"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Beds"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="No of Days Occupled"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value=""/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="No of Days Occupled"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Beds"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value=""/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                            </p:row>
+
+                            <p:row>
+
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Room"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
+
+                            </p:row>
+                        </p:columnGroup>
+
+                        <p:column><h:outputText value="1" /></p:column>
+                        <p:column><h:outputText value="2" /></p:column>
+                        <p:column><h:outputText value="3" /></p:column>
+                        <p:column><h:outputText value="4" /></p:column>
+                        <p:column><h:outputText value="5" /></p:column>
+                        <p:column><h:outputText value="6" /></p:column>
+                        <p:column><h:outputText value="7" /></p:column>
+                        <p:column><h:outputText value="7" /></p:column>
+                        <p:column><h:outputText value="7" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="877" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="877" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8777" /></p:column>
+                        <p:column><h:outputText value="877" /></p:column>
+                        <p:column><h:outputText value="87777" /></p:column>
+                        <p:column><h:outputText value="87" /></p:column>
+                        <p:column><h:outputText value="877" /></p:column>
+                        <p:column><h:outputText value="8777" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="866666" /></p:column>
+                        <p:column><h:outputText value="666" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="866" /></p:column>
+                        <p:column><h:outputText value="6666" /></p:column>
+                        <p:column><h:outputText value="86666" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="8666" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="888888888" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+                        <p:column><h:outputText value="86666666" /></p:column>
+                        <p:column><h:outputText value="7777777" /></p:column>
+                        <p:column><h:outputText value="8" /></p:column>
+
+                    </p:dataTable>
+
+
+                 </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
