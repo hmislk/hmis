@@ -4652,6 +4652,23 @@ public class BillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
     }
 
+    /**
+     * DTO-compatible navigation method that loads bill by ID before navigating.
+     * Used when navigating from DTO-based pages that only have bill IDs.
+     */
+    public String navigateToViewPharmacySettledPreBillById(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill ID provided");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        return navigateToViewPharmacySettledPreBill();
+    }
+
     public String navigateToPharmacyRetailSaleReturnItemOnly() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");

@@ -266,6 +266,8 @@ public class SearchController implements Serializable {
     private List<Bill> filteredBills;
     // DTO list for pharmacy pre-bill search for return items and cash
     private List<PharmacyPreBillSearchDTO> preBillSearchDtos;
+    // DTO list for pharmacy sale pre-bill search (cashier settlement) - pharmacy_search_sale_pre_bill.xhtml
+    private List<PharmacyPreBillSearchDTO> pharmacySalePreBillDtos;
     // Map to store return bills grouped by parent bill ID for nested datatable display
     private Map<Long, List<PharmacyPreBillSearchDTO>> returnBillsByParentBillId;
     // DTO list for pharmacy transfer requests
@@ -3494,6 +3496,105 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
 
+    }
+
+    /**
+     * DTO-based version of createPharmacyTableRe() for improved performance.
+     * Uses direct DTO query to avoid loading full entity graphs.
+     * Used by pharmacy_search_sale_pre_bill.xhtml
+     */
+    public void createPharmacyTableReDto() {
+        pharmacySalePreBillDtos = null;
+        Map<String, Object> params = new HashMap<>();
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT new com.divudi.core.data.dto.PharmacyPreBillSearchDTO(");
+        jpql.append("b.id, ");
+        jpql.append("b.deptId, ");
+        jpql.append("b.createdAt, ");
+        jpql.append("b.creater.webUserPerson.name, ");
+        jpql.append("b.department.name, ");
+        jpql.append("b.cancelled, ");
+        jpql.append("b.cancelledBill.createdAt, ");
+        jpql.append("b.cancelledBill.creater.webUserPerson.name, ");
+        jpql.append("b.cancelledBill.comments, ");
+        jpql.append("b.refunded, ");
+        jpql.append("b.refundedBill.createdAt, ");
+        jpql.append("b.refundedBill.creater.webUserPerson.name, ");
+        jpql.append("b.refundedBill.comments, ");
+        jpql.append("b.retired, ");
+        jpql.append("b.retiredAt, ");
+        jpql.append("b.referenceBill.id, ");
+        jpql.append("b.referenceBill.deptId, ");
+        jpql.append("b.referenceBill.createdAt, ");
+        jpql.append("b.referenceBill.creater.webUserPerson.name, ");
+        jpql.append("b.referenceBill.cancelled, ");
+        jpql.append("b.referenceBill.cancelledBill.createdAt, ");
+        jpql.append("b.referenceBill.cancelledBill.creater.webUserPerson.name, ");
+        jpql.append("b.referenceBill.refunded, ");
+        jpql.append("b.referenceBill.refundedBill.createdAt, ");
+        jpql.append("b.referenceBill.refundedBill.creater.webUserPerson.name, ");
+        jpql.append("b.paymentMethod, ");
+        jpql.append("b.paymentScheme.name, ");
+        jpql.append("b.patient.person.nameWithTitle, ");
+        jpql.append("b.toStaff.person.nameWithTitle, ");
+        jpql.append("b.toDepartment.name, ");
+        jpql.append("b.toInstitution.name, ");
+        jpql.append("b.total, ");
+        jpql.append("b.discount, ");
+        jpql.append("b.netTotal) ");
+        jpql.append("FROM PreBill b ");
+        jpql.append("WHERE b.billTypeAtomic = :billTypeAtomic ");
+        jpql.append("AND b.institution = :ins ");
+        jpql.append("AND b.billedBill is null ");
+        jpql.append("AND b.createdAt between :fromDate and :toDate ");
+        jpql.append("AND b.retired = false ");
+        jpql.append("AND b.deptId is not null ");
+        jpql.append("AND b.cancelled = false");
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql.append(" AND ((b.patient.person.name) like :patientName )");
+            params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql.append(" AND ((b.deptId) like :billNo )");
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
+            jpql.append(" AND ((b.department.name) like :dep )");
+            params.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
+        } else if ((getSearchKeyword().getDepartment() == null || getSearchKeyword().getDepartment().isEmpty())
+                && getSessionController().getDepartment() != null) {
+            jpql.append(" AND ((b.department.name) = :dep )");
+            params.put("dep", getSessionController().getDepartment().getName());
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            jpql.append(" AND ((b.netTotal) = :netTotal )");
+            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            jpql.append(" AND ((b.total) like :total )");
+            params.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql.append(" AND ((b.patient.person.phone) like :phone )");
+            params.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        jpql.append(" ORDER BY b.createdAt DESC");
+
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ins", getSessionController().getInstitution());
+
+        // Use findLightsByJpql for DTO constructor queries as per DTO guidelines
+        pharmacySalePreBillDtos = (List<PharmacyPreBillSearchDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     public void listPharmacyIssue() {
@@ -20503,6 +20604,14 @@ public class SearchController implements Serializable {
 
     public void setPreBillSearchDtos(List<PharmacyPreBillSearchDTO> preBillSearchDtos) {
         this.preBillSearchDtos = preBillSearchDtos;
+    }
+
+    public List<PharmacyPreBillSearchDTO> getPharmacySalePreBillDtos() {
+        return pharmacySalePreBillDtos;
+    }
+
+    public void setPharmacySalePreBillDtos(List<PharmacyPreBillSearchDTO> pharmacySalePreBillDtos) {
+        this.pharmacySalePreBillDtos = pharmacySalePreBillDtos;
     }
 
     public Map<Long, List<PharmacyPreBillSearchDTO>> getReturnBillsByParentBillId() {
