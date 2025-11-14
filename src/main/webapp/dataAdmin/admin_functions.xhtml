@@ -384,18 +384,20 @@
 
 
                                 <div class="col-12 col-md-4 col-lg-2 p-1">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
                                         disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
                                         action="#{billController.addMissingBillTypeAtomics}"
                                         class="w-100 m-1"
                                         value="Add Bill Type Atomics"/>
                                 </div>
 
                                 <div class="col-12 col-md-8 col-lg-6 p-1">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
                                         disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
                                         action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS}"
                                         class="w-100 m-1"
                                         value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS Bills"/>
@@ -415,22 +417,13 @@
                                 </div>
 
                                 <div class="col-12 col-md-8 col-lg-6 p-1">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
                                         disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
                                         action="#{billController.correctBillItemRatesInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
                                         class="w-100 m-1"
                                         value="Correct Bill Item Rates in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
-                                </div>
-
-
-                                <div class="col-12 col-md-8 col-lg-6 p-1">
-                                    <p:commandButton 
-                                        ajax="false"
-                                        disabled="false"
-                                        action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
-                                        class="w-100 m-1"
-                                        value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
                                 </div>
 
                                 <div class="col-12 col-md-8 col-lg-6 p-1">
@@ -446,9 +439,10 @@
 
 
                                 <div class="col-12 col-md-8 col-lg-6 p-1">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
                                         disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
                                         action="#{billController.correctBillItemRatesInDIRECT_ISSUE_INWARD_MEDICINE_RETURN}"
                                         class="w-100 m-1"
                                         value="Correct Bill Item Rates in DIRECT_ISSUE_INWARD_MEDICINE_RETURN Bills"/>
@@ -460,20 +454,22 @@
 
 
                                 <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="w-100"
                                         disabled="false"
-                                        value="Fix Missing Bill Time Data" 
-                                        action="#{financialTransactionController.addMissingBillTimeData}" 
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        value="Fix Missing Bill Time Data"
+                                        action="#{financialTransactionController.addMissingBillTimeData}"
                                         ajax="false">
                                     </p:commandButton>
                                 </div>
                                 <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="w-100"
                                         disabled="false"
-                                        value="Add Handover Accept Bill Referance to Handover Create Bill" 
-                                        action="#{financialTransactionController.addMissingBackwordReferancesForShiftStartBills}" 
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        value="Add Handover Accept Bill Referance to Handover Create Bill"
+                                        action="#{financialTransactionController.addMissingBackwordReferancesForShiftStartBills}"
                                         ajax="false">
                                     </p:commandButton>
                                 </div>
