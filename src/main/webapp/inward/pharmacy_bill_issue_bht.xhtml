@@ -117,6 +117,18 @@
                                     actionListener="#{pharmacySaleBhtController.resetAll}" >
                                 </p:commandButton>
 
+                                <!-- Admin Configuration Button (only for administrators) -->
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('inward/pharmacy_bill_issue_bht')}"
+                                        ajax="false"
+                                        class="ui-button-secondary mx-2">
+                                    </p:commandButton>
+                                </h:panelGroup>
+
                                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
                                     <div class="d-flex gap-2">
                                         <p:commandButton
