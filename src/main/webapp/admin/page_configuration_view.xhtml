@@ -9,8 +9,12 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form id="adminForm">
-                    <p:panel header="Page Configuration Management" styleClass="mb-3">
+                <!-- Privilege Guard: Only administrators can access this page -->
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                    <h:form id="adminForm">
+                        <!-- Null Safety: Check if metadata is loaded -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata ne null}">
+                            <p:panel header="Page Configuration Management" styleClass="mb-3">
 
                         <!-- Page Information Section -->
                         <h:panelGroup class="card mb-4 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
@@ -76,7 +80,7 @@
                                 <p:commandButton
                                     value="Manage Application Configuration"
                                     icon="fa fa-cog"
-                                    action="/systemAdmin/config_option_application?faces-redirect=true"
+                                    action="/admin/institutions/admin_mange_application_options?faces-redirect=true"
                                     ajax="false"
                                     styleClass="ui-button-info"/>
                             </div>
@@ -114,18 +118,49 @@
                             </div>
                         </p:panel>
 
-                        <!-- Action Buttons -->
-                        <div class="text-center mt-4">
-                            <p:commandButton
-                                value="Back to Page"
-                                icon="fa fa-arrow-left"
-                                action="#{pageAdminController.navigateBackToPage()}"
-                                ajax="false"
-                                styleClass="ui-button-secondary"/>
-                        </div>
+                            <!-- Action Buttons -->
+                            <div class="text-center mt-4">
+                                <p:commandButton
+                                    value="Back to Page"
+                                    icon="fa fa-arrow-left"
+                                    action="#{pageAdminController.navigateBackToPage()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary"/>
+                            </div>
 
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Error message when metadata is not found -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata eq null}">
+                            <p:panel header="Page Not Found" styleClass="mb-3">
+                                <p:messages id="messages" closable="true"/>
+                                <div class="alert alert-warning" role="alert">
+                                    <h:outputText styleClass="fa fa-exclamation-triangle fa-2x" style="vertical-align: middle;"/>
+                                    <strong class="ms-3">Page Configuration Not Available</strong>
+                                    <p class="mt-2 ms-2">
+                                        The page you're trying to view has not been registered in the admin system yet.
+                                        This page may not have configuration metadata available.
+                                    </p>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Access denied message for non-admin users -->
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('Admin')}">
+                    <p:panel header="Access Denied" styleClass="mb-3">
+                        <div class="alert alert-danger" role="alert">
+                            <h:outputText styleClass="fa fa-ban fa-2x" style="vertical-align: middle;"/>
+                            <strong class="ms-3">Insufficient Privileges</strong>
+                            <p class="mt-2 ms-2">
+                                You do not have permission to access this page.
+                                Only administrators can view page configuration management.
+                            </p>
+                        </div>
                     </p:panel>
-                </h:form>
+                </h:panelGroup>
 
                 <style>
                     .badge-success {
