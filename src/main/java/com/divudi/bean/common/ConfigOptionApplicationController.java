@@ -180,6 +180,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
 
         // Quantity Validation Configuration
+        getBooleanValueByKey("Pharmacy Direct Issue to BHT - Allow Decimals Universally", false);
         getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
 
         // Consumption Restriction Configuration
