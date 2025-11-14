@@ -10,7 +10,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Room Occupency Report" class="w-100 my-2">
+                    <p:panel header="Room Occupancy" class="w-100 my-2">
 
                         <h:panelGrid columns="5" class="w-100">
 
@@ -40,6 +40,31 @@
                                 navigator="false"
                                 pattern="dd/MM/yyyy HH:mm"
                                 />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmSite"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
@@ -91,6 +116,18 @@
                             </h:panelGroup>
                             <p:selectOneMenu id="admissionTypeSelect" styleClass="w-100 form-control">
                                 <f:selectItem itemLabel="Select Admission Type"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf46d;" styleClass="fa mr-2"/> 
+                                <p:outputLabel value="Summery" for="summeryType" styleClass="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="summeryType" styleClass="w-100">
+                                <f:selectItem itemLabel="Select Summery" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="By Room Category" itemValue="bar"/>
+                                <f:selectItem itemLabel="By Admmision Type" itemValue="line"/>
                             </p:selectOneMenu>
 
                         </h:panelGrid>
