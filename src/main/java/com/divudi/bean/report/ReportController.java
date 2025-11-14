@@ -3125,6 +3125,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
     }
     
+    public String navigateToHospitalCensusReport(){
+        return "/reports/inpatientReports/hospital_census_report?faces-redirect=true";
+    }
     
 
     public String navigateToIncomeBillCountReport() {
