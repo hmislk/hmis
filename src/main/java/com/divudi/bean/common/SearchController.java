@@ -12564,19 +12564,19 @@ public class SearchController implements Serializable {
         StringBuilder jpql = new StringBuilder(
             "SELECT new com.divudi.core.data.dto.BillListReportDTO("
             + "b.id, "
-            + "b.deptId, "
-            + "b.billClassType, "  // billClass is a trasnsient attribute
+            + "COALESCE(b.deptId, ''), "
+            + "COALESCE(b.billClassType, ''), "  // billClass is a trasnsient attribute
             + "b.billTypeAtomic, "  // billTypeAtomic enum - DTO will convert to string
             + "b.paymentMethod, "  // paymentMethod enum - DTO will convert to string
-            + "b.patient.person.name, " // b.patient.person.nameWithTitle is a transient
+            + "COALESCE(b.patient.person.name, ''), " // b.patient.person.nameWithTitle is a transient
             + "b.createdAt, "
-            + "b.creater.name, "
-            + "b.retired, "
-            + "b.cancelled, "
-            + "b.refunded, "
-            + "b.total, "
-            + "b.discount, "
-            + "b.netTotal) "
+            + "COALESCE(b.creater.name, ''), "
+            + "COALESCE(b.retired, false), "
+            + "COALESCE(b.cancelled, false), "
+            + "COALESCE(b.refunded, false), "
+            + "COALESCE(b.total, 0), "
+            + "COALESCE(b.discount, 0), "
+            + "COALESCE(b.netTotal, 0)) "
             + "FROM Bill b "
             + "WHERE 1=1 "
         );
