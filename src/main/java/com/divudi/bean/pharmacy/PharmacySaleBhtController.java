@@ -128,42 +128,48 @@ public class PharmacySaleBhtController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
             "Medicine Identification Codes Used",
             "Shows medicine identification codes in the autocomplete dropdown",
-            "Line 221: Autocomplete column visibility",
+            "Autocomplete column: Medicine code visibility",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Bill Support for Native Printers",
             "Enables native printer support for pharmacy bills",
-            "Line 415: Print button rendering",
+            "Bill preview section: Native printer button rendering",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Inward Direct Issue Bill is FiveFiveCustom3",
             "Displays bill in FiveFiveCustom3 paper format",
-            "Line 521: Bill preview rendering",
+            "Bill preview section: 5.5 custom paper format rendering",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Inward Direct Issue Bill is PosHeaderPaper",
             "Displays bill in POS header paper format",
-            "Line 527: Bill preview rendering",
+            "Bill preview section: POS header paper format rendering",
             OptionScope.APPLICATION
         ));
 
         // Register privileges used on this page
         metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Access to page configuration management interface",
+            "Page header: Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
             "NursingWorkBench",
             "Access from nursing workbench interface - shows back to workbench button",
-            "Lines 25, 120, 147, 474: Back to workbench button"
+            "Page header and actions: Back to workbench navigation"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
             "ShowDrugCharges",
             "View drug prices and financial charges in the billing interface",
-            "Lines 229, 285, 293, 364, 369: Rate and value columns"
+            "Item autocomplete and bill table: Rate and value columns visibility"
         ));
 
         // Register the page metadata

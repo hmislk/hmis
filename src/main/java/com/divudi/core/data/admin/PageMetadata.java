@@ -17,6 +17,8 @@ import java.util.List;
  */
 public class PageMetadata implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private String pagePath;
     private String pageName;
     private String description;
@@ -40,16 +42,10 @@ public class PageMetadata implements Serializable {
     // Helper methods to add config options and privileges
 
     public void addConfigOption(ConfigOptionInfo configOption) {
-        if (this.configOptions == null) {
-            this.configOptions = new ArrayList<>();
-        }
         this.configOptions.add(configOption);
     }
 
     public void addPrivilege(PrivilegeInfo privilege) {
-        if (this.privileges == null) {
-            this.privileges = new ArrayList<>();
-        }
         this.privileges.add(privilege);
     }
 
@@ -88,24 +84,18 @@ public class PageMetadata implements Serializable {
     }
 
     public List<ConfigOptionInfo> getConfigOptions() {
-        if (configOptions == null) {
-            configOptions = new ArrayList<>();
-        }
         return configOptions;
     }
 
     public void setConfigOptions(List<ConfigOptionInfo> configOptions) {
-        this.configOptions = configOptions;
+        this.configOptions = (configOptions != null) ? configOptions : new ArrayList<>();
     }
 
     public List<PrivilegeInfo> getPrivileges() {
-        if (privileges == null) {
-            privileges = new ArrayList<>();
-        }
         return privileges;
     }
 
     public void setPrivileges(List<PrivilegeInfo> privileges) {
-        this.privileges = privileges;
+        this.privileges = (privileges != null) ? privileges : new ArrayList<>();
     }
 }

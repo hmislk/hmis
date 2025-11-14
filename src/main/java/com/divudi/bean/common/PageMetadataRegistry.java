@@ -10,9 +10,9 @@ import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 
 /**
@@ -26,6 +26,8 @@ import javax.annotation.PostConstruct;
 @ApplicationScoped
 public class PageMetadataRegistry implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private Map<String, PageMetadata> registry;
 
     public PageMetadataRegistry() {
@@ -33,7 +35,7 @@ public class PageMetadataRegistry implements Serializable {
 
     @PostConstruct
     public void init() {
-        registry = new HashMap<>();
+        registry = new ConcurrentHashMap<>();
         // Pages will self-register by calling registerPage() method
         // This will be done from individual controllers' @PostConstruct methods
     }
@@ -82,13 +84,9 @@ public class PageMetadataRegistry implements Serializable {
         return registry.size();
     }
 
-    // Getters and Setters
+    // Getters
 
     public Map<String, PageMetadata> getRegistry() {
         return registry;
-    }
-
-    public void setRegistry(Map<String, PageMetadata> registry) {
-        this.registry = registry;
     }
 }

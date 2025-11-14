@@ -6,9 +6,12 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 
 /**
@@ -20,6 +23,9 @@ import javax.inject.Inject;
 @Named
 @SessionScoped
 public class PageAdminController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(PageAdminController.class.getName());
 
     @Inject
     private PageMetadataRegistry metadataRegistry;
@@ -37,15 +43,11 @@ public class PageAdminController implements Serializable {
     public void loadPage(String pagePath) {
         this.selectedPagePath = pagePath;
         this.currentMetadata = metadataRegistry.getMetadata(pagePath);
-    }
 
-    /**
-     * Navigate to the page admin interface for pharmacy BHT issue page
-     * @return Navigation outcome
-     */
-    public String navigateToPageAdmin() {
-        loadPage("inward/pharmacy_bill_issue_bht");
-        return "/admin/page_configuration_view?faces-redirect=true";
+        if (this.currentMetadata == null) {
+            LOGGER.log(Level.WARNING, "Page metadata not found for path: {0}. Page may not be registered.", pagePath);
+            JsfUtil.addErrorMessage("Page configuration not found. This page may not be registered in the admin system.");
+        }
     }
 
     /**
@@ -60,12 +62,13 @@ public class PageAdminController implements Serializable {
 
     /**
      * Navigate back to the original page
-     * @return Navigation outcome
+     * @return Navigation outcome (returns null to stay on current page per JSF convention)
      */
     public String navigateBackToPage() {
         if (selectedPagePath != null && !selectedPagePath.isEmpty()) {
             return "/" + selectedPagePath + "?faces-redirect=true";
         }
+        // Return null per JSF convention: null navigation outcome means "stay on current page"
         return null;
     }
 

@@ -16,6 +16,8 @@ import java.io.Serializable;
  */
 public class ConfigOptionInfo implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private String key;
     private String description;
     private String usageLocation;
