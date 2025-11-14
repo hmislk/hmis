@@ -281,6 +281,33 @@
                                     </f:facet>
                                 </p:column>
 
+                                <p:column headerText="Actions" exportable="false" width="9em">
+                                    <p:commandButton
+                                        title="View"
+                                        icon="fa fa-eye"
+                                        class="m-1 ui-button-info"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.billId)}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        title="Manage"
+                                        icon="fa fa-tools"
+                                        class="m-1 ui-button-warning"
+                                        action="#{billSearch.navigateToManageBillByAtomicBillTypeByBillId(dto.billId)}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        title="Admin"
+                                        icon="fa fa-shield-alt"
+                                        class="m-1 ui-button-danger"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillTypeByBillId(dto.billId)}"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    </p:commandButton>
+                                </p:column>
+
                             </p:dataTable>
 
                         </div>

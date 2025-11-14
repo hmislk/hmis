@@ -3981,6 +3981,44 @@ public class BillSearch implements Serializable {
         return navigateToViewBillByAtomicBillType();
     }
 
+    public String navigateToManageBillByAtomicBillTypeByBillId(Long BillId) {
+        System.out.println("navigateToManageBillByAtomicBillTypeByBillId");
+        System.out.println("BillId = " + BillId);
+        if (BillId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(BillId);
+        System.out.println("foundBill = " + foundBill);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        this.bill = foundBill;
+        return navigateToManageBillByAtomicBillType();
+    }
+
+    public String navigateToAdminBillByAtomicBillTypeByBillId(Long BillId) {
+        System.out.println("navigateToAdminBillByAtomicBillTypeByBillId");
+        System.out.println("BillId = " + BillId);
+        if (BillId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(BillId);
+        System.out.println("foundBill = " + foundBill);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        this.bill = foundBill;
+        return navigateToAdminBillByAtomicBillType();
+    }
+
     public String navigateToViewBillByAtomicBillTypeBySelectedId() {
         System.out.println("navigateToViewBillByAtomicBillTypeBySelectedId called");
         System.out.println("selectedBillId = " + selectedBillId);
