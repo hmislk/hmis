@@ -12565,10 +12565,10 @@ public class SearchController implements Serializable {
             "SELECT new com.divudi.core.data.dto.BillListReportDTO("
             + "b.id, "
             + "b.deptId, "
-            + "b.billClass, "  // billClass is already a String field in Bill entity
+            + "b.billClassType, "  // billClass is a trasnsient attribute
             + "b.billTypeAtomic, "  // billTypeAtomic enum - DTO will convert to string
             + "b.paymentMethod, "  // paymentMethod enum - DTO will convert to string
-            + "b.patient.person.nameWithTitle, "
+            + "b.patient.person.name, " // b.patient.person.nameWithTitle is a transient
             + "b.createdAt, "
             + "b.creater.name, "
             + "b.retired, "

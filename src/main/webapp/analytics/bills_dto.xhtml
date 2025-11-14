@@ -18,10 +18,12 @@
                         <p:panel styleClass="mb-3 text-center">
                             <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
                             <p:commandButton value="Legacy Method"
+                                             ajax="false"
                                              styleClass="ui-button-secondary mr-2"
                                              action="#{searchController.navigateToLegacyBillListReport()}"
                                              immediate="true"/>
                             <p:commandButton value="Optimized Method"
+                                             ajax="false"
                                              styleClass="ui-button-success"
                                              disabled="true"/>
                         </p:panel>
