@@ -2058,7 +2058,8 @@ public class ExcelController {
         Row netCollectionRow = dataSheet.createRow(startRow++);
         netCollectionRow.createCell(0).setCellValue("Net Collection Total");
         Cell netCollectionValueCell = netCollectionRow.createCell(1);
-        netCollectionValueCell.setCellValue(addingBundle.getTotal());
+        double netCollectionTotal = searchController.bundleCashierGrandTotal(addingBundle);
+        netCollectionValueCell.setCellValue(netCollectionTotal);
         netCollectionValueCell.setCellStyle(numberStyle);
 
         // "Included in Collection Total" header
@@ -2068,103 +2069,127 @@ public class ExcelController {
         includedHeaderCell.setCellStyle(boldStyle);
         dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
 
-        // Add payment methods included in collection
-        if (addingBundle.getCashValue() != 0) {
+        // Calculate aggregated payment method values from all child bundles
+        double cashTotal = 0, cardTotal = 0, creditTotal = 0, multipleTotal = 0, staffTotal = 0;
+        double staffWelfareTotal = 0, voucherTotal = 0, iouTotal = 0, agentTotal = 0, chequeTotal = 0;
+        double slipTotal = 0, ewalletTotal = 0, patientPointsTotal = 0, onlineSettlementTotal = 0;
+
+        if (addingBundle.getBundles() != null && !addingBundle.getBundles().isEmpty()) {
+            for (ReportTemplateRowBundle childBundle : addingBundle.getBundles()) {
+                cashTotal += childBundle.getCashValue();
+                cardTotal += childBundle.getCardValue();
+                creditTotal += childBundle.getCreditValue();
+                multipleTotal += childBundle.getMultiplePaymentMethodsValue();
+                staffTotal += childBundle.getStaffValue();
+                staffWelfareTotal += childBundle.getStaffWelfareValue();
+                voucherTotal += childBundle.getVoucherValue();
+                iouTotal += childBundle.getIouValue();
+                agentTotal += childBundle.getAgentValue();
+                chequeTotal += childBundle.getChequeValue();
+                slipTotal += childBundle.getSlipValue();
+                ewalletTotal += childBundle.getEWalletValue();
+                patientPointsTotal += childBundle.getPatientPointsValue();
+                onlineSettlementTotal += childBundle.getOnlineSettlementValue();
+            }
+        }
+
+        // Add payment methods included in collection (only if non-zero)
+        if (cashTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Cash");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getCashValue());
+            valueCell.setCellValue(cashTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getCardValue() != 0) {
+        if (cardTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Credit Card");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getCardValue());
+            valueCell.setCellValue(cardTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getCreditValue() != 0) {
+        if (creditTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Credit");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getCreditValue());
+            valueCell.setCellValue(creditTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getMultiplePaymentMethodsValue() != 0) {
+        if (multipleTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Multiple Payment Methods");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getMultiplePaymentMethodsValue());
+            valueCell.setCellValue(multipleTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getStaffValue() != 0) {
+        if (staffTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Staff");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getStaffValue());
+            valueCell.setCellValue(staffTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getStaffWelfareValue() != 0) {
+        if (staffWelfareTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Staff Welfare");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getStaffWelfareValue());
+            valueCell.setCellValue(staffWelfareTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getVoucherValue() != 0) {
+        if (voucherTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Voucher");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getVoucherValue());
+            valueCell.setCellValue(voucherTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getIouValue() != 0) {
+        if (iouTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("IOU");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getIouValue());
+            valueCell.setCellValue(iouTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getAgentValue() != 0) {
+        if (agentTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Agent");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getAgentValue());
+            valueCell.setCellValue(agentTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getChequeValue() != 0) {
+        if (chequeTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Cheque");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getChequeValue());
+            valueCell.setCellValue(chequeTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getSlipValue() != 0) {
+        if (slipTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Slip");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getSlipValue());
+            valueCell.setCellValue(slipTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getEWalletValue() != 0) {
+        if (ewalletTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("eWallet");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getEWalletValue());
+            valueCell.setCellValue(ewalletTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getPatientPointsValue() != 0) {
+        if (patientPointsTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Patient Points");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getPatientPointsValue());
+            valueCell.setCellValue(patientPointsTotal);
             valueCell.setCellStyle(numberStyle);
         }
-        if (addingBundle.getOnlineSettlementValue() != 0) {
+        if (onlineSettlementTotal != 0) {
             Row row = dataSheet.createRow(startRow++);
             row.createCell(0).setCellValue("Online Settlement");
             Cell valueCell = row.createCell(1);
-            valueCell.setCellValue(addingBundle.getOnlineSettlementValue());
+            valueCell.setCellValue(onlineSettlementTotal);
             valueCell.setCellStyle(numberStyle);
         }
 
@@ -2174,7 +2199,8 @@ public class ExcelController {
         collectionTotalLabelCell.setCellValue("Collection Total");
         collectionTotalLabelCell.setCellStyle(boldStyle);
         Cell collectionTotalValueCell = collectionTotalRow.createCell(1);
-        collectionTotalValueCell.setCellValue(addingBundle.getCashierCollectionTotal());
+        double collectionTotal = searchController.bundleCashierCollectionTotal(addingBundle);
+        collectionTotalValueCell.setCellValue(collectionTotal);
         collectionTotalValueCell.setCellStyle(numberStyle);
 
         // "Not Included in Collection Total" header
@@ -2199,7 +2225,8 @@ public class ExcelController {
         excludedTotalLabelCell.setCellValue("Total NOT included in Collection Total");
         excludedTotalLabelCell.setCellStyle(boldStyle);
         Cell excludedTotalValueCell = excludedTotalRow.createCell(1);
-        excludedTotalValueCell.setCellValue(addingBundle.getCashierExcludedTotal());
+        double excludedTotal = searchController.bundleCashierExcludedTotal(addingBundle);
+        excludedTotalValueCell.setCellValue(excludedTotal);
         excludedTotalValueCell.setCellStyle(numberStyle);
 
         // Grand Total
@@ -2208,7 +2235,8 @@ public class ExcelController {
         grandTotalLabelCell.setCellValue("Grand Total");
         grandTotalLabelCell.setCellStyle(boldStyle);
         Cell grandTotalValueCell = grandTotalRow.createCell(1);
-        grandTotalValueCell.setCellValue(addingBundle.getCashierGrandTotal());
+        double grandTotal = searchController.bundleCashierGrandTotal(addingBundle);
+        grandTotalValueCell.setCellValue(grandTotal);
         grandTotalValueCell.setCellStyle(numberStyle);
 
         // Row below for visual separation
