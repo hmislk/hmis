@@ -2024,6 +2024,13 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
         retrieveBillItems(btas, getCreditPaymentMethods());
+        
+        totalCostValue = 0.0;
+        totalCostValue = billItems.stream()
+                    .map(BillItem::getBillItemFinanceDetails)
+                    .distinct()
+                    .mapToDouble(details -> details.getTotalCost().doubleValue())
+                    .sum();
     }
     
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
