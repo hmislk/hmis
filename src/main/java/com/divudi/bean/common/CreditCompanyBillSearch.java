@@ -383,7 +383,8 @@ public class CreditCompanyBillSearch implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
-                createPayment(cb, paymentMethod);
+                paymentService.createPaymentsForCancelling(cb);
+//                createPayment(cb, paymentMethod);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);

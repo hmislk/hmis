@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
@@ -103,14 +104,47 @@ public class ExcelController {
 
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
-        // Set the downloading file
+        // Set the downloading file with a meaningful filename
+        String filename = generateExcelFilename(rootBundle.getName(), fromDate, toDate);
         excelSc = DefaultStreamedContent.builder()
-                .name(rootBundle.getName() + ".xlsx")
+                .name(filename)
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
 
         return excelSc;
+    }
+
+    /**
+     * Generates a meaningful filename for Excel export
+     * Format: ReportName_FromDate_to_ToDate.xlsx
+     * Example: CashierSummary_2024-01-01_to_2024-01-31.xlsx
+     */
+    private String generateExcelFilename(String bundleName, Date fromDate, Date toDate) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        // Clean up the bundle name by removing UUID patterns
+        String cleanName = bundleName;
+        if (bundleName != null) {
+            // Remove UUID pattern (8-4-4-4-12 hex digits)
+            cleanName = bundleName.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "").trim();
+            // Remove any trailing/leading spaces or special characters
+            cleanName = cleanName.replaceAll("[\\s]+", "_");
+            // Remove trailing underscores
+            cleanName = cleanName.replaceAll("_+$", "");
+        }
+
+        // If clean name is empty, use a default
+        if (cleanName == null || cleanName.trim().isEmpty()) {
+            cleanName = "Report";
+        }
+
+        // Format the dates
+        String fromDateStr = fromDate != null ? dateFormat.format(fromDate) : "NoStartDate";
+        String toDateStr = toDate != null ? dateFormat.format(toDate) : "NoEndDate";
+
+        // Construct the filename
+        return cleanName + "_" + fromDateStr + "_to_" + toDateStr + ".xlsx";
     }
 
     private int addDataToExcel(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle, String type) {
