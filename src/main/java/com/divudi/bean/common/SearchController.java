@@ -3543,8 +3543,8 @@ public class SearchController implements Serializable {
         jpql.append("b.paymentMethod, ");
         jpql.append("COALESCE(ps.name, ''), ");
         // Client fields (patient, staff, department, institution)
-        jpql.append("COALESCE(p.person.nameWithTitle, ''), ");
-        jpql.append("COALESCE(s.person.nameWithTitle, ''), ");
+        jpql.append("COALESCE(p.person.name, ''), ");
+        jpql.append("COALESCE(s.person.name, ''), ");
         jpql.append("COALESCE(td.name, ''), ");
         jpql.append("COALESCE(ti.name, ''), ");
         // Reference bill (payment bill) fields
