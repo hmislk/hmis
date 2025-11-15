@@ -16627,21 +16627,21 @@ public class SearchController implements Serializable {
 
 // Generate Pharmacy service collection for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCollectionCredit = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, creditPaymentMethods);
-            pharmacyServiceCollectionCredit.setBundleType("cashierSummaryPharmacyCredit");
+            pharmacyServiceCollectionCredit.setBundleType("PharmacyCreditBills");
             pharmacyServiceCollectionCredit.setName("Pharmacy Collection Bills - Credit");
             bundle.getBundles().add(pharmacyServiceCollectionCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCollectionCredit);
 
             // Generate OPD service cancellations for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCancellationsCredit = generatePaymentMethodColumnsByBills(pharmacyCancellations, creditPaymentMethods);
-            pharmacyServiceCancellationsCredit.setBundleType("pharmacyCancellationsCredit");
+            pharmacyServiceCancellationsCredit.setBundleType("PharmacyCreditCancel");
             pharmacyServiceCancellationsCredit.setName("Pharmacy Cancellations - Credit");
             bundle.getBundles().add(pharmacyServiceCancellationsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCancellationsCredit);
 
             // Generate OPD service refunds for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceRefundsCredit = generatePaymentMethodColumnsByBills(pharmacyRefunds, creditPaymentMethods);
-            pharmacyServiceRefundsCredit.setBundleType("pharmacyRefundsCredit");
+            pharmacyServiceRefundsCredit.setBundleType("PharmacyCreditRefund");
             pharmacyServiceRefundsCredit.setName("Pharmacy Refunds - Credit");
             bundle.getBundles().add(pharmacyServiceRefundsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceRefundsCredit);
@@ -17052,21 +17052,21 @@ public class SearchController implements Serializable {
 
 // Generate Pharmacy service collection for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCollectionCredit = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, creditPaymentMethods);
-            pharmacyServiceCollectionCredit.setBundleType("cashierSummaryPharmacyCredit");
+            pharmacyServiceCollectionCredit.setBundleType("PharmacyCreditBills");
             pharmacyServiceCollectionCredit.setName("Pharmacy Collection Bills - Credit");
             bundle.getBundles().add(pharmacyServiceCollectionCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCollectionCredit);
 
             // Generate Pharmacy service cancellations for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCancellationsCredit = generatePaymentMethodColumnsByBills(pharmacyCancellations, creditPaymentMethods);
-            pharmacyServiceCancellationsCredit.setBundleType("pharmacyCancellationsCredit");
+            pharmacyServiceCancellationsCredit.setBundleType("PharmacyCreditCancel");
             pharmacyServiceCancellationsCredit.setName("Pharmacy Cancellations - Credit");
             bundle.getBundles().add(pharmacyServiceCancellationsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCancellationsCredit);
 
             // Generate Pharmacy service refunds for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceRefundsCredit = generatePaymentMethodColumnsByBills(pharmacyRefunds, creditPaymentMethods);
-            pharmacyServiceRefundsCredit.setBundleType("pharmacyRefundsCredit");
+            pharmacyServiceRefundsCredit.setBundleType("PharmacyCreditRefund");
             pharmacyServiceRefundsCredit.setName("Pharmacy Refunds - Credit");
             bundle.getBundles().add(pharmacyServiceRefundsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceRefundsCredit);
