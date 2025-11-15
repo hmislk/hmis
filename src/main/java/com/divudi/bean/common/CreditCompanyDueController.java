@@ -359,6 +359,15 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit bills are now managed through the OPD credit due age methods,
+     * which handle both OPD and Pharmacy credit bills.
+     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
+     * the unified OPD Credit Settle bill type.
+     * Please use the OPD Due Age functionality instead.
+     */
+    @Deprecated
     public void createAgeTablePharmacy() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1358,6 +1367,15 @@ public class CreditCompanyDueController implements Serializable {
         }, CreditReport.OPD_CREDIT_DUE, sessionController.getLoggedUser());
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit bills are now managed through the OPD credit due methods,
+     * which handle both OPD and Pharmacy credit bills.
+     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
+     * the unified OPD Credit Settle bill type.
+     * Please use the OPD Due Search functionality instead.
+     */
+    @Deprecated
     public void createPharmacyCreditDue() {
         List<BillType> billTypes = Arrays.asList(BillType.PharmacyWholeSale, BillType.PharmacySale);
 

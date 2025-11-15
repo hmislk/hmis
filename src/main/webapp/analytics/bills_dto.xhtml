@@ -11,32 +11,42 @@
                 <h:form >
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="ALL BILL LIST - LEGACY METHOD"/>
+                            <h:outputLabel value="ALL BILL LIST - OPTIMIZED METHOD"/>
                         </f:facet>
 
                         <!-- Navigation Toggle Buttons -->
                         <p:panel styleClass="mb-3 text-center">
                             <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
                             <p:commandButton value="Legacy Method"
+                                             ajax="false"
+                                             styleClass="ui-button-secondary mr-2"
+                                             action="#{searchController.navigateToLegacyBillListReport()}"
+                                             immediate="true"/>
+                            <p:commandButton value="Optimized Method"
+                                             ajax="false"
                                              styleClass="ui-button-success"
                                              disabled="true"/>
-                            <p:commandButton value="Optimized Method"
-                                             styleClass="ui-button-secondary ml-2"
-                                             action="#{searchController.navigateToOptimizedBillListReport()}"
-                                             immediate="true"/>
                         </p:panel>
+
+                        <!-- Performance Badge -->
+                        <h:panelGroup rendered="#{not empty searchController.billListReportDtos}">
+                            <div class="alert alert-success mt-3" role="alert">
+                                <h:outputText value="&#xf058;" styleClass="fa mr-2"/>
+                                <strong>Performance Optimized:</strong> Using DTO-based queries for improved memory usage and load times.
+                            </div>
+                        </h:panelGroup>
 
                         <h:panelGrid columns="8" styleClass="w-100" >
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                             </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="fromDate" 
-                                value="#{searchController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{searchController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
                             <p:spacer width="50" ></p:spacer>
@@ -45,30 +55,30 @@
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="To" for="toDate" class="mx-3"/>
                             </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="toDate" 
-                                value="#{searchController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{searchController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
                             <p:spacer width="50" ></p:spacer>
 
                             <!-- New Doctor Field with Icon -->
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="User" for="user" class="mx-3" />
                             </h:panelGroup>
-                            <p:autoComplete 
+                            <p:autoComplete
                                 forceSelection="true"
                                 value="#{searchController.webUser}"
                                 placeholder="Select User"
-                                completeMethod="#{webUserController.completeUser}" 
+                                completeMethod="#{webUserController.completeUser}"
                                 id="user"
-                                var="u" 
-                                itemLabel="#{u.webUserPerson.name}" 
+                                var="u"
+                                itemLabel="#{u.webUserPerson.name}"
                                 itemValue="#{u}"
                                 class="w-100"
                                 inputStyleClass="w-100"
@@ -81,8 +91,8 @@
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="cmbIns"
-                                styleClass="w-100 form-control" 
-                                value="#{searchController.institution}" 
+                                styleClass="w-100 form-control"
+                                value="#{searchController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -99,8 +109,8 @@
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="siteMenu"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.site}" 
+                                styleClass="w-100 form-control"
+                                value="#{searchController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -116,8 +126,8 @@
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="cmbDept"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.department}" 
+                                styleClass="w-100 form-control"
+                                value="#{searchController.department}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
@@ -127,39 +137,39 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
                             </h:panelGroup>
                             <p:selectOneMenu
                                 filter="true"
                                 filterMatchMode="contains"
-                                id="billTypeAtomic" 
+                                id="billTypeAtomic"
                                 class=""  value="#{searchController.billTypeAtomic}" >
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems 
+                                <f:selectItems
                                     var="billTypeAtomic"
-                                    itemLabel="#{billTypeAtomic}"           
-                                    itemValue="#{billTypeAtomic}" 
+                                    itemLabel="#{billTypeAtomic}"
+                                    itemValue="#{billTypeAtomic}"
                                     value="#{enumController.billTypesAtomic}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer ></p:spacer>
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
                             </h:panelGroup>
                             <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billType}" >
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems 
+                                <f:selectItems
                                     var="billType"
-                                    itemLabel="#{billType.label}"           
-                                    itemValue="#{billType}" 
+                                    itemLabel="#{billType.label}"
+                                    itemValue="#{billType}"
                                     value="#{enumController.billTypes}" ></f:selectItems>
                             </p:selectOneMenu>
                             <p:spacer ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Class Type" for="billClass" class="mx-3" />
                             </h:panelGroup>
                             <p:selectOneMenu id="billClass" class="w-100  "  value="#{searchController.billClassType}" >
@@ -171,24 +181,24 @@
 
 
                         <h:panelGrid columns="6" class="my-2" >
-                            <p:commandButton 
-                                class="ui-button-success" 
-                                icon="fas fa-magnifying-glass" 
+                            <p:commandButton
+                                class="ui-button-success"
+                                icon="fas fa-magnifying-glass"
                                 id="btnSearch"
-                                ajax="false" 
-                                value="List" 
-                                action="#{searchController.listBills()}"/>
+                                ajax="false"
+                                value="List"
+                                action="#{searchController.listBillsDto()}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xlsx" target="tblBills" ></p:dataExporter>
+                                <p:dataExporter fileName="All Bills (Optimized)" type="xlsx" target="tblBillsDto" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
 
                         <div style="width: 100%; overflow-x: auto;">
-                            <p:dataTable rowIndexVar="i" id="tblBills" 
-                                         value="#{searchController.bills}" 
+                            <p:dataTable rowIndexVar="i" id="tblBillsDto"
+                                         value="#{searchController.billListReportDtos}"
                                          scrollable="true"
-                                         var="bill"
+                                         var="dto"
                                          rows="10"
                                          paginatorAlwaysVisible="false"
                                          paginator="true"
@@ -200,48 +210,48 @@
                                 <p:column
                                     width="5em"
                                     rendered="#{webUserController.hasPrivilege('Developers')}"
-                                    headerText="Bill ID" 
-                                    sortBy="#{bill.id}" 
-                                    filterBy="#{bill.id}" 
-                                    filterMatchMode="contains" >                                
-                                    <p:inputText readonly="true"  value="#{bill.id}" class="w-100" />
+                                    headerText="Bill ID"
+                                    sortBy="#{dto.billId}"
+                                    filterBy="#{dto.billId}"
+                                    filterMatchMode="contains" >
+                                    <p:inputText readonly="true"  value="#{dto.billId}" class="w-100" />
                                 </p:column>
                                 <p:column
                                     width="5em"
-                                    headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" 
-                                    filterMatchMode="contains" >                                
-                                    <p:inputText readonly="true"  value="#{bill.deptId}" class="w-100" />
+                                    headerText="Bill No" sortBy="#{dto.billNumber}" filterBy="#{dto.billNumber}"
+                                    filterMatchMode="contains" >
+                                    <p:inputText readonly="true"  value="#{dto.billNumber}" class="w-100" />
                                 </p:column>
-                                <p:column width="5em" headerText="Bill Class" >                                
-                                    <p:inputText readonly="true" value="#{bill.billClass}" class="w-100" />
+                                <p:column width="5em" headerText="Bill Class" >
+                                    <p:inputText readonly="true" value="#{dto.billClass}" class="w-100" />
                                 </p:column>
-                                <p:column width="10em" headerText="Bill Type" >                                
-                                    <p:inputText readonly="true"  value="#{bill.billTypeAtomic}" class="w-100" />
+                                <p:column width="10em" headerText="Bill Type" >
+                                    <p:inputText readonly="true"  value="#{dto.billTypeAtomic}" class="w-100" />
                                 </p:column>
-                                <p:column width="5em" headerText="Payment Method" >                                
-                                    <p:inputText readonly="true"  value="#{bill.paymentMethod}" class="w-100" />
+                                <p:column width="5em" headerText="Payment Method" >
+                                    <p:inputText readonly="true"  value="#{dto.paymentMethod}" class="w-100" />
                                 </p:column>
-                                <p:column width="5em" headerText="Name" sortBy="#{bill.patient.person.nameWithTitle}" filterBy="#{bill.patient.person.nameWithTitle}" filterMatchMode="contains">                                
-                                    <p:inputText readonly="true"  value="#{bill.patient.person.nameWithTitle}" class="w-100" />
+                                <p:column width="5em" headerText="Name" sortBy="#{dto.patientName}" filterBy="#{dto.patientName}" filterMatchMode="contains">
+                                    <p:inputText readonly="true"  value="#{dto.patientName}" class="w-100" />
                                 </p:column>
                                 <p:column headerText="Date/Time" width="9em">
-                                    <p:inputText readonly="true"  value="#{bill.createdAt}" class="w-100">
+                                    <p:inputText readonly="true"  value="#{dto.createdAt}" class="w-100">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"   ></f:convertDateTime>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="User" width="5em">
-                                    <p:inputText readonly="true"  value="#{bill.creater.name}"  class="w-100" ></p:inputText>
+                                    <p:inputText readonly="true"  value="#{dto.createdUserName}"  class="w-100" ></p:inputText>
                                 </p:column>
                                 <p:column headerText="Status" width="5em" exportable="false">
                                     <h:panelGroup>
-                                        <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{bill.retired}" />
-                                        <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />
-                                        <p:badge value="Returned" styleClass="ui-badge-warning" rendered="#{bill.refunded}" />
+                                        <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{dto.retired}" />
+                                        <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{dto.cancelled}" />
+                                        <p:badge value="Returned" styleClass="ui-badge-warning" rendered="#{dto.refunded}" />
                                     </h:panelGroup>
                                 </p:column>
 
                                 <p:column width="7em" headerText="Gross Value"  class="text-end">
-                                    <p:inputText readonly="true"  class="w-100 text-end" value="#{bill.total}">
+                                    <p:inputText readonly="true"  class="w-100 text-end" value="#{dto.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                     <f:facet name="footer">
@@ -251,7 +261,7 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Discount" width="6em"  class="text-end">
-                                    <p:inputText readonly="true"  class="w-100 text-end" value="#{bill.discount}">
+                                    <p:inputText readonly="true"  class="w-100 text-end" value="#{dto.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:inputText>
                                     <f:facet name="footer">
@@ -261,7 +271,7 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Net Value"  class="text-end" width="6em">
-                                    <p:inputText readonly="true"  class="w-100 text-end" value="#{bill.netTotal}">
+                                    <p:inputText readonly="true"  class="w-100 text-end" value="#{dto.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:inputText>
                                     <f:facet name="footer">
@@ -272,32 +282,29 @@
                                 </p:column>
 
                                 <p:column headerText="Actions" exportable="false" width="9em">
-                                    <p:commandButton 
-                                        title="View" 
-                                        icon="fa fa-eye" 
+                                    <p:commandButton
+                                        title="View"
+                                        icon="fa fa-eye"
                                         class="m-1 ui-button-info"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.billId)}"
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        title="Manage" 
-                                        icon="fa fa-tools" 
-                                        class="m-1 ui-button-warning" 
-                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                    <p:commandButton
+                                        title="Manage"
+                                        icon="fa fa-tools"
+                                        class="m-1 ui-button-warning"
+                                        action="#{billSearch.navigateToManageBillByAtomicBillTypeByBillId(dto.billId)}"
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        title="Admin" 
-                                        icon="fa fa-shield-alt" 
-                                        class="m-1 ui-button-danger" 
-                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        title="Admin"
+                                        icon="fa fa-shield-alt"
+                                        class="m-1 ui-button-danger"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillTypeByBillId(dto.billId)}"
+                                        ajax="false"
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
                                 </p:column>
 

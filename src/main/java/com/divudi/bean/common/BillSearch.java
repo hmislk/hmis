@@ -133,6 +133,7 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 import java.nio.charset.StandardCharsets;
+import com.google.gson.Gson;
 
 /**
  * @author Buddhika
@@ -377,6 +378,11 @@ public class BillSearch implements Serializable {
 
     private Payment payment;
     private int billItemSize;
+
+    // Change From Institution properties
+    private Institution newFromInstitution;
+    private Department newFromDepartment;
+    private String changeFromInstitutionReason;
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
@@ -3975,6 +3981,44 @@ public class BillSearch implements Serializable {
         return navigateToViewBillByAtomicBillType();
     }
 
+    public String navigateToManageBillByAtomicBillTypeByBillId(Long BillId) {
+        System.out.println("navigateToManageBillByAtomicBillTypeByBillId");
+        System.out.println("BillId = " + BillId);
+        if (BillId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(BillId);
+        System.out.println("foundBill = " + foundBill);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        this.bill = foundBill;
+        return navigateToManageBillByAtomicBillType();
+    }
+
+    public String navigateToAdminBillByAtomicBillTypeByBillId(Long BillId) {
+        System.out.println("navigateToAdminBillByAtomicBillTypeByBillId");
+        System.out.println("BillId = " + BillId);
+        if (BillId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(BillId);
+        System.out.println("foundBill = " + foundBill);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        this.bill = foundBill;
+        return navigateToAdminBillByAtomicBillType();
+    }
+
     public String navigateToViewBillByAtomicBillTypeBySelectedId() {
         System.out.println("navigateToViewBillByAtomicBillTypeBySelectedId called");
         System.out.println("selectedBillId = " + selectedBillId);
@@ -6732,6 +6776,145 @@ public class BillSearch implements Serializable {
 
     public String navigateToPharmacyStockAdjustmentBillReprint() {
         return "/pharmacy/adjustments/reprint/pharmacy_stock_adjustment_reprint?faces-redirect=true";
+    }
+
+    // Change From Institution methods
+    public String navigateToChangeFromInstitution() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill selected");
+            return "";
+        }
+        viewingBill = bill;
+        newFromInstitution = null;
+        newFromDepartment = null;
+        changeFromInstitutionReason = null;
+        return "/opd/view/bill_change_from_institution?faces-redirect=true";
+    }
+
+    public String changeFromInstitution() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill selected");
+            return "";
+        }
+        if (newFromInstitution == null) {
+            JsfUtil.addErrorMessage("Please select a new From Institution");
+            return "";
+        }
+        if (changeFromInstitutionReason == null || changeFromInstitutionReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please provide a reason for the change");
+            return "";
+        }
+
+        try {
+            // Create audit event - Before state
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+
+            auditEvent.setEventTrigger("Change From Institution: " + changeFromInstitutionReason);
+            auditEvent.setEntityType("Bill");
+            auditEvent.setObjectId(bill.getId());
+
+            // Capture before state
+            Map<String, Object> beforeState = new HashMap<>();
+            beforeState.put("billId", bill.getId());
+            beforeState.put("billNumber", bill.getDeptId());
+            beforeState.put("fromInstitutionId", bill.getFromInstitution() != null ? bill.getFromInstitution().getId() : null);
+            beforeState.put("fromInstitutionName", bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : null);
+            beforeState.put("fromDepartmentId", bill.getFromDepartment() != null ? bill.getFromDepartment().getId() : null);
+            beforeState.put("fromDepartmentName", bill.getFromDepartment() != null ? bill.getFromDepartment().getName() : null);
+            beforeState.put("reason", changeFromInstitutionReason);
+
+            Gson gson = new Gson();
+            auditEvent.setBeforeJson(gson.toJson(beforeState));
+
+            // Make the change
+            Institution oldFromInstitution = bill.getFromInstitution();
+            Department oldFromDepartment = bill.getFromDepartment();
+
+            bill.setFromInstitution(newFromInstitution);
+            bill.setFromDepartment(newFromDepartment);
+
+            // Save the bill
+            billFacade.edit(bill);
+
+            // Capture after state
+            Map<String, Object> afterState = new HashMap<>();
+            afterState.put("billId", bill.getId());
+            afterState.put("billNumber", bill.getDeptId());
+            afterState.put("fromInstitutionId", bill.getFromInstitution() != null ? bill.getFromInstitution().getId() : null);
+            afterState.put("fromInstitutionName", bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : null);
+            afterState.put("fromDepartmentId", bill.getFromDepartment() != null ? bill.getFromDepartment().getId() : null);
+            afterState.put("fromDepartmentName", bill.getFromDepartment() != null ? bill.getFromDepartment().getName() : null);
+            afterState.put("reason", changeFromInstitutionReason);
+
+            auditEvent.setAfterJson(gson.toJson(afterState));
+
+            // Complete audit event
+            Date endTime = new Date();
+            auditEvent.setEventEndTime(endTime);
+            auditEvent.setEventDuration(endTime.getTime() - startTime.getTime());
+            auditEvent.setEventStatus("Completed");
+
+            auditEventApplicationController.logAuditEvent(auditEvent);
+
+            String changeMessage = "From Institution changed from '"
+                + (oldFromInstitution != null ? oldFromInstitution.getName() : "None")
+                + "' to '"
+                + newFromInstitution.getName() + "'";
+
+            JsfUtil.addSuccessMessage(changeMessage);
+
+            // Update viewing bill
+            viewingBill = bill;
+
+            // Clear the change fields
+            newFromInstitution = null;
+            newFromDepartment = null;
+            changeFromInstitutionReason = null;
+
+            return navigateToAdminBill();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error changing From Institution: " + e.getMessage());
+            return "";
+        }
+    }
+
+    // Getters and Setters for change from institution properties
+    public Institution getNewFromInstitution() {
+        return newFromInstitution;
+    }
+
+    public void setNewFromInstitution(Institution newFromInstitution) {
+        this.newFromInstitution = newFromInstitution;
+    }
+
+    public Department getNewFromDepartment() {
+        return newFromDepartment;
+    }
+
+    public void setNewFromDepartment(Department newFromDepartment) {
+        this.newFromDepartment = newFromDepartment;
+    }
+
+    public String getChangeFromInstitutionReason() {
+        return changeFromInstitutionReason;
+    }
+
+    public void setChangeFromInstitutionReason(String changeFromInstitutionReason) {
+        this.changeFromInstitutionReason = changeFromInstitutionReason;
     }
 
 }

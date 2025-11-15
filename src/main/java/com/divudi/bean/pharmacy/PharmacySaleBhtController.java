@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UserNotificationController;
@@ -20,10 +21,14 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -67,6 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -97,6 +103,77 @@ public class PharmacySaleBhtController implements Serializable {
      * Creates a new instance of PharmacySaleController
      */
     public PharmacySaleBhtController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("inward/pharmacy_bill_issue_bht");
+        metadata.setPageName("Pharmacy BHT Direct Issue");
+        metadata.setDescription("Direct issue of medicines to inpatients from pharmacy");
+        metadata.setControllerClass("PharmacySaleBhtController");
+
+        // Register configuration options used on this page
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Medicine Identification Codes Used",
+            "Shows medicine identification codes in the autocomplete dropdown",
+            "Autocomplete column: Medicine code visibility",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Support for Native Printers",
+            "Enables native printer support for pharmacy bills",
+            "Bill preview section: Native printer button rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Inward Direct Issue Bill is FiveFiveCustom3",
+            "Displays bill in FiveFiveCustom3 paper format",
+            "Bill preview section: 5.5 custom paper format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Inward Direct Issue Bill is PosHeaderPaper",
+            "Displays bill in POS header paper format",
+            "Bill preview section: POS header paper format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        // Register privileges used on this page
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Access to page configuration management interface",
+            "Page header: Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "NursingWorkBench",
+            "Access from nursing workbench interface - shows back to workbench button",
+            "Page header and actions: Back to workbench navigation"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ShowDrugCharges",
+            "View drug prices and financial charges in the billing interface",
+            "Item autocomplete and bill table: Rate and value columns visibility"
+        ));
+
+        // Register the page metadata
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     @Inject
@@ -138,6 +215,8 @@ public class PharmacySaleBhtController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
