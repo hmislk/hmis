@@ -70,7 +70,36 @@ public class PharmacyCashierPreBillSearchDTO implements Serializable {
     }
 
     /**
-     * Constructor for DTO projection query
+     * Simplified constructor with only essential fields
+     * Used for basic pharmacy cashier pre-bill search functionality
+     */
+    public PharmacyCashierPreBillSearchDTO(
+            Long id,
+            String deptId,
+            String departmentName,
+            Date createdAt,
+            Boolean refunded,
+            Boolean cancelled,
+            Double total,
+            Double discount,
+            Double netTotal,
+            PaymentMethod paymentMethod,
+            String patientName) {
+        this.id = id;
+        this.deptId = deptId;
+        this.departmentName = departmentName;
+        this.createdAt = createdAt;
+        this.refunded = refunded;
+        this.cancelled = cancelled;
+        this.total = total;
+        this.discount = discount;
+        this.netTotal = netTotal;
+        this.paymentMethod = paymentMethod;
+        this.patientName = patientName;
+    }
+
+    /**
+     * Full constructor for DTO projection query (legacy)
      * All parameters must match the order in the JPQL SELECT NEW query
      */
     public PharmacyCashierPreBillSearchDTO(
