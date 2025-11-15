@@ -80,9 +80,10 @@
                                 <p:commandButton
                                     value="Manage Application Configuration"
                                     icon="fa fa-cog"
-                                    action="/admin/institutions/admin_mange_application_options?faces-redirect=true"
+                                    action="#{pageAdminController.navigateToPageSpecificConfigManagement()}"
                                     ajax="false"
-                                    styleClass="ui-button-info"/>
+                                    styleClass="ui-button-info"
+                                    title="Manage configuration options specific to this page"/>
                             </div>
                         </p:panel>
 
@@ -112,9 +113,10 @@
                                 <p:commandButton
                                     value="Manage User Privileges"
                                     icon="fa fa-users"
-                                    action="/systemAdmin/user_privileges?faces-redirect=true"
+                                    action="#{pageAdminController.navigateToPageSpecificPrivilegeManagement()}"
                                     ajax="false"
-                                    styleClass="ui-button-info"/>
+                                    styleClass="ui-button-info"
+                                    title="Manage user privileges specific to this page"/>
                             </div>
                         </p:panel>
 
