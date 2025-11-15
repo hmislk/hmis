@@ -269,8 +269,8 @@ public class ExcelController {
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue(addingBundle.getName());
 
-            // Calculate total columns needed
-            int totalColumns = 4; // Institution, Site, Department, Date
+            // Calculate total columns needed for bill-level details
+            int totalColumns = 6; // Serial, Date & Time, Bill No, Bill Type, Patient, Net Total
             if (addingBundle.isHasCashTransaction()) totalColumns++;
             if (addingBundle.isHasCardTransaction()) totalColumns++;
             if (addingBundle.isHasMultiplePaymentMethodsTransaction()) totalColumns++;
@@ -286,7 +286,6 @@ public class ExcelController {
             if (addingBundle.isHasPatientDepositTransaction()) totalColumns++;
             if (addingBundle.isHasPatientPointsTransaction()) totalColumns++;
             if (addingBundle.isHasOnCallTransaction()) totalColumns++;
-            totalColumns++; // Grand Total
 
             // Merge title across all columns
             dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, totalColumns - 1));
@@ -295,11 +294,13 @@ public class ExcelController {
             Row headerRow = dataSheet.createRow(startRow++);
             int colIndex = 0;
 
-            // Base columns that are always present
-            headerRow.createCell(colIndex++).setCellValue("Institution");
-            headerRow.createCell(colIndex++).setCellValue("Site");
-            headerRow.createCell(colIndex++).setCellValue("Department");
-            headerRow.createCell(colIndex++).setCellValue("Date");
+            // Base columns that are always present (bill-level details)
+            headerRow.createCell(colIndex++).setCellValue("Serial");
+            headerRow.createCell(colIndex++).setCellValue("Date & Time");
+            headerRow.createCell(colIndex++).setCellValue("Bill No");
+            headerRow.createCell(colIndex++).setCellValue("Bill Type");
+            headerRow.createCell(colIndex++).setCellValue("Patient");
+            headerRow.createCell(colIndex++).setCellValue("Net Total");
 
             // Add conditional headers based on bundle properties
             if (addingBundle.isHasCashTransaction()) {
@@ -348,51 +349,62 @@ public class ExcelController {
                 headerRow.createCell(colIndex++).setCellValue("Online Settlement");
             }
 
-            // Grand Total column
-            headerRow.createCell(colIndex++).setCellValue("Grand Total");
-
-            // Create date format for Excel
-            CellStyle dateStyle = dataSheet.getWorkbook().createCellStyle();
+            // Create date-time format for Excel
+            CellStyle dateTimeStyle = dataSheet.getWorkbook().createCellStyle();
             CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
-            dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-MM-dd"));
+            dateTimeStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd-mmm-yy hh:mm"));
 
             // Create number format for currency values
             CellStyle currencyStyle = dataSheet.getWorkbook().createCellStyle();
             currencyStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
 
             // Iterate through each row of the data and add to Excel
+            int serialNumber = 1;
             for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
                 Row excelRow = dataSheet.createRow(startRow++);
                 colIndex = 0;
 
-                // Institution
-                if (row.getDepartment() != null && row.getDepartment().getInstitution() != null) {
-                    excelRow.createCell(colIndex++).setCellValue(row.getDepartment().getInstitution().getName());
-                } else {
-                    excelRow.createCell(colIndex++).setCellValue("");
-                }
+                // Serial Number
+                excelRow.createCell(colIndex++).setCellValue(serialNumber++);
 
-                // Site
-                if (row.getDepartment() != null && row.getDepartment().getSite() != null) {
-                    excelRow.createCell(colIndex++).setCellValue(row.getDepartment().getSite().getName());
-                } else {
-                    excelRow.createCell(colIndex++).setCellValue("");
-                }
-
-                // Department
-                if (row.getDepartment() != null) {
-                    excelRow.createCell(colIndex++).setCellValue(row.getDepartment().getName());
-                } else {
-                    excelRow.createCell(colIndex++).setCellValue("");
-                }
-
-                // Date
-                if (row.getDate() != null) {
+                // Date & Time (from bill.createdAt)
+                if (row.getBill() != null && row.getBill().getCreatedAt() != null) {
                     Cell dateCell = excelRow.createCell(colIndex++);
-                    dateCell.setCellValue(row.getDate());
-                    dateCell.setCellStyle(dateStyle);
+                    dateCell.setCellValue(row.getBill().getCreatedAt());
+                    dateCell.setCellStyle(dateTimeStyle);
                 } else {
                     excelRow.createCell(colIndex++).setCellValue("");
+                }
+
+                // Bill No (from bill.deptId)
+                if (row.getBill() != null && row.getBill().getDeptId() != null) {
+                    excelRow.createCell(colIndex++).setCellValue(row.getBill().getDeptId());
+                } else {
+                    excelRow.createCell(colIndex++).setCellValue("");
+                }
+
+                // Bill Type (from bill.billTypeAtomic)
+                if (row.getBill() != null && row.getBill().getBillTypeAtomic() != null) {
+                    excelRow.createCell(colIndex++).setCellValue(row.getBill().getBillTypeAtomic().toString());
+                } else {
+                    excelRow.createCell(colIndex++).setCellValue("");
+                }
+
+                // Patient Name
+                if (row.getBill() != null && row.getBill().getPatient() != null &&
+                    row.getBill().getPatient().getPerson() != null) {
+                    excelRow.createCell(colIndex++).setCellValue(row.getBill().getPatient().getPerson().getNameWithTitle());
+                } else {
+                    excelRow.createCell(colIndex++).setCellValue("");
+                }
+
+                // Net Total (from bill.netTotal)
+                if (row.getBill() != null) {
+                    Cell netTotalCell = excelRow.createCell(colIndex++);
+                    netTotalCell.setCellValue(row.getBill().getNetTotal());
+                    netTotalCell.setCellStyle(currencyStyle);
+                } else {
+                    excelRow.createCell(colIndex++).setCellValue(0.0);
                 }
 
                 // Add conditional payment method columns with currency formatting
@@ -471,21 +483,21 @@ public class ExcelController {
                     onlineCell.setCellValue(row.getOnlineSettlementValue());
                     onlineCell.setCellStyle(currencyStyle);
                 }
-
-                // Grand Total
-                Cell totalCell = excelRow.createCell(colIndex++);
-                totalCell.setCellValue(row.getTotal());
-                totalCell.setCellStyle(currencyStyle);
             }
 
             // Add footer row with totals
             Row footerRow = dataSheet.createRow(startRow++);
             colIndex = 0;
 
-            // Empty cells for Institution, Site, Department, Date
-            for (int i = 0; i < 4; i++) {
+            // Empty cells for Serial, Date & Time, Bill No, Bill Type, Patient
+            for (int i = 0; i < 5; i++) {
                 footerRow.createCell(colIndex++).setCellValue("");
             }
+
+            // Net Total footer
+            Cell netTotalFooterCell = footerRow.createCell(colIndex++);
+            netTotalFooterCell.setCellValue(addingBundle.getTotal());
+            netTotalFooterCell.setCellStyle(currencyStyle);
 
             // Add conditional payment method totals with currency formatting
             if (addingBundle.isHasCashTransaction()) {
@@ -564,10 +576,10 @@ public class ExcelController {
                 onlineTotalCell.setCellStyle(currencyStyle);
             }
 
-            // Grand Total footer
-            Cell grandTotalCell = footerRow.createCell(colIndex++);
-            grandTotalCell.setCellValue(addingBundle.getTotal());
-            grandTotalCell.setCellStyle(currencyStyle);
+            // Auto-size columns for better readability
+            for (int i = 0; i < totalColumns; i++) {
+                dataSheet.autoSizeColumn(i);
+            }
 
         } else {
             // If no data, create a single row stating this
@@ -2011,30 +2023,194 @@ public class ExcelController {
     }
 
     private int addDataToExcelForTitleBundle(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
-        // Row above for visual separation (mimicking <hr/>)
+        // Create number format style
+        CellStyle numberStyle = dataSheet.getWorkbook().createCellStyle();
+        CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+        numberStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+
+        // Create bold style for headers
+        CellStyle boldStyle = dataSheet.getWorkbook().createCellStyle();
+        org.apache.poi.ss.usermodel.Font boldFont = dataSheet.getWorkbook().createFont();
+        boldFont.setBold(true);
+        boldStyle.setFont(boldFont);
+
+        // Row above for visual separation
         Row upperSeparatorRow = dataSheet.createRow(startRow++);
-        upperSeparatorRow.createCell(0).setCellValue(""); // Empty cell, you can optionally format it as a visual separator
-        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+        upperSeparatorRow.createCell(0).setCellValue("");
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
 
-        // Create a title row for the report name and total
-        Row titleRow = dataSheet.createRow(startRow++);
-        Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue(addingBundle.getName());  // Bundle name
+        // Header row: "Net Collection"
+        Row headerRow = dataSheet.createRow(startRow++);
+        Cell headerCell = headerRow.createCell(0);
+        headerCell.setCellValue("Net Collection");
+        headerCell.setCellStyle(boldStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
 
-        Cell totalCell = titleRow.createCell(5); // Total in the sixth column
-        totalCell.setCellValue(addingBundle.getTotal());  // Total value
-        // Merge cells for the title, leaving the last one for the total
-        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 4));
+        // Net Collection Total
+        Row netCollectionRow = dataSheet.createRow(startRow++);
+        netCollectionRow.createCell(0).setCellValue("Net Collection Total");
+        Cell netCollectionValueCell = netCollectionRow.createCell(1);
+        netCollectionValueCell.setCellValue(addingBundle.getTotal());
+        netCollectionValueCell.setCellStyle(numberStyle);
 
-        // Row below for visual separation (mimicking <hr/>)
-        Row lowerSeparatorRow = dataSheet.createRow(startRow++);
-        lowerSeparatorRow.createCell(0).setCellValue(""); // Empty cell, can be formatted as a visual separator
-        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+        // "Included in Collection Total" header
+        Row includedHeaderRow = dataSheet.createRow(startRow++);
+        Cell includedHeaderCell = includedHeaderRow.createCell(0);
+        includedHeaderCell.setCellValue("Included in Collection Total");
+        includedHeaderCell.setCellStyle(boldStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
 
-        // Adjust column widths to maintain uniform appearance
-        for (int i = 0; i < 6; i++) {
-            dataSheet.autoSizeColumn(i);
+        // Add payment methods included in collection
+        if (addingBundle.getCashValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Cash");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getCashValue());
+            valueCell.setCellStyle(numberStyle);
         }
+        if (addingBundle.getCardValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Credit Card");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getCardValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getCreditValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Credit");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getCreditValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getMultiplePaymentMethodsValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Multiple Payment Methods");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getMultiplePaymentMethodsValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getStaffValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Staff");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getStaffValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getStaffWelfareValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Staff Welfare");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getStaffWelfareValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getVoucherValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Voucher");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getVoucherValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getIouValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("IOU");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getIouValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getAgentValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Agent");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getAgentValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getChequeValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Cheque");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getChequeValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getSlipValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Slip");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getSlipValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getEWalletValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("eWallet");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getEWalletValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getPatientPointsValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Patient Points");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getPatientPointsValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+        if (addingBundle.getOnlineSettlementValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Online Settlement");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getOnlineSettlementValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+
+        // Collection Total
+        Row collectionTotalRow = dataSheet.createRow(startRow++);
+        Cell collectionTotalLabelCell = collectionTotalRow.createCell(0);
+        collectionTotalLabelCell.setCellValue("Collection Total");
+        collectionTotalLabelCell.setCellStyle(boldStyle);
+        Cell collectionTotalValueCell = collectionTotalRow.createCell(1);
+        collectionTotalValueCell.setCellValue(addingBundle.getCashierCollectionTotal());
+        collectionTotalValueCell.setCellStyle(numberStyle);
+
+        // "Not Included in Collection Total" header
+        Row excludedHeaderRow = dataSheet.createRow(startRow++);
+        Cell excludedHeaderCell = excludedHeaderRow.createCell(0);
+        excludedHeaderCell.setCellValue("Not Included in Collection Total");
+        excludedHeaderCell.setCellStyle(boldStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
+
+        // Add payment methods excluded from collection
+        if (addingBundle.getPatientDepositValue() != 0) {
+            Row row = dataSheet.createRow(startRow++);
+            row.createCell(0).setCellValue("Patient Deposit");
+            Cell valueCell = row.createCell(1);
+            valueCell.setCellValue(addingBundle.getPatientDepositValue());
+            valueCell.setCellStyle(numberStyle);
+        }
+
+        // Total NOT included in Collection Total
+        Row excludedTotalRow = dataSheet.createRow(startRow++);
+        Cell excludedTotalLabelCell = excludedTotalRow.createCell(0);
+        excludedTotalLabelCell.setCellValue("Total NOT included in Collection Total");
+        excludedTotalLabelCell.setCellStyle(boldStyle);
+        Cell excludedTotalValueCell = excludedTotalRow.createCell(1);
+        excludedTotalValueCell.setCellValue(addingBundle.getCashierExcludedTotal());
+        excludedTotalValueCell.setCellStyle(numberStyle);
+
+        // Grand Total
+        Row grandTotalRow = dataSheet.createRow(startRow++);
+        Cell grandTotalLabelCell = grandTotalRow.createCell(0);
+        grandTotalLabelCell.setCellValue("Grand Total");
+        grandTotalLabelCell.setCellStyle(boldStyle);
+        Cell grandTotalValueCell = grandTotalRow.createCell(1);
+        grandTotalValueCell.setCellValue(addingBundle.getCashierGrandTotal());
+        grandTotalValueCell.setCellStyle(numberStyle);
+
+        // Row below for visual separation
+        Row lowerSeparatorRow = dataSheet.createRow(startRow++);
+        lowerSeparatorRow.createCell(0).setCellValue("");
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
+
+        // Adjust column widths
+        dataSheet.autoSizeColumn(0);
+        dataSheet.autoSizeColumn(1);
 
         return startRow;
     }
