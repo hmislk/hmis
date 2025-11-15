@@ -121,10 +121,16 @@ public class ExcelController {
         if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
             currentRow = addDataToExcel(dataSheet, currentRow, rootBundle, rootBundle.getBundleType());
         } else {
+            // Process all child bundles EXCEPT netCash
             for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
-                currentRow = addDataToExcel(dataSheet, currentRow, childBundle, childBundle.getBundleType());
-                currentRow++;
+                if (childBundle.getBundleType() != null && !childBundle.getBundleType().equals("netCash")) {
+                    currentRow = addDataToExcel(dataSheet, currentRow, childBundle, childBundle.getBundleType());
+                    currentRow++;
+                }
             }
+
+            // Add Net Collection summary at the end using the ROOT bundle
+            currentRow = addDataToExcelForTitleBundle(dataSheet, currentRow, rootBundle);
         }
 
         // Write the output to a byte array
@@ -196,8 +202,10 @@ public class ExcelController {
             case "patientDepositPayments":
                 return addDataToExcelForPatientDeposits(dataSheet, startRow, addingBundle);
             case "collectionForTheDay":
-            case "netCash":
                 return addDataToExcelForTitleBundle(dataSheet, startRow, addingBundle);
+            case "netCash":
+                // Net Cash is handled separately at the end of createExcelForBundle using root bundle
+                return startRow;
             case "pettyCashPayments":
                 return addDataToExcelForPettyCashPayments(dataSheet, startRow, addingBundle);
             case "ProfessionalPaymentBillReportOpd":
