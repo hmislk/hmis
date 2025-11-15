@@ -41,6 +41,9 @@ public class ExcelController {
     @Inject
     SearchController searchController;
 
+    @Inject
+    SessionController sessionController;
+
     /**
      * Creates a new instance of ExcelController
      */
@@ -58,35 +61,54 @@ public class ExcelController {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
 
-        CellStyle style = workbook.createCellStyle();
-        style.setAlignment(HorizontalAlignment.CENTER);
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+        // Create cell styles for headers
+        CellStyle centerBoldStyle = workbook.createCellStyle();
+        centerBoldStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerBoldStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        boldFont.setFontHeightInPoints((short) 14);
+        centerBoldStyle.setFont(boldFont);
 
-        Row titleRow = dataSheet.createRow(0);
-        Cell headerCell = titleRow.createCell(0);
-        headerCell.setCellValue(rootBundle.getName()+ "  -  " + CommonFunctions.getDateTimeFormat24(fromDate) + " to " + CommonFunctions.getDateTimeFormat24(toDate));
-        headerCell.setCellStyle(style);
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        org.apache.poi.ss.usermodel.Font normalFont = workbook.createFont();
+        normalFont.setFontHeightInPoints((short) 12);
+        centerStyle.setFont(normalFont);
+
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd MMM yyyy hh:mm:ss a");
+
+        int currentRow = 0;
+
+        // Row 0: Institution Name
+        Row institutionRow = dataSheet.createRow(currentRow++);
+        Cell institutionCell = institutionRow.createCell(0);
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
+        institutionCell.setCellValue(institutionName);
+        institutionCell.setCellStyle(centerBoldStyle);
         dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
-        String indDataSet = "";
-        if (searchController.getInstitution() != null) {
-            indDataSet += searchController.getInstitution().getName();
-        }
-        if (searchController.getDepartment() != null) {
-            indDataSet += "  ";
-            indDataSet += searchController.getDepartment().getName();
-            indDataSet += "(" + searchController.getSite().getName() + ")";
-        }
-        if (!indDataSet.trim().isEmpty() || indDataSet.trim() != null) {
-            Row insData = dataSheet.createRow(1);
-            Cell insCell = insData.createCell(0);
-            insCell.setCellValue(indDataSet);
-            insCell.setCellStyle(style);
-            dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
-        }
+        // Row 1: Report Title
+        Row reportTitleRow = dataSheet.createRow(currentRow++);
+        Cell reportTitleCell = reportTitleRow.createCell(0);
+        reportTitleCell.setCellValue("Cashier Summary Report");
+        reportTitleCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 
-        int currentRow = 3;
+        // Row 2: Date Range
+        Row dateRangeRow = dataSheet.createRow(currentRow++);
+        Cell dateRangeCell = dateRangeRow.createCell(0);
+        String dateRangeText = "From Date - " + dateTimeFormat.format(fromDate)
+                + "     To Date - " + dateTimeFormat.format(toDate);
+        dateRangeCell.setCellValue(dateRangeText);
+        dateRangeCell.setCellStyle(centerStyle);
+        dataSheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 6));
+
+        // Leave row 3 blank
+        currentRow++;
 
         if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
             currentRow = addDataToExcel(dataSheet, currentRow, rootBundle, rootBundle.getBundleType());
