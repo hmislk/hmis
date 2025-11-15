@@ -91,10 +91,18 @@ public class ExcelController {
         institutionCell.setCellStyle(centerBoldStyle);
         dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
-        // Row 1: Report Title
+        // Row 1: Report Title (dynamic based on bundle name)
         Row reportTitleRow = dataSheet.createRow(currentRow++);
         Cell reportTitleCell = reportTitleRow.createCell(0);
-        reportTitleCell.setCellValue("Cashier Summary Report");
+        String reportTitle = "Cashier Report";
+        if (rootBundle.getName() != null) {
+            if (rootBundle.getName().toLowerCase().contains("summary")) {
+                reportTitle = "Cashier Summary Report";
+            } else if (rootBundle.getName().toLowerCase().contains("detail")) {
+                reportTitle = "Cashier Details Report";
+            }
+        }
+        reportTitleCell.setCellValue(reportTitle);
         reportTitleCell.setCellStyle(centerStyle);
         dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 
