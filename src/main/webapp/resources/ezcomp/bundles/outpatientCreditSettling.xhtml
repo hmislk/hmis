@@ -28,6 +28,17 @@
         </h:panelGroup>
 
         <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+            <!-- Colored header table for cash-in transactions (green background) -->
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-success">
+                        <th class="text-light bg-success">
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+
             <p:dataTable id="tbl"
                          class="w-100 m-2"
                          value="#{cc.attrs.bundle.reportTemplateRows}"
@@ -39,10 +50,6 @@
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,20"
                          rowKey="#{row.id}">
-
-                <f:facet name="header">
-                    <h:outputText value="#{cc.attrs.bundle.name}" />
-                </f:facet>
 
                 <p:column width="2em">
                     <f:facet name="header">
@@ -245,7 +252,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}" filterBy="#{row.onlineSettlementValue}"  rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}" >
+                <p:column  class="text-end"  headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}" filterBy="#{row.onlineSettlementValue}"  rendered="#{cc.attrs.bundle.hasOnCallTransaction}" >
                     <h:outputText value="#{row.onlineSettlementValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>

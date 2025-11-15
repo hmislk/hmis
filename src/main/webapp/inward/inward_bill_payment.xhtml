@@ -33,35 +33,59 @@
                             completeMethod="#{admissionController.completePatientAll}" 
                             var="myItem" 
                             size="60"
+                            maxResults="20"
                             itemValue="#{myItem}" 
                             itemLabel="#{myItem.bhtNo}"
                             style="width: 550px;"
                             class="mx-2">
 
-                            <p:column headerText="BHT No" style="padding: 6px;">
+                            <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
                                 <h:outputLabel value="#{myItem.bhtNo}"/>
                             </p:column>
-                            <p:column headerText="Patient" style="padding: 6px;">
+                            <p:column headerText="Patient" style="padding: 6px; width: 15em;">
                                 <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
                             </p:column>
-                            <p:column headerText="Room" style="padding: 6px;">
+                            <p:column headerText="Room" style="padding: 6px; width: 8em;">
                                 <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                             </p:column>
-                            <p:column headerText="Discharged" style="padding: 6px;">
-
-                                <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                            <p:column headerText="Status" style="padding: 6px; width: 12em;">
+                                <div class="d-flex justify-content-center">
+                                    <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                        #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                    </span>
+                                </div>
                             </p:column>
-                            <p:column headerText="Payment" style="padding: 6px;">
+                            <p:column headerText="Payment" style="padding: 6px; width: 12em;">
                                 <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
                             </p:column>
                         </p:autoComplete>
-
 
                         <p:commandButton 
                             value="select" 
                             ajax="false" 
                             action="#{inwardPaymentController.bhtListener}" >
                         </p:commandButton>
+                        
+                        <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
+                    
                     </div>
 
                 </p:panel>
@@ -274,7 +298,7 @@
                                         </div>
                                     </div>
                                 </h:panelGroup>
-                                
+
 
                                 <div class="d-flex justify-content-end gap-3">
                                     <p:commandButton 
@@ -286,7 +310,7 @@
                                         ajax="false" 
                                         action="#{inwardPaymentController.pay()}" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="ui-button-danger mx-2" 
                                         icon="fas fa-ban" 
@@ -295,7 +319,7 @@
                                         style="width:250px;"
                                         action="#{inwardPaymentController.makeNull}" >
                                     </p:commandButton>
-                                    
+
                                 </div>
 
                             </p:panel>

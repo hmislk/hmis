@@ -9,6 +9,7 @@
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
             <ui:define name="subcontent">
                 <h:form>
+                    <p:poll interval="60" ></p:poll>
                     <div class='row' >
                         <div class="col-12 col-md-12 col-lg-12 p-1">
                             <p:panelGrid layout="tabular" columns="5" class="w-100">
@@ -116,565 +117,565 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                    <td><strong>Add WebUser Codes (from Username)</strong></td>
-                                    <td>
-                                        Assign username as code for all WebUsers where the code is empty. Skips users with existing non-empty codes.
-                                    </td>
-                                    <td>
-                                        <p:commandButton 
-                                            action="#{webUserController.addWebUserCodesFromUserNames()}"
-                                            ajax="false"
-                                            value="Add WebUser Codes"  />
-                                    </td>
-                                    <td>
-                                        #{webUserController.output}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Add Staff Codes</strong></td>
-                                    <td>
-                                        Copy user codes to related staff where staff.code is empty. Affects only staff linked to users with a non-empty user code.
-                                    </td>
-                                    <td>
-                                        <p:commandButton 
-                                            action="#{webUserController.addStaffCodesFromUserCodes()}"
-                                            ajax="false"
-                                            value="Add Staff Codes"  />
-                                    </td>
-                                    <td>
-                                        #{webUserController.output}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Copy Staff Code → Staff StaffCode</strong></td>
-                                    <td>
-                                        Copy each Staff's existing code into Staff StaffCode where Staff StaffCode is empty.
-                                    </td>
-                                    <td>
-                                        <p:commandButton 
-                                            action="#{webUserController.addStaffStaffCodesFromCodes()}"
-                                            ajax="false"
-                                            value="Copy to StaffCode"  />
-                                    </td>
-                                    <td>
-                                        #{webUserController.output}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </p:tab>
-                    <p:tab title="Admin">
-                        <div class="d-grid gap-2">
-                            <p:commandButton
-                                ajax="false"
-                                value="Bill DeptId Editor"
-                                action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
-                                class="w-100 m-1" />
-                        </div>
-                    </p:tab>
-                    <p:tab 
-                        id="tabPharmacy"
-                        title="Pharmacy" >
-                        <table class="table table-sm table-bordered w-100">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width: 15%;">Name</th>
-                                    <th style="width: 30%;">Description</th>
-                                    <th style="width: 10%;">Action</th>
-                                    <th style="width: 45%;">Output</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Correct Reference Bill in GRN Returns</strong></td>
-                                    <td>
-                                        This issue was caused by a bug where GRN Returns were recorded with incorrect references to the original Order Bills, leading to errors in calculating remaining quantities for subsequent GRNs. The bug has now been fixed and will not affect future records. This correction will update existing GRN Returns to point to the correct Order Bills, ensuring accurate remaining quantity calculations.
-                                    </td>
-
-                                    <td>
-                                        <p:commandButton
-                                            action="#{billController.fixReferancesInPharmacyGrnReturns()}"
-                                            ajax="false"
-                                            value="Correct Reference Bill in GRN Returns"  />
-                                    </td>
-                                    <td>
-                                        #{billController.output}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Correct Bill Finance Details Signs</strong></td>
-                                    <td>
-                                        Corrects the sign of BillFinanceDetails totals (totalPurchaseValue, totalCostValue, totalRetailSaleValue) for specific bill types.
-                                        Currently handles PHARMACY_GRN_RETURN bills where values should be negative (stock moving out/returning to supplier).
-                                        The bug has been fixed in new transactions - this correction applies to old bills created before the fix.
-                                        Use the date range filter above to limit corrections to specific periods.
-                                    </td>
-                                    <td>
-                                        <p:commandButton
-                                            id="btnCorrectBillFinanceDetailsSigns"
-                                            action="#{dataAdministrationController.correctBillFinanceDetailsSigns()}"
-                                            ajax="false"
-                                            value="Correct Finance Details Signs"
-                                            styleClass="ui-button-warning m-1"
-                                            icon="pi pi-wrench"
-                                            rendered="#{webUserController.hasPrivilege('Admin')}" />
-                                    </td>
-                                    <td>
-                                        #{dataAdministrationController.executionFeedback}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Update Historical Stock Data</strong></td>
-                                    <td>
-                                        Updates historical StockHistory records with missing rate and value data from their associated ItemBatch records.
-                                        This fixes closing stock reports where old data shows quantities but not values (purchase, cost, retail).
-                                        Only updates fields when existing values are null or zero - does not overwrite curated data.
-                                        Fills in: purchaseRate, retailRate, costRate from ItemBatch and calculates stockPurchaseValue, stockSaleValue, stockCostValue.
-                                        Avoids unnecessary database writes by only persisting when changes are actually made.
-                                        Use the date range filter above to limit updates to specific periods.
-                                    </td>
-                                    <td>
-                                        <p:commandButton
-                                            id="btnUpdateHistoricalStockData"
-                                            action="#{dataAdministrationController.updateHistoricalStockData()}"
-                                            ajax="false"
-                                            value="Update Historical Stock Data"
-                                            styleClass="ui-button-info m-1"
-                                            icon="pi pi-database"
-                                            rendered="#{webUserController.hasPrivilege('Admin')}"
-                                            onclick="return confirm('This will update historical stock data for the selected period. Proceed?');" />
-                                    </td>
-                                    <td>
-                                        #{dataAdministrationController.executionFeedback}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Add Data to Bill Finance Details for Pharmacy Retail Sale</strong></td>
-                                    <td>
-                                        Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy Retail Sale bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Updates both Bill and BillItem financial details.
-                                    </td>
-
-                                    <td>
-                                        <p:commandButton
-                                            value="Calculate Finance Details"
-                                            ajax="false"
-                                            styleClass="ui-button-warning m-1"
-                                            icon="pi pi-cog"
-                                            action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
-                                        </p:commandButton>
-                                    </td>
-                                    <td>
-                                        #{billController.output}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Add Data to Bill Finance Details for Purchase Orders</strong></td>
-                                    <td>
-                                        Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy Purchase Orders. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all PO types including pre-bills, approvals, and cancellations.
-                                    </td>
-
-                                    <td>
-                                        <p:commandButton
-                                            value="Calculate Finance Details"
-                                            ajax="false"
-                                            styleClass="ui-button-warning m-1"
-                                            icon="pi pi-cog"
-                                            action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyPurchaseOrdersFromBillItemData}">
-                                        </p:commandButton>
-                                    </td>
-                                    <td>
-                                        #{billController.output}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Add Data to Bill Finance Details for GRNs</strong></td>
-                                    <td>
-                                        Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy GRN bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all GRN types including returns, cancellations, and wholesale GRNs.
-                                    </td>
-
-                                    <td>
-                                        <p:commandButton
-                                            value="Calculate Finance Details"
-                                            ajax="false"
-                                            styleClass="ui-button-warning m-1"
-                                            icon="pi pi-cog"
-                                            action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyGRNsFromBillItemData}">
-                                        </p:commandButton>
-                                    </td>
-                                    <td>
-                                        #{billController.output}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Assign Pharmacy Department Type</strong></td>
-                                    <td>
-                                        Assigns the Pharmacy department type to all PharmaceuticalItem objects that currently have no department type assigned. This ensures proper categorization of pharmaceutical items within the system.
-                                    </td>
-                                    <td>
-                                        <p:commandButton 
-                                            action="#{dataAdministrationController.assignPharmacyDepartmentTypeToPharmaceuticalItems()}"
-                                            ajax="false"
-                                            value="Assign Pharmacy Department Type"
-                                            styleClass="ui-button-info m-1"
-                                            icon="pi pi-tag" />
-                                    </td>
-                                    <td>
-                                        #{billController.output}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Migrate Transfer Bill Finance Details</strong></td>
-                                    <td>
-                                        Fixes issue #13419: Migrates existing pharmacy transfer bills to populate BillItemFinanceDetails.lineNetTotal from BillItem.netValue. This ensures disbursement reports show correct transfer rates when "Pharmacy Transfer is by Retail Rate" option is enabled. Only affects bills missing proper financial details - safe to run multiple times.
-                                    </td>
-                                    <td>
-                                        <p:commandButton 
-                                            action="#{dataAdministrationController.migrateTransferBillItemFinanceDetails()}"
-                                            ajax="false"
-                                            value="Migrate Transfer Finance Details"
-                                            styleClass="ui-button-success m-1"
-                                            icon="pi pi-database"
-                                            onclick="return confirm('This will migrate financial details for existing transfer bills. Proceed?');" />
-                                    </td>
-                                    <td>
-                                        #{dataAdministrationController.executionFeedback}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><strong>Correct Signs for Pharmacy Disposal/Transfer Bills</strong></td>
-                                    <td>
-                                        Corrects negative/positive signs for Bill totals, BillItem values, BillFinanceDetails and BillItemFinanceDetails, and Pharmaceutical Bill Item values according to the Bill Type. Uses absolute values and applies only the sign without changing magnitudes or other attributes. Applies to Pharmacy Issue/Direct Issue/Disposal Issue and corresponding Returns/Cancellations, and Receive/Receive Pre/Receive Cancelled.
-                                    </td>
-                                    <td>
-                                        <p:commandButton 
-                                            action="#{dataAdministrationController.correctPharmacyDisbursementSigns()}"
-                                            ajax="false"
-                                            value="Correct Signs for Disposal/Transfer"
-                                            styleClass="ui-button-warning m-1"
-                                            icon="pi pi-wrench"
-                                            rendered="#{webUserController.hasPrivilege('Admin')}" />
-                                    </td>
-                                    <td>
-                                        #{dataAdministrationController.executionFeedback}
-                                    </td>
-                                </tr>
-
-
-
-                            </tbody>
-                        </table>
-
-
-
-                    </p:tab>
-                    <p:tab title="Unclassified" >
-                        <div class='row' >
-                            <div class="col-12 col-md-12 col-lg-12 p-1">
-
-                            </div>
-
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="false"
-                                    action="#{billController.addMissingBillTypeAtomics}"
-                                    class="w-100 m-1"
-                                    value="Add Bill Type Atomics"/>
-                            </div>
-
-                            <div class="col-12 col-md-8 col-lg-6 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="false"
-                                    action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS}"
-                                    class="w-100 m-1"
-                                    value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS Bills"/>
-                            </div>
-
-
-                            <div class="col-12 col-md-8 col-lg-6 p-1">
-                                <!--THis function is called done by admin. Have to do hundreds of time. So confirmation is a real headache. removing the confirmation-->
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="false"
-                                    rendered="#{webUserController.hasPrivilege('Developers')}"
-                                    action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
-                                    update=":growl"
-                                    class="w-100 m-1"
-                                    value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
-                            </div>
-
-                            <div class="col-12 col-md-8 col-lg-6 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="false"
-                                    action="#{billController.correctBillItemRatesInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
-                                    class="w-100 m-1"
-                                    value="Correct Bill Item Rates in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
-                            </div>
-
-
-                            <div class="col-12 col-md-8 col-lg-6 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="false"
-                                    action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
-                                    class="w-100 m-1"
-                                    value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
-                            </div>
-
-                            <div class="col-12 col-md-8 col-lg-6 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="false"
-                                    action="#{billController.convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills}"
-                                    class="w-100 m-1"
-                                    value="Fix All Pharmaceutical BillItem Reference for All PHARMACY_RETAIL_SALE_CANCELLED Bills"/>
-                            </div>
-
-
-
-
-                            <div class="col-12 col-md-8 col-lg-6 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="false"
-                                    action="#{billController.correctBillItemRatesInDIRECT_ISSUE_INWARD_MEDICINE_RETURN}"
-                                    class="w-100 m-1"
-                                    value="Correct Bill Item Rates in DIRECT_ISSUE_INWARD_MEDICINE_RETURN Bills"/>
-                            </div>
-
-
-
-
-
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                <p:commandButton 
-                                    class="w-100"
-                                    disabled="false"
-                                    value="Fix Missing Bill Time Data" 
-                                    action="#{financialTransactionController.addMissingBillTimeData}" 
-                                    ajax="false">
-                                </p:commandButton>
-                            </div>
-                            <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                <p:commandButton 
-                                    class="w-100"
-                                    disabled="false"
-                                    value="Add Handover Accept Bill Referance to Handover Create Bill" 
-                                    action="#{financialTransactionController.addMissingBackwordReferancesForShiftStartBills}" 
-                                    ajax="false">
-                                </p:commandButton>
-                            </div>
-                            <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                <p:commandButton 
-                                    class="w-100"
-                                    disabled="true"
-                                    value="Delete All Memberships" 
-                                    action="#{dataAdministrationController.retireAllMembershipData()}" 
-                                    ajax="false">
-                                </p:commandButton>
-                            </div>
-                            <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                <p:commandButton 
-                                    disabled="true"
-                                    value="Delete All Patient Investigation Related Data" 
-                                    action="#{dataAdministrationController.retireAllMembershipData}" 
-                                    ajax="false">
-                                </p:commandButton>
-                            </div>
-                            <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                <p:commandButton 
-                                    disabled="true"
-                                    value="Delete All Bill Related Data" 
-                                    action="#{dataAdministrationController.retireAllBillRelatedData}" 
-                                    ajax="false">
-                                </p:commandButton>
-                            </div>
-                            <div class="col-12 col-md-4 col-lg-2 p-1" >
-                                <p:commandButton 
-                                    disabled="true"
-                                    value="Delete All Pharmacy Related Data" 
-                                    action="#{dataAdministrationController.retireAllPharmacyRelatedData}" 
-                                    ajax="false">
-                                </p:commandButton>
-                            </div>
-
-
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
+                                        <td><strong>Add WebUser Codes (from Username)</strong></td>
+                                        <td>
+                                            Assign username as code for all WebUsers where the code is empty. Skips users with existing non-empty codes.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                action="#{webUserController.addWebUserCodesFromUserNames()}"
+                                                ajax="false"
+                                                value="Add WebUser Codes"  />
+                                        </td>
+                                        <td>
+                                            #{webUserController.output}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Add Staff Codes</strong></td>
+                                        <td>
+                                            Copy user codes to related staff where staff.code is empty. Affects only staff linked to users with a non-empty user code.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                action="#{webUserController.addStaffCodesFromUserCodes()}"
+                                                ajax="false"
+                                                value="Add Staff Codes"  />
+                                        </td>
+                                        <td>
+                                            #{webUserController.output}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Copy Staff Code → Staff StaffCode</strong></td>
+                                        <td>
+                                            Copy each Staff's existing code into Staff StaffCode where Staff StaffCode is empty.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                action="#{webUserController.addStaffStaffCodesFromCodes()}"
+                                                ajax="false"
+                                                value="Copy to StaffCode"  />
+                                        </td>
+                                        <td>
+                                            #{webUserController.output}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:tab>
+                        <p:tab title="Admin">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.navigateToListOpdBillsAndBillItemsFields()}" 
-                                    value="Missing Bill Items"  
-                                    class="w-100 m-1"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="retire_payments_for_individual_opd_bills" 
-                                    value="Retire Payments for Individual OPD Bills"  
-                                    class="w-100 m-1"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
+                                    rendered="#{webUserController.hasPrivilege('Admin')}"
                                     ajax="false"
-                                    disabled="true"
-                                    action="#{itemController.makeAllItemsToAllowDiscounts()}"
-                                    class="w-100 m-1"
-                                    value="Make All OPD Services and Investigations to Allow Discounts"/>
+                                    value="Bill DeptId Editor"
+                                    action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
+                                    class="w-100 m-1" />
                             </div>
+                        </p:tab>
+                        <p:tab 
+                            id="tabPharmacy"
+                            title="Pharmacy" >
+                            <table class="table table-sm table-bordered w-100">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 15%;">Name</th>
+                                        <th style="width: 30%;">Description</th>
+                                        <th style="width: 10%;">Action</th>
+                                        <th style="width: 45%;">Output</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Correct Reference Bill in GRN Returns</strong></td>
+                                        <td>
+                                            This issue was caused by a bug where GRN Returns were recorded with incorrect references to the original Order Bills, leading to errors in calculating remaining quantities for subsequent GRNs. The bug has now been fixed and will not affect future records. This correction will update existing GRN Returns to point to the correct Order Bills, ensuring accurate remaining quantity calculations.
+                                        </td>
+
+                                        <td>
+                                            <p:commandButton
+                                                action="#{billController.fixReferancesInPharmacyGrnReturns()}"
+                                                ajax="false"
+                                                value="Correct Reference Bill in GRN Returns"  />
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Correct Bill Finance Details Signs</strong></td>
+                                        <td>
+                                            Corrects the sign of BillFinanceDetails totals (totalPurchaseValue, totalCostValue, totalRetailSaleValue) for specific bill types.
+                                            Currently handles PHARMACY_GRN_RETURN bills where values should be negative (stock moving out/returning to supplier).
+                                            The bug has been fixed in new transactions - this correction applies to old bills created before the fix.
+                                            Use the date range filter above to limit corrections to specific periods.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnCorrectBillFinanceDetailsSigns"
+                                                action="#{dataAdministrationController.correctBillFinanceDetailsSigns()}"
+                                                ajax="false"
+                                                value="Correct Finance Details Signs"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-wrench"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Update Historical Stock Data</strong></td>
+                                        <td>
+                                            Updates historical StockHistory records with missing rate and value data from their associated ItemBatch records.
+                                            This fixes closing stock reports where old data shows quantities but not values (purchase, cost, retail).
+                                            Only updates fields when existing values are null or zero - does not overwrite curated data.
+                                            Fills in: purchaseRate, retailRate, costRate from ItemBatch and calculates stockPurchaseValue, stockSaleValue, stockCostValue.
+                                            Avoids unnecessary database writes by only persisting when changes are actually made.
+                                            Use the date range filter above to limit updates to specific periods.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnUpdateHistoricalStockData"
+                                                action="#{dataAdministrationController.updateHistoricalStockData()}"
+                                                ajax="false"
+                                                value="Update Historical Stock Data"
+                                                styleClass="ui-button-info m-1"
+                                                icon="pi pi-database"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will update historical stock data for the selected period. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Add Data to Bill Finance Details for Pharmacy Retail Sale</strong></td>
+                                        <td>
+                                            Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy Retail Sale bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Updates both Bill and BillItem financial details.
+                                        </td>
+
+                                        <td>
+                                            <p:commandButton
+                                                value="Calculate Finance Details"
+                                                ajax="false"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-cog"
+                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
+                                            </p:commandButton>
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Add Data to Bill Finance Details for Purchase Orders</strong></td>
+                                        <td>
+                                            Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy Purchase Orders. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all PO types including pre-bills, approvals, and cancellations.
+                                        </td>
+
+                                        <td>
+                                            <p:commandButton
+                                                value="Calculate Finance Details"
+                                                ajax="false"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-cog"
+                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyPurchaseOrdersFromBillItemData}">
+                                            </p:commandButton>
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Add Data to Bill Finance Details for GRNs</strong></td>
+                                        <td>
+                                            Populates missing BillFinanceDetails and BillItemFinanceDetails for Pharmacy GRN bills. Takes data from PharmaceuticalBillItems to fill in quantities, rates (cost, purchase, retail), and calculated values. Handles all GRN types including returns, cancellations, and wholesale GRNs.
+                                        </td>
+
+                                        <td>
+                                            <p:commandButton
+                                                value="Calculate Finance Details"
+                                                ajax="false"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-cog"
+                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacyGRNsFromBillItemData}">
+                                            </p:commandButton>
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Assign Pharmacy Department Type</strong></td>
+                                        <td>
+                                            Assigns the Pharmacy department type to all PharmaceuticalItem objects that currently have no department type assigned. This ensures proper categorization of pharmaceutical items within the system.
+                                        </td>
+                                        <td>
+                                            <p:commandButton 
+                                                action="#{dataAdministrationController.assignPharmacyDepartmentTypeToPharmaceuticalItems()}"
+                                                ajax="false"
+                                                value="Assign Pharmacy Department Type"
+                                                styleClass="ui-button-info m-1"
+                                                icon="pi pi-tag" />
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Migrate Transfer Bill Finance Details</strong></td>
+                                        <td>
+                                            Fixes issue #13419: Migrates existing pharmacy transfer bills to populate BillItemFinanceDetails.lineNetTotal from BillItem.netValue. This ensures disbursement reports show correct transfer rates when "Pharmacy Transfer is by Retail Rate" option is enabled. Only affects bills missing proper financial details - safe to run multiple times.
+                                        </td>
+                                        <td>
+                                            <p:commandButton 
+                                                action="#{dataAdministrationController.migrateTransferBillItemFinanceDetails()}"
+                                                ajax="false"
+                                                value="Migrate Transfer Finance Details"
+                                                styleClass="ui-button-success m-1"
+                                                icon="pi pi-database"
+                                                onclick="return confirm('This will migrate financial details for existing transfer bills. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td><strong>Correct Signs for Pharmacy Disposal/Transfer Bills</strong></td>
+                                        <td>
+                                            Corrects negative/positive signs for Bill totals, BillItem values, BillFinanceDetails and BillItemFinanceDetails, and Pharmaceutical Bill Item values according to the Bill Type. Uses absolute values and applies only the sign without changing magnitudes or other attributes. Applies to Pharmacy Issue/Direct Issue/Disposal Issue and corresponding Returns/Cancellations, and Receive/Receive Pre/Receive Cancelled.
+                                        </td>
+                                        <td>
+                                            <p:commandButton 
+                                                action="#{dataAdministrationController.correctPharmacyDisbursementSigns()}"
+                                                ajax="false"
+                                                value="Correct Signs for Disposal/Transfer"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-wrench"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
 
 
 
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="true"
-                                    action="#{paymentController.addMissingPaymentDates()}"
-                                    class="w-100 m-1"
-                                    value="Add Missing Payment Dates"/>
+                                </tbody>
+                            </table>
+
+
+
+                        </p:tab>
+                        <p:tab title="Unclassified" >
+                            <div class='row' >
+                                <div class="col-12 col-md-12 col-lg-12 p-1">
+
+                                </div>
+
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton
+                                        ajax="false"
+                                        disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        action="#{billController.addMissingBillTypeAtomics}"
+                                        class="w-100 m-1"
+                                        value="Add Bill Type Atomics"/>
+                                </div>
+
+                                <div class="col-12 col-md-8 col-lg-6 p-1">
+                                    <p:commandButton
+                                        ajax="false"
+                                        disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS}"
+                                        class="w-100 m-1"
+                                        value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS Bills"/>
+                                </div>
+
+
+                                <div class="col-12 col-md-8 col-lg-6 p-1">
+                                    <!--THis function is called done by admin. Have to do hundreds of time. So confirmation is a real headache. removing the confirmation-->
+                                    <p:commandButton 
+                                        ajax="false"
+                                        disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        action="#{billController.fixTotalInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+                                        update=":growl"
+                                        class="w-100 m-1"
+                                        value="FIX Gross Total in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+                                </div>
+
+                                <div class="col-12 col-md-8 col-lg-6 p-1">
+                                    <p:commandButton
+                                        ajax="false"
+                                        disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        action="#{billController.correctBillItemRatesInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY}"
+                                        class="w-100 m-1"
+                                        value="Correct Bill Item Rates in PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY Bills"/>
+                                </div>
+
+                                <div class="col-12 col-md-8 col-lg-6 p-1">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        disabled="false"
+                                        action="#{billController.convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills}"
+                                        class="w-100 m-1"
+                                        value="Fix All Pharmaceutical BillItem Reference for All PHARMACY_RETAIL_SALE_CANCELLED Bills"/>
+                                </div>
+
+
+
+
+                                <div class="col-12 col-md-8 col-lg-6 p-1">
+                                    <p:commandButton
+                                        ajax="false"
+                                        disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        action="#{billController.correctBillItemRatesInDIRECT_ISSUE_INWARD_MEDICINE_RETURN}"
+                                        class="w-100 m-1"
+                                        value="Correct Bill Item Rates in DIRECT_ISSUE_INWARD_MEDICINE_RETURN Bills"/>
+                                </div>
+
+
+
+
+
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1" >
+                                    <p:commandButton
+                                        class="w-100"
+                                        disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        value="Fix Missing Bill Time Data"
+                                        action="#{financialTransactionController.addMissingBillTimeData}"
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12 col-md-4 col-lg-2 p-1" >
+                                    <p:commandButton
+                                        class="w-100"
+                                        disabled="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        value="Add Handover Accept Bill Referance to Handover Create Bill"
+                                        action="#{financialTransactionController.addMissingBackwordReferancesForShiftStartBills}"
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12 col-md-4 col-lg-2 p-1" >
+                                    <p:commandButton 
+                                        class="w-100"
+                                        disabled="true"
+                                        value="Delete All Memberships" 
+                                        action="#{dataAdministrationController.retireAllMembershipData()}" 
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12 col-md-4 col-lg-2 p-1" >
+                                    <p:commandButton 
+                                        disabled="true"
+                                        value="Delete All Patient Investigation Related Data" 
+                                        action="#{dataAdministrationController.retireAllMembershipData}" 
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12 col-md-4 col-lg-2 p-1" >
+                                    <p:commandButton 
+                                        disabled="true"
+                                        value="Delete All Bill Related Data" 
+                                        action="#{dataAdministrationController.retireAllBillRelatedData}" 
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12 col-md-4 col-lg-2 p-1" >
+                                    <p:commandButton 
+                                        disabled="true"
+                                        value="Delete All Pharmacy Related Data" 
+                                        action="#{dataAdministrationController.retireAllPharmacyRelatedData}" 
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+
+
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.navigateToListOpdBillsAndBillItemsFields()}" 
+                                        value="Missing Bill Items"  
+                                        class="w-100 m-1"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="retire_payments_for_individual_opd_bills" 
+                                        value="Retire Payments for Individual OPD Bills"  
+                                        class="w-100 m-1"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        disabled="true"
+                                        action="#{itemController.makeAllItemsToAllowDiscounts()}"
+                                        class="w-100 m-1"
+                                        value="Make All OPD Services and Investigations to Allow Discounts"/>
+                                </div>
+
+
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        disabled="true"
+                                        action="#{paymentController.addMissingPaymentDates()}"
+                                        class="w-100 m-1"
+                                        value="Add Missing Payment Dates"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        disabled="true"
+                                        action="#{billController.addMissingRefundStatusForCcRefunds()}"
+                                        class="w-100 m-1"
+                                        value="Add Missing Refund Status to CC Bills"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        disabled="true"
+                                        action="#{billController.addMissingValuesForCcCancellationBillItems()}"
+                                        class="w-100 m-1"
+                                        value="Add Missing CC Fees Bills"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.navigateToListMissingBillDeptNumber()}" 
+                                        value="Missing Bill Number (Dept Bill Number)"  
+                                        class="w-100 m-1"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" 
+                                        value="1. Add bill fees to professional fee cancel bills"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.removeAllBillsAndBillItems()}" 
+                                        value="2. Remove All Bills with Bill Items"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.restBillNumber()}" 
+                                        value="3. Reset Bill Number"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" 
+                                        value="4. Make Rate From Purchase Rate To Sale In Transfer Bills"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.removeUnsedPharmaceuticalCategories()}" 
+                                        value="5. Remove Unused Pharmaceutical Categories"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="/dataAdmin/change_categories" 
+                                        value="6. Change Categories of Items"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.addWholesalePrices()}" 
+                                        value="7. Add Wholesale Prices"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.detectWholeSaleBills}" 
+                                        value="8. Convert Sale Bills to Wholesale Bills"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="/channel/channel_report_agent_referece_book_bulk_delete" 
+                                        value="9. Channel Book Bulk Delete"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="/dataAdmin/inward_search_service_with_payment_methord" 
+                                        value="10. Update Inward Service bill Payment Method"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        disabled="true"
+                                        action="#{dataAdministrationController.addInstitutionToInvestigationsWithoutInstitution}" 
+                                        value="11. Add Institutions to Investigations without Institution"/>
+                                </div>
+
+                                <div class="col-12 col-md-4 col-lg-2 p-1">
+                                    <p:commandButton
+                                        ajax="false"
+                                        disabled="true"
+                                        action="#{staffShiftController.updateStaffShiftWithoutRoster()}"
+                                        value="12. Update Staff Shift Without Roster"/>
+                                </div>
+
                             </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="true"
-                                    action="#{billController.addMissingRefundStatusForCcRefunds()}"
-                                    class="w-100 m-1"
-                                    value="Add Missing Refund Status to CC Bills"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false"
-                                    disabled="true"
-                                    action="#{billController.addMissingValuesForCcCancellationBillItems()}"
-                                    class="w-100 m-1"
-                                    value="Add Missing CC Fees Bills"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.navigateToListMissingBillDeptNumber()}" 
-                                    value="Missing Bill Number (Dept Bill Number)"  
-                                    class="w-100 m-1"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" 
-                                    value="1. Add bill fees to professional fee cancel bills"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.removeAllBillsAndBillItems()}" 
-                                    value="2. Remove All Bills with Bill Items"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.restBillNumber()}" 
-                                    value="3. Reset Bill Number"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" 
-                                    value="4. Make Rate From Purchase Rate To Sale In Transfer Bills"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.removeUnsedPharmaceuticalCategories()}" 
-                                    value="5. Remove Unused Pharmaceutical Categories"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="/dataAdmin/change_categories" 
-                                    value="6. Change Categories of Items"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.addWholesalePrices()}" 
-                                    value="7. Add Wholesale Prices"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.detectWholeSaleBills}" 
-                                    value="8. Convert Sale Bills to Wholesale Bills"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="/channel/channel_report_agent_referece_book_bulk_delete" 
-                                    value="9. Channel Book Bulk Delete"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="/dataAdmin/inward_search_service_with_payment_methord" 
-                                    value="10. Update Inward Service bill Payment Method"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    disabled="true"
-                                    action="#{dataAdministrationController.addInstitutionToInvestigationsWithoutInstitution}" 
-                                    value="11. Add Institutions to Investigations without Institution"/>
-                            </div>
-
-                            <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton
-                                    ajax="false"
-                                    disabled="true"
-                                    action="#{staffShiftController.updateStaffShiftWithoutRoster()}"
-                                    value="12. Update Staff Shift Without Roster"/>
-                            </div>
-
-                        </div>
-                    </p:tab>
+                        </p:tab>
 
 
                     </p:accordionPanel>

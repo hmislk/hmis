@@ -3151,12 +3151,12 @@ public class PharmacyController implements Serializable {
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("Category Wise Issue Details by Department");
             titleCell.setCellStyle(headerStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 4));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
 
             if (departmentCategoryMap == null || departmentCategoryMap.isEmpty()) {
                 // If no data, create an empty sheet with just headers
                 Row headerRow = sheet.createRow(rowIndex);
-                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
+                String[] headers = {"Category", "Qty", "Purchase Value", "Cost Value", "Retail Value", "Net Total"};
                 for (int i = 0; i < headers.length; i++) {
                     Cell cell = headerRow.createCell(i);
                     cell.setCellValue(headers[i]);
@@ -3175,10 +3175,10 @@ public class PharmacyController implements Serializable {
                 Cell deptCell = deptRow.createCell(0);
                 deptCell.setCellValue("Department: " + departmentName);
                 deptCell.setCellStyle(headerStyle);
-                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 4));
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 5));
 
                 Row headerRow = sheet.createRow(rowIndex++);
-                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
+                String[] headers = {"Category", "Qty", "Purchase Value", "Cost Value", "Retail Value", "Net Total"};
                 for (int i = 0; i < headers.length; i++) {
                     Cell cell = headerRow.createCell(i);
                     cell.setCellValue(headers[i]);
@@ -3197,32 +3197,49 @@ public class PharmacyController implements Serializable {
                     Cell categoryCell = categoryRow.createCell(0);
                     categoryCell.setCellValue(categoryName);
                     categoryCell.setCellStyle(headerStyle);
-                    sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 4));
+                    sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 5));
 
                     for (DepartmentCategoryWiseItems item : items) {
                         if (item == null) continue;
                         Row dataRow = sheet.createRow(rowIndex++);
                         dataRow.createCell(0).setCellValue(item.getItem() != null ? item.getItem().getName() : "");
-                        dataRow.createCell(1).setCellValue(item.getPurchaseRate() != null ? item.getPurchaseRate() : 0.0);
-                        dataRow.createCell(2).setCellValue(item.getQty());
+                        dataRow.createCell(1).setCellValue(item.getQty());
+                        Cell purchaseValueCell = dataRow.createCell(2);
+                        purchaseValueCell.setCellValue(item.getTotalPurchaseValue() != null ? item.getTotalPurchaseValue() : 0.0);
+                        purchaseValueCell.setCellStyle(amountStyle);
                         Cell costValueCell = dataRow.createCell(3);
-                        costValueCell.setCellValue(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0);
+                        costValueCell.setCellValue(item.getTotalCostValue() != null ? item.getTotalCostValue() : 0.0);
                         costValueCell.setCellStyle(amountStyle);
-                        Cell valueCell = dataRow.createCell(4);
-                        valueCell.setCellValue(item.getNetTotal() != null ? item.getNetTotal() : 0.0);
-                        valueCell.setCellStyle(amountStyle);
+                        Cell retailValueCell = dataRow.createCell(4);
+                        retailValueCell.setCellValue(item.getTotalRetailValue() != null ? item.getTotalRetailValue() : 0.0);
+                        retailValueCell.setCellStyle(amountStyle);
+                        Cell netTotalCell = dataRow.createCell(5);
+                        netTotalCell.setCellValue(item.getNetTotal() != null ? item.getNetTotal() : 0.0);
+                        netTotalCell.setCellStyle(amountStyle);
                     }
 
                     Row categoryTotalRow = sheet.createRow(rowIndex++);
-                    categoryTotalRow.createCell(1).setCellValue("");
-                    categoryTotalRow.createCell(2).setCellValue("Category Total:");
+                    categoryTotalRow.createCell(0).setCellValue("Category Total:");
+                    categoryTotalRow.createCell(1).setCellValue(""); // Qty total can be left empty for clarity
+                    Cell categoryPurchaseCell = categoryTotalRow.createCell(2);
+                    double categoryPurchaseTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[0];
+                    categoryPurchaseCell.setCellValue(categoryPurchaseTotal);
+                    categoryPurchaseCell.setCellStyle(amountStyle);
                     Cell categoryCostCell = categoryTotalRow.createCell(3);
                     double categoryCostTotal = departmentTotals
                             .getOrDefault(departmentName, Collections.emptyMap())
                             .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[1];
                     categoryCostCell.setCellValue(categoryCostTotal);
                     categoryCostCell.setCellStyle(amountStyle);
-                    Cell categoryTotalCell = categoryTotalRow.createCell(4);
+                    Cell categoryRetailCell = categoryTotalRow.createCell(4);
+                    double categoryRetailTotal = departmentTotals
+                            .getOrDefault(departmentName, Collections.emptyMap())
+                            .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[2];
+                    categoryRetailCell.setCellValue(categoryRetailTotal);
+                    categoryRetailCell.setCellStyle(amountStyle);
+                    Cell categoryTotalCell = categoryTotalRow.createCell(5);
                     double categoryTotal = departmentTotals
                             .getOrDefault(departmentName, Collections.emptyMap())
                             .getOrDefault(categoryName, new Double[]{0.0, 0.0, 0.0, 0.0})[3];
@@ -3231,8 +3248,17 @@ public class PharmacyController implements Serializable {
                 }
 
                 Row departmentTotalRow = sheet.createRow(rowIndex++);
-                departmentTotalRow.createCell(1).setCellValue("");
-                departmentTotalRow.createCell(2).setCellValue("Department Total:");
+                departmentTotalRow.createCell(0).setCellValue("Department Total:");
+                departmentTotalRow.createCell(1).setCellValue(""); // Qty total can be left empty for clarity
+                Cell deptPurchaseCell = departmentTotalRow.createCell(2);
+                double deptPurchaseTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[0])
+                        .sum();
+                deptPurchaseCell.setCellValue(deptPurchaseTotal);
+                deptPurchaseCell.setCellStyle(amountStyle);
                 Cell deptCostCell = departmentTotalRow.createCell(3);
                 double deptCostTotal = departmentTotals
                         .getOrDefault(departmentName, Collections.emptyMap())
@@ -3242,7 +3268,16 @@ public class PharmacyController implements Serializable {
                         .sum();
                 deptCostCell.setCellValue(deptCostTotal);
                 deptCostCell.setCellStyle(amountStyle);
-                Cell departmentTotalCell = departmentTotalRow.createCell(4);
+                Cell deptRetailCell = departmentTotalRow.createCell(4);
+                double deptRetailTotal = departmentTotals
+                        .getOrDefault(departmentName, Collections.emptyMap())
+                        .values()
+                        .stream()
+                        .mapToDouble(arr -> arr[2])
+                        .sum();
+                deptRetailCell.setCellValue(deptRetailTotal);
+                deptRetailCell.setCellStyle(amountStyle);
+                Cell departmentTotalCell = departmentTotalRow.createCell(5);
                 double deptTotal = departmentTotals
                         .getOrDefault(departmentName, Collections.emptyMap())
                         .values()
@@ -3254,15 +3289,22 @@ public class PharmacyController implements Serializable {
             }
 
             Row finalTotalRow = sheet.createRow(rowIndex++);
-            finalTotalRow.createCell(0).setCellValue("Total");
+            finalTotalRow.createCell(0).setCellValue("Grand Total");
+            finalTotalRow.createCell(1).setCellValue(""); // Qty total can be left empty for clarity
+            Cell finalPurchaseCell = finalTotalRow.createCell(2);
+            finalPurchaseCell.setCellValue(totalPurchase);
+            finalPurchaseCell.setCellStyle(amountStyle);
             Cell finalCostCell = finalTotalRow.createCell(3);
             finalCostCell.setCellValue(totalCostValue);
             finalCostCell.setCellStyle(amountStyle);
-            Cell finalTotalCell = finalTotalRow.createCell(4);
+            Cell finalRetailCell = finalTotalRow.createCell(4);
+            finalRetailCell.setCellValue(totalRetailValue);
+            finalRetailCell.setCellStyle(amountStyle);
+            Cell finalTotalCell = finalTotalRow.createCell(5);
             finalTotalCell.setCellValue(totalSaleValue);
             finalTotalCell.setCellStyle(amountStyle);
 
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 6; i++) {
                 sheet.autoSizeColumn(i);
             }
 
@@ -3312,11 +3354,11 @@ public class PharmacyController implements Serializable {
                 String departmentName = deptEntry.getKey();
                 document.add(new Paragraph("Department: " + departmentName, boldFont));
 
-                PdfPTable table = new PdfPTable(5);
+                PdfPTable table = new PdfPTable(6);
                 table.setWidthPercentage(100);
-                table.setWidths(new float[]{3, 2, 2, 2, 2});
+                table.setWidths(new float[]{3, 1, 2, 2, 2, 2});
 
-                String[] headers = {"Category", "Rate", "Quantity", "Cost Value", "Value"};
+                String[] headers = {"Category", "Qty", "Purchase Value", "Cost Value", "Retail Value", "Net Total"};
                 for (String header : headers) {
                     PdfPCell cell = new PdfPCell(new Phrase(header, boldFont));
                     cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -3333,43 +3375,48 @@ public class PharmacyController implements Serializable {
                     if (items == null || items.isEmpty()) continue;
 
                     PdfPCell categoryCell = new PdfPCell(new Phrase(categoryName, boldFont));
-                    categoryCell.setColspan(5);
+                    categoryCell.setColspan(6);
                     categoryCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                     table.addCell(categoryCell);
 
                     for (DepartmentCategoryWiseItems item : items) {
                         if (item == null) continue;
                         table.addCell(new PdfPCell(new Phrase(item.getItem() != null ? item.getItem().getName() : "", normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(item.getPurchaseRate() != null ? decimalFormat.format(item.getPurchaseRate()) : "0.00", normalFont)));
                         table.addCell(new PdfPCell(new Phrase(String.valueOf(item.getQty()), normalFont)));
-                        table.addCell(new PdfPCell(new Phrase(decimalFormat.format(item.getCostRate() != null ? item.getCostRate() * item.getQty() : 0.0), normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getTotalPurchaseValue() != null ? decimalFormat.format(item.getTotalPurchaseValue()) : "0.00", normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getTotalCostValue() != null ? decimalFormat.format(item.getTotalCostValue()) : "0.00", normalFont)));
+                        table.addCell(new PdfPCell(new Phrase(item.getTotalRetailValue() != null ? decimalFormat.format(item.getTotalRetailValue()) : "0.00", normalFont)));
                         table.addCell(new PdfPCell(new Phrase(item.getNetTotal() != null ? decimalFormat.format(item.getNetTotal()) : "0.00", normalFont)));
                     }
 
-                    table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                    table.addCell(new PdfPCell(new Phrase("", normalFont)));
                     table.addCell(new PdfPCell(new Phrase("Category Total:", boldFont)));
+                    table.addCell(new PdfPCell(new Phrase("", normalFont))); // Qty total can be left empty for clarity
+                    table.addCell(new PdfPCell(new Phrase(getCategoryPurchaseTotalForConsumptionReport(departmentName, categoryName), boldFont)));
                     table.addCell(new PdfPCell(new Phrase(getCategoryCostTotalForConsumptionReport(departmentName, categoryName), boldFont)));
-                    table.addCell(new PdfPCell(new Phrase(getCategoryTotalForConsumptionReport(departmentName, categoryName), boldFont)));
+                    table.addCell(new PdfPCell(new Phrase(getCategoryRetailTotalForConsumptionReport(departmentName, categoryName), boldFont)));
+                    table.addCell(new PdfPCell(new Phrase(getCategoryNetTotalForConsumptionReport(departmentName, categoryName), boldFont)));
                 }
 
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
-                table.addCell(new PdfPCell(new Phrase("", normalFont)));
                 table.addCell(new PdfPCell(new Phrase("Department Total:", boldFont)));
+                table.addCell(new PdfPCell(new Phrase("", normalFont))); // Qty total can be left empty for clarity
+                table.addCell(new PdfPCell(new Phrase(getDepartmentPurchaseTotalForConsumptionReport(departmentName), boldFont)));
                 table.addCell(new PdfPCell(new Phrase(getDepartmentCostTotalForConsumptionReport(departmentName), boldFont)));
-                table.addCell(new PdfPCell(new Phrase(getDepartmentTotalForConsumptionReport(departmentName), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(getDepartmentRetailTotalForConsumptionReport(departmentName), boldFont)));
+                table.addCell(new PdfPCell(new Phrase(getDepartmentNetTotalForConsumptionReport(departmentName), boldFont)));
 
                 document.add(table);
             }
 
-            PdfPTable table = new PdfPTable(3);
-            table.setWidthPercentage(100);
-            table.setWidths(new float[]{7, 2, 2});
-            table.addCell(new PdfPCell(new Phrase("Total", normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalCostValue), normalFont)));
-            table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSaleValue), normalFont)));
+            PdfPTable grandTotalTable = new PdfPTable(5);
+            grandTotalTable.setWidthPercentage(100);
+            grandTotalTable.setWidths(new float[]{4, 2, 2, 2, 2});
+            grandTotalTable.addCell(new PdfPCell(new Phrase("Grand Total", boldFont)));
+            grandTotalTable.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalPurchase), normalFont)));
+            grandTotalTable.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalCostValue), normalFont)));
+            grandTotalTable.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalRetailValue), normalFont)));
+            grandTotalTable.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSaleValue), normalFont)));
 
-            document.add(table);
+            document.add(grandTotalTable);
 
             document.close();
             out.flush();
