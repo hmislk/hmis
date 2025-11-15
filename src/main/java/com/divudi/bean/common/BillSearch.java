@@ -238,6 +238,8 @@ public class BillSearch implements Serializable {
     @Inject
     CashRecieveBillController cashRecieveBillController;
     @Inject
+    CreditCompanyBillSearch creditCompanyBillSearch;
+    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ChannelSearchController channelSearchController;
@@ -3852,6 +3854,16 @@ public class BillSearch implements Serializable {
         return "/credit/credit_compnay_bill_opd?faces-redirect=true";
     }
 
+    public String navigateToViewInpatientCreditBatchBillSettle() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+        creditCompanyBillSearch.setBill((BilledBill) bill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/inpatient_credit_company_bill_reprint?faces-redirect=true";
+    }
+
     public String navigateToViewOpdProfessionalPaymentBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -4154,6 +4166,14 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBatchBill();
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewOpdCreditBatchBillSettle();
+            case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewOpdCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewOpdCreditBatchBillSettle();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 
@@ -4423,6 +4443,14 @@ public class BillSearch implements Serializable {
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return navigateToViewOpdBatchBill();
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewOpdCreditBatchBillSettle();
+            case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewOpdCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
                 return navigateToViewOpdCreditBatchBillSettle();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
