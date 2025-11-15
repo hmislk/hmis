@@ -238,6 +238,8 @@ public class BillSearch implements Serializable {
     @Inject
     CashRecieveBillController cashRecieveBillController;
     @Inject
+    CreditCompanyBillSearch creditCompanyBillSearch;
+    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ChannelSearchController channelSearchController;

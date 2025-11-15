@@ -14025,60 +14025,6 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createCancelledCreditTable() {
-        Date startTime = new Date();
-
-        bills = null;
-        String sql;
-        Map temMap = new HashMap();
-
-        sql = "select b from BilledBill b "
-                + " where b.billType = :billType"
-                + "  and b.institution=:ins "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.retired=false "
-                + " and b.cancelled=true ";
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
-            sql += " and  ((b.fromInstitution.name) like :frmIns )";
-            temMap.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBank() != null && !getSearchKeyword().getBank().trim().equals("")) {
-            sql += " and  ((b.bank.name) like :bank )";
-            temMap.put("bank", "%" + getSearchKeyword().getBank().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
-            sql += " and  ((b.chequeRefNo) like :num )";
-            temMap.put("num", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
-        }
-
-        sql += " order by b.createdAt desc  ";
-
-        temMap.put("billType", BillType.CashRecieveBill);
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        temMap.put("ins", getSessionController().getInstitution());
-
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
-
-        if (settledBillType != null) {
-            bills = filterBills(bills, settledBillType);
-        }
-
-    }
-
     private List<Bill> filterBills(List<Bill> bills, String settledBillType) {
         List<Bill> filteredBills = new ArrayList<>();
         String billType;

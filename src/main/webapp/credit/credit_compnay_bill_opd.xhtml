@@ -34,13 +34,6 @@
                                     icon="fa fa-plus"
                                     class="ui-button-warning">
                                 </p:commandButton>
-                                <p:commandButton
-                                    value="View Cancelled Bills"
-                                    ajax="false"
-                                    action="credit_company_bill_cancelled_view?faces-redirect=true"
-                                    icon="fa fa-eye"
-                                    class="ui-button-secondary">
-                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>
@@ -320,13 +313,6 @@
                             icon="pi pi-times"
                             styleClass="ui-button-danger m-1">
                             <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                        <p:commandButton
-                            value="View Cancelled Bills"
-                            ajax="false"
-                            action="credit_company_bill_cancelled_view?faces-redirect=true"
-                            icon="fa fa-eye"
-                            class="ui-button-secondary m-1">
                         </p:commandButton>
                         <p:commandButton
                             value="Print"
