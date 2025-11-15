@@ -197,6 +197,9 @@ public class ExcelController {
             case "ChannelBookingsCancellation":
                 return addDataToExcelForChannelBookingsCancellation(dataSheet, startRow, addingBundle);
             case "cashierSummaryOpd":
+            case "OutpatientCreditSettling":
+            case "OutpatientCreditSettlingCancel":
+            case "OutpatientCreditSettlingAdjustments":
                 return addDataToExcelForcashierSummaryOpd(dataSheet, startRow, addingBundle);
         }
         return startRow++;
