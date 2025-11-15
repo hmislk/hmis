@@ -3523,16 +3523,16 @@ public class SearchController implements Serializable {
         jpql.append("b.createdAt, ");
         jpql.append("COALESCE(c.webUserPerson.name, ''), ");
         // Pre-bill refunded status
-        jpql.append("b.refunded, ");
-        jpql.append("rb.createdAt, ");
+        jpql.append("COALESCE(b.refunded, false), ");
+        jpql.append("COALESCE(rb.createdAt, NULL), ");
         jpql.append("COALESCE(rbc.webUserPerson.name, ''), ");
         jpql.append("COALESCE(rb.comments, ''), ");
         // Pre-bill retired status
-        jpql.append("b.retired, ");
-        jpql.append("b.retiredAt, ");
+        jpql.append("COALESCE(b.retired, false), ");
+        jpql.append("COALESCE(b.retiredAt, NULL), ");
         // Pre-bill cancelled status
-        jpql.append("b.cancelled, ");
-        jpql.append("cb.createdAt, ");
+        jpql.append("COALESCE(b.cancelled, false), ");
+        jpql.append("COALESCE(cb.createdAt, NULL), ");
         jpql.append("COALESCE(cbc.webUserPerson.name, ''), ");
         jpql.append("COALESCE(cb.comments, ''), ");
         // Financial fields
@@ -3548,15 +3548,15 @@ public class SearchController implements Serializable {
         jpql.append("COALESCE(td.name, ''), ");
         jpql.append("COALESCE(ti.name, ''), ");
         // Reference bill (payment bill) fields
-        jpql.append("refb.id, ");
-        jpql.append("refb.deptId, ");
-        jpql.append("refb.createdAt, ");
+        jpql.append("COALESCE(refb.id, NULL), ");
+        jpql.append("COALESCE(refb.deptId, ''), ");
+        jpql.append("COALESCE(refb.createdAt, NULL), ");
         jpql.append("COALESCE(refc.webUserPerson.name, ''), ");
-        jpql.append("refb.cancelled, ");
-        jpql.append("refcb.createdAt, ");
+        jpql.append("COALESCE(refb.cancelled, false), ");
+        jpql.append("COALESCE(refcb.createdAt, NULL), ");
         jpql.append("COALESCE(refcbc.webUserPerson.name, ''), ");
-        jpql.append("refb.refunded, ");
-        jpql.append("refrb.createdAt, ");
+        jpql.append("COALESCE(refb.refunded, false), ");
+        jpql.append("COALESCE(refrb.createdAt, NULL), ");
         jpql.append("COALESCE(refrbc.webUserPerson.name, '')) ");
 
         // From clause with all necessary left joins
