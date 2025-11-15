@@ -27,10 +27,10 @@
                                     icon="fa fa-check">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton 
-                                    value="New Bill" 
-                                    ajax="false" 
-                                    action="#{cashRecieveBillController.prepareNewBill()}" 
+                                <p:commandButton
+                                    value="New Bill"
+                                    ajax="false"
+                                    action="#{cashRecieveBillController.prepareNewBill()}"
                                     icon="fa fa-plus"
                                     class="ui-button-warning">
                                 </p:commandButton>
@@ -305,11 +305,11 @@
                             class="ui-button-success m-1">
                         </p:commandButton>
 
-                        <p:commandButton 
-                            value="To Cancel Bill" 
+                        <p:commandButton
+                            value="To Cancel Bill"
                             disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
-                            ajax="false" 
-                            action="credit_company_bill_cancel" 
+                            ajax="false"
+                            action="credit_company_bill_cancel"
                             icon="pi pi-times"
                             styleClass="ui-button-danger m-1">
                             <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
