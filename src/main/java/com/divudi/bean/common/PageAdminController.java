@@ -75,6 +75,34 @@ public class PageAdminController implements Serializable {
         return "/index?faces-redirect=true";
     }
 
+    /**
+     * Navigate to page-specific configuration management.
+     * Shows only the configuration options used by the current page.
+     *
+     * @return Navigation outcome to page-specific configuration page
+     */
+    public String navigateToPageSpecificConfigManagement() {
+        if (currentMetadata == null) {
+            JsfUtil.addErrorMessage("No page metadata available");
+            return null;
+        }
+        return "/admin/page_specific_config_management?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to page-specific privilege management.
+     * Shows only the privileges required by the current page.
+     *
+     * @return Navigation outcome to page-specific privilege page
+     */
+    public String navigateToPageSpecificPrivilegeManagement() {
+        if (currentMetadata == null) {
+            JsfUtil.addErrorMessage("No page metadata available");
+            return null;
+        }
+        return "/admin/page_specific_privilege_management?faces-redirect=true";
+    }
+
     // Getters and Setters
 
     public String getSelectedPagePath() {
