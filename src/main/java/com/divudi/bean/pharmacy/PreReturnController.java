@@ -209,6 +209,11 @@ public class PreReturnController implements Serializable {
     StaffService staffBean;
 
     public void settle() {
+        // Check if credit has been partially or fully settled
+        if (bill != null && bill.getPaidAmount() > 0) {
+            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+            return;
+        }
 
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
