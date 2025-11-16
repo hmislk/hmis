@@ -79,8 +79,8 @@
                                                 styleClass="w-100"
                                                 inputStyleClass="w-100"
                                                 completeMethod="#{itemController.completeMedicineByTypePriority}"
-                                                var="med" itemLabel="#{med.name}" itemValue="#{med}"
-                                                converter="itemConverter" >
+                                                var="med" itemLabel="#{med.name}" 
+                                                itemValue="#{med}">
                                     <p:column headerText="Medicine" >
                                         <h:outputLabel value="#{med.name}"></h:outputLabel>
                                     </p:column>
@@ -230,7 +230,7 @@
                                                      styleClass="ui-button-warning ui-button-sm"
                                                      icon="fas fa-edit"
                                                      action="#{favouriteController.prepareEditFavouriteDiagnosis(fd)}"
-                                                     update="dlgFavouriteDiagnosis"
+                                                     update=":#{p:resolveFirstComponentWithId('dlgFavouriteDiagnosis',view).clientId}"
                                                      oncomplete="PF('dlgDiagnosis').show()" />
 
                                     <p:commandButton value="Delete"

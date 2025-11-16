@@ -656,7 +656,7 @@ public class FavouriteController implements Serializable {
     // ========================================
 
     /**
-     * Saves a new favourite diagnosis
+     * Saves or updates a favourite diagnosis based on ID
      */
     public void saveFavDiagnosis(){
         if (item == null) {
@@ -675,11 +675,19 @@ public class FavouriteController implements Serializable {
         current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
         current.setForItem(item);
         current.setForWebUser(sessionController.getLoggedUser());
-        current.setOrderNo(getItems().size() + 1.0);
-        favouriteItemFacade.create(current);
+
+        // Check if ID is null to determine create vs update
+        if (current.getId() == null) {
+            current.setOrderNo(getItems().size() + 1.0);
+            favouriteItemFacade.create(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis saved successfully");
+        } else {
+            favouriteItemFacade.edit(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis updated successfully");
+        }
+
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
         current = null;
-        JsfUtil.addSuccessMessage("Favourite diagnosis saved successfully");
     }
 
     /**
@@ -706,11 +714,21 @@ public class FavouriteController implements Serializable {
             JsfUtil.addErrorMessage("No Medicine Selected");
             return;
         }
+        current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
         current.setForWebUser(sessionController.getLoggedUser());
-        favouriteItemFacade.edit(current);
+
+        // Check if ID is null to determine create vs update
+        if (current.getId() == null) {
+            current.setOrderNo(getItems().size() + 1.0);
+            favouriteItemFacade.create(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis created successfully");
+        } else {
+            favouriteItemFacade.edit(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis updated successfully");
+        }
+
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
         current = null;
-        JsfUtil.addSuccessMessage("Favourite diagnosis updated successfully");
     }
 
     /**
