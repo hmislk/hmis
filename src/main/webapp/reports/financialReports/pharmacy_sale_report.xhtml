@@ -9,174 +9,283 @@
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
-                    <p:panel header="Pharmacy Sale (OP/IP)" class="w-100">
+                    <p:panel header="Pharmacy Sale (OP/IP)" class="w-100 my-2">
                         <h:panelGrid columns="5" class="w-100" >
 
-
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date"  class="mx-3">
-                                </p:outputLabel>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
+                            <p:calendar
+                                id="fromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm"
+                                />
 
                             <p:spacer width="20"></p:spacer>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" class="mx-3" >
-                                </p:outputLabel>
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa mr-2"/> 
+                                <p:outputLabel value="To" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
-
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                navigator="false"
+                                pattern="dd/MM/yyyy HH:mm"
+                                />
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Institution" class="mx-3"/>
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
                             </p:selectOneMenu>
 
-
                             <p:spacer width="20"></p:spacer>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Site" class="mx-3"/>
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <p:selectOneMenu
+                                id="phmSite"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
                             </p:selectOneMenu>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf54e;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Store" class="mx-3"/>
+                                <h:outputLabel value="Store" for="sto" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <p:selectOneMenu id="sto" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All Stores" ></f:selectItem>
+
                             </p:selectOneMenu>
 
 
                             <p:spacer width="20"></p:spacer>
 
-
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf2b9;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Visit Type" class="mx-3"/>
+                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Visit Type" for="type" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <p:selectOneMenu id="type" class="w-100 " >
+                                <f:selectItem itemLabel="Select Type" ></f:selectItem>
+                                <f:selectItem itemLabel="OP" itemValue="detail"/>
+                                <f:selectItem itemLabel="IP" itemValue="summery"/>
                             </p:selectOneMenu>
 
 
 
-                        </h:panelGrid><br/>
+                        </h:panelGrid>
 
+                        <div class="d-flex align-items-center my-4">
 
+                            <p:commandButton 
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process" />
 
+                            <p:commandButton 
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All" />
 
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" action="#{reportController.processLabTestCount()}" >
-                            </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                            </p:commandButton>
-                        </div><br/><br/>
+                            <p:commandButton 
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download" />
 
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF" />
 
-                        <p:panel>
-                            <f:facet name="header">
-                                <h:outputLabel value="BHT Issue Value Report" /><br/><br/>
+                        </div>
 
-                                <h:outputLabel value="Branch :"/>
-                                <br/>
-                                <h:outputLabel value="From Date :"/>
-                                <br/>
-                                <h:outputLabel value="To Date :"/>      
-                                <br/> 
-                                <h:outputLabel value="Store :"/>
-                                <br/>
-                            </f:facet>
+                        <p:panel header="BHT Issue Value Report" styleClass="my-2">
 
+                            <table class="table table-bordered table-sm mb-3">
 
-                            <p:dataTable>  
-                                <p:column headerText="MRNO">
-                                    <h:outputText value="" ></h:outputText>
+                                <tr>
+                                    <th style="width: 200px;">Site :</th>
+                                    <td>
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>From Date :</th>
+                                    <td>
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>To Date :</th>
+                                    <td>
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>Store :</th>
+                                    <td>
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+
+                            </table>
+
+                            <p:dataTable
+                                id="printPanel"
+                                var="var"
+                                rowIndexVar="n"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rows="10"
+                                rendered="true"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                styleClass="table-sm">
+                                
+                                <p:column width= "8em" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="MRNO" />
+                                    </f:facet>
+                                    <h:outputText value="">
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value=""/>
+                                    </f:facet>
                                 </p:column>
-                                <p:column headerText="BHT No">
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width= "8em" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="BHT No." />
+                                    </f:facet>
+                                    <h:outputText value="">
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Invoice No" width="">
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Invoice No." />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Bill No" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Bill No." />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Invoice Date" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Invoice Date" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Item Rate" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Item Rate" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Gross Value" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Gross Value" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Gross Total" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Gross Total" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Margin Value" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Margin Value" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Margin Total" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Margin Total" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Discount Value" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Discount Value" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Discount Total" >
-                                    <h:outputText value="" ></h:outputText>
+                                
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Discount Total" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Net Value" >
-                                    <h:outputText value="" ></h:outputText>
+                                
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Net Value" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Net Total" >
-                                    <h:outputText value="" ></h:outputText>
+                                
+                                <p:column width="8em">
+                                    <f:facet name="header">
+                                        <h:outputText value="Net Total" />
+                                    </f:facet>
+                                    <h:outputText value=""> 
+                                    </h:outputText>
                                 </p:column>
+
                             </p:dataTable>
-                        </p:panel>
 
+                        </p:panel>
 
                     </p:panel>
 
