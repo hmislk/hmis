@@ -71,6 +71,22 @@
                                 <p:outputLabel value="Selected Diagnosis:" styleClass="font-weight-bold" />
                                 <h:outputText value="#{favouriteController.item.name}" styleClass="text-primary font-weight-bold" />
 
+                                <!-- Medicine Selection Section -->
+                                <p:outputLabel value="Select Medicine:" for="acMedicine" styleClass="font-weight-bold" />
+                                <p:autoComplete id="acMedicine"
+                                                value="#{favouriteController.current.item}"
+                                                forceSelection="true"
+                                                styleClass="w-100"
+                                                inputStyleClass="w-100"
+                                                completeMethod="#{itemController.completeMedicineByTypePriority}"
+                                                var="med" itemLabel="#{med.name}" itemValue="#{med}"
+                                                converter="itemConverter" >
+                                    <p:column headerText="Medicine" >
+                                        <h:outputLabel value="#{med.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:ajax event="itemSelect" process="@this" update="diagnosisTab" />
+                                </p:autoComplete>
+
                                 <!-- Section Separator -->
                                 <h:outputText value="" styleClass="d-block mt-3" />
                                 <h:outputText value="" styleClass="d-block mt-3" />
@@ -201,6 +217,10 @@
                             </p:column>
 
                             <p:column headerText="Diagnosis">
+                                <h:outputText value="#{fd.forItem.name}" />
+                            </p:column>
+
+                            <p:column headerText="Medicine">
                                 <h:outputText value="#{fd.item.name}" />
                             </p:column>
 

@@ -891,29 +891,51 @@
                                 <p:tab title="Referrals">
                                     <div class="row" >
                                         <div class="col-4 p-1" >
-                                            <p:panelGrid columns="3" class="w-100 m-1" >
+                                            <p:panel class="w-100 m-1">
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generate New Document" ></p:outputLabel>
                                                 </f:facet>
-                                                <p:outputLabel value="Select a Template" ></p:outputLabel>
-                                                <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
-                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                    <f:selectItems 
-                                                        value="#{patientEncounterController.userDocumentTemplates}"
-                                                        var="dt"
-                                                        itemLabel="#{dt.name}"
-                                                        itemValue="#{dt}"></f:selectItems>
-                                                </p:selectOneMenu>
-                                                <p:commandButton 
-                                                    id="btnGenerateNewDocument"
-                                                    value="Generate" 
-                                                    class="ui-button-warning"
-                                                    icon="fas fa-arrows-rotate"
-                                                    process="btnGenerateNewDocument somTemplates"
-                                                    update="lstEncounterDocs gpReferralDoc"
-                                                    action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
-                                                </p:commandButton>
-                                            </p:panelGrid>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <p:outputLabel value="Select a Template" class="form-label"></p:outputLabel>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" class="w-100">
+                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                            <f:selectItems
+                                                                value="#{patientEncounterController.userDocumentTemplates}"
+                                                                var="dt"
+                                                                itemLabel="#{dt.name}"
+                                                                itemValue="#{dt}"></f:selectItems>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <p:commandButton
+                                                            id="btnRefreshTemplates"
+                                                            value="Refresh"
+                                                            class="ui-button-info"
+                                                            icon="fas fa-sync-alt"
+                                                            title="Refresh template list"
+                                                            process="btnRefreshTemplates"
+                                                            update="somTemplates"
+                                                            action="#{patientEncounterController.refreshUserDocumentTemplates}">
+                                                        </p:commandButton>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <p:commandButton
+                                                            id="btnGenerateNewDocument"
+                                                            value="Generate"
+                                                            class="ui-button-warning"
+                                                            icon="fas fa-arrows-rotate"
+                                                            process="btnGenerateNewDocument somTemplates"
+                                                            update="lstEncounterDocs gpReferralDoc"
+                                                            action="#{patientEncounterController.generateAndAddDocumentFromTemplate}">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                            </p:panel>
                                             <p:panelGrid columns="3" class="w-100 m-1" >
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generated Documents" ></p:outputLabel>

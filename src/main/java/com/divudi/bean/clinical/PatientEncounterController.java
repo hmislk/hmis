@@ -3389,6 +3389,12 @@ public class PatientEncounterController implements Serializable {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
 
+    public void refreshUserDocumentTemplates() {
+        userDocumentTemplates = null; // Clear cached templates
+        userDocumentTemplates = documentTemplateController.fillAllItems(sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage("Document templates refreshed successfully");
+    }
+
     public ClinicalFindingValue getEncounterInvestigationResult() {
         if (encounterInvestigationResult == null) {
             encounterInvestigationResult = new ClinicalFindingValue();

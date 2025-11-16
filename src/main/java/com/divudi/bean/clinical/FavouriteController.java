@@ -667,6 +667,10 @@ public class FavouriteController implements Serializable {
             JsfUtil.addErrorMessage("No diagnosis template prepared");
             return;
         }
+        if (current.getItem() == null) {
+            JsfUtil.addErrorMessage("No Medicine Selected");
+            return;
+        }
 
         current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
         current.setForItem(item);
@@ -696,6 +700,10 @@ public class FavouriteController implements Serializable {
     public void updateFavDiagnosis(){
         if (current == null) {
             JsfUtil.addErrorMessage("No diagnosis template prepared for update");
+            return;
+        }
+        if (current.getItem() == null) {
+            JsfUtil.addErrorMessage("No Medicine Selected");
             return;
         }
         current.setForWebUser(sessionController.getLoggedUser());
