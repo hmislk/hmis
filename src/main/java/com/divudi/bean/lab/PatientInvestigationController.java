@@ -4591,20 +4591,24 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
     }
+    
+    public String getActivePatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {
+        List<PatientSampleComponant> pscs = getPatientSampleComponentsByInvestigation(patientInvestigation);
+        
+        if (pscs == null || pscs.isEmpty()) {
+            return "Not generated yet.";
+        }
+        
+        return pscs.stream()
+                .map(psc -> psc.getPatientSample() != null ? psc.getPatientSample().getIdStr() : "N/A")
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" | "));
+        
+    }
 
     public String getPatientSamplesByInvestigationAsString(PatientInvestigation patientInvestigation) {
-        List<PatientSample> patientSamples = getPatientSamplesByInvestigation(patientInvestigation);
-
-        if (patientSamples == null || patientSamples.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (PatientSample ps : patientSamples) {
-            sb.append(ps.getSampleId()).append(" ");
-        }
-
-        return sb.toString();
+        return getActivePatientSamplesByInvestigation(patientInvestigation);
+        
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
