@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls \"C:\\Development\\hmis\\src\\main\\webapp\\resources\\ezcomp\\bundles\"\" | grep -i \"pharmacy.*collection \")"
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
