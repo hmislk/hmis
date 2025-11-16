@@ -3371,6 +3371,9 @@ public class PatientEncounterController implements Serializable {
     }
 
     public List<DocumentTemplate> getUserDocumentTemplates() {
+        if (userDocumentTemplates == null) {
+            userDocumentTemplates = documentTemplateController.fillAllItems(sessionController.getLoggedUser());
+        }
         return userDocumentTemplates;
     }
 
