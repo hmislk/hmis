@@ -1141,6 +1141,132 @@ public class PatientEncounterController implements Serializable {
         updateOrGeneratePrescription();
     }
 
+    /**
+     * Adds favourite medicines to the current encounter using a 3-tier priority lookup:
+     * 1. By Weight Formula (currently under construction - returns unsuccessful)
+     * 2. By Patient Weight Group (retrieves pre-programmed medicine details if available)
+     * 3. By Patient Age Group (fallback when weight data is unavailable)
+     *
+     * @param patient The patient for whom to add favourite medicines
+     */
+    public void addFavouriteMedicines(Patient patient) {
+        if (patient == null) {
+            JsfUtil.addErrorMessage("Patient not found");
+            return;
+        }
+
+        if (current == null) {
+            JsfUtil.addErrorMessage("Current encounter not found");
+            return;
+        }
+
+        if (encounterMedicines == null) {
+            encounterMedicines = new ArrayList<>();
+        }
+
+        List<PrescriptionTemplate> favouriteMedicines = new ArrayList<>();
+        String lookupMethod = "";
+
+        // Get patient weight from current encounter
+        Double patientWeight = current.getWeight();
+
+        // Get patient age in days
+        Long patientAgeInDays = patient.getAgeInDays();
+
+        // Method 1: By Weight Formula (currently under construction)
+        // This method is not yet implemented and should return unsuccessful
+        // Skip to Method 2
+
+        // Method 2: By Patient Weight Group (if weight is available)
+        if (patientWeight != null && patientWeight > 0) {
+            favouriteMedicines = favouriteController.listFavouriteItems(
+                null,
+                PrescriptionTemplateType.FavouriteMedicine,
+                patientWeight,
+                null
+            );
+            if (!favouriteMedicines.isEmpty()) {
+                lookupMethod = "weight group (" + patientWeight + " kg)";
+            }
+        }
+
+        // Method 3: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
+        if (favouriteMedicines.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
+            favouriteMedicines = favouriteController.listFavouriteItems(
+                null,
+                PrescriptionTemplateType.FavouriteMedicine,
+                null,
+                patientAgeInDays
+            );
+            if (!favouriteMedicines.isEmpty()) {
+                lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
+            }
+        }
+
+        // Check if any favourites were found
+        if (favouriteMedicines == null || favouriteMedicines.isEmpty()) {
+            String message = "No favourite medicines found";
+            if (patientWeight != null && patientWeight > 0) {
+                message += " for weight " + patientWeight + " kg";
+            } else if (patientAgeInDays != null && patientAgeInDays > 0) {
+                message += " for age " + (patientAgeInDays / 365) + " years";
+            }
+            JsfUtil.addWarningMessage(message);
+            return;
+        }
+
+        // Add favourite medicines to encounter
+        int addedCount = 0;
+        for (PrescriptionTemplate template : favouriteMedicines) {
+            if (template == null || template.getItem() == null) {
+                continue;
+            }
+
+            // Create new prescription from template
+            Prescription prescription = new Prescription();
+            prescription.setItem(template.getItem());
+            prescription.setDose(template.getDose());
+            prescription.setDoseUnit(template.getDoseUnit());
+            prescription.setFrequencyUnit(template.getFrequencyUnit());
+            prescription.setDuration(template.getDuration());
+            prescription.setDurationUnit(template.getDurationUnit());
+            prescription.setIndoor(template.isIndoor());
+
+            // Create ClinicalFindingValue wrapper
+            ClinicalFindingValue cfv = new ClinicalFindingValue();
+            cfv.setEncounter(current);
+            cfv.setPatient(patient);
+            cfv.setPerson(patient.getPerson());
+            cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+            cfv.setPrescription(prescription);
+
+            // Persist prescription and clinical finding value
+            if (prescription.getId() == null) {
+                prescriptionFacade.create(prescription);
+            } else {
+                prescriptionFacade.edit(prescription);
+            }
+
+            if (cfv.getId() == null) {
+                clinicalFindingValueFacade.create(cfv);
+            } else {
+                clinicalFindingValueFacade.edit(cfv);
+            }
+
+            getEncounterFindingValues().add(cfv);
+            encounterMedicines.add(cfv);
+            addedCount++;
+        }
+
+        // Update prescription document
+        updateOrGeneratePrescription();
+
+        // Show success message
+        if (addedCount > 0) {
+            JsfUtil.addSuccessMessage(addedCount + " favourite medicine(s) added from " + lookupMethod);
+        }
+    }
+
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
         return fillCurrentPatientClinicalFindingValues(patient, null);
     }
