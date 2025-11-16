@@ -2,15 +2,231 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/emr/admin/index.xhtml">
 
-            <ui:define name="content">
-                
-                
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel  >
+                        <f:facet name="header" >
+                            <h:outputText value="Manage Favourite Diagnosis By Age" >
+                            </h:outputText>
+                        </f:facet>
+
+                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-3 p-3" style="gap: 1rem; flex-wrap: wrap;">
+
+                            <!-- Diagnosis Selection Section -->
+                            <h:panelGroup layout="block" styleClass="flex-fill" style="min-width: 300px; max-width: 600px;">
+                                <p:outputLabel value="Select Diagnosis" styleClass="d-block mb-2 font-weight-bold"></p:outputLabel>
+                                <p:autoComplete id="acDiagnosis"
+                                                value="#{favouriteController.item}"
+                                                forceSelection="true"
+                                                styleClass="w-100"
+                                                inputStyleClass="w-100"
+                                                completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                var="dg" itemLabel="#{dg.name}" itemValue="#{dg}" >
+                                    <p:column headerText="Diagnosis" >
+                                        <h:outputLabel value="#{dg.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:ajax event="itemSelect" process="@this" update="diagnosisTab"
+                                            listener="#{favouriteController.onItemSelected}" />
+                                </p:autoComplete>
+                            </h:panelGroup>
+
+                            <!-- Action Buttons Section -->
+                            <h:panelGroup layout="block" styleClass="d-flex" style="gap: 0.75rem; align-items: flex-end;">
+                                <p:commandButton value="Add New"
+                                                 styleClass="ui-button-success"
+                                                 icon="fas fa-plus"
+                                                 process="@this"
+                                                 update="dlgFavouriteDiagnosis"
+                                                 oncomplete="PF('dlgDiagnosis').show()"
+                                                 action="#{favouriteController.prepareAddingFavouriteDiagnosis()}" >
+                                </p:commandButton>
+
+                                <p:commandButton value="Fill"
+                                                 styleClass="ui-button-info"
+                                                 icon="fas fa-fill-drip"
+                                                 action="#{favouriteController.fillFavouriteDisgnosis()}"
+                                                 update="favouriteDiagnosisTable">
+                                    <f:setPropertyActionListener target="#{favouriteController.item}" value="#{favouriteController.item}" />
+                                </p:commandButton>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+
+                        <!-- Add New Diagnosis Dialog -->
+                        <p:dialog
+                            id="dlgFavouriteDiagnosis"
+                            header="Add Favourite Diagnosis" widgetVar="dlgDiagnosis" modal="true" width="600px" responsive="true">
+                            <h:panelGrid id="diagnosisTab" columns="2" styleClass="w-100 p-3" columnClasses="p-2,p-2">
+
+                                <!-- Diagnosis Information Section -->
+                                <p:outputLabel value="Selected Diagnosis:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{favouriteController.item.name}" styleClass="text-primary font-weight-bold" />
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Age Range Section -->
+                                <p:outputLabel value="From Age (Days):" for="fromDays" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <p:inputText id="fromDays" value="#{favouriteController.current.fromDays}"
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="fromAgeDisplay" />
+                                        <p:ajax event="blur" update="fromAgeDisplay" />
+                                    </p:inputText>
+                                    <h:panelGroup id="fromAgeDisplay" layout="block" styleClass="text-muted small mt-1">
+                                        <i class="fas fa-info-circle"></i>
+                                        <h:outputText value=" Approximately: " />
+                                        <h:outputText value="#{favouriteController.current.fromDays / 365}"
+                                                      rendered="#{favouriteController.current.fromDays >= 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" years"
+                                                      rendered="#{favouriteController.current.fromDays >= 365}" />
+                                        <h:outputText value="#{favouriteController.current.fromDays / 30}"
+                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" months"
+                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}" />
+                                        <h:outputText value="#{favouriteController.current.fromDays} days"
+                                                      rendered="#{favouriteController.current.fromDays &lt; 30 and favouriteController.current.fromDays > 0}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:outputLabel value="To Age (Days):" for="toDays" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <p:inputText id="toDays" value="#{favouriteController.current.toDays}"
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="toAgeDisplay" />
+                                        <p:ajax event="blur" update="toAgeDisplay" />
+                                    </p:inputText>
+                                    <h:panelGroup id="toAgeDisplay" layout="block" styleClass="text-muted small mt-1">
+                                        <i class="fas fa-info-circle"></i>
+                                        <h:outputText value=" Approximately: " />
+                                        <h:outputText value="#{favouriteController.current.toDays / 365}"
+                                                      rendered="#{favouriteController.current.toDays >= 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" years"
+                                                      rendered="#{favouriteController.current.toDays >= 365}" />
+                                        <h:outputText value="#{favouriteController.current.toDays / 30}"
+                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" months"
+                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}" />
+                                        <h:outputText value="#{favouriteController.current.toDays} days"
+                                                      rendered="#{favouriteController.current.toDays &lt; 30 and favouriteController.current.toDays > 0}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                            </h:panelGrid>
+
+                            <!-- Dialog Actions -->
+                            <f:facet name="footer">
+                                <p:commandButton value="Save Favourite Diagnosis"
+                                                 styleClass="ui-button-success"
+                                                 icon="fas fa-save"
+                                                 action="#{favouriteController.saveFavDiagnosis()}"
+                                                 update="favouriteDiagnosisTable"
+                                                 oncomplete="PF('dlgDiagnosis').hide()"/>
+                                <p:commandButton value="Cancel"
+                                                 styleClass="ui-button-secondary"
+                                                 icon="fas fa-times"
+                                                 onclick="PF('dlgDiagnosis').hide()" type="button" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <!-- Existing Favourite Diagnosis Table -->
+                        <p:dataTable id="favouriteDiagnosisTable"
+                                     value="#{favouriteController.items}" var="fd"
+                                     styleClass="table table-striped mt-4"
+                                     emptyMessage="No favourite diagnosis items found"
+                                     paginator="true"
+                                     paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     rows="10">
+
+                            <f:facet name="header">
+                                <h:outputText value="Existing Favourite Diagnosis" />
+                            </f:facet>
+
+                            <p:column headerText="From Age" style="width: 120px">
+                                <h:outputText value="#{fd.fromDays}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputText>
+                                <h:outputText value=" days" />
+                                <br/>
+                                <h:outputText value="#{fd.fromDays / 365}" styleClass="text-muted small"
+                                              rendered="#{fd.fromDays >= 365}">
+                                    <f:convertNumber pattern="0.0" />
+                                </h:outputText>
+                                <h:outputText value=" years" styleClass="text-muted small"
+                                              rendered="#{fd.fromDays >= 365}" />
+                                <h:outputText value="#{fd.fromDays / 30}" styleClass="text-muted small"
+                                              rendered="#{fd.fromDays >= 30 and fd.fromDays &lt; 365}">
+                                    <f:convertNumber pattern="0.0" />
+                                </h:outputText>
+                                <h:outputText value=" months" styleClass="text-muted small"
+                                              rendered="#{fd.fromDays >= 30 and fd.fromDays &lt; 365}" />
+                            </p:column>
+
+                            <p:column headerText="To Age" style="width: 120px">
+                                <h:outputText value="#{fd.toDays}">
+                                    <f:convertNumber pattern="0" />
+                                </h:outputText>
+                                <h:outputText value=" days" />
+                                <br/>
+                                <h:outputText value="#{fd.toDays / 365}" styleClass="text-muted small"
+                                              rendered="#{fd.toDays >= 365}">
+                                    <f:convertNumber pattern="0.0" />
+                                </h:outputText>
+                                <h:outputText value=" years" styleClass="text-muted small"
+                                              rendered="#{fd.toDays >= 365}" />
+                                <h:outputText value="#{fd.toDays / 30}" styleClass="text-muted small"
+                                              rendered="#{fd.toDays >= 30 and fd.toDays &lt; 365}">
+                                    <f:convertNumber pattern="0.0" />
+                                </h:outputText>
+                                <h:outputText value=" months" styleClass="text-muted small"
+                                              rendered="#{fd.toDays >= 30 and fd.toDays &lt; 365}" />
+                            </p:column>
+
+                            <p:column headerText="Diagnosis">
+                                <h:outputText value="#{fd.item.name}" />
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width: 150px">
+                                <div class="d-flex gap-1">
+                                    <p:commandButton value="Edit"
+                                                     styleClass="ui-button-warning ui-button-sm"
+                                                     icon="fas fa-edit"
+                                                     action="#{favouriteController.prepareEditFavouriteDiagnosis(fd)}"
+                                                     update="dlgFavouriteDiagnosis"
+                                                     oncomplete="PF('dlgDiagnosis').show()" />
+
+                                    <p:commandButton value="Delete"
+                                                     styleClass="ui-button-danger ui-button-sm"
+                                                     icon="fas fa-trash"
+                                                     action="#{favouriteController.removeFavouriteDiagnosis(fd)}"
+                                                     update="favouriteDiagnosisTable"
+                                                     onclick="return confirm('Are you sure you want to delete this favourite diagnosis?')" />
+                                </div>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+
             </ui:define>
 
         </ui:composition>
