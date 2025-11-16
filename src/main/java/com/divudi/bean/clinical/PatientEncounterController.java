@@ -1267,6 +1267,105 @@ public class PatientEncounterController implements Serializable {
         }
     }
 
+    /**
+     * Adds favourite diagnosis to the current encounter based on patient's age
+     */
+    public void addFavouriteDiagnosis(Patient patient) {
+        if (patient == null) {
+            JsfUtil.addErrorMessage("Patient not found");
+            return;
+        }
+
+        if (current == null) {
+            JsfUtil.addErrorMessage("Current encounter not found");
+            return;
+        }
+
+        if (encounterDiagnoses == null) {
+            encounterDiagnoses = new ArrayList<>();
+        }
+
+        List<PrescriptionTemplate> favouriteDiagnoses = new ArrayList<>();
+        String lookupMethod = "";
+
+        // Get patient weight from current encounter
+        Double patientWeight = current.getWeight();
+
+        // Get patient age in days
+        Long patientAgeInDays = patient.getAgeInDays();
+
+        // Method 1: By Patient Weight Group (if weight is available)
+        if (patientWeight != null && patientWeight > 0) {
+            favouriteDiagnoses = favouriteController.listFavouriteItems(
+                null,
+                PrescriptionTemplateType.FavouriteDiagnosis,
+                patientWeight,
+                null
+            );
+            if (!favouriteDiagnoses.isEmpty()) {
+                lookupMethod = "weight group (" + patientWeight + " kg)";
+            }
+        }
+
+        // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
+        if (favouriteDiagnoses.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
+            favouriteDiagnoses = favouriteController.listFavouriteItems(
+                null,
+                PrescriptionTemplateType.FavouriteDiagnosis,
+                null,
+                patientAgeInDays
+            );
+            if (!favouriteDiagnoses.isEmpty()) {
+                lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
+            }
+        }
+
+        // Check if any favourites were found
+        if (favouriteDiagnoses == null || favouriteDiagnoses.isEmpty()) {
+            String message = "No favourite diagnoses found";
+            if (patientWeight != null && patientWeight > 0) {
+                message += " for weight " + patientWeight + " kg";
+            } else if (patientAgeInDays != null && patientAgeInDays > 0) {
+                message += " for age " + (patientAgeInDays / 365) + " years";
+            }
+            JsfUtil.addWarningMessage(message);
+            return;
+        }
+
+        // Add favourite diagnoses to encounter
+        int addedCount = 0;
+        for (PrescriptionTemplate template : favouriteDiagnoses) {
+            if (template == null || template.getItem() == null) {
+                continue;
+            }
+
+            // Create ClinicalFindingValue for diagnosis
+            ClinicalFindingValue cfv = new ClinicalFindingValue();
+            cfv.setEncounter(current);
+            cfv.setPatient(patient);
+            cfv.setPerson(patient.getPerson());
+            cfv.setClinicalFindingValueType(ClinicalFindingValueType.PatientDiagnosis);
+            cfv.setItemValue(template.getItem());
+            cfv.setLobValue("Added from favourite diagnosis template");
+
+            // Persist clinical finding value
+            if (cfv.getId() == null) {
+                clinicalFindingValueFacade.create(cfv);
+            } else {
+                clinicalFindingValueFacade.edit(cfv);
+            }
+
+            getEncounterFindingValues().add(cfv);
+            encounterDiagnoses.add(cfv);
+            addedCount++;
+        }
+
+        // Show success message
+        if (addedCount > 0) {
+            JsfUtil.addSuccessMessage(addedCount + " favourite diagnosis(es) added from " + lookupMethod);
+        }
+    }
+
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
         return fillCurrentPatientClinicalFindingValues(patient, null);
     }

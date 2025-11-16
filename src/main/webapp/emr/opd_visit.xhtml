@@ -36,7 +36,7 @@
                                 icon="fas fa-medkit" 
                                 title="Pharmacy">
                             </p:commandButton>
-                            
+
                             <p:commandButton class="p-0 m-1 ui-button-secondary" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
                                 <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
@@ -274,7 +274,7 @@
                                                 </div>
                                             </p:panel>
 
-                                            <p:panel class="w-100 m-1" >
+                                            <p:panel id="panelDiagnosis" class="w-100 m-1" >
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-stethoscope"/>
                                                     <h:outputText class="mx-4" value="Diagnosis"/>
@@ -291,15 +291,24 @@
                                                                         inputStyleClass="w-100">
                                                         </p:autoComplete>
                                                     </div>
-                                                    <div class="col-md-3" >
-                                                        <p:commandButton ajax="true" 
+                                                    <div class="col-md-3 d-flex gap-2" >
+                                                        <p:commandButton ajax="true"
                                                                          class="ui-button-success"
                                                                          value="Add"
-                                                                         id="btnAddDx" 
+                                                                         id="btnAddDx"
                                                                          action="#{patientEncounterController.addDx}"
-                                                                         process="acDx txtDx btnAddDx" 
+                                                                         process="acDx txtDx btnAddDx"
                                                                          update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:commandButton ajax="true"
+                                                                         class="ui-button-info"
+                                                                         value="Add Favourites"
+                                                                         id="btnAddFavDx"
+                                                                         action="#{patientEncounterController.addFavouriteDiagnosis(patientController.current)}"
+                                                                         process="btnAddFavDx"
+                                                                         update="gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="fas fa-star">
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
@@ -307,8 +316,8 @@
                                                                  id="txtDx" 
                                                                  value="#{patientEncounterController.diagnosisComments}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
@@ -382,8 +391,8 @@
                                                                  id="txtIx" 
                                                                  value="#{patientEncounterController.encounterInvestigation.lobValue}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpIx" >
                                                     <p:dataTable id="tblIx" 
                                                                  rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
@@ -427,7 +436,6 @@
                                                     <h:outputText styleClass="fas fa-pills"/>
                                                     <p:outputLabel class="mx-4" value="Medicines" />
 
-                                                    <p:commandButton value="Add Favourite" process="@this" class='ui-button-success' icon='fas fa-star' style="float: right; margin-right: 5px;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
 
                                                     <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
 
@@ -511,13 +519,25 @@
                                                         <!-- Add Prescription Button -->
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
-                                                            <p:commandButton value="Add"
-                                                                             class="ui-button-success"
-                                                                             id="btnAddRx"
-                                                                             icon="pi pi-plus"
-                                                                             process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update=" tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
-                                                                             action="#{patientEncounterController.addEncounterMedicine}" />
+                                                            <p:commandButton 
+                                                                value="Add"
+                                                                class="ui-button-success"
+                                                                id="btnAddRx"
+                                                                icon="pi pi-plus"
+                                                                process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addEncounterMedicine}" />
+
+                                                            <p:commandButton 
+                                                                id="btnAddRxFav"
+                                                                value="Add Favourite" 
+                                                                process="btnAddRxFav acMedicine" 
+                                                                class='ui-button-success' 
+                                                                icon='fas fa-star' 
+                                                                style="float: right; margin-right: 5px;" 
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -579,8 +599,8 @@
                                                                  id="txtIxp"
                                                                  value="#{patientEncounterController.encounterInvestigationResult.lobValue}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpIxp" >
                                                     <p:dataTable id="tblIxp"
                                                                  rendered="#{patientEncounterController.encounterInvestigationResults ne null and patientEncounterController.encounterInvestigationResults.size() > 0}"
@@ -669,8 +689,8 @@
                                                                  value="#{patientEncounterController.encounterProcedure.lobValue}">
                                                 </p:inputTextarea>
 
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpSx" >
                                                     <p:dataTable id="tblSx" 
                                                                  rendered="#{patientEncounterController.encounterProcedures ne null and patientEncounterController.encounterProcedures.size() > 0}"
@@ -738,7 +758,7 @@
                                                                  value="#{patientEncounterController.encounterPlanOfAction.lobValue}">
                                                 </p:inputTextarea>
 
-                                                
+
 
                                                 <h:panelGroup id="hgPa">
                                                     <p:dataTable id="tblPa" 
