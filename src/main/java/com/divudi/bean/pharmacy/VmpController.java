@@ -266,7 +266,7 @@ public class VmpController implements Serializable {
         String j;
         Map m = new HashMap();
         j = "Select vmp "
-                + " from VtmsVmps viv join viv.vmp vmp"
+                + " from VirtualProductIngredient viv join viv.vmp vmp"
                 + " where viv.retired=:ret "
                 + " and viv.vtm=:vtm "
                 + " order by vmp.name";
@@ -377,7 +377,7 @@ public class VmpController implements Serializable {
         if (vmp == null) {
             return new ArrayList<>();
         } else {
-            String j = "select v from VtmsVmps v where v.vmp=:vmp";
+            String j = "select v from VirtualProductIngredient v where v.vmp=:vmp";
             Map m = new HashMap();
             m.put("vmp", vmp);
             gs = getVivFacade().findByJpql(j, m);

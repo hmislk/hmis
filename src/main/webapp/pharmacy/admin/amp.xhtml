@@ -15,8 +15,8 @@
             <p:focus id="selectFocus" for="acAmp" />
             <p:focus id="detailFocus" for="gpDetail" />
             <p:panel  >
-                <f:facet name="header" >
-                    <h:outputLabel value="Manage AMPs" ></h:outputLabel>
+                <f:facet name="header">
+                    <h:outputLabel value="Manage AMPs"></h:outputLabel>
                 </f:facet>
 
                 <div class="row" >
@@ -32,20 +32,32 @@
                             >
 
                         </p:commandButton>
-                        <p:commandButton 
+                        <p:commandButton
                             id="btnDelete"
                             icon="fa fa-trash"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{ampController.delete()}"  
+                                        return false;" action="#{ampController.delete()}"
                             disabled="#{!configOptionApplicationController.getBooleanValueByKey('Enable edit and delete AMP from Pharmacy Administration.', false)}"
-                            value="Delete" 
+                            value="Delete"
                             update="acAmp gpDetail msg" process="btnDelete"
                             class="m-1 ui-button-danger w-25">
 
                         </p:commandButton>
 
 
-                        <p:autoComplete 
+
+
+
+                        <!-- Search section with better labeling -->
+                        <div class="mb-3">
+                            <h:outputLabel value="Search &amp; Select AMP" class="form-label fw-bold"/>
+                            <div class="text-muted small mb-2">
+                                <i class="fa fa-search text-info"></i>
+                                Search by name, code, or barcode (minimum 3 characters)
+                            </div>
+                        </div>
+
+                        <p:autoComplete
                             id="acAmp"
                             class="w-100"
                             inputStyleClass="w-100"
@@ -53,20 +65,29 @@
                             var="amp"
                             itemLabel="#{amp.name}"
                             itemValue="#{amp}"
-                            value="#{ampController.current}" 
+                            value="#{ampController.current}"
                             maxResults="10"
                             minQueryLength="3"
-                            >
-                            <p:ajax 
-                                update="gpDetail" 
+                            placeholder="Type to search AMPs..."
+                            emptyMessage="No AMPs found matching your search">
+                            <p:ajax
+                                update="gpDetail"
                                 process="acAmp"
                                 listener="#{pharmacyAdjustmentController.fillAmpStocks}">
                             </p:ajax>
-                            <p:column headerText="Item"  style="padding: 3px;" >
-                                <h:outputText value="#{amp.name}" ></h:outputText>
+                            <p:column headerText="Item" style="padding: 8px;">
+                                <div>
+                                    <div class="fw-bold">#{amp.name}</div>
+                                    <div class="text-muted small">
+                                        Code: #{amp.code != null ? amp.code : 'N/A'} |
+                                        Barcode: #{amp.barcode != null ? amp.barcode : 'N/A'}
+                                    </div>
+                                </div>
                             </p:column>
-                            <p:column headerText="Stock" style="padding: 3px;" >
-                                <h:outputText value="#{stockController.departmentItemStock(sessionController.department, amp)}" ></h:outputText>
+                            <p:column headerText="Stock" style="padding: 8px; text-align: center;">
+                                <div class="badge bg-info">
+                                    #{stockController.departmentItemStock(sessionController.department, amp)}
+                                </div>
                             </p:column>
                         </p:autoComplete>
 
@@ -96,41 +117,114 @@
 
                     </div>
                     <div class="col-6" >
-                        <p:panel header="Amp Details">
+                        <p:panel header="AMP Details">
                             <h:panelGrid id="gpDetail" columns="2" class="w-100">
-                                <h:outputText  value="Name" class="w-100"></h:outputText>
-                                <p:inputText autocomplete="off" id="txtName"  value="#{ampController.current.name}" styleClass="longText" class="w-100" />
+                                <!-- Name field with description -->
+                                <h:panelGroup class="w-100">
+                                    <h:outputText value="Name" class="form-label fw-bold"/>
+                                    <div class="text-muted small mb-1">
+                                        <i class="fa fa-info-circle text-info"></i>
+                                        Full name of the pharmaceutical product (required)
+                                    </div>
+                                </h:panelGroup>
+                                <p:inputText autocomplete="off" id="txtName"
+                                             value="#{ampController.current.name}"
+                                             placeholder="Enter full product name"
+                                             styleClass="longText" class="w-100"
+                                             required="true" />
 
 
-                                <h:outputText  value="Code" class="w-100"></h:outputText>
+                                <!-- Code field with enhanced descriptions -->
+                                <h:panelGroup class="w-100">
+                                    <h:outputText value="Code" class="form-label fw-bold"/>
+                                    <div class="text-muted small mb-1">
+                                        <i class="fa fa-info-circle text-info"></i>
+                                        Required: minimum #{configOptionApplicationController.getIntegerValueByKey('AMP_CODE_LENGTH', 4)} characters, must be unique across all AMPs
+                                    </div>
+                                </h:panelGroup>
+
                                 <h:panelGroup id="codePanel" class="w-100">
-                                    <p:inputText id="code" autocomplete="off"  value="#{ampController.current.code}" >
-                                        <p:ajax event="blur" process="@this" update="msg btnSave" listener="#{ampController.checkCodeDuplicate}" />
-                                    </p:inputText>
-                                    <p:commandButton id="generateCode" value="Generate Code"
-                                                     action="#{ampController.generateCode()}"
-                                                     process="generateCode codePanel"
-                                                     update="codePanel msg btnSave"
-                                                     class="mx-1 ui-button-secondary"
-                                                     icon="pi pi-refresh" />
+                                    <div class="input-group">
+                                        <p:inputText id="code" autocomplete="off"
+                                                     value="#{ampController.current.code}"
+                                                     placeholder="Enter unique code"
+                                                     styleClass="#{ampController.duplicateCode ? 'is-invalid' : ''}"
+                                                     maxlength="20">
+                                            <p:ajax event="blur" process="@this" update="codePanel msg btnSave codeValidationMsg" listener="#{ampController.checkCodeDuplicate}" />
+                                        </p:inputText>
+                                        <p:commandButton id="generateCode" value="Generate"
+                                                         title="Generate unique code automatically"
+                                                         action="#{ampController.generateCode()}"
+                                                         process="generateCode codePanel"
+                                                         update="codePanel msg btnSave codeValidationMsg"
+                                                         class="ui-button-secondary"
+                                                         icon="pi pi-refresh" />
+                                    </div>
+
+                                    <!-- Code validation feedback -->
+                                    <h:panelGroup id="codeValidationMsg" class="w-100">
+                                        <h:panelGroup rendered="#{ampController.duplicateCode}">
+                                            <div class="text-danger small mt-1">
+                                                <i class="fa fa-exclamation-triangle"></i>
+                                                Code already exists - please choose a different code or click Generate
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </h:panelGroup>
 
 
-                                <h:outputText  value="Bar Code" class="w-100"></h:outputText>
-                                <p:inputText autocomplete="off"  value="#{ampController.current.barcode}"  class="w-100"></p:inputText>
+                                <!-- Barcode field with description -->
+                                <h:panelGroup class="w-100">
+                                    <h:outputText value="Bar Code" class="form-label fw-bold"/>
+                                    <div class="text-muted small mb-1">
+                                        <i class="fa fa-info-circle text-info"></i>
+                                        Product barcode for scanning (optional)
+                                    </div>
+                                </h:panelGroup>
+                                <p:inputText autocomplete="off"
+                                             value="#{ampController.current.barcode}"
+                                             placeholder="Enter product barcode"
+                                             class="w-100" />
 
-                                <h:outputText  value="VMP (Product)" class="w-100"></h:outputText>
-                                <p:autoComplete  converter="vmp" 
+                                <!-- VMP field with description -->
+                                <h:panelGroup class="w-100">
+                                    <h:outputText value="VMP (Product)" class="form-label fw-bold"/>
+                                    <div class="text-muted small mb-1">
+                                        <i class="fa fa-info-circle text-info"></i>
+                                        Virtual Medicinal Product - select the generic product (required)
+                                    </div>
+                                </h:panelGroup>
+                                <p:autoComplete  converter="vmp"
                                                  completeMethod="#{vmpController.completeVmp}"
-                                                 var="pta" itemLabel="#{pta.name}" 
-                                                 itemValue="#{pta}" 
-                                                 forceSelection="true" 
+                                                 var="pta" itemLabel="#{pta.name}"
+                                                 itemValue="#{pta}"
+                                                 forceSelection="true"
                                                  value="#{ampController.current.vmp}"
                                                  class="w-100"
                                                  maxResults="15"
                                                  inputStyleClass="w-100"
+                                                 >
+                                </p:autoComplete>
 
-                                                 ></p:autoComplete>
+                                <h:outputText  value="Dosage Form" class="w-100"></h:outputText>
+                                <p:autoComplete  value="#{ampController.current.vmp.dosageForm}"
+                                                 forceSelection="true"
+                                                 completeMethod="#{dosageFormController.completeCategory}"
+                                                 class="w-100"
+                                                 inputStyleClass="w-100"
+                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                </p:autoComplete>
+
+                                <h:outputText  value="Strength" class="w-100"></h:outputText>
+                                <p:inputText autocomplete="off"  value="#{ampController.current.strengthOfAnIssueUnit}"  class="w-100"></p:inputText>
+
+                                <h:outputText  value="Strength Unit" class="w-100"></h:outputText>
+                                <p:selectOneMenu value="#{ampController.current.strengthUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Dose Unit" />
+                                    <f:selectItems value="#{measurementUnitController.items}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
 
 
                                 <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>
@@ -201,25 +295,56 @@
                                     offLabel="No"
                                     class="w-100" />
 
+                                <h:outputText  value="Consumption Allowed" class="w-100"></h:outputText>
+                                <p:selectBooleanButton
+                                    value="#{ampController.current.consumptionAllowed}"
+                                    onLabel="Yes"
+                                    offLabel="No"
+                                    class="w-100" />
+
+                                <h:outputText  value="Issue Unit" class="w-100"></h:outputText>
+                                <p:selectOneMenu value="#{ampController.current.issueUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Issue Unit" />
+                                    <f:selectItems value="#{measurementUnitController.issueUnits}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
+
                                 <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
-                                <h:inputTextarea 
-                                    id="txtIns" 
-                                    value="#{ampController.current.instructions}" 
-                                    required="false" 
+                                <h:inputTextarea
+                                    id="txtIns"
+                                    value="#{ampController.current.instructions}"
+                                    required="false"
                                     class="form-control" ></h:inputTextarea>
 
                             </h:panelGrid>
-                            <p:commandButton
-                                id="btnSave"
-                                value="Save"
-                                process="btnSave gpDetail"
-                                update="acAmp msg"
-                                class=" m-1 ui-button-warning w-25"
-                                icon="fas fa-save"
-                                disabled="#{ampController.duplicateCode}"
-                                action="#{ampController.save}"
-                                >
-                            </p:commandButton>
+
+                            <!-- Save section with validation info -->
+                            <div class="mt-4 pt-3 border-top">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Save AMP"
+                                            process="btnSave gpDetail"
+                                            update="acAmp msg @form"
+                                            class="ui-button-success"
+                                            icon="fas fa-save"
+                                            disabled="#{ampController.duplicateCode}"
+                                            action="#{ampController.save}">
+                                        </p:commandButton>
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        <h:panelGroup rendered="#{ampController.current.id != null}">
+                                            <div>Editing existing AMP</div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{ampController.current.id == null}">
+                                            <div>Creating new AMP</div>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
 
                         </p:panel>
 
@@ -230,6 +355,20 @@
 
             </p:panel>
         </h:form>
+        <h:form >
+            <!-- Bulk Code Generation Button -->
+            <p:commandButton
+                id="btnBulkCodeGen"
+                icon="fa fa-magic"
+                value="Generate All Codes"
+                title="Generate codes for all AMPs that need them"
+                onclick="return confirm('Are you sure you want to generate codes for all AMPs? This action cannot be undone.');"
+                action="#{ampController.performBulkCodeGeneration()}"
+                ajax="false"
+                class="m-1 ui-button-warning w-25">
+            </p:commandButton>
+        </h:form>
+
 
     </ui:define>
 

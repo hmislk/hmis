@@ -1,0 +1,265 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <!-- Privilege Guard: Only administrators can access this page -->
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}">
+                    <h:form id="privilegeForm">
+                        <!-- Null Safety: Check if metadata is loaded -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata ne null}">
+                            <p:panel header="Page-Specific Privilege Management" styleClass="mb-3">
+
+                                <!-- Page Information Section -->
+                                <h:panelGroup class="card mb-4 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                    <h:outputText value="Page Information" styleClass="h5 d-block mb-3 text-primary"/>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Page Name:</strong>
+                                                <h:outputText value="#{pageAdminController.currentMetadata.pageName}" styleClass="ms-2"/>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Page Path:</strong>
+                                                <h:outputText value="#{pageAdminController.currentMetadata.pagePath}" styleClass="ms-2 text-muted"/>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Controller:</strong>
+                                                <h:outputText value="#{pageAdminController.currentMetadata.controllerClass}" styleClass="ms-2"/>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Description:</strong>
+                                                <h:outputText value="#{pageAdminController.currentMetadata.description}" styleClass="ms-2"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Privilege Management Section -->
+                                <p:panel header="Manage User Privileges for This Page" styleClass="my-3">
+                                    <p:messages id="messages" closable="true"/>
+
+                                    <div class="alert alert-info mb-3" role="alert">
+                                        <i class="fa fa-info-circle"></i>
+                                        <strong class="ms-2">Page-Specific Privilege Management</strong>
+                                        <p class="mt-2 ms-2">
+                                            This page allows you to assign only the privileges required by
+                                            <strong>#{pageAdminController.currentMetadata.pageName}</strong>
+                                            to specific users in specific departments.
+                                        </p>
+                                        <p class="mt-2 ms-2">
+                                            <strong>Important:</strong> To manage all privileges for a user across the entire system,
+                                            please use the
+                                            <a href="/systemAdmin/user_privileges?faces-redirect=true" class="alert-link">
+                                                full user privileges management page
+                                            </a>.
+                                        </p>
+                                    </div>
+
+                                    <!-- User and Department Selection -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Select User" for="userSelector" styleClass="form-label fw-bold"/>
+                                            <p:autoComplete
+                                                id="userSelector"
+                                                value="#{userPrivilageController.currentWebUser}"
+                                                completeMethod="#{webUserController.completeUser}"
+                                                var="user"
+                                                itemLabel="#{user.name}"
+                                                itemValue="#{user}"
+                                                forceSelection="true"
+                                                class="w-100"
+                                                placeholder="Type to search for a user...">
+                                                <p:ajax
+                                                    event="itemSelect"
+                                                    listener="#{userPrivilageController.makePrivilegesNeededToBeReloaded()}"
+                                                    update="departmentSelector privilegeSection"/>
+                                            </p:autoComplete>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Select Department" for="departmentSelector" styleClass="form-label fw-bold"/>
+                                            <p:selectOneMenu
+                                                id="departmentSelector"
+                                                value="#{userPrivilageController.department}"
+                                                class="w-100"
+                                                filter="true"
+                                                filterMatchMode="contains"
+                                                disabled="#{userPrivilageController.currentWebUser eq null}">
+                                                <f:selectItem itemLabel="Select Department" noSelectionOption="true"/>
+                                                <f:selectItems
+                                                    value="#{userPrivilageController.fillWebUserDepartments(userPrivilageController.currentWebUser)}"
+                                                    var="dept"
+                                                    itemLabel="#{dept.name}"
+                                                    itemValue="#{dept}"/>
+                                                <p:ajax
+                                                    event="change"
+                                                    listener="#{userPrivilageController.makePrivilegesNeededToBeReloaded()}"
+                                                    update="privilegeSection loadButton"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mb-3">
+                                        <p:commandButton
+                                            id="loadButton"
+                                            value="Load Privileges"
+                                            icon="fa fa-refresh"
+                                            styleClass="ui-button-success"
+                                            action="#{userPrivilageController.fillUserPrivileges}"
+                                            update="privilegeSection messages"
+                                            disabled="#{userPrivilageController.currentWebUser eq null or userPrivilageController.department eq null}"/>
+                                    </div>
+
+                                    <!-- Privileges Display Section -->
+                                    <h:panelGroup id="privilegeSection">
+                                        <h:panelGroup rendered="#{not userPrivilageController.privilegesLoaded}">
+                                            <div class="alert alert-warning" role="alert">
+                                                <i class="fa fa-exclamation-triangle"></i>
+                                                <strong class="ms-2">Select User and Department</strong>
+                                                <p class="mt-2 ms-2">
+                                                    Please select a user and department, then click "Load Privileges" to view and manage
+                                                    the privileges for this page.
+                                                </p>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{userPrivilageController.privilegesLoaded}">
+                                            <div class="alert alert-success mb-3" role="alert">
+                                                <i class="fa fa-user"></i>
+                                                <strong class="ms-2">Managing Privileges For:</strong>
+                                                <p class="mt-2 ms-2">
+                                                    <strong>User:</strong> #{userPrivilageController.currentWebUser.name}<br/>
+                                                    <strong>Department:</strong> #{userPrivilageController.department.name}
+                                                </p>
+                                            </div>
+
+                                            <p:dataTable
+                                                id="privilegesTable"
+                                                value="#{pageAdminController.currentMetadata.privileges}"
+                                                var="privInfo"
+                                                emptyMessage="No privileges found for this page"
+                                                styleClass="table table-striped">
+
+                                                <p:column headerText="Privilege Name" style="width: 25%">
+                                                    <h:outputText value="#{privInfo.privilegeName}" styleClass="fw-bold"/>
+                                                </p:column>
+
+                                                <p:column headerText="Description" style="width: 40%">
+                                                    <h:outputText value="#{privInfo.description}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Usage Location" style="width: 25%">
+                                                    <h:outputText value="#{privInfo.usageLocation}" styleClass="text-muted small"/>
+                                                </p:column>
+
+                                                <p:column headerText="Assigned" style="width: 10%; text-align: center;">
+                                                    <h:panelGroup
+                                                        rendered="#{webUserController.checkPrivilege(userPrivilageController.currentWebUser, privInfo.privilegeName, userPrivilageController.department)}">
+                                                        <i class="fa fa-check-circle text-success fa-lg" title="Privilege is assigned"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup
+                                                        rendered="#{not webUserController.checkPrivilege(userPrivilageController.currentWebUser, privInfo.privilegeName, userPrivilageController.department)}">
+                                                        <i class="fa fa-times-circle text-danger fa-lg" title="Privilege is not assigned"/>
+                                                    </h:panelGroup>
+                                                </p:column>
+                                            </p:dataTable>
+
+                                            <div class="alert alert-info mt-3" role="alert">
+                                                <i class="fa fa-info-circle"></i>
+                                                <strong class="ms-2">How to Assign Privileges</strong>
+                                                <p class="mt-2 ms-2">
+                                                    To assign or remove privileges shown above, please navigate to the
+                                                    <a href="/systemAdmin/user_privileges?faces-redirect=true" class="alert-link">
+                                                        full user privileges management page
+                                                    </a>
+                                                    where you can select the specific privileges for this user.
+                                                    This page shows which of the page-specific privileges are currently assigned.
+                                                </p>
+                                            </div>
+
+                                            <div class="text-end mt-3">
+                                                <p:commandButton
+                                                    value="Go to Full Privilege Management"
+                                                    icon="fa fa-external-link"
+                                                    styleClass="ui-button-warning"
+                                                    action="/systemAdmin/user_privileges?faces-redirect=true"
+                                                    ajax="false">
+                                                    <f:setPropertyActionListener
+                                                        value="#{userPrivilageController.currentWebUser}"
+                                                        target="#{userPrivilageController.currentWebUser}"/>
+                                                </p:commandButton>
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </p:panel>
+
+                                <!-- Action Buttons -->
+                                <div class="text-center mt-4">
+                                    <p:commandButton
+                                        value="Back to Page Configuration View"
+                                        icon="fa fa-arrow-left"
+                                        action="/admin/page_configuration_view?faces-redirect=true"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary"/>
+                                </div>
+
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Error message when metadata is not found -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata eq null}">
+                            <p:panel header="Page Not Found" styleClass="mb-3">
+                                <p:messages id="errorMessages" closable="true"/>
+                                <div class="alert alert-warning" role="alert">
+                                    <h:outputText styleClass="fa fa-exclamation-triangle fa-2x" style="vertical-align: middle;"/>
+                                    <strong class="ms-3">Page Configuration Not Available</strong>
+                                    <p class="mt-2 ms-2">
+                                        The page you're trying to view has not been registered in the admin system yet.
+                                        This page may not have configuration metadata available.
+                                    </p>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Access denied message for non-admin users -->
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers')}">
+                    <p:panel header="Access Denied" styleClass="mb-3">
+                        <div class="alert alert-danger" role="alert">
+                            <h:outputText styleClass="fa fa-ban fa-2x" style="vertical-align: middle;"/>
+                            <strong class="ms-3">Insufficient Privileges</strong>
+                            <p class="mt-2 ms-2">
+                                You do not have permission to access this page.
+                                Only administrators with user management privileges can view this page.
+                            </p>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+                <style>
+                    .card {
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+
+                    .text-primary {
+                        color: #007bff !important;
+                    }
+
+                    .form-label {
+                        margin-bottom: 0.5rem;
+                    }
+                </style>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -1,13 +1,16 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy">
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    template="/resources/template/template.xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+    xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy"
+    xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy">
+
     <ui:define name="content">
         <h:form id="bill">
             <p:growl id="msg"/>
@@ -56,7 +59,7 @@
                             </h:panelGroup>
                         </div>
                     </div>
-                    
+
                     <div class="row" >
                         <div class="col-12" >
                             <p:messages id="pageMessages" ></p:messages>
@@ -433,7 +436,9 @@
                                 </p:column>
 
                                 <p:column headerText="P. Rate"  styleClass="text-end">
-                                    <h:outputLabel value="#{ph.billItemFinanceDetails.grossRate}">
+                                    <h:outputLabel
+                                        id="txtPurchaseRateOfBillItem"
+                                        value="#{ph.billItemFinanceDetails.grossRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -824,30 +829,51 @@
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase>
+
+
+                        <pharmacy:purhcase
+                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 (Custom 1)', true)}"
+                            bill="#{pharmacyDirectPurchaseController.bill}"
+                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                        </pharmacy:purhcase>
+
+
+
                         <pharmacy:direct_purhcase_with_costing
                             rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 Details',true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase_with_costing>
-                        <pharmacy:direct_purhcase_with_costing_custom_letter
-                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom Letter Format',true)}"
-                            bill="#{pharmacyDirectPurchaseController.bill}"
-                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
-                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                        </pharmacy:direct_purhcase_with_costing_custom_letter>
+
+
+
                         <pharmacy:direct_purhcase_with_costing_custom_1
                             rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom 1',true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase_with_costing_custom_1>
+
+
                         <pharmacy:direct_purhcase_with_costing_custom_2
                             rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom 2',true)}"
                             bill="#{pharmacyDirectPurchaseController.bill}"
                             ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                             ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                         </pharmacy:direct_purhcase_with_costing_custom_2>
+
+
+                        <pharmacy:direct_purhcase_with_costing_custom_letter
+                            rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom Letter Format',true)}"
+                            bill="#{pharmacyDirectPurchaseController.bill}"
+                            ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                            ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                        </pharmacy:direct_purhcase_with_costing_custom_letter>
+
+
+
                     </h:panelGroup>
                 </p:panel>
             </h:panelGroup>
@@ -884,6 +910,13 @@
                                         value="#{pharmacyConfigController.directPurchaseA4Paper}" />
                                     <p:outputLabel for="directPurchaseA4Paper" value="A4 Paper Format" class="ms-2" />
                                     <small class="form-text text-muted d-block">Standard A4 paper format for direct purchase bills</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="directPurchaseA4PaperCustom1"
+                                        value="#{pharmacyConfigController.directPurchaseA4PaperCustom1}" />
+                                    <p:outputLabel for="directPurchaseA4PaperCustom1" value="Direct Purchase Bill Print - A4 (Custom 1)" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 paper (Custom 1) format for direct purchase bills</small>
                                 </div>
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox

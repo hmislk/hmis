@@ -110,6 +110,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadReportMethodConfigurationDefaults();
             loadAllCashierSummaryConfigurationDefaults();
             loadOpdBillingConfigurationDefaults();
+            loadDatabaseVersionConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
         }
@@ -118,6 +119,17 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadDatabaseVersionConfigurationDefaults() {
+        // Database migration system configuration
+        getLongTextValueByKey("Database Schema Version", "1.0.0");
+        getLongTextValueByKey("Application Version", "2.1.0");
+        getBooleanValueByKey("Auto Execute Database Migrations", false);
+        getBooleanValueByKey("Show Migration Management to Admins", true);
+        getBooleanValueByKey("Require Migration Confirmation", true);
+        getBooleanValueByKey("Enable Migration Progress Tracking", true);
+        getBooleanValueByKey("Log Migration Execution Details", true);
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -168,7 +180,11 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
 
         // Quantity Validation Configuration
+        getBooleanValueByKey("Pharmacy Direct Issue to BHT - Allow Decimals Universally", false);
         getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
+
+        // Consumption Restriction Configuration
+        getBooleanValueByKey("Restrict Consumption to Items with Consumption Allowed Flag", true);
 
         // Bill Numbering Configuration Options - Added for improved bill numbering functionality
         // These options enable configurable bill numbering strategies across different bill types
@@ -1038,12 +1054,6 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private void loadReportMethodConfigurationDefaults() {
-        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
-        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
-        // OPD Reports
-        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
-        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
-
         // Lab Reports
         getBooleanValueByKey("Lab Daily Summary Report - Legacy Method", true);
         getBooleanValueByKey("Lab Daily Summary Report - Optimized Method", false);
@@ -1065,6 +1075,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Income Report - Optimized Method", false);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
+
+        // Analytics Reports
+        getBooleanValueByKey("All Bill List Report - Legacy Method", true);
+        getBooleanValueByKey("All Bill List Report - Optimized Method", false);
 
     }
 

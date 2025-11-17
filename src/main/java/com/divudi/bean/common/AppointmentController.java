@@ -166,27 +166,27 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     private void saveReservation(Patient p, Appointment a) {
-        if (p == null) {
-            JsfUtil.addErrorMessage("No patient Selected");
-            return;
-        }
-        if (a == null) {
-            JsfUtil.addErrorMessage("No Appointment Selected");
-            return;
-        }
-        if (reservation.getRoom() == null) {
-            JsfUtil.addErrorMessage("No Room Selected");
-            return;
-        }
-        if (reservation.getReservedFrom() == null) {
-            JsfUtil.addErrorMessage("No Reserved From Date Selected");
-            return;
-        }
-
-        if (reservation.getReservedTo() == null) {
-            JsfUtil.addErrorMessage("No Reserved To Date Selected");
-            return;
-        }
+//        if (p == null) {
+//            JsfUtil.addErrorMessage("No patient Selected");
+//            return;
+//        }
+//        if (a == null) {
+//            JsfUtil.addErrorMessage("No Appointment Selected");
+//            return;
+//        }
+//        if (reservation.getRoom() == null) {
+//            JsfUtil.addErrorMessage("No Room Selected");
+//            return;
+//        }
+//        if (reservation.getReservedFrom() == null) {
+//            JsfUtil.addErrorMessage("No Reserved From Date Selected");
+//            return;
+//        }
+//
+//        if (reservation.getReservedTo() == null) {
+//            JsfUtil.addErrorMessage("No Reserved To Date Selected");
+//            return;
+//        }
 
         reservation.setAppointment(a);
         reservation.setPatient(p);
@@ -202,10 +202,37 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public void settleBill() {
+        
         Date startTime = new Date();
         Date fromDate = new Date();
         Date toDate = new Date();
+        
         if (errorCheck()) {
+            return;
+        }
+        
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
+            return;
+        }
+        
+        if(reservation == null || reservation.getRoom() == null){
+            JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
+            return;
+        }
+        
+        if(reservation.getReservedFrom() == null){
+            JsfUtil.addErrorMessage("Please select a Reservation date for the appoiment.");
+            return;
+        }
+        
+        if(!reservation.getReservedFrom().after(new Date())){
+            JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
+            return;
+        }
+        
+        if(reservation.getReservedTo() != null && (!reservation.getReservedTo().after(new Date()) || !reservation.getReservedTo().after(reservation.getReservedFrom()))){
+            JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
             return;
         }
 
@@ -296,7 +323,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         //if (getPatientTabId().toString().equals("tabNewPt")) {
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
-            return false;
+            return true;
+        }
+
+        if(getPatient().getPerson().getMobile() == null && getPatient().getPerson().getPhone() == null){
+            JsfUtil.addErrorMessage("Please provide a patient phone number.");
+            return true;
         }
 
         if (getPatient().getPerson() == null) {
@@ -311,6 +343,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         //}
         if (getCurrentBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please Select a Payment Method");
             return true;
         }
 

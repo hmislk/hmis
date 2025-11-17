@@ -111,42 +111,74 @@ public class PharmacyService {
         }
 
         Amp amp = null;
+        Vmp vmp = null;
         if (item instanceof Ampp) {
             amp = ((Ampp) item).getAmp();
         } else if (item instanceof Amp) {
             amp = (Amp) item;
+        } else if (item instanceof Vmp) {
+            vmp = (Vmp) item;
         }
 
         Atm atm = null;
-        Vmp vmp = null;
         Vtm vtm = null;
+       
 
         if (amp != null) {
             atm = amp.getAtm();
             vmp = amp.getVmp();
+         
+        } else if (amp == null && vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
         }
 
-        if (atm != null) {
-            vtm = atm.getVtm();
+        if (atm != null && vtm == null) {
+            vtm = (Vtm) atm.getVtm();
         }
 
         if (vtm == null && vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+            System.out.println("line 141"+vtm);
             // TODO: Temporarily stopped searching for VTM of VMP - need to remember how to get VTM from VMP
             // vtm = vmp.getVtm(); // Commented out to prevent compilation error
+        }
+        if (vtm == null) {
+            vtm = (Vtm) item.getVtm();
         }
 
         for (ClinicalFindingValue c : allergyListOfPatient) {
             if (c.getItemValue() == null) {
                 continue;
             }
-            Item a = c.getItemValue();
-            if (a.equals(item)
-                    || (amp != null && a.equals(amp))
-                    || (atm != null && a.equals(atm))
-                    || (vmp != null && a.equals(vmp))
-                    || (vtm != null && a.equals(vtm))) {
-                return item.getName() + " is not allowed as patient is allergic to " + a.getName();
+            Item allergyItem = c.getItemValue();
+            Vtm allergyVtm = null;
+
+            if (allergyItem instanceof Vtm) {
+                allergyVtm = (Vtm) allergyItem;
+            } else if (allergyItem instanceof Amp) {
+                allergyVtm = allergyItem.getVmp() != null ? (Vtm) allergyItem.getVmp().getVtm() : (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Vmp) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Atm) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else {
+                allergyVtm = (Vtm) allergyItem.getVtm();
             }
+
+            if (vtm != null && allergyVtm != null) {
+                if (vtm.equals(allergyVtm)) {
+                    return item.getName() + " is not allowed as patient has allergic to " + allergyVtm.getName();
+                }
+            }
+
+//            if (a.equals(item)
+//                    || (amp != null && a.equals(amp))
+//                    || (atm != null && a.equals(atm))
+//                    || (vmp != null && a.equals(vmp))
+//                    || (vtm != null && a.equals(vtm))
+//                    || (vtm != null && a.getVtm().equals(vtm))) {
+//                return item.getName() + " is not allowed as patient has allergic to " + a.getName();
+//            }
         }
 
         return "";

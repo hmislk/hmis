@@ -75,6 +75,7 @@
                                 <f:facet name="header">  
                                     <h:outputLabel  value="Ordered Bill Item"/>   
                                     <p:commandButton 
+                                        id="btnRemoveSelected"
                                         ajax="false" 
                                         value="Remove Selected"
                                         style="float: right;"
@@ -305,6 +306,7 @@
                                         class="ui-button-warning mx-1"
                                         action="#{grnCostingController.duplicateItem(bi)}"/>
                                     <p:commandButton
+                                        id="btnRemoveItem"
                                         ajax="false"
                                         icon="fas fa-trash"
                                         class="ui-button-danger"
@@ -461,7 +463,7 @@
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Approve"
-                                        action="#{grnCostingController.requestFinalizeWithSaveApprove}"
+                                        action="#{grnCostingController.approveGrnWithSaveApprove}"
                                         class="ui-button-warning mx-1"
                                         icon="fas fa-check"
                                         ajax="false"

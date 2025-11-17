@@ -47,6 +47,9 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.BillFinanceDetails;
+import com.divudi.core.entity.BillItemFinanceDetails;
+import java.math.BigDecimal;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
@@ -2219,12 +2222,49 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return false;
     }
 
+    /**
+     * Validates if the original credit bill has been fully or partially settled.
+     * Prevents refunds for bills where credit companies have already made payments.
+     *
+     * @return true if credit is settled (validation fails), false if not settled (validation passes)
+     */
+    private boolean isCreditSettled() {
+        if (getItemReturnBill() == null) {
+            return false; // No item return bill to validate
+        }
+
+        Bill originalSaleBill = getItemReturnBill().getReferenceBill();
+        if (originalSaleBill == null) {
+            return false; // No original bill to validate
+        }
+
+        // Check if this is a credit bill
+        if (originalSaleBill.getPaymentMethod() != PaymentMethod.Credit) {
+            return false; // Not a credit bill, allow refund
+        }
+
+        // Check if credit has been settled (fully or partially)
+        // Any positive value in these fields indicates settlement has occurred
+        boolean hasSettlement =
+            (originalSaleBill.getPaidAmount() > 0.01) ||
+            (originalSaleBill.getSettledAmountByPatient() > 0.01) ||
+            (originalSaleBill.getSettledAmountBySponsor() > 0.01);
+
+        return hasSettlement;
+    }
+
     public void settleRefundForReturnItems() {
         editingQty = null;
 
         // Validate that payment total matches refund total
         if (validatePaymentRefundMatch()) {
             return; // Validation failed, error message already displayed
+        }
+
+        // Check if original credit bill has been settled (fully or partially)
+        if (isCreditSettled()) {
+            JsfUtil.addErrorMessage("Cannot process refund for this return. The original credit bill has been fully or partially settled by the credit company.");
+            return;
         }
 
         saveBill();
@@ -2234,6 +2274,9 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         applyRefundSignToPaymentData();
         List<Payment> refundPayments = paymentService.createPayment(getRefundBill(), getPaymentMethodData());
         saveSaleReturnBillItems(refundPayments);
+
+        // Calculate and record stock valuation values for the refund bill
+        calculateAndRecordCostingValues(getRefundBill());
 
 //        getBillFacade().edit(getRefundBill());
         paymentService.updateBalances(refundPayments);
@@ -3011,6 +3054,108 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
     public void setItemReturnBill(Bill itemReturnBill) {
         this.itemReturnBill = itemReturnBill;
+    }
+
+    /**
+     * Calculates and records stock valuation (costing) values for refund bills.
+     * This method iterates through refund bill items and calculates stock valuations
+     * at both item and bill level, following the same pattern as direct sales, cashier payments, and returns.
+     *
+     * @param bill The refund bill to calculate costing values for
+     */
+    private void calculateAndRecordCostingValues(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Initialize bill finance details if not present
+        if (bill.getBillFinanceDetails() == null) {
+            BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
+            billFinanceDetails.setBill(bill);
+            bill.setBillFinanceDetails(billFinanceDetails);
+        }
+
+        // Initialize bill-level totals
+        double totalCostValue = 0.0;
+        double totalPurchaseValue = 0.0;
+        double totalRetailSaleValue = 0.0;
+        double totalWholesaleValue = 0.0;
+
+        // Process each bill item
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem == null || billItem.getQty() == 0) {
+                continue;
+            }
+
+            // Initialize bill item finance details if not present
+            if (billItem.getBillItemFinanceDetails() == null) {
+                BillItemFinanceDetails itemFinanceDetails = new BillItemFinanceDetails();
+                itemFinanceDetails.setBillItem(billItem);
+                billItem.setBillItemFinanceDetails(itemFinanceDetails);
+            }
+
+            // Get pharmaceutical bill item for rate information
+            PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            if (pharmaItem == null) {
+                continue;
+            }
+
+            // Calculate values based on quantity and rates
+            // For refunds, quantities are already negative, so we keep the sign for proper accounting
+            double qty = billItem.getQty();
+
+            // Calculate item-level stock valuations
+            double costValue = 0.0;
+            double purchaseValue = 0.0;
+            double retailValue = 0.0;
+            double wholesaleValue = 0.0;
+
+            // Calculate based on available rates from PharmaceuticalBillItem
+            if (pharmaItem.getPurchaseRate() != 0) {
+                purchaseValue = qty * pharmaItem.getPurchaseRate();
+                costValue = purchaseValue; // Use purchase rate as cost value
+            }
+
+            if (pharmaItem.getRetailRate() != 0) {
+                retailValue = qty * pharmaItem.getRetailRate();
+            }
+
+            if (pharmaItem.getWholesaleRate() != 0) {
+                wholesaleValue = qty * pharmaItem.getWholesaleRate();
+            }
+
+            // Set item-level finance details
+            billItem.getBillItemFinanceDetails().setValueAtCostRate(BigDecimal.valueOf(costValue));
+            billItem.getBillItemFinanceDetails().setValueAtPurchaseRate(BigDecimal.valueOf(purchaseValue));
+            billItem.getBillItemFinanceDetails().setValueAtRetailRate(BigDecimal.valueOf(retailValue));
+            billItem.getBillItemFinanceDetails().setValueAtWholesaleRate(BigDecimal.valueOf(wholesaleValue));
+
+            // Aggregate values for bill level
+            totalCostValue += costValue;
+            totalPurchaseValue += purchaseValue;
+            totalRetailSaleValue += retailValue;
+            totalWholesaleValue += wholesaleValue;
+
+            // Save bill item finance details
+            if (billItem.getBillItemFinanceDetails().getId() == null) {
+                // Let JPA handle cascade persistence - no need to explicitly save
+            } else {
+                billItemFacade.edit(billItem);
+            }
+        }
+
+        // Set bill-level finance details
+        bill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(totalCostValue));
+        bill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(totalPurchaseValue));
+        bill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(totalRetailSaleValue));
+        bill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(totalWholesaleValue));
+
+        // Save bill finance details
+        if (bill.getBillFinanceDetails().getId() == null) {
+            // Let JPA handle cascade persistence - no need to explicitly save
+        } else {
+            billFacade.edit(bill);
+        }
     }
 
 }

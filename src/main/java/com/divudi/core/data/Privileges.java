@@ -107,6 +107,11 @@ public enum Privileges {
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Nurse">
+    NursingWorkBench("Nursing Work Bench"),
+    ShowDrugCharges("Show Drug Charges"),
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
@@ -188,6 +193,7 @@ public enum Privileges {
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
     DashBoardMenu("DashBoard Menu"),
     DashBoardBillSearch("DashBoard Bill Search"),
+    DashBoardWorksheet("DashBoard WorkSheet"),
     DashBoardSampleSearch("DashBoard Sample Search"),
     DashBoardInvestigationSearch("DashBoard Investigation Search"),
     DashBoardReportSearch("DashBoard Report Search"),
@@ -970,6 +976,10 @@ public enum Privileges {
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
                 return "Approval";
+            
+            case NursingWorkBench:
+            case ShowDrugCharges:
+                return "Nursing Work Bench";
                 
             default:
                 return this.toString();

@@ -539,9 +539,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
-        if (current == null) {
-            current = new Admission();
-        }
+
+        current = new Admission();
         bhtEditController.setCurrent(current);
         bhtEditController.getCurrent().getPatient().setEditingMode(true);
         return bhtEditController.navigateToEditAdmissionDetails();
@@ -860,7 +859,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " (c.patient.person.name) like :q ) "
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findByJpql(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
     }
@@ -895,6 +894,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //        return suggestions;
 //    }
     public List<Admission> completePatientDishcargedNotFinalized(String query) {
+        System.out.println("completePatientDishcargedNotFinalized");
         List<Admission> suggestions;
         String sql;
         HashMap h = new HashMap();
@@ -903,12 +903,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         } else {
             sql = "select c from Admission c where c.retired=false and "
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
-                    + " and ( ((c.bhtNo) like :q )or ((c.patient.person.name)"
-                    + " like :q) ) order by c.bhtNo";
-            ////// // System.out.println(sql);
-            //      h.put("btp", BillType.InwardPaymentBill);
+                    + " and ( ((c.bhtNo) like :q )"
+                    + " or ((c.patient.person.name) like :q ) "
+                    + " or ((c.patient.phn =:phn ))) order by c.bhtNo";
+
             h.put("q", "%" + query.toUpperCase() + "%");
+            h.put("phn", query.toUpperCase());
             suggestions = getFacade().findByJpql(sql, h, 20);
+            System.out.println("sql = " + sql);
+            System.out.println("h = " + h);
+            System.out.println("suggestions = " + suggestions);
         }
         return suggestions;
     }
@@ -938,8 +942,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
         h.put("pe", ad);
         ads = getBillFacade().findByJpql(sql, h);
-
-        System.out.println("ads.size() = " + ads.size());
 
         if (ads.size() > 0 || !ads.isEmpty()) {
             return true;
@@ -1536,6 +1538,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Admittin process already started.");
             return;
         }
+
+        if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted() && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for inward from the system", false)) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
+            return;
+        }
+
         admittingProcessStarted = true;
 
         if (errorCheck()) {

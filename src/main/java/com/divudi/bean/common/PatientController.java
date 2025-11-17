@@ -233,6 +233,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     ReportKeyWord reportKeyWord;
 
     private String searchText;
+    private String searchMembershipCardNo;
+    private String searchPatientAddress;
 
     private String searchName;
     private String searchPhone;
@@ -270,6 +272,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
+    private String blacklistComment;
+
+    public String getBlacklistComment() {
+        return blacklistComment;
+    }
+
+    public void setBlacklistComment(String blacklistComment) {
+        this.blacklistComment = blacklistComment;
+    }
 
     /**
      *
@@ -862,6 +873,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setAdmittingProcessStarted(false);
         admissionController.setPatientRoom(new PatientRoom());
         quickSearchPhoneNumber = null;
+        admissionController.setPatientAllergies(null);
         return "/inward/inward_admission?faces-redirect=true";
 
     }
@@ -2235,11 +2247,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map params = new HashMap();
         Long mcn;
         try {
-            mcn = Long.parseLong(searchText);
+            mcn = Long.parseLong(searchMembershipCardNo);
         } catch (Exception e) {
             mcn = 0L;
         }
-        params.put("pn", searchText);
+        params.put("pn", searchMembershipCardNo);
         params.put("mcn", mcn);
         List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
         if (fs == null || fs.isEmpty()) {
@@ -2247,11 +2259,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
-            searchText = "";
+            searchMembershipCardNo = "";
             return navigateToManageFamilyMembership();
         } else {
             families = fs;
-            searchText = "";
+            searchMembershipCardNo = "";
             return null;
         }
     }
@@ -2327,15 +2339,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String searchFamilyByAddress() {
-        if (searchText == null) {
+        if (searchPatientAddress == null) {
             JsfUtil.addErrorMessage("No Search Text");
             return null;
         }
-        if (searchText.trim().isEmpty()) {
+        if (searchPatientAddress.trim().isEmpty()) {
             JsfUtil.addErrorMessage("No Search Text");
             return null;
         }
-        if (searchText.trim().length() < 4) {
+        if (searchPatientAddress.trim().length() < 4) {
             JsfUtil.addErrorMessage("Enter at least 4 characters");
             return null;
         }
@@ -2346,18 +2358,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " and f.chiefHouseHolder.person.address like :address "
                 + " order by f.chiefHouseHolder.person.name";
         Map params = new HashMap();
-        params.put("address", "%" + searchText + "%");
+        params.put("address", "%" + searchPatientAddress + "%");
         List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
         if (fs == null || fs.isEmpty()) {
             JsfUtil.addErrorMessage("No matching families found");
             return "";
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
-            searchText = "";
+            searchPatientAddress = "";
             return navigateToManageFamilyMembership();
         } else {
             families = fs;
-            searchText = "";
+            searchPatientAddress = "";
             return null;
         }
     }
@@ -2951,6 +2963,55 @@ public class PatientController implements Serializable, ControllerWithPatient {
         saveSelectedPatient();
         return toViewPatient();
     }
+    
+    public void toggleBlacklistPatient( boolean blacklist){
+        Patient patient = this.current;
+        if(patient == null || patient.getId() == null){
+            return;   
+        }
+
+        if(blacklist && !patient.isBlacklisted()){
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
+                return;
+            }
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(true);
+            newb.setBlacklistedAt(new Date());
+            getFacade().edit(newb);
+            newb.setBlacklistedBy(sessionController.getLoggedUser());
+            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment  : blacklistComment);
+//            getFacade().edit(patient);
+
+            getFacade().editAndCommit(newb);
+            this.current = getFacade().findWithoutCache(newb.getId());
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient is blacklisted.");
+            
+        }else if(!blacklist && patient.isBlacklisted()){
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for revert blacklisting. ");
+                return;
+            }
+
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(false);
+            getFacade().edit(newb);
+            newb.setReasonForBlacklist(patient.getReasonForBlacklist() +" at " 
+                    + newb.getBlacklistedAt() + " by " 
+                    + newb.getBlacklistedBy() 
+                    + " / revert by " + sessionController.getWebUser() 
+                    + " at "+new Date() + " revert comment - " + blacklistComment);
+            
+            newb.setBlacklistedAt(null);
+            newb.setBlacklistedBy(null);
+
+            getFacade().editAndCommit(newb);
+
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
+        }
+    }
 
     public String deletePatient() {
         if (current != null) {
@@ -3158,7 +3219,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         }
 
-        applyPatientNameCapitalization(p);
+        //applyPatientNameCapitalization(p);
 //        if (p.getPerson().getId() == null) {
 //            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
 //            p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3251,7 +3312,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        applyPatientNameCapitalization(p);
+        //applyPatientNameCapitalization(p);
 
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
@@ -3320,7 +3381,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void saveSelectedPatient() {
-        applyPatientNameCapitalization(getCurrent());
+        //applyPatientNameCapitalization(getCurrent());
 
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
@@ -4501,6 +4562,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getSearchMembershipCardNo() {
+        return searchMembershipCardNo;
+    }
+
+    public void setSearchMembershipCardNo(String searchMembershipCardNo) {
+        this.searchMembershipCardNo = searchMembershipCardNo;
+    }
+
+    public String getSearchPatientAddress() {
+        return searchPatientAddress;
+    }
+
+    public void setSearchPatientAddress(String searchPatientAddress) {
+        this.searchPatientAddress = searchPatientAddress;
     }
 
     /**

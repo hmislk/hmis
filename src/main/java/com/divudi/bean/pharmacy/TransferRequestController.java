@@ -360,7 +360,7 @@ public class TransferRequestController implements Serializable {
         preBillToCreateApprovedBill.setApproveUser(sessionController.getLoggedUser());
         preBillToCreateApprovedBill.setApproveAt(new Date());
         preBillToCreateApprovedBill.setReferenceBill(newApprovedBill);
-        
+
         preBillToCreateApprovedBill.setCompleted(true);
         preBillToCreateApprovedBill.setCompletedAt(new Date());
         preBillToCreateApprovedBill.setCompletedBy(sessionController.getLoggedUser());
@@ -464,20 +464,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             getBill().getBillItems().add(b);
         }
@@ -585,20 +577,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             if (b.getId() == null || !getTransferRequestBillPre().getBillItems().contains(b)) {
                 getTransferRequestBillPre().getBillItems().add(b);
@@ -631,6 +615,8 @@ public class TransferRequestController implements Serializable {
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
+    
+    
 
     public String navigateToApproveRequest() {
         Bill transferRequestBillTemp = transferRequestBillPre;
@@ -685,29 +671,50 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setCheckeAt(new Date());
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
 
-        getTransferRequestBillPre().setApproveAt(new Date());
-        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
-
+//        getTransferRequestBillPre().setApproveAt(new Date());
+//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
 //        getTransferRequestBillPre().setCompleted(true);
 //        getTransferRequestBillPre().setCompletedAt(new Date());
 //        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
-
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
-        boolean approvalIsNeeded = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transer Request With Approval", false);
-        if (!approvalIsNeeded) {
-            bill = createNewApprovedTransferRequestBill(
-                    getTransferRequestBillPre(),
-                    getTransferRequestBillPre().getBillItems(),
-                    new BilledBill()
-            );
-        } else {
-            bill = getTransferRequestBillPre();
-        }
+        bill = getTransferRequestBillPre();
 
         printPreview = true;
     }
+
+    // Commented out - No longer needed as approval is done via separate approval page
+    // This method was called from pharmacy_transfer_request.xhtml Approve button which has been removed
+//    public void approveTranserRequestPreBill() {
+//        if (errorsPresent()) {
+//            return;
+//        }
+//        saveTransferRequestPreBillAndBillItems();
+//        getTransferRequestBillPre().setEditedAt(new Date());
+//        getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setCheckeAt(new Date());
+//        getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setApproveAt(new Date());
+//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
+//
+//        getTransferRequestBillPre().setCompleted(true);
+//        getTransferRequestBillPre().setCompletedAt(new Date());
+//        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
+//
+//        getBillFacade().edit(getTransferRequestBillPre());
+//        JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
+//
+//        bill = createNewApprovedTransferRequestBill(
+//                getTransferRequestBillPre(),
+//                getTransferRequestBillPre().getBillItems(),
+//                new BilledBill()
+//        );
+//
+//        printPreview = true;
+//    }
 
     public String processTransferRequest() {
         if (toDepartment == null) {

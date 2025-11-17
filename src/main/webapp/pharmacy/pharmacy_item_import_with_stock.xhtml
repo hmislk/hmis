@@ -13,10 +13,10 @@
                 <p:commandButton ajax="false" value="Submit" 
                                  action="#{dataUploadController.importToExcelWithStock}"/>
 
-                <p:panel header="Import Stock from Excel" >
+                <p:panel header="Import Stock from Excel" styleClass="mt-2" >
                     <h:outputLabel value="Instructions" ></h:outputLabel>
-                    <p:panel >
-                        <h1>Import Stock by Sale</h1>
+                    <p:panel>
+                        <h:outputText value="Import Stock by Sale" styleClass="h4" />
                         <p>Please make sure the following order of Columns in the uploading Excel File.</p>
                         <p>Leave First Row for Row Headings.</p>
 
@@ -28,65 +28,124 @@
 
 
 
-                <p:panel header="Excel Column Format" styleClass="p-2">
-                    <h:panelGrid columns="2" styleClass="table table-sm table-bordered w-100 text-start">
-                        <h:outputText value="A" />
-                        <h:outputText value="Serial No" />
+                <p:panel header="Excel Column Format" styleClass="my-2">
+                    <p:commandButton 
+                        value="Download Template" 
+                        ajax="false" 
+                        style="float: right;"
+                        class="ui-button-success mb-3"
+                        icon="fa fa-download">
+                        <p:fileDownload value="#{dataUploadController.templateForPharmacyItemImportWithStock}" />
+                    </p:commandButton>
 
-                        <h:outputText value="B" />
-                        <h:outputText value="Category" />
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A</td>
+                                <td>Serial No</td>
+                                <td>Serial No is Optional</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Category</td>
+                                <td>Category is required*</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Product</td>
+                                <td>Product is required*</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>Code</td>
+                                <td>Code is required*</td>
+                            </tr>
+                            <tr>
+                                <td>E</td>
+                                <td>Bar Code</td>
+                                <td>Bar Code is Optional</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Generic Name</td>
+                                <td>Generic Name is required*</td>
+                            </tr>
+                            <tr>
+                                <td>G</td>
+                                <td>Strength</td>
+                                <td>Strength is required*</td>
+                            </tr>
+                            <tr>
+                                <td>H</td>
+                                <td>Strength Unit</td>
+                                <td>Strength Unit is required*</td>
+                            </tr>
+                            <tr>
+                                <td>I</td>
+                                <td>Pack Size</td>
+                                <td>Pack Size is Optional</td>
+                            </tr>
+                            <tr>
+                                <td>J</td>
+                                <td>Issue Unit</td>
+                                <td>Issue Unit is required*</td>
+                            </tr>
+                            <tr>
+                                <td>K</td>
+                                <td>Pack Unit</td>
+                                <td>Pack Unit is Optional</td>
+                            </tr>
+                            <tr>
+                                <td>L</td>
+                                <td>Distributor</td>
+                                <td>Distributor is Optional</td>
+                            </tr>
+                            <tr>
+                                <td>M</td>
+                                <td>Manufacturer</td>
+                                <td>Manufacturer is Optional</td>
+                            </tr>
+                            <tr>
+                                <td>N</td>
+                                <td>Importer</td>
+                                <td>Importer is Optional</td>
+                            </tr>
+                            <tr>
+                                <td>O</td>
+                                <td>Date of Expiry (M/d/yyyy)</td>
+                                <td>Date of Expiry is required*</td>
+                            </tr>
+                            <tr>
+                                <td>P</td>
+                                <td>Batch</td>
+                                <td>Batch is required*</td>
+                            </tr>
+                            <tr>
+                                <td>Q</td>
+                                <td>Quantity</td>
+                                <td>Quantity is required*</td>
+                            </tr>
+                            <tr>
+                                <td>R</td>
+                                <td>Purchase Price</td>
+                                <td>Purchase Price is required*</td>
+                            </tr>
+                            <tr>
+                                <td>S</td>
+                                <td>Sale Price</td>
+                                <td>Sale Price is required*</td>
+                            </tr>
 
-                        <h:outputText value="C" />
-                        <h:outputText value="Product" />
+                        </tbody>
+                    </table>
 
-                        <h:outputText value="D" />
-                        <h:outputText value="Code" />
-
-                        <h:outputText value="E" />
-                        <h:outputText value="Bar Code" />
-
-                        <h:outputText value="F" />
-                        <h:outputText value="Generic Name" />
-
-                        <h:outputText value="G" />
-                        <h:outputText value="Strength" />
-
-                        <h:outputText value="H" />
-                        <h:outputText value="Strength Unit" />
-
-                        <h:outputText value="I" />
-                        <h:outputText value="Pack Size" />
-
-                        <h:outputText value="J" />
-                        <h:outputText value="Issue Unit" />
-
-                        <h:outputText value="K" />
-                        <h:outputText value="Pack Unit" />
-
-                        <h:outputText value="L" />
-                        <h:outputText value="Distributor" />
-
-                        <h:outputText value="M" />
-                        <h:outputText value="Manufacturer" />
-
-                        <h:outputText value="N" />
-                        <h:outputText value="Importer" />
-
-                        <h:outputText value="O" />
-                        <h:outputText value="Date of Expiry (M/d/yyyy)" />
-
-                        <h:outputText value="P" />
-                        <h:outputText value="Batch" />
-
-                        <h:outputText value="Q" />
-                        <h:outputText value="Quantity" />
-
-                        <h:outputText value="R" />
-                        <h:outputText value="Purchase Price" />
-
-                        <h:outputText value="S" />
-                        <h:outputText value="Sale Price" />
-                    </h:panelGrid>
                 </p:panel>
 
 

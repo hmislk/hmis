@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/disbursement_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="subcontent">
+        <h:form>
+
+            <div class="d-flex justify-content-between mb-2">
+                <p:commandButton
+                    ajax="false"
+                    icon="fas fa-list"
+                    class="ui-button-warning"
+                    action="#{searchController.navigateToRequestListAndRefresh()}"
+                    value="Back to List"/>
+
+                <div class="d-flex">
+                    <p:commandButton
+                        value="Print"
+                        icon="fas fa-print"
+                        class="ui-button-info mx-2"
+                        ajax="false">
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
+                    <p:commandButton
+                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                        value="Settings"
+                        icon="fas fa-cog"
+                        class="ui-button-secondary mx-1"
+                        type="button"
+                        onclick="PF('pharmacyIssueConfigDialog').show();" />
+                </div>
+            </div>
+
+            <h:panelGroup id="gpBillPreview" >
+
+                <h:panelGroup
+                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper', true)}"
+                    styleClass="noBorder">
+                    <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>
+                </h:panelGroup>
+
+                <h:panelGroup
+                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue A4 Paper Detailed', false)}"
+                    styleClass="noBorder">
+                    <ph:transferIssue_detailed bill="#{pharmacyBillSearch.bill}"/>
+                </h:panelGroup>
+
+                <h:panelGroup
+                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Letter Paper Custom 1', false)}"
+                    styleClass="noBorder">
+                    <ph:transferIssue_custom_1_letter bill="#{pharmacyBillSearch.bill}"/>
+                </h:panelGroup>
+
+                <h:panelGroup
+                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue POS Paper', false)}">
+                    <ph:Pharmacy_department_Issue_pos_bill bill="#{pharmacyBillSearch.bill}"/>
+                </h:panelGroup>
+
+                <h:panelGroup id="gpBillPreviewPosHeader"
+                              rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper', false)}">
+                    <ph:saleBill_Header_Transfer bill="#{pharmacyBillSearch.bill}"/>
+                </h:panelGroup>
+
+                <h:panelGroup
+                    id="gpBillTemplate"
+                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template', false)}">
+                    <ph:pharmacy_transfer_issue_receipt bill="#{pharmacyBillSearch.bill}"/>
+                </h:panelGroup>
+
+            </h:panelGroup>
+
+            <!-- Pharmacy Issue Configuration Dialog -->
+            <p:dialog id="pharmacyIssueConfigDialog"
+                      header="Pharmacy Issue Printer Configuration"
+                      widgetVar="pharmacyIssueConfigDialog"
+                      modal="true"
+                      width="600"
+                      height="500"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('pharmacyIssueCheckboxes',view).clientId}" process="@this" />
+
+                <h:form id="pharmacyIssueConfigForm">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-file-alt"></i> Pharmacy Issue Receipt Paper Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h:panelGroup id="pharmacyIssueCheckboxes">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="pharmacyIssueA4Paper"
+                                                value="#{pharmacyConfigController.transferIssueA4Paper}" />
+                                            <p:outputLabel for="pharmacyIssueA4Paper" value="A4 Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 size paper format (transferIssue component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="pharmacyIssueA4PaperDetailed"
+                                                value="#{pharmacyConfigController.transferIssueA4PaperDetailed}" />
+                                            <p:outputLabel for="pharmacyIssueA4PaperDetailed" value="A4 Paper Format (Detailed)" class="ms-2" />
+                                            <small class="form-text text-muted d-block">A4 format with detailed item information (transferIssue_detailed component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="pharmacyIssueCustom1"
+                                                value="#{pharmacyConfigController.transferIssueCustom1}" />
+                                            <p:outputLabel for="pharmacyIssueCustom1" value="Letter Paper Format Custom 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom Letter size paper format (transferIssue_custom_1_letter component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="pharmacyIssuePosPaper"
+                                                value="#{pharmacyConfigController.transferIssuePosPaper}" />
+                                            <p:outputLabel for="pharmacyIssuePosPaper" value="POS Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Point of Sale receipt format (Pharmacy_department_Issue_pos_bill component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="pharmacyIssuePosHeaderPaper"
+                                                value="#{pharmacyConfigController.transferIssuePosHeaderPaper}" />
+                                            <p:outputLabel for="pharmacyIssuePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                            <small class="form-text text-muted d-block">POS format with institutional header (saleBill_Header_Transfer component)</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="pharmacyIssueTemplate"
+                                                value="#{pharmacyConfigController.transferIssueTemplate}" />
+                                            <p:outputLabel for="pharmacyIssueTemplate" value="Template Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom template receipt format (pharmacy_transfer_issue_receipt component)</small>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p:messages id="pharmacyIssueConfigMessages" showDetail="true" closable="true" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Apply &amp; Close"
+                                                icon="fas fa-save"
+                                                class="ui-button-success"
+                                                ajax="false"
+                                                action="#{pharmacyConfigController.saveTransferIssueConfig}" />
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                class="ui-button-secondary"
+                                                onclick="PF('pharmacyIssueConfigDialog').hide(); return false;"
+                                                type="button" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </p:dialog>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

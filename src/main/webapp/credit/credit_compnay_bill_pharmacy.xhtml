@@ -1,5 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+    DEPRECATED: This page will be removed in the next iteration.
+    Pharmacy credit bills are now managed through the Combined OPD Credit Collection page
+    (/credit/credit_company_bill_opd_combined.xhtml), which handles both OPD and Pharmacy credit bills.
+    The separate Pharmacy Credit Settle bill type is being deprecated in favor of the unified OPD Credit Settle bill type.
+-->
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/payments/credit_company_pay_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -225,6 +231,12 @@
                                                     id="slip"
                                                     rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="ewallet"
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'ewallet'}">
+                                                    <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </div>

@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UserNotificationController;
@@ -20,10 +21,14 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -48,6 +53,8 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.data.dto.StockDTO;
+import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -65,6 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -77,6 +85,9 @@ import javax.persistence.TemporalType;
 
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
+import java.math.BigDecimal;
+import java.util.Optional;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import java.util.logging.Level;
@@ -92,6 +103,77 @@ public class PharmacySaleBhtController implements Serializable {
      * Creates a new instance of PharmacySaleController
      */
     public PharmacySaleBhtController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("inward/pharmacy_bill_issue_bht");
+        metadata.setPageName("Pharmacy BHT Direct Issue");
+        metadata.setDescription("Direct issue of medicines to inpatients from pharmacy");
+        metadata.setControllerClass("PharmacySaleBhtController");
+
+        // Register configuration options used on this page
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Medicine Identification Codes Used",
+            "Shows medicine identification codes in the autocomplete dropdown",
+            "Autocomplete column: Medicine code visibility",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Support for Native Printers",
+            "Enables native printer support for pharmacy bills",
+            "Bill preview section: Native printer button rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Inward Direct Issue Bill is FiveFiveCustom3",
+            "Displays bill in FiveFiveCustom3 paper format",
+            "Bill preview section: 5.5 custom paper format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Inward Direct Issue Bill is PosHeaderPaper",
+            "Displays bill in POS header paper format",
+            "Bill preview section: POS header paper format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        // Register privileges used on this page
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Access to page configuration management interface",
+            "Page header: Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "NursingWorkBench",
+            "Access from nursing workbench interface - shows back to workbench button",
+            "Page header and actions: Back to workbench navigation"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ShowDrugCharges",
+            "View drug prices and financial charges in the billing interface",
+            "Item autocomplete and bill table: Rate and value columns visibility"
+        ));
+
+        // Register the page metadata
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     @Inject
@@ -133,6 +215,8 @@ public class PharmacySaleBhtController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -289,6 +373,42 @@ public class PharmacySaleBhtController implements Serializable {
         userStockController.updateUserStock(tmp.getTransUserStock(), availableQty);
     }
 
+    /**
+     * Validates if decimal quantities are allowed based on three-tier configuration hierarchy.
+     *
+     * Priority 1: Universal decimal allowance (application-wide setting)
+     * Priority 2: Item-specific configuration (Item.allowFractions field)
+     * Priority 3: Integer-only enforcement (existing behavior)
+     *
+     * @param qty The quantity to validate
+     * @param item The item being validated
+     * @return true if the quantity contains decimals and decimals are not allowed, false otherwise
+     */
+    private boolean isDecimalQuantityNotAllowed(Double qty, Item item) {
+        // If quantity is null or is already an integer, no validation needed
+        if (qty == null || qty % 1 == 0) {
+            return false;
+        }
+
+        // Priority 1: Check if decimals are allowed universally
+        boolean allowDecimalsUniversally = configOptionApplicationController.getBooleanValueByKey(
+            "Pharmacy Direct Issue to BHT - Allow Decimals Universally", false);
+        if (allowDecimalsUniversally) {
+            return false; // Decimals allowed universally
+        }
+
+        // Priority 2: Check if the specific item allows fractions
+        boolean itemAllowsFractions = (item != null && item.isAllowFractions());
+        if (itemAllowsFractions) {
+            return false; // Item-specific setting allows decimals
+        }
+
+        // Priority 3: Integer-only enforcement (existing behavior)
+        boolean mustBeInteger = configOptionApplicationController.getBooleanValueByKey(
+            "Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
+        return mustBeInteger; // Decimals not allowed if integer-only is enforced
+    }
+
     //Check when edititng Qty
     //
     public boolean onEdit(BillItem tmp) {
@@ -301,14 +421,12 @@ public class PharmacySaleBhtController implements Serializable {
             return true;
         }
 
-        // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
-            if (tmp.getQty() % 1 != 0) {
-                setZeroToQty(tmp);
-                onEditCalculation(tmp);
-                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
-                return true;
-            }
+        // Validate quantity based on three-tier configuration hierarchy
+        if (isDecimalQuantityNotAllowed(tmp.getQty(), tmp.getItem())) {
+            setZeroToQty(tmp);
+            onEditCalculation(tmp);
+            JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
+            return true;
         }
 
         Stock fetchedStock = getStockFacade().find(tmp.getPharmaceuticalBillItem().getStock().getId());
@@ -645,7 +763,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         getPreBill().setPatient(pt);
         getPreBill().setPatientEncounter(getPatientEncounter());
-
         getPreBill().setToDepartment(null);
         getPreBill().setToInstitution(null);
         getPreBill().setBillDate(new Date());
@@ -904,6 +1021,17 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
+        
+        if (bhtRequestBill == null) {
+            JsfUtil.addErrorMessage("No BHT request selected.");
+            return;
+        }
+        
+        if( bhtRequestBill.isCompleted()){
+            JsfUtil.addErrorMessage("This request has already been completed..");
+            return;
+        }
+        
         if (hasAllergyConflicts(getBillItems())) {
             return;
         }
@@ -913,6 +1041,17 @@ public class PharmacySaleBhtController implements Serializable {
         Department matrixDept = determineMatrixDepartment();
 
         settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
+        
+        //update Bill
+        if(completed){
+            bhtRequestBill.setCompleted(true);
+            bhtRequestBill.setCompletedAt(new Date());
+            bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
+            
+            billFacade.edit(bhtRequestBill);
+            System.out.println("Update BHT Request Bill = " + bhtRequestBill.getDeptId() );
+        }
+        completed = false;
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -1102,7 +1241,170 @@ public class PharmacySaleBhtController implements Serializable {
 
         calTotal();
     }
+    
+    private BillItem itemForSubstitution;
+    private Stock selectedSubstituteStock;
+    private List<Stock> substituteStocks;
+    
+    private boolean completed;
+    
+    @Inject
+    VmpController vmpController;
+    @EJB
+    PharmacyCostingService pharmacyCostingService;
+    
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi != null && bi.getItem() instanceof Amp) {
+            Amp amp = (Amp) bi.getItem();
+            if (amp.getVmp() != null) {
+                List<Amp> amps = vmpController.ampsOfVmp(amp.getVmp());
+                for (Amp substituteAmp : amps) {
+                    List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
+                    if (stocks != null) {
+                        for (Stock stock : stocks) {
+                            if (stock.getStock() > 0 && stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null) {
+                                Date currentDate = new Date();
+                                if (stock.getItemBatch().getDateOfExpire().after(currentDate)) {
+                                    substituteStocks.add(stock);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
 
+        // Update the bill item with selected stock details
+        itemForSubstitution.setItem(selectedSubstituteStock.getItemBatch().getItem());
+
+        PharmaceuticalBillItem phItem = itemForSubstitution.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            phItem = new PharmaceuticalBillItem();
+            phItem.setBillItem(itemForSubstitution);
+            itemForSubstitution.setPharmaceuticalBillItem(phItem);
+        }
+
+        // Set stock and batch details
+        phItem.setStock(selectedSubstituteStock);
+        phItem.setItemBatch(selectedSubstituteStock.getItemBatch());
+        phItem.setDoe(selectedSubstituteStock.getItemBatch().getDateOfExpire());
+        phItem.setPurchaseRate(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRateInUnit(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+
+        // Update rates in pharmaceutical bill item
+        phItem.setPurchaseRatePack(selectedSubstituteStock.getItemBatch().getPurcahseRate());
+        phItem.setRetailRatePack(selectedSubstituteStock.getItemBatch().getRetailsaleRate());
+        phItem.setCostRate(selectedSubstituteStock.getItemBatch().getCostRate());
+        phItem.setCostRatePack(selectedSubstituteStock.getItemBatch().getCostRate());
+
+        // Update financials
+        BillItemFinanceDetails financeDetails = itemForSubstitution.getBillItemFinanceDetails();
+        if (financeDetails != null) {
+            BigDecimal transferRate = determineTransferRate(selectedSubstituteStock.getItemBatch());
+            financeDetails.setLineGrossRate(transferRate);
+            financeDetails.setLineNetRate(transferRate);
+
+            // Update cost and retail rates
+            financeDetails.setLineCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()));
+            financeDetails.setRetailSaleRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()));
+
+            // Update values at different rates
+            BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
+            financeDetails.setValueAtCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()).multiply(qty));
+            financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getPurcahseRate()).multiply(qty));
+            financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
+        }
+
+        calculateBillTotalsForTransferIssue(getPreBill());
+
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
+    }
+    
+    private void calculateBillTotalsForTransferIssue(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return;
+        }
+
+        BigDecimal grossTotal = BigDecimal.ZERO;
+        BigDecimal netTotal = BigDecimal.ZERO;
+        BigDecimal lineGrossTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+
+        int serialNo = 1;
+
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.isRetired()) {
+                continue;
+            }
+
+            bi.setSearialNo(serialNo++);
+
+            // For transfer issue: stock goes out so qty is negative
+            double absQty = Math.abs(bi.getQty());
+            bi.setQty(-absQty);
+
+            // Revenue is positive (we receive money/value for stock going out)
+            double netValue = absQty * bi.getRate();
+            bi.setNetValue(netValue);
+
+            grossTotal = grossTotal.add(BigDecimal.valueOf(netValue));
+            netTotal = netTotal.add(BigDecimal.valueOf(netValue));
+            lineGrossTotal = lineGrossTotal.add(BigDecimal.valueOf(netValue));
+            lineNetTotal = lineNetTotal.add(BigDecimal.valueOf(netValue));
+        }
+
+        // Set bill totals as positive (revenue)
+        bill.setTotal(grossTotal.doubleValue());
+        bill.setNetTotal(netTotal.doubleValue());
+
+        // Set bill finance details totals as positive (revenue)
+        if (bill.getBillFinanceDetails() != null) {
+            bill.getBillFinanceDetails().setGrossTotal(grossTotal);
+            bill.getBillFinanceDetails().setLineGrossTotal(lineGrossTotal);
+            bill.getBillFinanceDetails().setNetTotal(netTotal);
+            bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
+        }
+
+//        getBillFacade().edit(bill);
+    }
+    
+    public double getRemainingQuantityForItem(BillItem referenceItem) {
+        if (referenceItem == null) {
+            return 0.0;
+        }
+        double requestedQty = referenceItem.getQty();
+        double alreadyIssued = referenceItem.getIssuedPhamaceuticalItemQty();
+        return Math.max(0.0, requestedQty - alreadyIssued);
+    }
+    
+    private BigDecimal determineTransferRate(ItemBatch itemBatch) {
+        if (itemBatch == null) {
+            return BigDecimal.ZERO;
+        }
+
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+
+        if (pharmacyTransferIsByPurchaseRate) {
+            return BigDecimal.valueOf(itemBatch.getPurcahseRate());
+        } else if (pharmacyTransferIsByCostRate) {
+            return BigDecimal.valueOf(itemBatch.getCostRate());
+        } else {
+            return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+        }
+    }
+    
     private void settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
@@ -1241,32 +1543,7 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void addBillItem() {
-        if (getStock() == null) {
-            JsfUtil.addErrorMessage("No Stock");
-            return;
-        }
-        if (getQty() == null) {
-            errorMessage = "Quantity?";
-            JsfUtil.addErrorMessage("Please enter a Quantity?");
-            return;
-        }
-        if (getQty() <= 0.0) {
-            errorMessage = "Quantity?";
-            JsfUtil.addErrorMessage("Please enter a Quantity?");
-            return;
-        }
-        // Validate integer-only quantity if configuration is enabled
-        if (configOptionController.getBooleanValueByKey("Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true)) {
-            if (getQty() % 1 != 0) {
-                errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed.";
-                JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed.");
-                return;
-            }
-        }
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
-            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
-            return;
-        }
+        
         if (getPreBill() == null) {
             JsfUtil.addErrorMessage("No Prebill");
             return;
@@ -1279,6 +1556,52 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("No Pharmaceutical Bill Item");
             return;
         }
+        
+         if (getStock() == null) {
+            JsfUtil.addErrorMessage("No Stock");
+            return;
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+
+            List<ClinicalFindingValue> allergyListOfPatient = pharmacyService.getAllergyListForPatient(patientEncounter.getPatient());
+            List<BillItem> billItems = new ArrayList<>();
+            billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+            billItems.add(billItem);
+
+            if (allergyListOfPatient != null && !allergyListOfPatient.isEmpty()) {
+                String allergyMsg = pharmacyService.isAllergyForPatient(patientEncounter.getPatient(), billItems, allergyListOfPatient);
+
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    clearBillItem();
+                    return;
+                }
+            }
+
+        }
+
+        if (getQty() == null) {
+            errorMessage = "Quantity?";
+            JsfUtil.addErrorMessage("Please enter a Quantity?");
+            return;
+        }
+        if (getQty() <= 0.0) {
+            errorMessage = "Quantity?";
+            JsfUtil.addErrorMessage("Please enter a Quantity?");
+            return;
+        }
+        // Validate quantity based on three-tier configuration hierarchy
+        if (isDecimalQuantityNotAllowed(getQty(), getStock().getItemBatch().getItem())) {
+            errorMessage = "Please enter only whole numbers (integers). Decimal values are not allowed for this item.";
+            JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
+            return;
+        }
+        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
+            return;
+        }
+        
 
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
@@ -1699,6 +2022,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("No Bill");
             return "";
         }
+        setCompleted(false);
         generateIssueBillComponentsForBhtRequest(bhtRequestBill);
         return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }
@@ -1900,6 +2224,7 @@ public class PharmacySaleBhtController implements Serializable {
         editingBillItem = null;
         qty = null;
         stock = null;
+        stockDto = null;
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
@@ -2258,6 +2583,38 @@ public class PharmacySaleBhtController implements Serializable {
     // Getter method for JSF to access the converter
     public StockDtoConverter getStockDtoConverter() {
         return new StockDtoConverter();
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
+    }
+
+    public Stock getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<Stock> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<Stock> substituteStocks) {
+        this.substituteStocks = substituteStocks;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     // StockDTO Converter for JSF

@@ -27,9 +27,11 @@ import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Atm;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.util.JsfUtil;
@@ -2132,6 +2134,54 @@ public class ItemController implements Serializable {
         return lst;
     }
 
+    /**
+     * Overloaded method that returns items sorted by type priority: VTM, ATM, VMP, AMP
+     * and then by name within each type
+     */
+    public List<Item> completeItem(String query, Class[] itemClasses, DepartmentType[] departmentTypes, int count, boolean sortByTypePriority) {
+        if (!sortByTypePriority) {
+            return completeItem(query, itemClasses, departmentTypes, count);
+        }
+
+        // First, get the unsorted results
+        List<Item> lst = completeItem(query, itemClasses, departmentTypes, count);
+
+        // Sort by type priority: VTM=1, ATM=2, VMP=3, AMP=4, then by name
+        Collections.sort(lst, (Item i1, Item i2) -> {
+            int priority1 = getTypePriority(i1);
+            int priority2 = getTypePriority(i2);
+
+            if (priority1 != priority2) {
+                return Integer.compare(priority1, priority2);
+            }
+
+            // Same priority, sort by name
+            if (i1.getName() != null && i2.getName() != null) {
+                return i1.getName().compareToIgnoreCase(i2.getName());
+            }
+            return 0;
+        });
+
+        return lst;
+    }
+
+    /**
+     * Helper method to determine type priority for sorting
+     * VTM=1, ATM=2, VMP=3, AMP=4, Others=5
+     */
+    private int getTypePriority(Item item) {
+        if (item instanceof Vtm) {
+            return 1;
+        } else if (item instanceof Atm) {
+            return 2;
+        } else if (item instanceof Vmp) {
+            return 3;
+        } else if (item instanceof Amp) {
+            return 4;
+        }
+        return 5;
+    }
+
     public List<Item> completeItemWithRetired(String query, Class[] itemClasses, DepartmentType[] departmentTypes, int count) {
         String sql;
         List<Item> lst;
@@ -2222,6 +2272,16 @@ public class ItemController implements Serializable {
         DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
         Class[] classes = new Class[]{Vmp.class, Amp.class, Vmp.class, Amp.class, Vmpp.class, Ampp.class};
         return completeItem(query, classes, dts, 0);
+    }
+
+    /**
+     * Returns medicine items sorted by type priority: VTM, ATM, VMP, AMP
+     * and then by name within each type
+     */
+    public List<Item> completeMedicineByTypePriority(String query) {
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
+        Class[] classes = new Class[]{Vtm.class, Atm.class, Vmp.class, Amp.class, Vmpp.class, Ampp.class};
+        return completeItem(query, classes, dts, 0, true);
     }
 
     public List<Item> completeLabItemOnly(String query) {
@@ -2533,14 +2593,16 @@ public class ItemController implements Serializable {
                 // - Type is Amp or Ampp
                 // - Query matches name, code, or barcode (case-insensitive)
                 // - Department type is in allowed list
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                // - Using COALESCE to handle null codes and barcodes
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             } else {
                 // Criteria:
                 // - Not retired
                 // - Type is Amp or Ampp
                 // - Query matches name or code only
                 // - Department type is in allowed list
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                // - Using COALESCE to handle null codes
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             }
 
             tmpMap.put("amp", Amp.class);
@@ -2633,8 +2695,8 @@ public class ItemController implements Serializable {
                 + "AND TYPE(i) IN (:amp, :ampp, :vmp, :vmpp) "
                 + "AND i.departmentType in :dts "
                 + "AND (UPPER(i.name) LIKE :q "
-                + "OR UPPER(i.code) LIKE :q "
-                + (includeBarcode ? "OR UPPER(i.barcode) LIKE :q " : "")
+                + "OR UPPER(COALESCE(i.code, '')) LIKE :q "
+                + (includeBarcode ? "OR UPPER(COALESCE(i.barcode, '')) LIKE :q " : "")
                 + ") "
                 + "ORDER BY i.name";
 

@@ -30,7 +30,9 @@ import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -875,27 +877,63 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                         p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
                         p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
                         break;
                     case Cheque:
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
                         p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
                         p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
                         break;
                     case Cash:
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
                         break;
                     case ewallet:
                         p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                        p.setPolicyNo(cd.getPaymentMethodData().getEwallet().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getEwallet().getReferenceNo());
+                        p.setBank(cd.getPaymentMethodData().getEwallet().getInstitution());
                         break;
+                    case Agent:
                     case PatientDeposit:
                         p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        break;
+                    case Credit:
+                        p.setPolicyNo(cd.getPaymentMethodData().getCredit().getReferralNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getCredit().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getCredit().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
                         break;
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setPaymentDate(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setComments(cd.getPaymentMethodData().getSlip().getComment());
                         p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
+                        break;
+                    case OnCall:
+                        break;
+                    case OnlineSettlement:
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
+                        break;
+                    case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                            // Set bill.toStaff from the first Staff payment component
+                            if (bill.getToStaff() == null) {
+                                bill.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                            }
+                        }
                         break;
                     case Staff_Welfare:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
@@ -907,13 +945,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                             }
                         }
                         break;
-                    case Agent:
-                    case Credit:
-                    case OnCall:
-                    case OnlineSettlement:
-                    case Staff:
                     case YouOweMe:
                     case MultiplePaymentMethods:
+                        break;
                 }
 
                 paymentFacade.create(p);
@@ -933,18 +967,24 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
                     p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    p.setComments(paymentMethodData.getCreditCard().getComment());
                     break;
                 case Cheque:
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
                     p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setBank(paymentMethodData.getCheque().getInstitution());
                     p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    p.setComments(paymentMethodData.getCheque().getComment());
                     break;
                 case Cash:
                     p.setPaidValue(paymentMethodData.getCash().getTotalValue());
                     break;
                 case ewallet:
                     p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
                     p.setComments(paymentMethodData.getEwallet().getComment());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
                     break;
                 case Credit:
                     p.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
@@ -953,15 +993,44 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     p.setPaidValue(paymentMethodData.getCredit().getTotalValue());
                     p.setComments(paymentMethodData.getCredit().getComment());
                     bill.setToInstitution(paymentMethodData.getCredit().getInstitution());
+                    bill.setCreditCompany(paymentMethodData.getCredit().getInstitution());
                     break;
+                case Agent:
                 case PatientDeposit:
                     p.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
                     break;
-                case Agent:
                 case Slip:
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    p.setPaymentDate(paymentMethodData.getSlip().getDate());
+                    p.setComments(paymentMethodData.getSlip().getComment());
+                    p.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
+                    break;
                 case OnCall:
+                    break;
                 case OnlineSettlement:
+                    p.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    p.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
+                    p.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                    break;
                 case Staff:
+                    p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+                    p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
+                    if (paymentMethodData.getStaffCredit().getToStaff() != null) {
+                        bill.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+                    }
+                    break;
+                case Staff_Welfare:
+                    p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
+                    p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
+                    if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
+                        bill.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
+                    }
+                    break;
                 case YouOweMe:
                 case MultiplePaymentMethods:
             }
@@ -1212,7 +1281,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return false;
     }
 
-    
     public double calculateMultiplePaymentMethodTotal() {
         System.out.println(">>> CALCULATE MULTIPLE PAYMENT START");
         double multiplePaymentMethodTotalValue = 0;
@@ -1495,7 +1563,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage("Already Paid");
             return null;
         }
-
+        // Calculate and record costing values for stock valuation
+        calculateAndRecordCostingValues(getPreBill());
         saveSaleBill();
 //        saveSaleBillItems();
 
@@ -2424,6 +2493,120 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);
             }
         }
+    }
+
+    /**
+     * Calculates and records costing values for the settled bill. This method
+     * iterates through bill items to calculate stock valuations and then
+     * aggregates values to update bill finance details.
+     *
+     * @param bill The settled bill for which to calculate costing values
+     */
+    private void calculateAndRecordCostingValues(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Initialize bill finance details if not present
+        if (bill.getBillFinanceDetails() == null) {
+            BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
+            billFinanceDetails.setBill(bill);
+            bill.setBillFinanceDetails(billFinanceDetails);
+        }
+
+        // Initialize aggregated values
+        java.math.BigDecimal totalCostValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalPurchaseValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalRetailSaleValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalWholesaleValue = java.math.BigDecimal.ZERO;
+
+        // Iterate through bill items and calculate stock valuations
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem == null || !billItem.isConsideredForCosting()) {
+                continue;
+            }
+
+            // Get or initialize bill item finance details
+            BillItemFinanceDetails itemFinanceDetails = billItem.getBillItemFinanceDetails();
+            if (itemFinanceDetails == null) {
+                itemFinanceDetails = new BillItemFinanceDetails();
+                itemFinanceDetails.setBillItem(billItem);
+                billItem.setBillItemFinanceDetails(itemFinanceDetails);
+            }
+
+            // Get quantity - default to 0 if null
+            java.math.BigDecimal quantity = billItem.getQty() != null
+                    ? java.math.BigDecimal.valueOf(billItem.getQty()) : java.math.BigDecimal.ZERO;
+
+            // Calculate stock valuations for this item based on pharmaceutical bill item rates
+            PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            if (pharmaItem != null) {
+                // Calculate value at cost rate
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    java.math.BigDecimal costRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                    java.math.BigDecimal valueAtCostRate = quantity.multiply(costRate);
+                    itemFinanceDetails.setValueAtCostRate(valueAtCostRate);
+                    totalCostValue = totalCostValue.add(valueAtCostRate);
+                }
+
+                // Calculate value at purchase rate (same as cost rate for now)
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    java.math.BigDecimal purchaseRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                    java.math.BigDecimal valueAtPurchaseRate = quantity.multiply(purchaseRate);
+                    itemFinanceDetails.setValueAtPurchaseRate(valueAtPurchaseRate);
+                    totalPurchaseValue = totalPurchaseValue.add(valueAtPurchaseRate);
+                }
+
+                // Calculate value at retail rate (based on retail rate)
+                if (pharmaItem.getRetailRate() > 0) {
+                    java.math.BigDecimal retailRate = java.math.BigDecimal.valueOf(pharmaItem.getRetailRate());
+                    java.math.BigDecimal valueAtRetailRate = quantity.multiply(retailRate);
+                    itemFinanceDetails.setValueAtRetailRate(valueAtRetailRate);
+                    totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetailRate);
+                }
+
+                // Calculate value at wholesale rate (use retail rate if wholesale rate not available)
+                double wholesaleRate = pharmaItem.getWholesaleRate() > 0
+                        ? pharmaItem.getWholesaleRate()
+                        : (pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
+
+                if (wholesaleRate > 0) {
+                    java.math.BigDecimal wholsaleRateBd = java.math.BigDecimal.valueOf(wholesaleRate);
+                    java.math.BigDecimal valueAtWholesaleRate = quantity.multiply(wholsaleRateBd);
+                    itemFinanceDetails.setValueAtWholesaleRate(valueAtWholesaleRate);
+                    totalWholesaleValue = totalWholesaleValue.add(valueAtWholesaleRate);
+                }
+
+                // Set rates in the finance details
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    itemFinanceDetails.setCostRate(java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate()));
+                    itemFinanceDetails.setPurchaseRate(java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate()));
+                }
+                if (pharmaItem.getRetailRate() > 0) {
+                    itemFinanceDetails.setRetailSaleRate(java.math.BigDecimal.valueOf(pharmaItem.getRetailRate()));
+                }
+                if (wholesaleRate > 0) {
+                    itemFinanceDetails.setWholesaleRate(java.math.BigDecimal.valueOf(wholesaleRate));
+                }
+            }
+
+            // Set quantity in finance details
+            itemFinanceDetails.setQuantity(quantity);
+            itemFinanceDetails.setTotalQuantity(quantity);
+
+            // Save or update the bill item (which will cascade to finance details)
+            billItemFacade.edit(billItem);
+        }
+
+        // Update bill level aggregated values
+        BillFinanceDetails billFinanceDetails = bill.getBillFinanceDetails();
+        billFinanceDetails.setTotalCostValue(totalCostValue);
+        billFinanceDetails.setTotalPurchaseValue(totalPurchaseValue);
+        billFinanceDetails.setTotalRetailSaleValue(totalRetailSaleValue);
+        billFinanceDetails.setTotalWholesaleValue(totalWholesaleValue);
+
+        // Save or update the bill (which will cascade to finance details)
+        billFacade.edit(bill);
     }
 
 }
