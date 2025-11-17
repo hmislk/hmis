@@ -485,8 +485,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         return "/inward/inward_edit_bht?faces-redirect=true";
     }
 
-    private String testingText;
-
     public String navigateToSendMailToCompany(EncounterCreditCompany ecc) {
         if (ecc == null) {
             JsfUtil.addErrorMessage("No Admission to edit");
@@ -497,13 +495,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         setCurrentCompany(ecc.getInstitution());
         setSubject("");
         String text = configOptionApplicationController.getLongTextValueByKey("Email Body for Inward BHT Confermation to Company", "");
-        System.out.println("text = " + text);
-
-        setTestingText(text);
-        System.out.println("testingText = " + testingText);
 
         emailBoday = replaseDataToTemplate(text, ecc);
-        System.out.println("emailBoday = " + emailBoday);
 
         return "/inward/send_confermation_mail_to_company?faces-redirect=true";
     }
@@ -536,27 +529,27 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 .replace("{ward_name}", wardName);
     }
 
-    public void sendEmailToCompany() {
+    public String sendEmailToCompany() {
         if (getCurrentCompany() == null) {
             JsfUtil.addErrorMessage("No Credit Company");
-            return;
+            return "";
         }
         if (getSubject() == null || getSubject().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Email Subject Missing");
-            return;
+            return "";
         }
         if (getEmailBoday() == null || getEmailBoday().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Massage is Missing");
-            return;
+            return "";
         }
         if (getCurrecntEncounterCreditCompany().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("BHT is Missing");
-            return;
+            return "";
         }
 
         if (getCurrentCompany().getContactPerson().getEmail() == null || getCurrentCompany().getContactPerson().getEmail().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Company Email is Missing");
-            return;
+            return "";
         }
 
         AppEmail email = new AppEmail();
@@ -585,18 +578,21 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 email.setPending(!success);
                 if (success) {
                     email.setSentAt(new Date());
+                    emailFacade.edit(email);
                     JsfUtil.addSuccessMessage("Email Sent Successfully");
+                    return "/inward/inward_edit_bht?faces-redirect=true";
                 } else {
                     JsfUtil.addErrorMessage("Sending Email Failed");
+                    return "";
                 }
-                emailFacade.edit(email);
             } catch (Exception ex) {
                 JsfUtil.addErrorMessage("Sending Email Failed");
+                return "";
             }
         } else {
             JsfUtil.addErrorMessage("Email is Already Send");
+            return "";
         }
-
     }
 
     private void createPatientRoom() {
@@ -897,14 +893,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
-    }
-
-    public String getTestingText() {
-        return testingText;
-    }
-
-    public void setTestingText(String testingText) {
-        this.testingText = testingText;
     }
 
     /**
