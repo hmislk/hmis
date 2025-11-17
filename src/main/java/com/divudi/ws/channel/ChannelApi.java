@@ -1577,7 +1577,7 @@ public class ChannelApi {
             Bill bill = ob.getBill();
 
             Map<String, Object> mapDetail = new HashMap<>();
-            mapDetail.put("DoctorName", bill.getStaff().getPerson().getNameWithTitle());
+            mapDetail.put("DoctorName", bill.getStaff() != null ? bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : bill.getStaff().getName() : "");
             mapDetail.put("PatientName", ob.getPatientName());
             mapDetail.put("HosTelephone", bill.getToInstitution().getPhone());
             mapDetail.put("NicNumber", ob.getNic());
