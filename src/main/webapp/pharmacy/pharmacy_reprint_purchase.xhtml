@@ -76,7 +76,7 @@
 
                             <pharmacy:purhcase
                                 rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 (Custom 1)', true)}"
-                                bill="#{pharmacyDirectPurchaseController.bill}"
+                                bill="#{pharmacyBillSearch.bill}"
                                 reprint="true"
                                 ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                                 ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
