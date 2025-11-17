@@ -19,6 +19,7 @@ import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.service.AuditService;
 import java.io.Serializable;
@@ -69,6 +70,7 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     private String selectText = "";
     private boolean showConfirmation;
     private List<ClinicalFindingValue> patientAllergies;
+    private ClinicalFindingValue currentPatientAllergy;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Functions">
@@ -216,6 +218,30 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         showConfirmation = false;
     }
 
+    /**
+     * Add a patient allergy to the list
+     */
+    public void addPatientAllergy() {
+        if (currentPatientAllergy == null) {
+            return;
+        }
+        if (patientAllergies == null) {
+            patientAllergies = new ArrayList<>();
+        }
+        patientAllergies.add(currentPatientAllergy);
+        currentPatientAllergy = null;
+    }
+
+    /**
+     * Remove a patient allergy from the list
+     */
+    public void removePatientAllergy(ClinicalFindingValue pa) {
+        if (pa == null || patientAllergies == null) {
+            return;
+        }
+        patientAllergies.remove(pa);
+    }
+
     public Title[] getTitle() {
         return Title.values();
     }
@@ -354,6 +380,18 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
 
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
         this.patientAllergies = patientAllergies;
+    }
+
+    public ClinicalFindingValue getCurrentPatientAllergy() {
+        if (currentPatientAllergy == null) {
+            currentPatientAllergy = new ClinicalFindingValue();
+            currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+        }
+        return currentPatientAllergy;
+    }
+
+    public void setCurrentPatientAllergy(ClinicalFindingValue currentPatientAllergy) {
+        this.currentPatientAllergy = currentPatientAllergy;
     }
 
     // </editor-fold>
