@@ -19,6 +19,7 @@ import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     private PaymentMethod paymentMethod;
     private String selectText = "";
     private boolean showConfirmation;
+    private List<ClinicalFindingValue> patientAllergies;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Functions">
@@ -341,6 +343,17 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
 
     public void setAuditService(AuditService auditService) {
         this.auditService = auditService;
+    }
+
+    public List<ClinicalFindingValue> getPatientAllergies() {
+        if (patientAllergies == null) {
+            patientAllergies = new ArrayList<>();
+        }
+        return patientAllergies;
+    }
+
+    public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
+        this.patientAllergies = patientAllergies;
     }
 
     // </editor-fold>
