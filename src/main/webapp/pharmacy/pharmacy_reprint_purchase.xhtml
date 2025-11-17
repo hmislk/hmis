@@ -66,15 +66,22 @@
                             </div>
                         </f:facet>
 
-
-
                         <h:panelGroup id="gpBillPreview" >
-                                <pharmacy:purhcase
+                            <pharmacy:purhcase
                                 rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4', true)}"
                                 bill="#{pharmacyBillSearch.bill}"
                                 ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                                 ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
                             </pharmacy:purhcase>
+
+                            <pharmacy:purhcase
+                                rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - A4 (Custom 1)', true)}"
+                                bill="#{pharmacyDirectPurchaseController.bill}"
+                                reprint="true"
+                                ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
+                                ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
+                            </pharmacy:purhcase>
+
                             <pharmacy:direct_purhcase_with_costing_custom_letter
                                 rendered="#{configOptionController.getBooleanValueByKey('Direct Purchase Bill Print - Custom Letter Format',true)}" 
                                 reprint="true"
@@ -116,6 +123,13 @@
                                                 value="#{pharmacyConfigController.directPurchaseA4Paper}" />
                                             <p:outputLabel for="directPurchaseA4Paper" value="A4 Paper Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard A4 paper format for direct purchase bill reprint</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="directPurchaseA4PaperCustom1"
+                                                value="#{pharmacyConfigController.directPurchaseA4PaperCustom1}" />
+                                            <p:outputLabel for="directPurchaseA4PaperCustom1" value="Direct Purchase Bill Print - A4 (Custom 1)" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 paper (Custom 1) format for direct purchase bills</small>
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
