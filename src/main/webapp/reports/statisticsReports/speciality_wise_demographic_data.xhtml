@@ -1,0 +1,310 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Speciality/Doctor wise Demographic Data" styleClass="my-2" >
+                        <h:panelGrid columns="5" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From" for="fromDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar id="fromDate"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        pattern="dd/MM/yyyy HH:mm"
+                                        />
+
+                            <p:spacer width="40"/>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To" for="toDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar id="toDate"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        pattern="dd/MM/yyyy HH:mm"
+                                        />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmSite"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf2b9;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Speciality" for="acSpeciality" class="m-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                id="acSpeciality"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                placeholder="Speciality"
+                                >
+                            </p:autoComplete>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Doctor Name" for="scStaff" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="scStaff"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="Please Select"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Type" for="type" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="type" class="w-100 " >
+                                <f:selectItem itemLabel="Select Type" ></f:selectItem>
+                                <f:selectItem itemLabel="Speciality wise" itemValue="spec"/>
+                                <f:selectItem itemLabel="Doctor wise" itemValue="doctor"/>
+                            </p:selectOneMenu>
+
+
+                        </h:panelGrid>
+
+                        <div class="d-flex align-items-center my-4">
+
+                            <p:commandButton 
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process" />
+
+                            <p:commandButton 
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All" />
+
+                            <p:commandButton 
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download" />
+
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF" />
+
+                        </div>
+                        <h:panelGroup id="printPanel" >
+                            <p:panel header="Type: Speciality wise" styleClass="m-3" >
+                                <p:dataTable 
+                                    id="specialityTb"
+                                    var="var"
+                                    rowIndexVar="n"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="10"
+                                    rendered="true"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                    rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                    styleClass="table-sm">
+                                    <p:columnGroup  type="header">
+                                        <p:row>
+                                            <p:column rowspan="2" width="6em" styleClass="border-1 text-center">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="S.No."/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="12em" rowspan="2" styleClass="border-1 text-center">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Department"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="8em" rowspan="2" styleClass="border-1 text-center">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Total"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="18em" colspan="3" styleClass="border-1 text-center" >
+                                                <f:facet name="header">
+                                                    <h:outputText value="Gender" />
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="60em" colspan="10" styleClass="border-1 text-center" >
+                                                <f:facet name="header">
+                                                    <h:outputText value="Age" />
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="Male"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="Female"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="Other"/></f:facet></p:column>
+
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="No Age"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="1 &lt;"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="5-Jan"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="10-May"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-Nov"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-20"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="20-30"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="30-40"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="40-50"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="&gt; 50"/></f:facet></p:column>
+
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                    <p:column><h:outputText value="#{n+1}"/></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+
+                                </p:dataTable>
+
+                            </p:panel>
+                            <p:panel header="Type: Doctor wise" styleClass="m-3" >
+                                <p:dataTable 
+                                    id="doctorTb"
+                                    var="var"
+                                    rowIndexVar="n"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="10"
+                                    rendered="true"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                    rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                    styleClass="table-sm">
+                                    <p:columnGroup  type="header">
+                                        <p:row>
+                                            <p:column width="6em" rowspan="2" styleClass="border-1 text-center">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="S.No."/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="20em" rowspan="2" styleClass="border-1 text-center">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Doctor"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="12em" rowspan="2" styleClass="border-1 text-center">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Department"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="8em" rowspan="2" styleClass="border-1 text-center">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Total"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="18em" colspan="3" styleClass="border-1 text-center" >
+                                                <f:facet name="header">
+                                                    <h:outputText value="Gender" />
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column width="60em" colspan="10" styleClass="border-1 text-center" >
+                                                <f:facet name="header">
+                                                    <h:outputText value="Age" />
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="Male"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="Female"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="Other"/></f:facet></p:column>
+
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="No Age"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="1 &lt;"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="5-Jan"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="10-May"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-Nov"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-20"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="20-30"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="30-40"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="40-50"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="&gt; 50"/></f:facet></p:column>
+
+                                        </p:row>
+                                    </p:columnGroup>
+
+                                    <p:column><h:outputText value="#{n+1}"/></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+                                    <p:column><h:outputText value="" /></p:column>
+
+                                </p:dataTable>
+
+                            </p:panel>
+                        </h:panelGroup>    
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

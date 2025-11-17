@@ -2854,7 +2854,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/managementReports/opd_weekly?faces-redirect=true";
     }
-
+    
+    public String navigateToSpecialityWiseDemograhicData(){
+        
+        return "/reports/statisticsReports/speciality_wise_demographic_data?faces-redirect=true";
+    }
+    
     public String navigateToLeaveReport() {
 
         return "/reports/HRReports/leave_report?faces-redirect=true";
