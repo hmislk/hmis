@@ -3142,4 +3142,12 @@ public class ReportTemplateRowBundle implements Serializable {
         this.eWalletHandoverValue = eWalletHandoverValue;
     }
 
+    public double getEWalletValue() {
+        return eWalletValue;
+    }
+    
+     public void setEWalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
+    }
+
 }

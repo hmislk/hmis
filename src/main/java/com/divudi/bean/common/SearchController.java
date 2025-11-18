@@ -3515,82 +3515,46 @@ public class SearchController implements Serializable {
         StringBuilder jpql = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
 
-        // Build DTO constructor query with all required fields
-        jpql.append("SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO(");
-        jpql.append("b.id, ");
-        jpql.append("b.deptId, ");
-        jpql.append("b.department.name, ");
-        jpql.append("b.createdAt, ");
-        jpql.append("COALESCE(c.webUserPerson.name, ''), ");
-        // Pre-bill refunded status
-        jpql.append("b.refunded, ");
-        jpql.append("rb.createdAt, ");
-        jpql.append("COALESCE(rbc.webUserPerson.name, ''), ");
-        jpql.append("COALESCE(rb.comments, ''), ");
-        // Pre-bill retired status
-        jpql.append("b.retired, ");
-        jpql.append("b.retiredAt, ");
-        // Pre-bill cancelled status
-        jpql.append("b.cancelled, ");
-        jpql.append("cb.createdAt, ");
-        jpql.append("COALESCE(cbc.webUserPerson.name, ''), ");
-        jpql.append("COALESCE(cb.comments, ''), ");
-        // Financial fields
-        jpql.append("b.total, ");
-        jpql.append("b.discount, ");
-        jpql.append("b.netTotal, ");
-        // Payment fields
-        jpql.append("b.paymentMethod, ");
-        jpql.append("COALESCE(ps.name, ''), ");
-        // Client fields (patient, staff, department, institution)
-        jpql.append("COALESCE(p.person.nameWithTitle, ''), ");
-        jpql.append("COALESCE(s.person.nameWithTitle, ''), ");
-        jpql.append("COALESCE(td.name, ''), ");
-        jpql.append("COALESCE(ti.name, ''), ");
-        // Reference bill (payment bill) fields
-        jpql.append("refb.id, ");
-        jpql.append("refb.deptId, ");
-        jpql.append("refb.createdAt, ");
-        jpql.append("COALESCE(refc.webUserPerson.name, ''), ");
-        jpql.append("refb.cancelled, ");
-        jpql.append("refcb.createdAt, ");
-        jpql.append("COALESCE(refcbc.webUserPerson.name, ''), ");
-        jpql.append("refb.refunded, ");
-        jpql.append("refrb.createdAt, ");
-        jpql.append("COALESCE(refrbc.webUserPerson.name, '')) ");
-
-        // From clause with all necessary left joins
-        jpql.append("FROM PreBill b ");
-        jpql.append("LEFT JOIN b.creater c ");
-        jpql.append("LEFT JOIN b.refundedBill rb ");
-        jpql.append("LEFT JOIN rb.creater rbc ");
-        jpql.append("LEFT JOIN b.cancelledBill cb ");
-        jpql.append("LEFT JOIN cb.creater cbc ");
-        jpql.append("LEFT JOIN b.paymentScheme ps ");
-        jpql.append("LEFT JOIN b.patient p ");
-        jpql.append("LEFT JOIN b.toStaff s ");
-        jpql.append("LEFT JOIN b.toDepartment td ");
-        jpql.append("LEFT JOIN b.toInstitution ti ");
-        jpql.append("LEFT JOIN b.referenceBill refb ");
-        jpql.append("LEFT JOIN refb.creater refc ");
-        jpql.append("LEFT JOIN refb.cancelledBill refcb ");
-        jpql.append("LEFT JOIN refcb.creater refcbc ");
-        jpql.append("LEFT JOIN refb.refundedBill refrb ");
-        jpql.append("LEFT JOIN refrb.creater refrbc ");
-
-        // Where clause - base filters
-        jpql.append("WHERE b.billTypeAtomic = :billTypeAtomic ");
-        jpql.append("AND b.institution = :ins ");
-        jpql.append("AND b.billedBill IS NULL ");
-        jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
-        jpql.append("AND b.retired = false ");
-        jpql.append("AND b.deptId IS NOT NULL ");
-        jpql.append("AND b.cancelled = false ");
-
+        // Build parameters
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-        params.put("ins", getSessionController().getInstitution());
+        params.put("insId", getSessionController().getInstitution().getId());
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
+
+        if (getSessionController().getDepartment() != null) {
+            params.put("deptid", getSessionController().getDepartment().getId());
+        }
+
+        // Build simplified DTO constructor query with essential fields only
+        jpql.append("SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO(");
+        jpql.append("b.id, ");                    // 1. Long id
+        jpql.append("b.deptId, ");               // 2. String deptId
+        jpql.append("b.department.name, ");      // 3. String departmentName
+        jpql.append("b.createdAt, ");            // 4. Date createdAt
+        jpql.append("b.refunded, ");             // 5. boolean refunded (direct)
+        jpql.append("b.cancelled, ");            // 6. boolean cancelled (direct)
+        jpql.append("b.total, ");               // 7. Double total
+        jpql.append("b.discount, ");            // 8. Double discount
+        jpql.append("b.netTotal, ");            // 9. Double netTotal
+        jpql.append("b.paymentMethod, ");       // 10. PaymentMethod paymentMethod
+        jpql.append("COALESCE(p.person.name, '')) "); // 11. String patientName (keep this COALESCE)
+
+        // From clause with only necessary left joins (minimal)
+        jpql.append("FROM PreBill b ");
+        jpql.append("LEFT JOIN b.patient p "); // Only needed for patient name
+
+        // Where clause - base filters (match Stage 1 format)
+        jpql.append("WHERE b.billTypeAtomic = :billTypeAtomic ");
+        jpql.append("AND b.institution.id = :insId ");
+        jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+        jpql.append("AND (b.retired = false or b.retired is null ) ");
+        jpql.append("AND b.department.id = :deptid ");
+
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        params.put("insId", getSessionController().getInstitution().getId());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("deptid", getSessionController().getDepartment().getId());
 
         // Apply search filters
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -3603,14 +3567,8 @@ public class SearchController implements Serializable {
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getDepartment() != null && !getSearchKeyword().getDepartment().trim().equals("")) {
-            jpql.append("AND UPPER(b.department.name) LIKE :dep ");
-            params.put("dep", "%" + getSearchKeyword().getDepartment().trim().toUpperCase() + "%");
-        } else if ((getSearchKeyword().getDepartment() == null || getSearchKeyword().getDepartment().isEmpty())
-                && getSessionController().getDepartment() != null) {
-            jpql.append("AND b.department.name = :dep ");
-            params.put("dep", getSessionController().getDepartment().getName());
-        }
+        // Department filter already applied via b.department.id = :deptid above
+        // No additional department filtering needed
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             try {
@@ -3640,8 +3598,98 @@ public class SearchController implements Serializable {
         jpql.append("ORDER BY b.createdAt DESC");
 
         // Execute query using findLightsByJpql for DTO constructor queries
-        cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
-                .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        try {
+            cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
+                    .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            // Populate missing reference bill fields via iteration
+            if (cashierPreBillSearchDtos != null && !cashierPreBillSearchDtos.isEmpty()) {
+                populateReferenceBillFields(cashierPreBillSearchDtos);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            cashierPreBillSearchDtos = new ArrayList<>(); // Empty list to avoid NPE
+        }
+    }
+
+    /**
+     * Populate missing reference bill fields for DTOs via separate queries
+     * This method fills in the reference bill details that couldn't be captured in the main DTO query
+     */
+    private void populateReferenceBillFields(List<PharmacyCashierPreBillSearchDTO> dtos) {
+        for (PharmacyCashierPreBillSearchDTO dto : dtos) {
+            // Get the PreBill entity to access reference bill
+            PreBill preBill = (PreBill) getBillFacade().find(dto.getId());
+
+            if (preBill != null && preBill.getReferenceBill() != null) {
+                Bill refBill = preBill.getReferenceBill();
+
+                // Populate reference bill fields
+                dto.setReferenceBillId(refBill.getId());
+                dto.setReferenceBillDeptId(refBill.getDeptId());
+                dto.setReferenceBillCreatedAt(refBill.getCreatedAt());
+
+                // Reference bill creator
+                if (refBill.getCreater() != null && refBill.getCreater().getWebUserPerson() != null) {
+                    dto.setReferenceBillCreatorName(refBill.getCreater().getWebUserPerson().getName());
+                }
+
+                // Reference bill status
+                dto.setReferenceBillCancelled(refBill.isCancelled());
+                dto.setReferenceBillRefunded(refBill.isRefunded());
+
+            }
+
+            // Populate other missing fields from PreBill
+            if (preBill != null) {
+                // Pre-bill refunded details
+                if (preBill.getRefundedBill() != null) {
+                    dto.setRefundedBillCreatedAt(preBill.getRefundedBill().getCreatedAt());
+                    dto.setRefundedBillComments(preBill.getRefundedBill().getComments());
+                    if (preBill.getRefundedBill().getCreater() != null &&
+                        preBill.getRefundedBill().getCreater().getWebUserPerson() != null) {
+                        dto.setRefundedBillCreatorName(
+                            preBill.getRefundedBill().getCreater().getWebUserPerson().getName());
+                    }
+                }
+
+                // Pre-bill cancelled details
+                if (preBill.getCancelledBill() != null) {
+                    dto.setCancelledBillCreatedAt(preBill.getCancelledBill().getCreatedAt());
+                    dto.setCancelledBillComments(preBill.getCancelledBill().getComments());
+                    if (preBill.getCancelledBill().getCreater() != null &&
+                        preBill.getCancelledBill().getCreater().getWebUserPerson() != null) {
+                        dto.setCancelledBillCreatorName(
+                            preBill.getCancelledBill().getCreater().getWebUserPerson().getName());
+                    }
+                }
+
+                // Pre-bill retired details
+                dto.setRetired(preBill.isRetired());
+                dto.setRetiredAt(preBill.getRetiredAt());
+
+                // Creator name
+                if (preBill.getCreater() != null && preBill.getCreater().getWebUserPerson() != null) {
+                    dto.setCreatorName(preBill.getCreater().getWebUserPerson().getName());
+                }
+
+                // Payment scheme name
+                if (preBill.getPaymentScheme() != null) {
+                    dto.setPaymentSchemeName(preBill.getPaymentScheme().getName());
+                }
+
+                // Client names (staff, department, institution)
+                if (preBill.getToStaff() != null && preBill.getToStaff().getPerson() != null) {
+                    dto.setToStaffName(preBill.getToStaff().getPerson().getName());
+                }
+                if (preBill.getToDepartment() != null) {
+                    dto.setToDepartmentName(preBill.getToDepartment().getName());
+                }
+                if (preBill.getToInstitution() != null) {
+                    dto.setToInstitutionName(preBill.getToInstitution().getName());
+                }
+            }
+        }
     }
 
     public void listPharmacyIssue() {
@@ -16627,21 +16675,21 @@ public class SearchController implements Serializable {
 
 // Generate Pharmacy service collection for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCollectionCredit = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, creditPaymentMethods);
-            pharmacyServiceCollectionCredit.setBundleType("cashierSummaryPharmacyCredit");
+            pharmacyServiceCollectionCredit.setBundleType("PharmacyCreditBills");
             pharmacyServiceCollectionCredit.setName("Pharmacy Collection Bills - Credit");
             bundle.getBundles().add(pharmacyServiceCollectionCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCollectionCredit);
 
             // Generate OPD service cancellations for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCancellationsCredit = generatePaymentMethodColumnsByBills(pharmacyCancellations, creditPaymentMethods);
-            pharmacyServiceCancellationsCredit.setBundleType("pharmacyCancellationsCredit");
+            pharmacyServiceCancellationsCredit.setBundleType("PharmacyCreditCancel");
             pharmacyServiceCancellationsCredit.setName("Pharmacy Cancellations - Credit");
             bundle.getBundles().add(pharmacyServiceCancellationsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCancellationsCredit);
 
             // Generate OPD service refunds for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceRefundsCredit = generatePaymentMethodColumnsByBills(pharmacyRefunds, creditPaymentMethods);
-            pharmacyServiceRefundsCredit.setBundleType("pharmacyRefundsCredit");
+            pharmacyServiceRefundsCredit.setBundleType("PharmacyCreditRefund");
             pharmacyServiceRefundsCredit.setName("Pharmacy Refunds - Credit");
             bundle.getBundles().add(pharmacyServiceRefundsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceRefundsCredit);
@@ -17052,21 +17100,21 @@ public class SearchController implements Serializable {
 
 // Generate Pharmacy service collection for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCollectionCredit = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, creditPaymentMethods);
-            pharmacyServiceCollectionCredit.setBundleType("cashierSummaryPharmacyCredit");
+            pharmacyServiceCollectionCredit.setBundleType("PharmacyCreditBills");
             pharmacyServiceCollectionCredit.setName("Pharmacy Collection Bills - Credit");
             bundle.getBundles().add(pharmacyServiceCollectionCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCollectionCredit);
 
             // Generate Pharmacy service cancellations for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceCancellationsCredit = generatePaymentMethodColumnsByBills(pharmacyCancellations, creditPaymentMethods);
-            pharmacyServiceCancellationsCredit.setBundleType("pharmacyCancellationsCredit");
+            pharmacyServiceCancellationsCredit.setBundleType("PharmacyCreditCancel");
             pharmacyServiceCancellationsCredit.setName("Pharmacy Cancellations - Credit");
             bundle.getBundles().add(pharmacyServiceCancellationsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceCancellationsCredit);
 
             // Generate Pharmacy service refunds for credit and add to the main bundle
             ReportTemplateRowBundle pharmacyServiceRefundsCredit = generatePaymentMethodColumnsByBills(pharmacyRefunds, creditPaymentMethods);
-            pharmacyServiceRefundsCredit.setBundleType("pharmacyRefundsCredit");
+            pharmacyServiceRefundsCredit.setBundleType("PharmacyCreditRefund");
             pharmacyServiceRefundsCredit.setName("Pharmacy Refunds - Credit");
             bundle.getBundles().add(pharmacyServiceRefundsCredit);
             collectionForTheDay += getSafeTotal(pharmacyServiceRefundsCredit);

@@ -4332,6 +4332,11 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Cancelled bills cannot be returned");
             return null;
         }
+        // Check if credit has been partially or fully settled
+        if (bill.getPaidAmount() > 0) {
+            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+            return null;
+        }
         // Set the bill in PreReturnController and navigate directly to return process
         preReturnController.setBill(bill);
         return "/pharmacy/pharmacy_bill_return_pre?faces-redirect=true";
@@ -4348,6 +4353,11 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (bill.isCancelled()) {
             JsfUtil.addErrorMessage("Cancelled bills cannot be returned");
+            return null;
+        }
+        // Check if credit has been partially or fully settled
+        if (bill.getPaidAmount() > 0) {
+            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
             return null;
         }
         // Set the bill in SaleReturnController and navigate directly to return process

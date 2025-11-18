@@ -344,19 +344,27 @@
                             rendered="true" >
                         </p:menuitem>
                         
-                        <p:menuitem  
-                            ajax="false"  
-                            action="#{admissionController.navigateToEditAdmission()}" 
-                            value="Edit Admission Details" icon="fa fa-edit" 
-                            actionListener="#{bhtEditController.prepereForNew()}" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToEditAdmission()}"
+                            value="Edit Admission Details" icon="fa fa-edit"
+                            actionListener="#{bhtEditController.prepereForNew()}"
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
                         </p:menuitem>
-                        
-                        <p:menuitem  
-                            ajax="false"  
-                            action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" 
-                            value="Inward Appointment" 
-                            icon="fa fa-calendar-plus" 
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionPatientChangeController.navigateToChangeAdmissionPatient()}"
+                            value="Change Patient for Admission"
+                            icon="fa fa-exchange-alt"
+                            rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
+                            value="Inward Appointment"
+                            icon="fa fa-calendar-plus"
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" >
                         </p:menuitem>
                     </p:submenu>

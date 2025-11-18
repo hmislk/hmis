@@ -266,7 +266,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Cost Value" styleClass="text-end" headerStyleClass="text-end" width="10em">
-                                <h:outputText value="#{bi.billItemFinanceDetails.valueAtCostRate}">
+                                <h:outputText value="#{bi.billItemFinanceDetails.totalCost}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">

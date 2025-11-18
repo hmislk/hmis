@@ -36,9 +36,8 @@
                                             <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                             <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{creditCompanyBillSearch.paymentMethod}" required="true"  >
-                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                        </p:selectOneMenu>
+                                        <h:outputLabel style="width: 300px;" id="cmbPs" value="#{creditCompanyBillSearch.paymentMethod.label}"  >
+                                        </h:outputLabel>
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
