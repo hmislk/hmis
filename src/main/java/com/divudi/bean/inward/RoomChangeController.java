@@ -117,6 +117,8 @@ public class RoomChangeController implements Serializable {
         
         current.setRoomAdmitted(true);
         ejbFacade.edit(current);
+        
+        JsfUtil.addSuccessMessage("Room admitted successfully");
  
     }
     
