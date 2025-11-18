@@ -97,12 +97,13 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
             sql = "select c from Admission c "
                     + " where c.retired=false "
                     + " and c.discharged=false "
-                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' "
-                    + " or (c.patient.person.name) like '%" + query.toUpperCase() + "%' "
-                    + " or (c.patient.phn) =:q )"
+                    + " and (upper(c.bhtNo) like :qLike "
+                    + " or upper(c.patient.person.name) like :qLike "
+                    + " or upper(c.patient.phn) = :qExact )"
                     + " order by c.bhtNo";
 
-            h.put("q", query.toUpperCase());
+            h.put("qLike", "%" + query.toUpperCase() + "%");
+            h.put("qExact", query.toUpperCase());
             suggestions = admissionFacade.findByJpql(sql, h, 20);
         }
         return suggestions;
