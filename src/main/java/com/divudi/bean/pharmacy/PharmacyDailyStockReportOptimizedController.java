@@ -14,14 +14,10 @@ import com.divudi.ejb.PharmacyService;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 /**
  * Optimized controller for Daily Stock Balance Report
@@ -112,12 +108,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
 
     /**
      * OPTIMIZED: Calculates the stock value at retail rate for a given date and department.
-     * This method uses a simplified native SQL query for better performance.
-     *
-     * Performance improvements:
-     * 1. Uses native SQL instead of complex JPQL with nested subqueries
-     * 2. Leverages database indexing more efficiently
-     * 3. Reduces the number of subquery levels
+     * Delegates to the facade method for better encapsulation.
      *
      * @param date The date for which to calculate stock value
      * @param dept The department for which to calculate stock value
@@ -125,47 +116,8 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
      */
     private double calculateStockValueAtRetailRateOptimized(Date date, Department dept) {
         try {
-            // Use native SQL for better performance
-            // This query finds the latest stock history record for each item batch before the given date
-            // and calculates the total retail value
-            String sql =
-                "SELECT COALESCE(SUM(latest_stock.stock_qty * latest_stock.retail_rate), 0.0) AS total_value " +
-                "FROM ( " +
-                "    SELECT  " +
-                "        sh.stock_qty, " +
-                "        COALESCE(ib.retailsale_rate, 0.0) AS retail_rate " +
-                "    FROM stock_history sh " +
-                "    INNER JOIN ( " +
-                "        SELECT  " +
-                "            department_id, " +
-                "            item_batch_id, " +
-                "            MAX(id) AS max_id " +
-                "        FROM stock_history " +
-                "        WHERE retired = 0 " +
-                "        AND created_at < ? " +
-                (dept != null ? "        AND department_id = ? " : "") +
-                "        GROUP BY department_id, item_batch_id " +
-                "    ) AS latest ON sh.id = latest.max_id " +
-                "    INNER JOIN item_batch ib ON sh.item_batch_id = ib.id " +
-                "    WHERE sh.retired = 0 " +
-                "    AND sh.stock_qty > 0 " +
-                ") AS latest_stock";
-
-            // Execute the native query
-            javax.persistence.Query query = stockHistoryFacade.getEntityManager().createNativeQuery(sql);
-            query.setParameter(1, date, TemporalType.TIMESTAMP);
-            if (dept != null) {
-                query.setParameter(2, dept.getId());
-            }
-
-            Object result = query.getSingleResult();
-            if (result != null) {
-                if (result instanceof Number) {
-                    return ((Number) result).doubleValue();
-                }
-            }
-            return 0.0;
-
+            Long departmentId = (dept != null) ? dept.getId() : null;
+            return stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, departmentId);
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating stock value at retail rate for date: " + date);
             return 0.0;
@@ -173,52 +125,17 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
     }
 
     /**
-     * Alternative optimized method using a two-step approach
-     * This can be even faster for very large datasets as it breaks the complex query into simpler parts
+     * Alternative optimized method using a two-step approach.
+     * Delegates to the facade method for better encapsulation.
+     *
+     * @param date The date for which to calculate stock value
+     * @param dept The department for which to calculate stock value
+     * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
     private double calculateStockValueAtRetailRateTwoStep(Date date, Department dept) {
         try {
-            // Step 1: Get the latest stock history IDs using a simplified query
-            String findLatestIdsSql =
-                "SELECT MAX(id) AS max_id " +
-                "FROM stock_history " +
-                "WHERE retired = 0 " +
-                "AND created_at < ? " +
-                (dept != null ? "AND department_id = ? " : "") +
-                "GROUP BY department_id, item_batch_id";
-
-            javax.persistence.Query idsQuery = stockHistoryFacade.getEntityManager().createNativeQuery(findLatestIdsSql);
-            idsQuery.setParameter(1, date, TemporalType.TIMESTAMP);
-            if (dept != null) {
-                idsQuery.setParameter(2, dept.getId());
-            }
-
-            List<Object> latestIds = idsQuery.getResultList();
-
-            if (latestIds == null || latestIds.isEmpty()) {
-                return 0.0;
-            }
-
-            // Step 2: Calculate the sum of stock values for the latest records
-            String calculateValueSql =
-                "SELECT COALESCE(SUM(sh.stock_qty * COALESCE(ib.retailsale_rate, 0.0)), 0.0) " +
-                "FROM stock_history sh " +
-                "INNER JOIN item_batch ib ON sh.item_batch_id = ib.id " +
-                "WHERE sh.id IN (:ids) " +
-                "AND sh.retired = 0 " +
-                "AND sh.stock_qty > 0";
-
-            javax.persistence.Query valueQuery = stockHistoryFacade.getEntityManager().createNativeQuery(calculateValueSql);
-            valueQuery.setParameter("ids", latestIds);
-
-            Object result = valueQuery.getSingleResult();
-            if (result != null) {
-                if (result instanceof Number) {
-                    return ((Number) result).doubleValue();
-                }
-            }
-            return 0.0;
-
+            Long departmentId = (dept != null) ? dept.getId() : null;
+            return stockHistoryFacade.calculateStockValueAtRetailRateTwoStep(date, departmentId);
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating stock value (two-step method): " + date);
             return 0.0;
