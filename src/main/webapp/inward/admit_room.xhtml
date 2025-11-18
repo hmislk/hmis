@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel  class="my-3"  rendered="#{roomChangeController.current eq null}">
+                <f:facet name="header" >
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                            <p:outputLabel value="Admitted Patient" class="m-2"/></div>
+                        <div>
+
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                <p:commandButton 
+                                    value="Back to WorkBench" 
+                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                    ajax="false"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+                </f:facet>
+
+                <h:panelGrid id="gpSelectText" columns="4" >
+                    <h:outputLabel value="Type Patient Name or BHT : " class="mx-2" />
+                    <p:autoComplete 
+                        converter="dis" 
+                        widgetVar="aPt" 
+                        id="acPt" 
+                        forceSelection="true" 
+                        value="#{roomChangeController.current}"
+                        completeMethod="#{admissionController.completePatient}" 
+                        var="myItem" 
+                        itemValue="#{myItem}" 
+                        itemLabel="#{myItem.bhtNo}" 
+                        size="30"  
+                        class="w-100"> 
+                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{myItem.patient.phn}"/>
+                        </p:column>
+                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{myItem.bhtNo}"/>
+                        </p:column>
+                        <p:column headerText="Patient" style="padding: 6px; width: 400px;">
+                            <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                        </p:column>
+                        <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                            <div class="d-flex justify-content-center">
+                                <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                    #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                </span>
+                            </div>
+                        </p:column>
+                    </p:autoComplete>   
+
+                    <p:commandButton 
+                        id="btnSelect" 
+                        value="Select"
+                        ajax="false" 
+                        class="mx-3"  >
+                    </p:commandButton>
+
+                    <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
+
+                </h:panelGrid>
+
+            </p:panel>
+
+            <h:panelGroup rendered="#{roomChangeController.current ne null}">
+                <p:panel>
+                    <f:facet name="header" >
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                                <p:outputLabel value="Admitt to Room" class="m-2"/>
+                            </div>
+                            <div>
+                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <div class="d-flex gap-2" style="float: right">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Patient Lookup"
+                                            icon="fa fa-search"
+                                            class="ui-button-warning" 
+                                            action="#{patientController.navigateToSearchPatients()}" 
+                                            >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-user"
+                                            value="Patient Profile"
+                                            class="ui-button-success" 
+                                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                                            >
+                                            <f:setPropertyActionListener 
+                                                value="#{admissionController.current.patient}" 
+                                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa-solid fa-address-card"
+                                            class="ui-button-secondary" 
+                                            value="Inpatient Dashboard"
+                                            action="#{admissionController.navigateToAdmissionProfilePage}" 
+                                            >
+                                            <f:setPropertyActionListener value="#{roomChangeController.current}" target="#{admissionController.current}" />
+                                        </p:commandButton>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton 
+                                        value="Back to WorkBench" 
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <h:form>
+                        <div class="row w-100 ">
+                            <div class="col-4">
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-id-card-alt" />
+                                        <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <p:tabView >
+                                        <p:tab title="Patient Details">                            
+                                            <in:bhtDetail admission="#{roomChangeController.current}"/>
+                                        </p:tab>
+                                        <p:tab title="Guardian Details">
+
+                                            <div class="row">
+                                                <div class="col-md-3"><p:outputLabel value="Name"/></div>
+                                                <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                                <div class="col-md-8"><h:outputText value="#{roomChangeController.current.guardian.name}"  /></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3"><p:outputLabel value="Address"/></div>
+                                                <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                                <div class="col-md-8"><h:outputText  value="#{roomChangeController.current.guardian.address}"  /></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3"><p:outputLabel value="Phone No"/></div>
+                                                <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                                <div class="col-md-8"><h:outputText  value="#{roomChangeController.current.guardian.mobile}"  /></div>
+                                            </div>
+
+
+                                        </p:tab>
+
+                                    </p:tabView>
+                                </p:panel>
+                            </div>
+                            <div class="col-8">
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-door-open" />
+                                        <h:outputLabel value="Assign Room" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <div class="d-grid gap-3">
+                                        <div class="row">
+                                            <div class="col-2">Room</div>
+                                            <div class="col-7">
+                                                <h:outputLabel value="#{roomChangeController.currentPatientRoom.roomFacilityCharge.name}"  />
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-2">Admitted At</div>
+                                            <div class="col-7">
+                                                <p:calendar 
+                                                    navigator="true"
+                                                    value="#{roomChangeController.currentPatientRoom.admittedAt}" 
+                                                    pattern="dd MMM yyyy HH:mm:ss" 
+
+                                                    class="w-100" > 
+                                                </p:calendar>
+
+                                                <p:commandButton 
+                                                    class="ui-button-warning mx-1" 
+                                                    ajax="false" 
+                                                    icon="fa fa-clock" 
+                                                    title="Assign Current Time" 
+                                                    action="#{roomChangeController.getCurrentTime()}">
+                                                </p:commandButton>
+
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2"></div>
+                                            <div class="col-4">
+                                                <p:commandButton 
+                                                    class="ui-button-info" 
+                                                    ajax="false" 
+                                                    icon="fas fa-edit"  
+                                                    value="Assign Room"  
+                                                    action="#{roomChangeController.admitRoom()}">
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </h:form>
+                </p:panel>
+            </h:panelGroup>
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>
