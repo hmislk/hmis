@@ -32,7 +32,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
 
     @OneToOne(mappedBy = "referencePatientRoom")
     private PatientRoom duplicatePatientRoom;
-    boolean discharged;
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -62,22 +62,26 @@ public class PatientRoom implements Serializable, RetirableEntity {
     RoomFacilityCharge printRoomFacilityCharge;
     @ManyToOne
     private PatientEncounter patientEncounter;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date admittedAt;
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date printAdmittedAt;
+    
+    private boolean addmitted;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date admittedAt;
     @ManyToOne
     private WebUser addmittedBy;
+    
+    boolean discharged;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date dischargedAt;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date printDischargeAt;
     @ManyToOne
     private WebUser dischargedBy;
 
     @OneToOne
     private PatientRoom previousRoom;
-
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date printDischargeAt;
     private double currentMaintananceCharge = 0.0;
     private double currentNursingCharge = 0.0;
     private double currentMoCharge = 0.0;
@@ -688,5 +692,13 @@ public class PatientRoom implements Serializable, RetirableEntity {
 
     public void setCurrentMoChargeForAfterDuration(double currentMoChargeForAfterDuration) {
         this.currentMoChargeForAfterDuration = currentMoChargeForAfterDuration;
+    }
+
+    public boolean isAddmitted() {
+        return addmitted;
+    }
+
+    public void setAddmitted(boolean addmitted) {
+        this.addmitted = addmitted;
     }
 }
