@@ -59,6 +59,9 @@ public class RoomChangeController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     NotificationController notificationController;
+    @Inject
+    private InwardBeanController inwardBean;
+    
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -69,7 +72,11 @@ public class RoomChangeController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @EJB
+    private RoomFacilityChargeFacade roomFacilityChargeFacade;
+    
     private List<PatientRoom> patientRoom;
+    private PatientRoom currentPatientRoom;
     List<Admission> selectedItems;
     private Admission current;
     private List<Admission> items = null;
@@ -94,6 +101,27 @@ public class RoomChangeController implements Serializable {
         pR.setCurrentRoomCharge(pR.getRoomFacilityCharge().getRoomCharge());
 
         getPatientRoomFacade().edit(pR);
+    }
+    
+    public void admitRoom(){
+        if(currentPatientRoom == null){
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        if(getCurrentPatientRoom().getPatientEncounter().getDateOfAdmission().after(getCurrentPatientRoom().getAdmittedAt())){
+            JsfUtil.addErrorMessage(" Room admission time cannot be before patient admission time");
+            return;
+        }
+        
+        inwardBean.admitPatientRoom(getCurrentPatientRoom(), getCurrentPatientRoom().getRoomFacilityCharge(), getCurrentPatientRoom().getAdmittedAt() , getSessionController().getWebUser());
+        
+        current.setRoomAdmitted(true);
+        ejbFacade.edit(current);
+ 
+    }
+    
+    public void getCurrentTime(){
+        getCurrentPatientRoom().setAdmittedAt(new Date());
     }
 
     public void remove(PatientRoom pR) {
@@ -233,9 +261,6 @@ public class RoomChangeController implements Serializable {
         return patientRoom1;
     }
 
-    @Inject
-    private InwardBeanController inwardBean;
-
     public void change() {
         if (getCurrent().getCurrentPatientRoom() == null) {
             JsfUtil.addErrorMessage("Can't Change Room Without a Room.");
@@ -346,9 +371,7 @@ public class RoomChangeController implements Serializable {
         return selectedItems;
     }
 
-    @EJB
-    private RoomFacilityChargeFacade roomFacilityChargeFacade;
-
+    
     public void prepareAdd() {
         current = new Admission();
     }
@@ -563,6 +586,14 @@ public class RoomChangeController implements Serializable {
 
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
+    }
+
+    public PatientRoom getCurrentPatientRoom() {
+        return currentPatientRoom;
+    }
+
+    public void setCurrentPatientRoom(PatientRoom currentPatientRoom) {
+        this.currentPatientRoom = currentPatientRoom;
     }
 
     /**
