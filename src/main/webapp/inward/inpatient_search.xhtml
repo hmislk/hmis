@@ -188,10 +188,6 @@
                                         <p:column headerText="Dr. Name" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Doctor Name in Admission Search',false)}" >
                                             <h:outputText value="#{a.referringConsultant.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="PaymentMethod" >
-                                            <h:outputText value="#{a.paymentMethod}" ></h:outputText>
-                                                
-                                        </p:column>
                                         <p:column headerText="Status" >
                                             <h:panelGroup class="my-1">
                                                 <!-- Discharge Status -->
@@ -204,7 +200,7 @@
                                                     <p:tag severity="danger" style="font-size: 15px"  class="my-1 w-75" >
                                                         <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
                                                         &nbsp;<i class="fa fa-times" title="Not Discharged"></i></p:tag>
-                                                </h:panelGroup><br/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                             <p:spacer width="20" ></p:spacer>
                                             <h:panelGroup>

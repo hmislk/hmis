@@ -539,13 +539,18 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
         if (getEmailBoday() == null || getEmailBoday().trim().equalsIgnoreCase("")) {
-            JsfUtil.addErrorMessage("Massage is Missing");
+            JsfUtil.addErrorMessage("Message is Missing");
             return "";
         }
         if (getCurrecntEncounterCreditCompany().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("BHT is Missing");
             return "";
         }
+        
+        if (getCurrentCompany().getContactPerson() == null) {
+        JsfUtil.addErrorMessage("Company Contact Person is Missing");
+        return "";
+    }
 
         if (getCurrentCompany().getContactPerson().getEmail() == null || getCurrentCompany().getContactPerson().getEmail().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Company Email is Missing");
@@ -590,7 +595,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 return "";
             }
         } else {
-            JsfUtil.addErrorMessage("Email is Already Send");
+            JsfUtil.addErrorMessage("Email has Already Been Sent");
             return "";
         }
     }
