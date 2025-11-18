@@ -1054,12 +1054,6 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private void loadReportMethodConfigurationDefaults() {
-        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
-        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
-        // OPD Reports
-        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
-        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
-
         // Lab Reports
         getBooleanValueByKey("Lab Daily Summary Report - Legacy Method", true);
         getBooleanValueByKey("Lab Daily Summary Report - Optimized Method", false);
@@ -1081,6 +1075,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Income Report - Optimized Method", false);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
+
+        // Analytics Reports
+        getBooleanValueByKey("All Bill List Report - Legacy Method", true);
+        getBooleanValueByKey("All Bill List Report - Optimized Method", false);
 
     }
 

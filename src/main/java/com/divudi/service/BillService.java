@@ -605,18 +605,46 @@ public class BillService {
         return billItemFacade.findByJpql(jpql, params);
     }
 
+    /**
+     * Fetches bill type atomics for OPD finance operations, now including all pharmacy credit bills
+     * as part of the credit consolidation initiative where pharmacy credit bills are managed
+     * alongside OPD credit bills under the unified OPD Credit Settle bill type.
+     * This includes pharmacy retail sales, wholesale sales, and sales settled at cashier.
+     *
+     * <p><strong>Important:</strong> This method returns atomics for ORIGINAL BILLS that can have
+     * outstanding balances (used by OPD Due Search, OPD Due Age queries), NOT settlement record atomics.
+     * Settlement records (PAYMENT_RECEIVED bills) are queried separately by
+     * {@code listBillsOpdCreditCompanySettle()} for "OPD Done Search" functionality.
+     */
     public List<BillTypeAtomic> fetchBillTypeAtomicsForOpdFinance() {
         List<BillTypeAtomic> btas = new ArrayList<>();
+        // OPD Bill Types
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        // Package OPD Bill Types
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        // Pharmacy Bill Types (consolidated with OPD for credit management)
+        // Pharmacy Retail Sales
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        // Pharmacy Wholesale
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+        // Pharmacy Wholesale GRN
+        btas.add(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         return btas;
     }
 

@@ -108,6 +108,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             JsfUtil.addErrorMessage("Cancelled Bills CAN NOT BE returned");
             return null;
         }
+        // Check if credit has been partially or fully settled
+        if (bill.getPaidAmount() > 0) {
+            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+            return null;
+        }
         returnBill = null;
         finalReturnBill = null;
         printPreview = false;
@@ -529,7 +534,39 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         return false;
     }
 
+    /**
+     * Validates if the credit bill has been fully or partially settled.
+     * Prevents returns for bills where credit companies have already made payments.
+     *
+     * @return true if credit is settled (validation fails), false if not settled (validation passes)
+     */
+    private boolean isCreditSettled() {
+        if (getBill() == null) {
+            return false; // No bill to validate
+        }
+
+        // Check if this is a credit bill
+        if (getBill().getPaymentMethod() != PaymentMethod.Credit) {
+            return false; // Not a credit bill, allow return
+        }
+
+        // Check if credit has been settled (fully or partially)
+        // Any positive value in these fields indicates settlement has occurred
+        boolean hasSettlement =
+            (getBill().getPaidAmount() > 0.01) ||
+            (getBill().getSettledAmountByPatient() > 0.01) ||
+            (getBill().getSettledAmountBySponsor() > 0.01);
+
+        return hasSettlement;
+    }
+
     public void settle() {
+        // Check if credit has been partially or fully settled
+        if (bill != null && bill.getPaidAmount() > 0) {
+            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+            return;
+        }
+
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
@@ -546,6 +583,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 JsfUtil.addErrorMessage("Item '" + bi.getItem().getName() + "' is not allowed to be returned. Refunds are not permitted for this item.");
                 return;
             }
+        }
+
+        // Check if credit bill has been settled (fully or partially)
+        if (isCreditSettled()) {
+            JsfUtil.addErrorMessage("Cannot return this bill. The credit has been fully or partially settled by the credit company.");
+            return;
         }
 
         if (returnPaymentMethod == null) {

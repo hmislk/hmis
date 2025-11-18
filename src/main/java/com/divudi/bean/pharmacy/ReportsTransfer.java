@@ -1877,6 +1877,7 @@ public class ReportsTransfer implements Serializable {
         jpql.append(" and bi.retired = false");
         jpql.append(" and bi.bill.retired = false");
         jpql.append(" and bi.item.retired = false");
+        jpql.append(" and bi.bill.completed = true");
         jpql.append(" and (pbi.retired = false OR pbi IS NULL)");
         jpql.append(" and (ib.retired = false OR ib IS NULL)");
 
@@ -1978,6 +1979,7 @@ public class ReportsTransfer implements Serializable {
         jpql.append(" and bi.retired = false");
         jpql.append(" and bi.bill.retired = false");
         jpql.append(" and bi.item.retired = false");
+        jpql.append(" and bi.bill.completed = true");
         jpql.append(" and (pbi.retired = false OR pbi IS NULL)");
         jpql.append(" and (ib.retired = false OR ib IS NULL)");
 
@@ -2083,6 +2085,7 @@ public class ReportsTransfer implements Serializable {
         jpql.append(" and bi.retired = false");
         jpql.append(" and bi.bill.retired = false");
         jpql.append(" and bi.item.retired = false");
+        jpql.append(" and bi.bill.completed = true");
 
         m.put("bts", bts);
         m.put("fd", fromDate);
