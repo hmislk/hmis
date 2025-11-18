@@ -3181,6 +3181,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/financialReports/cash_inward_excess_age?faces-redirect=true";
     }
+    
+    public String navigateToOutsideBillServiceReport(){
+    
+        return "/reports/financialReports/outside_bill_service_report?faces-redirect=true";
+    }
 
     public String navigateToOutsidePayment() {
 
