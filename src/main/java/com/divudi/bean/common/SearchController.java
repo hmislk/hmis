@@ -4321,12 +4321,20 @@ public class SearchController implements Serializable {
     }
 
     public void processPharmacyBillSearch() {
+        System.out.println("=== DEBUG: processPharmacyBillSearch() called ===");
         if (billTypeAtomic == null) {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
         String jpql;
         Map params = new HashMap();
+
+        System.out.println("DEBUG: Selected billTypeAtomic = " + billTypeAtomic);
+        System.out.println("DEBUG: FromDate = " + getFromDate());
+        System.out.println("DEBUG: ToDate = " + getToDate());
+        System.out.println("DEBUG: Current Department = " + (getSessionController().getDepartment() != null ? getSessionController().getDepartment().getId() + " - " + getSessionController().getDepartment().getName() : "NULL"));
+        System.out.println("DEBUG: MaxResult = " + maxResult);
+
         jpql = "select b from Bill b "
                 + " where b.retired=false "
                 + " and b.billTypeAtomic = :billTypeAtomic  "
@@ -4398,7 +4406,27 @@ public class SearchController implements Serializable {
         params.put("dep", getSessionController().getDepartment());
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
+
+        System.out.println("DEBUG: Final JPQL Query = " + jpql);
+        System.out.println("DEBUG: Query parameters:");
+        for (Object key : params.keySet()) {
+            System.out.println("  " + key + " = " + params.get(key));
+        }
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
+
+        System.out.println("DEBUG: Query returned " + (bills != null ? bills.size() : 0) + " bills");
+        if (bills != null && bills.size() > 0) {
+            System.out.println("DEBUG: First few bill details:");
+            for (int i = 0; i < Math.min(5, bills.size()); i++) {
+                Bill b = bills.get(i);
+                System.out.println("  Bill ID: " + b.getId() + ", DeptId: " + b.getDeptId() + ", Atomic: " + b.getBillTypeAtomic() +
+                    ", Dept: " + (b.getDepartment() != null ? b.getDepartment().getId() + "-" + b.getDepartment().getName() : "NULL") +
+                    ", CreatedAt: " + b.getCreatedAt());
+            }
+        } else {
+            System.out.println("DEBUG: No bills found. Let's check if any PHARMACY_STOCK_ADJUSTMENT_BILL bills exist in this department...");
+        }
 
     }
 
@@ -4419,8 +4447,7 @@ public class SearchController implements Serializable {
         // Special handling for PharmacyAdjustment - use bill type atomics instead
         if (billType == BillType.PharmacyAdjustment) {
             jpql = "select b from Bill b where b.retired=false and "
-                    + " (type(b)=:class1 or type(b)=:class2) "
-                    + " and b.department=:dep and b.billTypeAtomic in :billTypeAtomics "
+                    + " b.department=:dep and b.billTypeAtomic in :billTypeAtomics "
                     + " and b.createdAt between :fromDate and :toDate ";
 
             // Include all adjustment-related bill type atomics
@@ -4513,10 +4540,10 @@ public class SearchController implements Serializable {
 
         jpql += " order by b.createdAt desc  ";
 
-        params.put("class1", BilledBill.class);
-        params.put("class2", PreBill.class);
-        // Only set billType parameter if not using billTypeAtomics
+        // Only set class1, class2, and billType parameters if not using billTypeAtomics
         if (billType != BillType.PharmacyAdjustment) {
+            params.put("class1", BilledBill.class);
+            params.put("class2", PreBill.class);
             params.put("billType", billType);
         }
         params.put("dep", getSessionController().getDepartment());

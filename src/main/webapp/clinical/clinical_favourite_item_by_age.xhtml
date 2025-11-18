@@ -475,7 +475,7 @@
                             </f:facet>
                         </p:dialog>
 
-                        <p:dataTable id="favouriteTable" value="#{favouriteController.items}" var="fi" styleClass="w-100" paginator="true" rows="10" sortBy="#{fi.fromDays}" sortOrder="ascending">
+                        <p:dataTable id="favouriteTable" value="#{favouriteController.items}" var="fi" styleClass="w-100" paginator="true" rows="10" sortBy="#{fi.createdAt}" sortOrder="ascending">
                             <p:column  >
                                 <f:facet name="header" >
                                     <i class="fas fa-baby mr-1"></i>
