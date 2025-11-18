@@ -58,11 +58,20 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
      * Uses simplified queries with better performance
      */
     public void processDailyStockBalanceReportOptimized() {
+        System.out.println("==========================================");
+        System.out.println("=== processDailyStockBalanceReportOptimized START ===");
+        System.out.println("From Date: " + fromDate);
+        System.out.println("Department: " + department);
+        System.out.println("Department ID: " + (department != null ? department.getId() : "null"));
+        System.out.println("Department Name: " + (department != null ? department.getName() : "null"));
+
         if (department == null) {
+            System.out.println("ERROR: Department is null");
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         if (fromDate == null) {
+            System.out.println("ERROR: fromDate is null");
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
@@ -72,7 +81,9 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         dailyStockBalanceReport.setDepartment(department);
 
         // Calculate Opening Stock Value at Retail Rate using optimized method
+        System.out.println(">>> Calculating OPENING stock for date: " + fromDate);
         double openingStockValueAtRetailRate = calculateStockValueAtRetailRateOptimized(fromDate, department);
+        System.out.println(">>> Opening stock value returned: " + openingStockValueAtRetailRate);
         dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
         // Calculate toDate as fromDate + 1 day
@@ -102,8 +113,13 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
         // Calculate Closing Stock Value at Retail Rate using optimized method
+        System.out.println(">>> Calculating CLOSING stock for date: " + toDate);
         double closingStockValueAtRetailRate = calculateStockValueAtRetailRateOptimized(toDate, department);
+        System.out.println(">>> Closing stock value returned: " + closingStockValueAtRetailRate);
         dailyStockBalanceReport.setClosingStockValue(closingStockValueAtRetailRate);
+
+        System.out.println("=== processDailyStockBalanceReportOptimized END ===");
+        System.out.println("==========================================");
     }
 
     /**
@@ -115,10 +131,24 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
     private double calculateStockValueAtRetailRateOptimized(Date date, Department dept) {
+        System.out.println("--- calculateStockValueAtRetailRateOptimized (Controller) ---");
+        System.out.println("Date param: " + date);
+        System.out.println("Department param: " + dept);
+
         try {
             Long departmentId = (dept != null) ? dept.getId() : null;
-            return stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, departmentId);
+            System.out.println("Extracted departmentId: " + departmentId);
+            System.out.println("Calling facade method...");
+
+            double result = stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, departmentId);
+
+            System.out.println("Facade returned: " + result);
+            System.out.println("--- End calculateStockValueAtRetailRateOptimized (Controller) ---");
+            return result;
         } catch (Exception e) {
+            System.err.println("!!! EXCEPTION in Controller calculateStockValueAtRetailRateOptimized !!!");
+            System.err.println("Exception: " + e.getMessage());
+            e.printStackTrace();
             JsfUtil.addErrorMessage(e, "Error calculating stock value at retail rate for date: " + date);
             return 0.0;
         }

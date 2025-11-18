@@ -46,51 +46,74 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
     public double calculateStockValueAtRetailRateOptimized(Date date, Long departmentId) {
+        System.out.println("=== calculateStockValueAtRetailRateOptimized START ===");
+        System.out.println("Input Date: " + date);
+        System.out.println("Input Department ID: " + departmentId);
+
         try {
             // Use native SQL for better performance
             // This query finds the latest stock history record for each item batch before the given date
             // and calculates the total retail value
             String sql =
-                "SELECT COALESCE(SUM(latest_stock.stock_qty * latest_stock.retail_rate), 0.0) AS total_value " +
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.retail_rate), 0.0) AS total_value " +
                 "FROM ( " +
                 "    SELECT  " +
-                "        sh.stock_qty, " +
-                "        COALESCE(ib.retailsale_rate, 0.0) AS retail_rate " +
-                "    FROM stock_history sh " +
+                "        sh.STOCKQTY, " +
+                "        COALESCE(ib.RETAILSALERATE, 0.0) AS retail_rate " +
+                "    FROM STOCKHISTORY sh " +
                 "    INNER JOIN ( " +
                 "        SELECT  " +
-                "            department_id, " +
-                "            item_batch_id, " +
-                "            MAX(id) AS max_id " +
-                "        FROM stock_history " +
-                "        WHERE retired = 0 " +
-                "        AND created_at < ? " +
-                (departmentId != null ? "        AND department_id = ? " : "") +
-                "        GROUP BY department_id, item_batch_id " +
-                "    ) AS latest ON sh.id = latest.max_id " +
-                "    INNER JOIN item_batch ib ON sh.item_batch_id = ib.id " +
-                "    WHERE sh.retired = 0 " +
-                "    AND sh.stock_qty > 0 " +
+                "            DEPARTMENT_ID, " +
+                "            ITEMBATCH_ID, " +
+                "            MAX(ID) AS max_id " +
+                "        FROM STOCKHISTORY " +
+                "        WHERE RETIRED = 0 " +
+                "        AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 " +
+                "    AND sh.STOCKQTY > 0 " +
                 ") AS latest_stock";
+
+            System.out.println("SQL Query: " + sql);
 
             // Execute the native query
             javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
             query.setParameter(1, date, TemporalType.TIMESTAMP);
+            System.out.println("Parameter 1 (date): " + date);
+
             if (departmentId != null) {
                 query.setParameter(2, departmentId);
+                System.out.println("Parameter 2 (departmentId): " + departmentId);
+            } else {
+                System.out.println("No department filter (departmentId is null)");
             }
 
+            System.out.println("Executing query...");
             Object result = query.getSingleResult();
+            System.out.println("Raw result: " + result);
+            System.out.println("Result class: " + (result != null ? result.getClass().getName() : "null"));
+
             if (result != null) {
                 if (result instanceof Number) {
-                    return ((Number) result).doubleValue();
+                    double value = ((Number) result).doubleValue();
+                    System.out.println("Returning value: " + value);
+                    System.out.println("=== calculateStockValueAtRetailRateOptimized END (SUCCESS) ===");
+                    return value;
                 }
             }
+            System.out.println("Result is null or not a Number, returning 0.0");
+            System.out.println("=== calculateStockValueAtRetailRateOptimized END (NULL RESULT) ===");
             return 0.0;
 
         } catch (Exception e) {
+            System.err.println("=== EXCEPTION in calculateStockValueAtRetailRateOptimized ===");
             System.err.println("Error calculating stock value at retail rate for date: " + date + " - " + e.getMessage());
+            System.err.println("Exception class: " + e.getClass().getName());
             e.printStackTrace();
+            System.err.println("=== calculateStockValueAtRetailRateOptimized END (EXCEPTION) ===");
             return 0.0;
         }
     }
@@ -107,12 +130,12 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
         try {
             // Step 1: Get the latest stock history IDs using a simplified query
             String findLatestIdsSql =
-                "SELECT MAX(id) AS max_id " +
-                "FROM stock_history " +
-                "WHERE retired = 0 " +
-                "AND created_at < ? " +
-                (departmentId != null ? "AND department_id = ? " : "") +
-                "GROUP BY department_id, item_batch_id";
+                "SELECT MAX(ID) AS max_id " +
+                "FROM STOCKHISTORY " +
+                "WHERE RETIRED = 0 " +
+                "AND CREATEDAT < ? " +
+                (departmentId != null ? "AND DEPARTMENT_ID = ? " : "") +
+                "GROUP BY DEPARTMENT_ID, ITEMBATCH_ID";
 
             javax.persistence.Query idsQuery = getEntityManager().createNativeQuery(findLatestIdsSql);
             idsQuery.setParameter(1, date, TemporalType.TIMESTAMP);
@@ -128,12 +151,12 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
 
             // Step 2: Calculate the sum of stock values for the latest records
             String calculateValueSql =
-                "SELECT COALESCE(SUM(sh.stock_qty * COALESCE(ib.retailsale_rate, 0.0)), 0.0) " +
-                "FROM stock_history sh " +
-                "INNER JOIN item_batch ib ON sh.item_batch_id = ib.id " +
-                "WHERE sh.id IN (:ids) " +
-                "AND sh.retired = 0 " +
-                "AND sh.stock_qty > 0";
+                "SELECT COALESCE(SUM(sh.STOCKQTY * COALESCE(ib.RETAILSALERATE, 0.0)), 0.0) " +
+                "FROM STOCKHISTORY sh " +
+                "INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "WHERE sh.ID IN (:ids) " +
+                "AND sh.RETIRED = 0 " +
+                "AND sh.STOCKQTY > 0";
 
             javax.persistence.Query valueQuery = getEntityManager().createNativeQuery(calculateValueSql);
             valueQuery.setParameter("ids", latestIds);
