@@ -444,7 +444,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Lab Bill Item List" action="#{patientInvestigationController.navigateToLabBillItemList()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time Details" action="#{reportController.navigateToTurnAroundTimeDetails()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time(Hourly)" action="#{reportController.navigateToTurnAroundTimeHourly}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" action="#{reportController.navigateToLabPeakHourStatistics()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" action="#{repStatisticortController.navigateToLabPeakHourStatistics()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Sample Carrier" action="#{reportController.navigateToSampleCarrierReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Organism Antibiotic Sensitivity" action="#{reportController.navigateToLabOrganismAntibioticSensitivityReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Investigation Wise Research" action="#{reportController.navigateToLabInvetigationWiseReport()}"/>
@@ -522,9 +522,10 @@
 
                             <p:tab title="Statistics Reports">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="1. Patient Journey" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="1. Patient Journey" action="#{reportController.navigateToPatientJourney()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Patient Ledger" />
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Speciality Wise Demographic Data" />
+                                    
                                 </div>
                             </p:tab>
 

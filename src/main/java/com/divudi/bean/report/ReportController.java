@@ -2990,6 +2990,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/HRReports/online_form_status?faces-redirect=true";
     }
+    
+    public String navigateToPatientJourney() {
+
+        return "/reports/stastistic_reports/patient_journey?faces-redirect=true";
+    }
 
     public String navigateToAdmissionDischargeReport() {
 
