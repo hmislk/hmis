@@ -306,13 +306,15 @@
                                                 rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null 
                                                             and webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                value="Approve" 
+                                            <p:commandButton
+                                                value="Approve"
                                                 action="#{directPurchaseReturnWorkflowController.approve}"
                                                 ajax="false"
-                                                icon="fas fa-check-circle" 
+                                                icon="fas fa-check-circle"
                                                 class="ui-button-success mx-1"
-                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy ne null and (directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}">
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy ne null and (directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}"
+                                                onclick="if (!confirm('Are you sure you want to approve this direct purchase return?'))
+                                                            return false;">
                                             </p:commandButton>
                                         </div>
                                     </div>

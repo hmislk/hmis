@@ -31,12 +31,20 @@
                                                              style="text-align: left" 
                                                              value="Pharmacy Income and Cost"
                                                              action="#{pharmacySummaryReportController.navigateToPharmacyIncomeAndCostReport()}"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}" 
-                                                             class="w-100" 
-                                                             ajax="false" 
-                                                             style="text-align: left" 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}"
+                                                             class="w-100"
+                                                             ajax="false"
+                                                             style="text-align: left"
                                                              value="Daily Stock Values"
                                                              action="#{pharmacySummaryReportController.navigateToDailyStockValuesReport()}"/>
+                                            <p:commandButton
+                                                             class="w-100 ui-button-success"
+                                                             ajax="false"
+                                                             style="text-align: left"
+                                                             icon="fa fa-rocket"
+                                                             value="Daily Stock Values (Optimized)"
+                                                             action="/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true"
+                                                             title="High-performance optimized report - Faster execution"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
                                                              class="w-100 ui-button-warning"
                                                              ajax="false"

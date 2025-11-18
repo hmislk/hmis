@@ -293,46 +293,6 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:columnGroup type="footer">
-                                        <p:row>
-                                            <p:column colspan="1">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel value="Total" style="font-weight: bold;"/>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right; font-weight: bold;">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel
-                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[0]}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right; font-weight: bold;">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel
-                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[1]}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right; font-weight: bold;">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel
-                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[2]}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                            <p:column style="text-align: right; font-weight: bold;">
-                                                <f:facet name="footer">
-                                                    <h:outputLabel
-                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[3]}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputLabel>
-                                                </f:facet>
-                                            </p:column>
-                                        </p:row>
-
                                         <p:row rendered="#{status.last}">
                                             <p:column colspan="1">
                                                 <f:facet name="footer">
