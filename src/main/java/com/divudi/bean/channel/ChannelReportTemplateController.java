@@ -908,27 +908,11 @@ public class ChannelReportTemplateController implements Serializable {
         String j;
         Map m = new HashMap();
         rows = new ArrayList<>();
-        //BillSession
-        boolean test = false;
-        if (test) {
-            BillSession bs = new BillSession();
-            bs.getSessionInstance().getSessionDate();
-            if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE) {
-                bs.getBill().getPatient().getPerson();
-                bs.getBill().getCreditCompany().getName();
-                bs.getBill().getCreatedAt();
-                bs.getSessionInstance().getOriginatingSession().getStaff().getSpeciality();
-                bs.getSessionInstance().getOriginatingSession().getSpeciality().getName();
-                bs.getBill().isCancelled();
-
-            }
-        }
 
         j = "select new com.divudi.core.data.ReportTemplateRow(bs) "
                 + " from BillSession bs "
                 + " where bs.retired = false "
                 + " and bs.bill.creditCompany is not null "
-                + " and bs.bill.creditCompany.name = 'DOC_990'"
                 + " and bs.bill.billTypeAtomic = :bta"
                 + " and bs.bill.createdAt between :fd and :td ";
 
