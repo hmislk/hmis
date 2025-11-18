@@ -61,8 +61,11 @@
                             <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                         </p:column>
                         <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                            <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
-                            <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.discharged}" />
+                            <div class="d-flex justify-content-center">
+                                <span class="#{apt2.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                    #{apt2.discharged ? 'Discharged' : 'Not Discharged'}
+                                </span>
+                            </div>
                         </p:column>
                     </p:autoComplete>
 
@@ -71,6 +74,26 @@
                         value="Select"
                         ajax="false"  >
                     </p:commandButton>
+
+                    <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
 
                 </p:panel>
             </h:panelGroup>
@@ -93,6 +116,18 @@
                                     action="pharmacy_bill_issue_bht"
                                     actionListener="#{pharmacySaleBhtController.resetAll}" >
                                 </p:commandButton>
+
+                                <!-- Admin Configuration Button (only for administrators) -->
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('inward/pharmacy_bill_issue_bht')}"
+                                        ajax="false"
+                                        class="ui-button-secondary mx-2">
+                                    </p:commandButton>
+                                </h:panelGroup>
 
                                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
                                     <div class="d-flex gap-2">

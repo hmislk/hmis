@@ -2811,6 +2811,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
     
+
     public String navigateToOtRoomWiseSergeryCount(){
         
         return "/reports/managementReports/ot_room_wise_surgery_count?faces-redirect=true";
@@ -2818,6 +2819,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     
     public String navigateToRoomOccupancyReport(){
         return "/reports/managementReports/room_occupancy_report?faces-redirect=true";
+        
+    }
+
+    public String navigateToSugeryStatus(){
+       return "/reports/managementReports/surgery_status";
+
     }
 
     public String navigateToReferringDoctorWiseRevenue() {
@@ -3019,6 +3026,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/HRReports/online_form_status?faces-redirect=true";
     }
+    
+    public String navigateToPatientJourney() {
+
+        return "/reports/stastistic_reports/patient_journey?faces-redirect=true";
+    }
 
     public String navigateToAdmissionDischargeReport() {
 
@@ -3154,6 +3166,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
     }
     
+
+    public String navigateToHospitalCensusReport(){
+        return "/reports/inpatientReports/hospital_census_report?faces-redirect=true";
+    }
+    
+
     public String navigateToIncomeBillCountReport() {
         reportViewTypes = new ArrayList<>();
         reportViewTypes.add(ReportViewType.BY_BILL);
@@ -3195,6 +3213,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToExcessAge() {
 
         return "/reports/financialReports/cash_inward_excess_age?faces-redirect=true";
+    }
+    
+    public String navigateToOutsideBillServiceReport(){
+    
+        return "/reports/financialReports/outside_bill_service_report?faces-redirect=true";
     }
 
     public String navigateToOutsidePayment() {

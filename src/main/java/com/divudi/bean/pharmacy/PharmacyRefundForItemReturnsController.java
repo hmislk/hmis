@@ -2222,12 +2222,49 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return false;
     }
 
+    /**
+     * Validates if the original credit bill has been fully or partially settled.
+     * Prevents refunds for bills where credit companies have already made payments.
+     *
+     * @return true if credit is settled (validation fails), false if not settled (validation passes)
+     */
+    private boolean isCreditSettled() {
+        if (getItemReturnBill() == null) {
+            return false; // No item return bill to validate
+        }
+
+        Bill originalSaleBill = getItemReturnBill().getReferenceBill();
+        if (originalSaleBill == null) {
+            return false; // No original bill to validate
+        }
+
+        // Check if this is a credit bill
+        if (originalSaleBill.getPaymentMethod() != PaymentMethod.Credit) {
+            return false; // Not a credit bill, allow refund
+        }
+
+        // Check if credit has been settled (fully or partially)
+        // Any positive value in these fields indicates settlement has occurred
+        boolean hasSettlement =
+            (originalSaleBill.getPaidAmount() > 0.01) ||
+            (originalSaleBill.getSettledAmountByPatient() > 0.01) ||
+            (originalSaleBill.getSettledAmountBySponsor() > 0.01);
+
+        return hasSettlement;
+    }
+
     public void settleRefundForReturnItems() {
         editingQty = null;
 
         // Validate that payment total matches refund total
         if (validatePaymentRefundMatch()) {
             return; // Validation failed, error message already displayed
+        }
+
+        // Check if original credit bill has been settled (fully or partially)
+        if (isCreditSettled()) {
+            JsfUtil.addErrorMessage("Cannot process refund for this return. The original credit bill has been fully or partially settled by the credit company.");
+            return;
         }
 
         saveBill();

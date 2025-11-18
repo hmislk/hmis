@@ -427,6 +427,8 @@
                                                     <h:outputText styleClass="fas fa-pills"/>
                                                     <p:outputLabel class="mx-4" value="Medicines" />
 
+                                                    <p:commandButton value="Add Favourite" process="@this" class='ui-button-success' icon='fas fa-star' style="float: right; margin-right: 5px;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
+
                                                     <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
 
                                                 </f:facet>
