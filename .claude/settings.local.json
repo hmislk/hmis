@@ -1,13 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(git log:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
+    "ask": [],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
       "D:\\Development"
-    ],
-    "ask": []
+    ]
   }
 }
