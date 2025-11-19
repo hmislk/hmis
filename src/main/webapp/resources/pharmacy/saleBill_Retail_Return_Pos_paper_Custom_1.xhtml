@@ -282,17 +282,17 @@
 
             <div style="width: 95%; padding-left: 5%; padding-right: 3%" >
                 <table width="100%" >
-<!--                    <tr>
-                        <td class="totalsItemBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
-                        </td>
-                        <td  class="totalsItemBlock" style="text-align: right!important; width: 40%;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>-->
-                    
+                    <!--                    <tr>
+                                            <td class="totalsItemBlock" style="text-align: left; width: 60%;">
+                                                <h:outputLabel value="Total" />
+                                            </td>
+                                            <td  class="totalsItemBlock" style="text-align: right!important; width: 40%;">
+                                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>-->
+
                     <tr>
                         <td  class="totalsItemBlock" style="text-align: left;">
                             <h:outputLabel style="font-weight: bolder!important;"  value="Net Total" />
@@ -319,21 +319,30 @@
 
 
                     <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
-                        <tr>
-                            <td style=" ;text-align: left;" >
-                                <h:outputLabel value="Payment Method" class="billDetails"></h:outputLabel>
+                        <!--                        <tr>
+                                                    <td style=" ;text-align: left;" >
+                                                        <h:outputLabel value="Payment Method" class="billDetails"></h:outputLabel>
+                                                    </td>
+                                                    <td style=" text-align: right;" >
+                                                        <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="p">
+                                                            <div class="d-flex gap-2 justify-content-end">
+                                                                <h:outputLabel value="#{p.paymentMethod}" ></h:outputLabel>
+                                                                <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" value=":" class="d-flex justify-content-center" style="width: 10px;"></h:outputLabel>
+                                                                <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" value="#{p.paidValue}" >
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </div>
+                                                        </ui:repeat>
+                                                    </td> 
+                                                </tr>-->
+                        <tr >
+                            <td style="text-align: left;">
+                                <h:outputLabel   value="Comment" />
                             </td>
-                            <td style=" text-align: right;" >
-                                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="p">
-                                    <div class="d-flex gap-2 justify-content-end">
-                                        <h:outputLabel value="#{p.paymentMethod}" ></h:outputLabel>
-                                        <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" value=":" class="d-flex justify-content-center" style="width: 10px;"></h:outputLabel>
-                                        <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}" value="#{p.paidValue}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </div>
-                                </ui:repeat>
-                            </td> 
+                            <td style="text-align: right; ">
+                                <h:outputLabel   value="#{cc.attrs.bill.comments}">
+                                </h:outputLabel>
+                            </td>
                         </tr>
                         <tr >
                             <td style="text-align: left;">
@@ -353,8 +362,6 @@
 
 
             <div class="footer">
-                Return accepted within 3 days only
-                <br/>
                 THANK YOU !
                 <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
                     <br/>
