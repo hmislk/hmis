@@ -2852,6 +2852,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/admission_count_payment_type_wise?faces-redirect=true"; 
     }
     
+    public String navigateToManagementHospitalCensusReport(){
+        
+        return "/reports/managementReports/hospital_census?faces-redirect=true"; 
+    }
+    
     public String navigateToROOMOCCUPANCY(){
         
         return "/reports/managementReports/ROOM_OCCUPANCY?faces-redirect=true";
