@@ -114,8 +114,8 @@
                                             update=":#{p:resolveFirstComponentWithId('panelPayments',view).clientId}"
                                             listener="#{supplierPaymentController.calTotalBySelectedBillTems()}" />
 
-                                        <p:column width="1em" selectionBox="true"></p:column>
-                                        <p:column  width="10em" class="text-start" >  
+                                        <p:column width="1em" selectionBox="true" style="padding: 8px;"></p:column>
+                                        <p:column  width="10em" class="text-start" style="padding: 8px;" >  
                                             <f:facet name="header">
                                                 <h:outputLabel value="GRN No"/>                                  
                                             </f:facet>     
@@ -123,7 +123,7 @@
                                                 value="#{b.referenceBill.deptId}">
                                             </p:outputLabel>
                                         </p:column> 
-                                        <p:column width="10em" class="text-start" >  
+                                        <p:column width="10em" class="text-start" style="padding: 8px;">  
                                             <f:facet name="header">
                                                 <h:outputLabel value="Date"/>                                  
                                             </f:facet>     
@@ -132,29 +132,29 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column   width="7em" class="text-end" headerText="GRN Value">
+                                        <p:column width="7em" class="text-end" headerText="GRN Value" style="padding: 8px;">
                                             <p:outputLabel value="#{b.referenceBill.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column   width="7em" class="text-end" headerText="Return Value">
+                                        <p:column width="7em" class="text-end" headerText="Return Value" style="padding: 8px;">
                                             <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column   width="7em" class="text-end" headerText="Paid Value">
+                                        <p:column width="7em" class="text-end" headerText="Paid Value" style="padding: 8px;">
                                             <p:outputLabel value="#{b.referenceBill.paidAmount}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column   width="7em" class="text-end" headerText="Recievable Value">
+                                        <p:column width="7em" class="text-end" headerText="Recievable Value" style="padding: 8px;">
                                             <p:outputLabel value="#{(b.referenceBill.netTotal+
                                                                     b.referenceBill.tmpReturnTotal+
                                                                     b.referenceBill.paidAmount)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </p:column>
-                                        <p:column width="7em" class="text-end" headerText="Paying Value">
+                                        <p:column width="7em" class="text-end" headerText="Paying Value" style="padding: 8px;">
                                             <p:inputText 
                                                 autocomplete="off" 
                                                 styleClass="w-100 text-end"
@@ -169,7 +169,7 @@
                                             </p:inputText>
                                         </p:column>
 
-                                        <p:column  width="3em" class="text-center" headerText="Remove">
+                                        <p:column width="3em" class="text-center" headerText="Remove" style="padding: 8px;">
                                             <p:commandButton 
                                                 ajax="false"
                                                 class="ui-button-danger"
@@ -246,18 +246,25 @@
                                                 value="Payment Details" />
                                             <h:panelGroup id="gpPaymentDetails" class="w-100">
                                                 <h:panelGroup id="cash" >
-                                                    <p:inputText value="#{supplierPaymentController.current.netTotal}"
-                                                                 rendered="#{supplierPaymentController.current.paymentMethod eq 'Cash' or supplierPaymentController.current.paymentMethod eq null}"/>
+                                                    <p:inputText 
+                                                        value="#{supplierPaymentController.current.netTotal}"
+                                                        rendered="#{supplierPaymentController.current.paymentMethod eq 'Cash' or supplierPaymentController.current.paymentMethod eq null}"/>
                                                 </h:panelGroup>
-                                                <h:panelGroup id="creditCard" style="display: #{supplierPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <h:panelGroup 
+                                                    id="creditCard" 
+                                                    rendered="#{supplierPaymentController.current.paymentMethod eq 'Card'}">
                                                     <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="cheque" style="display: #{supplierPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <h:panelGroup 
+                                                    id="cheque" 
+                                                    rendered="#{supplierPaymentController.current.paymentMethod eq 'Cheque'}">
                                                     <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="slip" style="display: #{supplierPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <h:panelGroup 
+                                                    id="slip" 
+                                                    rendered="#{supplierPaymentController.current.paymentMethod eq 'Slip'}">
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{supplierPaymentController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
