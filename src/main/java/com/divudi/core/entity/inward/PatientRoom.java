@@ -66,7 +66,7 @@ public class PatientRoom implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date printAdmittedAt;
     
-    private boolean addmitted;
+    private boolean admitted;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date admittedAt;
     @ManyToOne
@@ -694,11 +694,11 @@ public class PatientRoom implements Serializable, RetirableEntity {
         this.currentMoChargeForAfterDuration = currentMoChargeForAfterDuration;
     }
 
-    public boolean isAddmitted() {
-        return addmitted;
+    public boolean isAdmitted() {
+        return admitted;
     }
 
-    public void setAddmitted(boolean addmitted) {
-        this.addmitted = addmitted;
+    public void setAdmitted(boolean admitted) {
+        this.admitted = admitted;
     }
 }
