@@ -32,37 +32,37 @@
             </f:facet>
 
             <p:column headerText="PO NO"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_po" value="#{bill.deptId}">
+                <h:commandLink action="/pharmacy/pharmacy_reprint_po?faces-redirect=true" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Requested No"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_po" value="#{bill.referenceBill.deptId}">
+                <h:commandLink action="/pharmacy/pharmacy_reprint_po?faces-redirect=true" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>            
             <p:column headerText="Requested From" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_po" value="#{bill.department.name}">
+                <h:commandLink action="/pharmacy/pharmacy_reprint_po?faces-redirect=true" value="#{bill.department.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>   
             <p:column headerText="Requested Person" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_po" value="#{bill.referenceBill.creater.webUserPerson.name}">
+                <h:commandLink action="/pharmacy/pharmacy_reprint_po?faces-redirect=true" value="#{bill.referenceBill.creater.webUserPerson.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Delaor Name" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_po" value="#{bill.toInstitution.name}">
+                <h:commandLink action="/pharmacy/pharmacy_reprint_po?faces-redirect=true" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Billed At"  >
-                <h:commandLink action="pharmacy_reprint_grn_return" >
+                <h:commandLink action="pharmacy_reprint_grn_return?faces-redirect=true" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
@@ -83,7 +83,7 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Approved By" >
-                <h:commandLink action="pharmacy_reprint_grn_return" >
+                <h:commandLink action="pharmacy_reprint_grn_return?faces-redirect=true" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
@@ -102,13 +102,13 @@
                 </h:panelGroup>
             </p:column>        
             <p:column headerText="Payment Method">
-                <h:commandLink action="/pharmacy/pharmacy_reprint_po" >
+                <h:commandLink action="/pharmacy/pharmacy_reprint_po?faces-redirect=true" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
             <p:column headerText="Net Value" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_po" >
+                <h:commandLink action="/pharmacy/pharmacy_reprint_po?faces-redirect=true" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>

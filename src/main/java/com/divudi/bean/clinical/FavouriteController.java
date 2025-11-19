@@ -651,4 +651,98 @@ public class FavouriteController implements Serializable {
         }
     }
 
+    // ========================================
+    // DIAGNOSIS FAVOURITE METHODS
+    // ========================================
+
+    /**
+     * Saves or updates a favourite diagnosis based on ID
+     */
+    public void saveFavDiagnosis(){
+        if (item == null) {
+            JsfUtil.addErrorMessage("No Diagnosis Selected");
+            return;
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No diagnosis template prepared");
+            return;
+        }
+        if (current.getItem() == null) {
+            JsfUtil.addErrorMessage("No Medicine Selected");
+            return;
+        }
+
+        current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
+        current.setForItem(item);
+        current.setForWebUser(sessionController.getLoggedUser());
+
+        // Check if ID is null to determine create vs update
+        if (current.getId() == null) {
+            current.setOrderNo(getItems().size() + 1.0);
+            favouriteItemFacade.create(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis saved successfully");
+        } else {
+            favouriteItemFacade.edit(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis updated successfully");
+        }
+
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        current = null;
+    }
+
+    /**
+     * Prepares the current object for editing an existing favourite diagnosis
+     */
+    public void prepareEditFavouriteDiagnosis(PrescriptionTemplate editingTemplate) {
+        if (editingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite diagnosis selected for editing");
+            return;
+        }
+        current = editingTemplate;
+        item = editingTemplate.getForItem();
+    }
+
+    /**
+     * Updates an existing favourite diagnosis
+     */
+    public void updateFavDiagnosis(){
+        if (current == null) {
+            JsfUtil.addErrorMessage("No diagnosis template prepared for update");
+            return;
+        }
+        if (current.getItem() == null) {
+            JsfUtil.addErrorMessage("No Medicine Selected");
+            return;
+        }
+        current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
+        current.setForWebUser(sessionController.getLoggedUser());
+
+        // Check if ID is null to determine create vs update
+        if (current.getId() == null) {
+            current.setOrderNo(getItems().size() + 1.0);
+            favouriteItemFacade.create(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis created successfully");
+        } else {
+            favouriteItemFacade.edit(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis updated successfully");
+        }
+
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        current = null;
+    }
+
+    /**
+     * Removes an existing favourite diagnosis (soft delete)
+     */
+    public void removeFavouriteDiagnosis(PrescriptionTemplate removingTemplate) {
+        if (removingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite diagnosis selected for removal");
+            return;
+        }
+        removingTemplate.setRetired(true);
+        favouriteItemFacade.edit(removingTemplate);
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        JsfUtil.addSuccessMessage("Favourite diagnosis removed successfully");
+    }
+
 }

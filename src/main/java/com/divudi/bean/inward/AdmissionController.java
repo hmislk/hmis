@@ -810,12 +810,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("No Patient. Program Error");
             return "";
         }
-        current.getPatient().setEditingMode(false);
-        bhtSummeryController.setPatientEncounter(current);
-        bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
-        return bhtSummeryController.navigateToInpatientProfile();
-    }
 
+        if (current.isRoomAdmitted()) {
+            current.getPatient().setEditingMode(false);
+            bhtSummeryController.setPatientEncounter(current);
+            bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
+            return bhtSummeryController.navigateToInpatientProfile();
+        } else {
+            roomChangeController.setCurrent(current);
+            roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
+            return "/inward/admit_room?faces-redirect=true";
+        }
+    }
+    
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
         String sql;
@@ -1578,7 +1585,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
-            PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+            PatientRoom currentPatientRoom = new PatientRoom();
+            if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
+                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+                getCurrent().setRoomAdmitted(true);
+            } else {
+                getCurrent().setRoomAdmitted(false);
+                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), getCurrent(), getSessionController().getLoggedUser());
+            }
+
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
         }
 

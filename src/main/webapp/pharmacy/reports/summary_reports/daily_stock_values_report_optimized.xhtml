@@ -1,0 +1,329 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panelGrid layout="tabular" columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                            <h:outputLabel value="Date" for="fromDate" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:calendar
+                            styleClass="w-100"
+                            inputStyleClass="w-100 form-control"
+                            id="fromDate"
+                            value="#{pharmacyDailyStockReportOptimizedController.fromDate}"
+                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                            />
+
+                        <p:spacer width="50" ></p:spacer>
+                        <p:commandButton
+                            class="w-100"
+                            value="Process (Optimized)"
+                            ajax="false"
+                            action="#{pharmacyDailyStockReportOptimizedController.processDailyStockBalanceReportOptimized}" ></p:commandButton>
+                        <p:spacer width="50" ></p:spacer>
+
+
+                        <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
+                        <p:spacer width="50" ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="cmbIns"
+                            styleClass="w-100 form-control"
+                            value="#{pharmacyDailyStockReportOptimizedController.institution}"
+                            filter="true">
+                            <f:selectItem itemLabel="All Institutions" />
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            <p:ajax process="cmbIns" update="cmbDept" />
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="siteMenu"
+                            styleClass="w-100 form-control"
+                            value="#{pharmacyDailyStockReportOptimizedController.site}"
+                            filter="true">
+                            <f:selectItem itemLabel="All Sites" />
+                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            <p:ajax process="siteMenu" update="cmbDept" />
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.site)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyDailyStockReportOptimizedController.institution)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.institution, pharmacyDailyStockReportOptimizedController.site)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGroup>
+
+
+                    </p:panelGrid>
+
+
+                    <table class="table w-100 m-1">
+                        <tr>
+                            <th colspan="2" class="bg-primary text-white text-center">
+                                <h:outputText value="Daily Stock Value Report (Optimized)"></h:outputText>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="bg-secondary text-white text-center">
+                                <h:outputText value="Date : "></h:outputText>
+                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                                </h:outputText>
+                            </th>
+                            <th class="bg-secondary text-white text-center">
+                                <h:outputText value="Department : "></h:outputText>
+                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.department.name}"></h:outputText>
+                            </th>
+                        </tr>
+
+                        <tr class="table-primary">
+                            <td>
+                                <h:outputLabel value="Opening Stock"></h:outputLabel>
+                            </td>
+                            <td class="text-end">
+                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValue}" class="me-4">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
+                        <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.rows}" var="sale">
+                            <tr class="table-success">
+                                <td>
+                                    <h:outputLabel value="#{sale.rowType}"></h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{sale.netTotal}" class="me-4">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                        <tr class="bg-success text-white">
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6"></div>
+                                    <div class="col-6">
+                                        <h:outputLabel value="Total Sales"></h:outputLabel>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6 text-end">
+                                        <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.netTotal}" class="me-4">
+                                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-6"></div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <ui:repeat
+                            id="purchaseBundles"
+                            value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.rows}" var="purchase">
+                            <tr class="table-warning">
+                                <td>
+                                    <h:outputLabel value="#{purchase.rowType}"></h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{purchase.valueOfStocksAtRetailSaleRate}" class="me-4">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                        <tr class="bg-warning text-dark">
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6"></div>
+                                    <div class="col-6">
+                                        <h:outputLabel value="Total Purchases"></h:outputLabel>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6 text-end">
+                                        <h:outputLabel
+                                            id="lblPurchaseBillsTotalAtRetailRate"
+                                            value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}" class="me-4">
+                                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-6"></div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.rows}" var="transfer">
+                            <tr class="table-info">
+                                <td>
+                                    <h:outputLabel value="#{transfer.rowType}"></h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{transfer.valueOfStocksAtRetailSaleRate}" class="me-4">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                        <tr class="bg-info text-dark">
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6"></div>
+                                    <div class="col-6">
+                                        <h:outputLabel value="Total Transfers"></h:outputLabel>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6 text-end">
+                                        <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}" class="me-4">
+                                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-6"></div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.rows}" var="adjustment">
+                            <tr class="table-danger">
+                                <td>
+                                    <h:outputLabel value="#{adjustment.rowType}"></h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{adjustment.grossTotal}" class="me-4">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                        <tr class="bg-danger text-white">
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6"></div>
+                                    <div class="col-6">
+                                        <h:outputLabel value="Total Adjustments"></h:outputLabel>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fw-bold">
+                                <div class="row">
+                                    <div class="col-6 text-end">
+                                        <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}" class="me-4">
+                                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-6"></div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="table-primary">
+                            <td>
+                                <h:outputLabel value="Closing Stock"></h:outputLabel>
+                            </td>
+                            <td class="text-end">
+                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValue}" class="me-4">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
+
+
+
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
