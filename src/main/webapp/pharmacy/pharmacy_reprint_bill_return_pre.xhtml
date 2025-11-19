@@ -17,6 +17,13 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Pharmacy Return Item Bill Reprint" ></h:outputLabel>
                             <div class="d-flex" style="float: right;">
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    class="ui-button-secondary mx-1"
+                                    type="button"
+                                    onclick="PF('billReturnConfigDialog').show();" />
                                 <p:commandButton 
                                     value="Reprint" 
                                     class="ui-button-success"
@@ -37,11 +44,72 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+<!--                            <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />-->
+
+                            <!-- 5.5 Inch Custom Format -->
+                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3Return"
+                                          rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper', true)}">
+                                <ph:sale_bill_five_five_custom_3_Return bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                            </h:panelGroup>
+
+                            <!-- POS Header Format -->
+                            <h:panelGroup id="gpBillPreviewPosHeader"
+                                          rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Bill is POS Header Paper', false)}">
+                                <ph:saleBill_Header_Return bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                            </h:panelGroup>
+
+                            <!-- POS Paper Custom 1 Format -->
+                            <h:panelGroup id="gpBillPreviewPosPaperCustom1"
+                                          rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper', false)}">
+                                <ph:saleBill_Retail_Return_Pos_paper_Custom_1 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                            </h:panelGroup>
+
                         </h:panelGroup>
 
                     </p:panel>
 
+                    <!-- Printer Configuration Dialog -->
+                    <p:dialog id="billReturnConfigDialog"
+                              header="Return Bill Printer Configuration"
+                              widgetVar="billReturnConfigDialog"
+                              modal="true"
+                              width="600"
+                              rendered="#{preReturnController.printPreview}">
+                        <h:panelGroup id="billReturnConfigForm" layout="block">
+                            <p:panel header="Select Paper Format">
+                                <p:panelGrid columns="2" styleClass="w-100">
+                                    <h:outputLabel value="5.5 Inch Custom Format:" />
+                                    <p:selectBooleanCheckbox
+                                        id="chkFiveFiveCustom3"
+                                        value="#{pharmacyConfigController.retailSaleReturnFiveFiveCustom3}" />
+
+                                    <h:outputLabel value="POS Header Format:" />
+                                    <p:selectBooleanCheckbox
+                                        id="chkPosHeaderPaper"
+                                        value="#{pharmacyConfigController.retailSaleReturnPosHeaderPaper}" />
+
+                                    <h:outputLabel value="POS Paper Custom 1 Format:" />
+                                    <p:selectBooleanCheckbox
+                                        id="chkPosCustom1Paper"
+                                        value="#{pharmacyConfigController.retailSaleReturnPosPaperCustom1}" />
+                                </p:panelGrid>
+
+                                <div class="mt-3">
+                                    <p:commandButton value="Apply &amp; Close"
+                                                     icon="fas fa-save"
+                                                     class="ui-button-success"
+                                                     ajax="false"
+                                                     action="#{pharmacyConfigController.saveConfig()}"
+                                                     onclick="PF('billReturnConfigDialog').hide();" />
+                                    <p:commandButton value="Cancel"
+                                                     type="button"
+                                                     icon="fas fa-times"
+                                                     onclick="PF('billReturnConfigDialog').hide();"
+                                                     class="ui-button-secondary ms-2" />
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+                    </p:dialog>
 
                 </h:form>
             </ui:define>

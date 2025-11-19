@@ -109,10 +109,13 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             return null;
         }
         // Check if credit has been partially or fully settled
-        if (bill.getPaidAmount() > 0) {
-            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
-            return null;
+        if (bill.getPaymentMethod() == PaymentMethod.Credit){
+            if (bill.getPaidAmount() > 0) {
+                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+                return null;
+            }
         }
+        
         returnBill = null;
         finalReturnBill = null;
         printPreview = false;
@@ -328,13 +331,13 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         // Handle Department ID generation
         String deptId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         } else {
@@ -344,12 +347,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         // Handle Institution ID generation (completely separate)
         String insId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
             insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
             insId = deptId;
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             insId = deptId;
         } else {
             insId = deptId;
@@ -562,11 +565,13 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
     public void settle() {
         // Check if credit has been partially or fully settled
-        if (bill != null && bill.getPaidAmount() > 0) {
-            JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
-            return;
+        if (bill.getPaymentMethod() == PaymentMethod.Credit){
+            if (bill != null && bill.getPaidAmount() > 0) {
+                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+                return;
+            }
         }
-
+        
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
