@@ -149,6 +149,7 @@ public class PreReturnController implements Serializable {
         getReturnBill().setTotal(total);
         getReturnBill().setNetTotal(netTotal);
         getReturnBill().setDiscount(discount);
+        getReturnBill().setComments(comment);
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -169,7 +170,7 @@ public class PreReturnController implements Serializable {
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         } else {
             // Use existing method for backward compatibility
-            deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+            deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyPre, BillClassType.RefundBill, BillNumberSuffix.PHRET);
         }
 
         // Handle Institution ID generation (completely separate)
@@ -253,7 +254,7 @@ public class PreReturnController implements Serializable {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
         }
-        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
+        if (getComment() == null || getComment().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
