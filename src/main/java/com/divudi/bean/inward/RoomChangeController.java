@@ -108,6 +108,12 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
+        
+        if (getCurrentPatientRoom().getAdmittedAt() == null) {
+            JsfUtil.addErrorMessage("Please select room admission time first");
+            return;
+        }
+        
         if(getCurrentPatientRoom().getPatientEncounter().getDateOfAdmission().after(getCurrentPatientRoom().getAdmittedAt())){
             JsfUtil.addErrorMessage(" Room admission time cannot be before patient admission time");
             return;
@@ -123,6 +129,10 @@ public class RoomChangeController implements Serializable {
     }
     
     public void getCurrentTime(){
+        if (getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
         getCurrentPatientRoom().setAdmittedAt(new Date());
     }
 

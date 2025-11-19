@@ -1731,6 +1731,10 @@ public class InwardBeanController implements Serializable {
         if (patientRoom == null) {
             return null;
         }
+        
+        if (newRoomFacilityCharge == null) {
+            return null;
+        }
 
         if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
@@ -1754,7 +1758,7 @@ public class InwardBeanController implements Serializable {
         patientRoom.setCurrentMedicalCareCharge(newRoomFacilityCharge.getMedicalCareCharge());
         patientRoom.setCurrentAdministrationCharge(newRoomFacilityCharge.getAdminstrationCharge());
 
-        patientRoom.setAddmitted(true);
+        patientRoom.setAdmitted(true);
         patientRoom.setAdmittedAt(admittedAt);
         patientRoom.setAddmittedBy(webUser);
         patientRoom.setRoomFacilityCharge(newRoomFacilityCharge);
@@ -1779,7 +1783,7 @@ public class InwardBeanController implements Serializable {
 
         patientRoom.setCreatedAt(new Date());
         patientRoom.setCreater(webUser);
-        patientRoom.setAddmitted(false);
+        patientRoom.setAdmitted(false);
         patientRoom.setPatientEncounter(patientEncounter);
 
         if (patientRoom.getId() == null || patientRoom.getId() == 0) {
