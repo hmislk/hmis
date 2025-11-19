@@ -1,13 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(git push:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo set-default:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
+    "ask": [],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
       "D:\\Development"
-    ],
-    "ask": []
+    ]
   }
 }

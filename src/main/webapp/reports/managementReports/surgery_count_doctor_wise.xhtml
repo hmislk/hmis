@@ -12,37 +12,80 @@
 
                 <h:form >
                     <p:panel header="Surgery Count (Doctor Wise)" >
-                        <h:panelGrid columns="5" >
-                            <p:outputLabel value="From Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                        <h:panelGrid columns="8" class="w-100" >
+                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa mr-2"/> 
+                                <p:outputLabel value="From Date" for="fromDate" class="m-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{searchController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
                                           
-                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:spacer width="20"/>
                             
-                            <p:outputLabel value="To Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            
-                            <p:outputLabel value="Doctor Speciality" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa mr-2"/> 
+                                <p:outputLabel value="To Date" for="toDate" class="m-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{searchController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
+                             <p:spacer width="20"/>
+                              <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-stethoscope mr-2"/> 
+                                <p:outputLabel value="Doctor Speciality"  class="m-3"/>
+                            </h:panelGroup>
                             <p:selectOneMenu value="#{reportController.currentSpeciality}">
                                 <f:selectItem itemLabel="Select Speciality"/>
                                 <f:selectItems value="#{specialityController.items}" itemLabel="#{s.name}" var="s" itemValue="#{s}"/>
                             </p:selectOneMenu>
-
-                            <p:spacer width="40" height="1"></p:spacer>
-                            <p:spacer width="40" height="1"></p:spacer>
-                            <p:spacer width="40" height="1"></p:spacer>
-                            <p:commandButton ajax="false" value="Process" action="null" class="my-2">
+                        </h:panelGrid>
+                        <div class="d-flex align-items-center my-3">
+                             <p:commandButton
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process"
+                                action="null">
                             </p:commandButton>
 
-                        </h:panelGrid>
+                            <p:commandButton class="ui-button-primary mx-1"
+                                             icon="fas fa-print"
+                                             ajax="false"
+                                             value="Print All">
+                                <p:printer target="" />
+                            </p:commandButton>
+
+                            <p:commandButton
+                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="detailWise" fileName="Inpatient_Service_Detail.xlsx"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                action="#">
+                            </p:commandButton>
+                        </div>
+                        
+                        <p:separator/>
+                         <p:panel header="Surgery Count Doctor Wise">
+                        <p:chart type="line" style="height:400px;">
+                           
+                        </p:chart>
+                        </p:panel>
+
 
                         
-
-
                         <p:dataTable value="null" var="c">
                             <p:column headerText="Performed Doctor Name" style="width: 100px" >
                                 <h:outputText value="" ></h:outputText>

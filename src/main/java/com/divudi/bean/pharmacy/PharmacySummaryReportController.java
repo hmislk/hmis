@@ -346,6 +346,12 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void processDailyStockBalanceReport() {
+        System.out.println(">>> OLD REPORT processDailyStockBalanceReport START <<<");
+        System.out.println("OLD REPORT - From Date: " + fromDate);
+        System.out.println("OLD REPORT - Department: " + department);
+        System.out.println("OLD REPORT - Department ID: " + (department != null ? department.getId() : "null"));
+        System.out.println("OLD REPORT - Department Name: " + (department != null ? department.getName() : "null"));
+
 //        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
@@ -355,7 +361,7 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        
+
 //        Report can be generated for today as well
 //        Date today = new Date();
 //        if (!fromDate.before(today)) {
@@ -368,7 +374,9 @@ public class PharmacySummaryReportController implements Serializable {
         dailyStockBalanceReport.setDepartment(department);
 
         // Calculate Opening Stock Value at Retail Rate
+        System.out.println("OLD REPORT - Calculating opening stock...");
         double openingStockValueAtRetailRate = calculateStockValueAtRetailRate(fromDate, department);
+        System.out.println("OLD REPORT - Opening stock value: " + openingStockValueAtRetailRate);
         dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
         // Calculate toDate as fromDate + 1 day

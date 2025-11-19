@@ -113,6 +113,10 @@
                                         <se:adjustment />
                                     </h:panelGroup>
 
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyStockAdjustmentBill'}" >
+                                        <se:adjustment />
+                                    </h:panelGroup>
+
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyWholeSale'}" >
                                         <se:pharmacy_whole_sale />
                                     </h:panelGroup>
