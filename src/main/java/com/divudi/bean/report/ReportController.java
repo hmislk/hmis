@@ -2811,8 +2811,20 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
     
+
+    public String navigateToOtRoomWiseSergeryCount(){
+        
+        return "/reports/managementReports/ot_room_wise_surgery_count?faces-redirect=true";
+    }
+    
+    public String navigateToRoomOccupancyReport(){
+        return "/reports/managementReports/room_occupancy_report?faces-redirect=true";
+        
+    }
+
     public String navigateToSugeryStatus(){
        return "/reports/managementReports/surgery_status";
+
     }
 
     public String navigateToReferringDoctorWiseRevenue() {
@@ -2829,12 +2841,32 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/managementReports/surgery_count_doctor_wise?faces-redirect=true";
     }
+    
+    public String navigateToSurgeryCountTypeWise(){
+        
+        return "/reports/managementReports/surgery_count_type?faces-redirect=true";
+    }
+    
+    public String navigateToAdmissionCountPaymentTypeWise(){
+        
+        return "/reports/managementReports/admission_count_payment_type_wise?faces-redirect=true"; 
+    }
+    
+    public String navigateToROOMOCCUPANCY(){
+        
+        return "/reports/managementReports/ROOM_OCCUPANCY?faces-redirect=true";
+    }
 
     public String navigateToOpdWeeklyReport() {
 
         return "/reports/managementReports/opd_weekly?faces-redirect=true";
     }
-
+    
+    public String navigateToSpecialityWiseDemograhicData(){
+        
+        return "/reports/statisticsReports/speciality_wise_demographic_data?faces-redirect=true";
+    }
+    
     public String navigateToLeaveReport() {
 
         return "/reports/HRReports/leave_report?faces-redirect=true";
@@ -3134,6 +3166,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
     }
     
+
     public String navigateToHospitalCensusReport(){
         return "/reports/inpatientReports/hospital_census_report?faces-redirect=true";
     }
