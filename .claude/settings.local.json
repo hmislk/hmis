@@ -2,8 +2,10 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:github.com)",
-      "Bash(git log:*)",
-      "Bash(mysql:*)"
+      "Bash(git push:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo set-default:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": [],

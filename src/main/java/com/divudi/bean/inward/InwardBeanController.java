@@ -96,7 +96,6 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
-
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -105,6 +104,7 @@ public class InwardBeanController implements Serializable {
     private AdmissionFacade admissionFacade;
     @EJB
     private PatientEncounterFacade encounterFacade;
+    
     @Inject
     BillBeanController billBean;
     @Inject
@@ -1676,7 +1676,7 @@ public class InwardBeanController implements Serializable {
 
         patientEncounterFacade.edit(patientEncounter);
     }
-
+    
     public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
 //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
         if (patientRoom == null) {
@@ -1722,6 +1722,75 @@ public class InwardBeanController implements Serializable {
             getPatientRoomFacade().edit(patientRoom);
         }
 
+        return patientRoom;
+    }
+    
+
+    public PatientRoom admitPatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, Date admittedAt, WebUser webUser) {
+//     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+        if (patientRoom == null) {
+            return null;
+        }
+        
+        if (newRoomFacilityCharge == null) {
+            return null;
+        }
+
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
+            patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
+        }
+
+        if (newRoomFacilityCharge.getMaintananceCharge() != null) {
+            patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
+        }
+        if (newRoomFacilityCharge.getMoCharge() != null) {
+            patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        }
+        if (newRoomFacilityCharge.getNursingCharge() != null) {
+            patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
+        }
+        if (newRoomFacilityCharge.getRoomCharge() != null) {
+            patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
+        }
+        if (newRoomFacilityCharge.getLinenCharge() != null) {
+            patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
+        }
+        patientRoom.setCurrentMedicalCareCharge(newRoomFacilityCharge.getMedicalCareCharge());
+        patientRoom.setCurrentAdministrationCharge(newRoomFacilityCharge.getAdminstrationCharge());
+
+        patientRoom.setAdmitted(true);
+        patientRoom.setAdmittedAt(admittedAt);
+        patientRoom.setAddmittedBy(webUser);
+        patientRoom.setRoomFacilityCharge(newRoomFacilityCharge);
+
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
+
+        return patientRoom;
+    }
+    
+    public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientEncounter patientEncounter, WebUser webUser) {
+        if (patientRoom == null) {
+            return null;
+        }
+        
+        if (patientEncounter == null) {
+            return null;
+        }
+
+        patientRoom.setCreatedAt(new Date());
+        patientRoom.setCreater(webUser);
+        patientRoom.setAdmitted(false);
+        patientRoom.setPatientEncounter(patientEncounter);
+
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
         return patientRoom;
     }
 

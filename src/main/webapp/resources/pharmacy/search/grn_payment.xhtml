@@ -43,7 +43,7 @@
 
 
             <p:column headerText="GRN NO" >
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.referenceBill.deptId}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.current}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
@@ -51,7 +51,7 @@
                 </h:commandLink>
             </p:column>      
             <p:column headerText="GRN Date">
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.referenceBill.createdAt}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.referenceBill.createdAt}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.current}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
@@ -59,7 +59,7 @@
                 </h:commandLink>
             </p:column>    
             <p:column headerText="Invoice NO" >
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.deptId}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.current}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
@@ -67,7 +67,7 @@
                 </h:commandLink>
             </p:column>  
             <p:column headerText="Invoice Date" >
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.billTime}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.billTime}">
                     <h:outputLabel  value="#{bill.billTime}">
                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>                    
@@ -77,7 +77,7 @@
                 </h:commandLink>
             </p:column>
             <p:column headerText="Delaor Name">
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.toInstitution.name}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.current}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
@@ -85,7 +85,7 @@
                 </h:commandLink>
             </p:column>
             <p:column headerText="Billed At"  >
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.createdAt}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.createdAt}">
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
@@ -108,14 +108,14 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Billed By" >
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.creater}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.creater}">
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
                     <f:setPropertyActionListener value="true" target="#{supplierPaymentController.printPreview}"/>
                 </h:commandLink>
             </p:column>               
             <p:column headerText="Payment Method"  >
-                <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.paymentMethod}">
+                <h:commandLink action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="#{bill.paymentMethod}">
                     <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.current}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
                     <f:setPropertyActionListener value="true" target="#{supplierPaymentController.printPreview}"/>

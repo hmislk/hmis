@@ -92,6 +92,7 @@
 
 ### JSF Development
 16. **🚨 JSF AJAX UPDATES**: Never use plain HTML elements for AJAX updates - [Guide](developer_docs/jsf/ajax-update-guidelines.md)
+17. **🚨 PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"` or `render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"` for multiple components
 
 ---
 This behavior should persist across all Claude Code sessions for this project.

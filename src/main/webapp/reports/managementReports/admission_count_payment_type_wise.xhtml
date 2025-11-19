@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Surgery wise count" styleClass="my-2" >
+                    <p:panel header="Payment Type Wise Admission Count" styleClass="my-2" >
                         <h:panelGrid columns="5" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -36,25 +36,6 @@
                                         inputStyleClass="w-100 form-control"
                                         pattern="dd/MM/yyyy"
                                         />
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Surgery Name" for="cmdFromSurgery" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmdFromSurgery" value="" filter="true" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="Select Name" itemValue="" />
-                            </p:selectOneMenu>
-
-                            <p:spacer width="40"/>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="All" itemValue="" />
-
-                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
@@ -113,15 +94,11 @@
                                 <p:row>
                                     <p:column rowspan="2">
                                         <f:facet name="header">
-                                            <h:outputText value="Surgery Name"/>
+                                            <h:outputText value="Month"/>
                                         </f:facet>
                                     </p:column>
-                                    <p:column rowspan="2">
-                                        <f:facet name="header">
-                                            <h:outputText value="Surgery Category"/>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="13" style="text-align:center;" >
+                                    
+                                    <p:column colspan="4" style="text-align:center;" >
                                         <f:facet name="header">
                                             <h:outputText value="2025" />
                                         </f:facet>
@@ -129,18 +106,9 @@
                                 </p:row>
 
                                 <p:row>
-                                    <p:column><f:facet name="header"><h:outputText value="Jan"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Feb"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Mar"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Apr"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="May"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Jun"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Jul"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Aug"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Sep"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Oct"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Nov"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="Dec"/></f:facet></p:column>
+                                    <p:column><f:facet name="header"><h:outputText value="Cash"/></f:facet></p:column>
+                                    <p:column><f:facet name="header"><h:outputText value="To Be Claim"/></f:facet></p:column>
+                                    <p:column><f:facet name="header"><h:outputText value="Credit"/></f:facet></p:column>
                                     <p:column><f:facet name="header"><h:outputText value="Total"/></f:facet></p:column>
                                 </p:row>
                             </p:columnGroup>
@@ -150,21 +118,10 @@
                             <p:column><h:outputText value="" /></p:column>
                             <p:column><h:outputText value="" /></p:column>
                             <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-
-
+                            
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column colspan="2" >
+                                    <p:column colspan="1" >
                                         <f:facet name="footer">
                                             <h:outputText value="Total:" />
                                         </f:facet> 
@@ -189,52 +146,7 @@
                                             <h:outputText value="0" />
                                         </f:facet>
                                     </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-
+                                    
                                 </p:row>
                             </p:columnGroup>
 
