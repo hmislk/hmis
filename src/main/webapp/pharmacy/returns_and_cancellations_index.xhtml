@@ -112,18 +112,18 @@
                         </p:tab>
                         <p:tab
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Return without tracing Purchase Details is Enabled', true)}"
-                            title="Return Items without a Tracing Purchase Details" >
-                            <p:commandButton 
+                            title="Return items without tracing purchase details" >
+                            <p:commandButton
                                 id="Return_without_Receipt"
-                                ajax="false" 
-                                rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" 
+                                ajax="false"
+                                rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}"
                                 action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
-                                styleClass="w-100"  value="Return without Receipt" >
+                                styleClass="w-100 ui-button-primary"  value="Return without Receipt" >
                             </p:commandButton>
                             <h:panelGroup >
-                                <h:outputLabel 
-                                    rendered="#{not webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" 
-                                    value="You have no Privielge. DIscuss with the System Admin"           >
+                                <h:outputLabel
+                                    rendered="#{not webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}"
+                                    value="You have no Privilege. Discuss with the System Admin"           >
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:tab>
