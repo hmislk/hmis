@@ -14137,6 +14137,9 @@ public class SearchController implements Serializable {
                 return "PACKAGE";
             case INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY:
                 return "IP";
+            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
+            case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
+                return "PHARMACY";
             default:
                 return "";
         }
