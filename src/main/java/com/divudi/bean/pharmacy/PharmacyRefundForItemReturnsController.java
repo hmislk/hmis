@@ -2253,6 +2253,61 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return hasSettlement;
     }
 
+    /**
+     * Validates that refunds for Credit payment method sales can only use Credit payment method.
+     * This ensures refunds maintain the same payment method as the original sale for proper accounting.
+     *
+     * @return true if validation fails (error condition), false if validation passes
+     */
+    private boolean validateCreditReturnPaymentMethod() {
+        if (getRefundBill() == null || getRefundBill().getPaymentMethod() == null) {
+            return false; // No validation needed
+        }
+
+        // Get the original sale bill to check its payment method
+        Bill originalSaleBill = getOriginalSaleBill();
+        if (originalSaleBill == null) {
+            return false; // Cannot determine original payment method
+        }
+
+        // Check if the original bill used Credit payment method
+        if (originalSaleBill.getPaymentMethod() == PaymentMethod.Credit) {
+            // If original was Credit, refund must also be Credit
+            if (getRefundBill().getPaymentMethod() != PaymentMethod.Credit) {
+                JsfUtil.addErrorMessage("This sale was paid using Credit payment method. Refunds must also use Credit payment method only.");
+                return true; // Validation failed
+            }
+        }
+
+        return false; // Validation passed
+    }
+
+    /**
+     * Gets the original sale bill to check its payment method.
+     *
+     * @return The original sale bill, or null if not found
+     */
+    private Bill getOriginalSaleBill() {
+        if (getItemReturnBill() == null) {
+            return null;
+        }
+        return getItemReturnBill().getReferenceBill();
+    }
+
+    /**
+     * Checks if the original bill used Credit payment method.
+     * This can be used in the UI to restrict payment method selection.
+     *
+     * @return true if original bill was paid using Credit, false otherwise
+     */
+    public boolean isOriginalBillCredit() {
+        Bill originalSaleBill = getOriginalSaleBill();
+        if (originalSaleBill == null) {
+            return false;
+        }
+        return originalSaleBill.getPaymentMethod() == PaymentMethod.Credit;
+    }
+
     public void settleRefundForReturnItems() {
         editingQty = null;
 
@@ -2265,6 +2320,11 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         if (isCreditSettled()) {
             JsfUtil.addErrorMessage("Cannot process refund for this return. The original credit bill has been fully or partially settled by the credit company.");
             return;
+        }
+
+        // Validate that Credit payment method sales can only be returned using Credit payment method
+        if (validateCreditReturnPaymentMethod()) {
+            return; // Validation failed, error message already displayed
         }
 
         saveBill();
