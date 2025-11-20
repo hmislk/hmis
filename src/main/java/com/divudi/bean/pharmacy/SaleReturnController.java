@@ -563,6 +563,73 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         return hasSettlement;
     }
 
+    /**
+     * Validates that returns for Credit payment method sales can only use Credit payment method.
+     * This ensures refunds maintain the same payment method as the original sale for proper accounting.
+     *
+     * @return true if validation fails (error condition), false if validation passes
+     */
+    private boolean validateCreditReturnPaymentMethod() {
+        if (getBill() == null || returnPaymentMethod == null) {
+            return false; // No validation needed
+        }
+
+        // Get the original payment bill to check its payment method
+        Bill paymentBill = getOriginalPaymentBill();
+        if (paymentBill == null) {
+            return false; // Cannot determine original payment method
+        }
+
+        // Check if the original bill used Credit payment method
+        if (paymentBill.getPaymentMethod() == PaymentMethod.Credit) {
+            // If original was Credit, return must also be Credit
+            if (returnPaymentMethod != PaymentMethod.Credit) {
+                JsfUtil.addErrorMessage("This sale was paid using Credit payment method. Returns must also use Credit payment method only.");
+                return true; // Validation failed
+            }
+        }
+
+        return false; // Validation passed
+    }
+
+    /**
+     * Gets the original payment bill to check its payment method.
+     * This navigates through the bill references to find the actual billed bill.
+     *
+     * @return The bill that contains the payment information, or null if not found
+     */
+    private Bill getOriginalPaymentBill() {
+        if (getBill() == null) {
+            return null;
+        }
+
+        Bill paymentBill = null;
+        BillTypeAtomic billTypeAtomic = getBill().getBillTypeAtomic();
+
+        if (billTypeAtomic == null) {
+            return null;
+        }
+
+        switch (billTypeAtomic) {
+            case PHARMACY_RETAIL_SALE:
+                paymentBill = getBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE:
+                paymentBill = getBill().getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                paymentBill = getBill().getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                paymentBill = getBill();
+                break;
+            default:
+                return null;
+        }
+
+        return paymentBill;
+    }
+
     public void settle() {
         // Check if credit has been partially or fully settled
         if (bill.getPaymentMethod() == PaymentMethod.Credit){
@@ -571,7 +638,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 return;
             }
         }
-        
+
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
@@ -599,6 +666,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         if (returnPaymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a payment method to return");
             return;
+        }
+
+        // Validate that Credit payment method sales can only be returned using Credit payment method
+        if (validateCreditReturnPaymentMethod()) {
+            return; // Validation failed, error message already displayed
         }
 //        if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
 //            JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed. Please select another payment method to return");
@@ -1178,6 +1250,20 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             return bill.getPayments();
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Checks if the original bill used Credit payment method.
+     * This can be used in the UI to restrict payment method selection.
+     *
+     * @return true if original bill was paid using Credit, false otherwise
+     */
+    public boolean isOriginalBillCredit() {
+        Bill paymentBill = getOriginalPaymentBill();
+        if (paymentBill == null) {
+            return false;
+        }
+        return paymentBill.getPaymentMethod() == PaymentMethod.Credit;
     }
 
     /**
