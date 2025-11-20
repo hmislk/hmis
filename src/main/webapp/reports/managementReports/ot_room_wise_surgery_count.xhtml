@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Surgery wise count" styleClass="my-2" >
+                    <p:panel header="OT Room Wise Surgery Count" styleClass="my-2" >
                         <h:panelGrid columns="5" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -37,24 +37,6 @@
                                         pattern="dd/MM/yyyy"
                                         />
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Surgery Name" for="cmdFromSurgery" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmdFromSurgery" value="" filter="true" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="Select Name" itemValue="" />
-                            </p:selectOneMenu>
-
-                            <p:spacer width="40"/>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="All" itemValue="" />
-
-                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
@@ -111,14 +93,10 @@
                                      styleClass="table-sm">
                             <p:columnGroup  type="header">
                                 <p:row>
+                                    
                                     <p:column rowspan="2">
                                         <f:facet name="header">
-                                            <h:outputText value="Surgery Name"/>
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column rowspan="2">
-                                        <f:facet name="header">
-                                            <h:outputText value="Surgery Category"/>
+                                            <h:outputText value=""/>
                                         </f:facet>
                                     </p:column>
                                     <p:column colspan="13" style="text-align:center;" >
@@ -145,7 +123,7 @@
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column><h:outputText value="" /></p:column>
+                           
                             <p:column><h:outputText value="" /></p:column>
                             <p:column><h:outputText value="" /></p:column>
                             <p:column><h:outputText value="" /></p:column>
@@ -164,9 +142,9 @@
 
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column colspan="2" >
+                                    <p:column colspan="1" >
                                         <f:facet name="footer">
-                                            <h:outputText value="Total:" />
+                                            <h:outputText value="Total Count:" />
                                         </f:facet> 
                                     </p:column>
                                     <p:column>

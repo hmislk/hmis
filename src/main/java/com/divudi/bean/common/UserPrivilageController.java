@@ -152,6 +152,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoom, "Room Menu"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomOccupency, "Room Occupancy"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomChange, "Room Change"), roomNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.WatingRoomAdmitPatient, "Wating Patient Admit"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomGurdianRoomChange, "Guardian Room Change"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomDischarge, "Discharge Room"), roomNode);
 
@@ -741,7 +742,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode billCancelRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.BillCancelRequestApproval, "Bill Cancel Approval"), requestNode);
         TreeNode itemRefundRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.ItemRefundRequestApproval, "Item Refund Approval"), requestNode);
         
-        // Request Privileges
+        // Nurse Privileges
         TreeNode nurseNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Work Bench"), allNode);
         TreeNode nursingWorkBench = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBench, "Nursing Work Bench"), nurseNode);
         TreeNode showDrugCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowDrugCharges, "Show Drug Charges"), nurseNode);

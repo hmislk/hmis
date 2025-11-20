@@ -130,6 +130,13 @@ public class PharmacyConfigController implements Serializable {
     // Retail Sale Return with Refund Payment Settings
     private boolean retailSaleReturnRefundBillA4Paper;
     private boolean retailSaleReturnRefundBillPosPaper;
+    
+    // Retail Sale Return Settings
+    private boolean retailSaleReturnPosPaper;
+    private boolean retailSaleReturnFiveFivePaper;
+    private boolean retailSaleReturnPosHeaderPaper;
+    private boolean retailSaleReturnFiveFiveCustom3;
+    private boolean retailSaleReturnPosPaperCustom1;
 
     public PharmacyConfigController() {
     }
@@ -244,6 +251,14 @@ public class PharmacyConfigController implements Serializable {
         // Retail Sale Return with Refund Payment Settings
         retailSaleReturnRefundBillA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", true);
         retailSaleReturnRefundBillPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", false);
+        
+        // Retail Sale Return Settings
+        retailSaleReturnPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper", true);
+        retailSaleReturnFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Paper", true);
+        retailSaleReturnPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Header Paper", true);
+        retailSaleReturnFiveFiveCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper", false);
+        retailSaleReturnPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper", false);
+        
     }
 
     /**
@@ -348,6 +363,13 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is FiveFive Paper", cancelBillFiveFivePaper);
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Header Paper", cancelBillPosHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is Custom 3", cancelBillCustom3);
+            
+            // Retail Sale Return Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper", retailSaleReturnPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Paper", retailSaleReturnFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Header Paper", retailSaleReturnPosHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper", retailSaleReturnFiveFiveCustom3);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper", retailSaleReturnPosPaperCustom1);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -1097,6 +1119,46 @@ public class PharmacyConfigController implements Serializable {
 
     public void setDirectPurchaseA4PaperCustom1(boolean directPurchaseA4PaperCustom1) {
         this.directPurchaseA4PaperCustom1 = directPurchaseA4PaperCustom1;
+    }
+
+    public boolean isRetailSaleReturnPosPaper() {
+        return retailSaleReturnPosPaper;
+    }
+
+    public void setRetailSaleReturnPosPaper(boolean retailSaleReturnPosPaper) {
+        this.retailSaleReturnPosPaper = retailSaleReturnPosPaper;
+    }
+
+    public boolean isRetailSaleReturnFiveFivePaper() {
+        return retailSaleReturnFiveFivePaper;
+    }
+
+    public void setRetailSaleReturnFiveFivePaper(boolean retailSaleReturnFiveFivePaper) {
+        this.retailSaleReturnFiveFivePaper = retailSaleReturnFiveFivePaper;
+    }
+
+    public boolean isRetailSaleReturnPosHeaderPaper() {
+        return retailSaleReturnPosHeaderPaper;
+    }
+
+    public void setRetailSaleReturnPosHeaderPaper(boolean retailSaleReturnPosHeaderPaper) {
+        this.retailSaleReturnPosHeaderPaper = retailSaleReturnPosHeaderPaper;
+    }
+
+    public boolean isRetailSaleReturnFiveFiveCustom3() {
+        return retailSaleReturnFiveFiveCustom3;
+    }
+
+    public void setRetailSaleReturnFiveFiveCustom3(boolean retailSaleReturnFiveFiveCustom3) {
+        this.retailSaleReturnFiveFiveCustom3 = retailSaleReturnFiveFiveCustom3;
+    }
+
+    public boolean isRetailSaleReturnPosPaperCustom1() {
+        return retailSaleReturnPosPaperCustom1;
+    }
+
+    public void setRetailSaleReturnPosPaperCustom1(boolean retailSaleReturnPosPaperCustom1) {
+        this.retailSaleReturnPosPaperCustom1 = retailSaleReturnPosPaperCustom1;
     }
 
 }
