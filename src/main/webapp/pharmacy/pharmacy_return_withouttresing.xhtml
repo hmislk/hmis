@@ -465,8 +465,10 @@
                                                     value="Apply &amp; Close"
                                                     icon="fas fa-save"
                                                     class="ui-button-success"
-                                                    ajax="false"
-                                                    action="#{pharmacyConfigController.saveReturnWithoutTresingConfig}" />
+                                                    action="#{pharmacyConfigController.saveReturnWithoutTresingConfig}"
+                                                    update="returnWithoutTresingConfigMessages :#{p:resolveFirstComponentWithId('gpBillPreview',view).clientId}"
+                                                    oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('returnWithoutTresingConfigDialog').hide(); }"
+                                                    process="@form" />
                                                 <p:commandButton
                                                     value="Cancel"
                                                     icon="fas fa-times"
