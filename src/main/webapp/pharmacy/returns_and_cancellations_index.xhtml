@@ -99,7 +99,7 @@
                                     class="ui-button-info w-100"
                                     icon="fas fa-check-circle"
                                     rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}" />
-                                 <p:commandButton
+                                <p:commandButton
                                     value="Completed Returns"
                                     action="#{disposalReturnWorkflowController.navigateToCompletedDisposalReturns()}"
                                     ajax="false"
@@ -109,6 +109,23 @@
                                     title="View Completed Disposal Returns">
                                 </p:commandButton>
                             </p:panelGrid>
+                        </p:tab>
+                        <p:tab
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Return without tracing Purchase Details is Enabled', true)}"
+                            title="Return Items without a Tracing Purchase Details" >
+                            <p:commandButton 
+                                id="Return_without_Receipt"
+                                ajax="false" 
+                                rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" 
+                                action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                                styleClass="w-100"  value="Return without Receipt" >
+                            </p:commandButton>
+                            <h:panelGroup >
+                                <h:outputLabel 
+                                    rendered="#{not webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}" 
+                                    value="You have no Privielge. DIscuss with the System Admin"           >
+                                </h:outputLabel>
+                            </h:panelGroup>
                         </p:tab>
                         <p:tab title="Other Functions" >
                             <p:panelGrid columns="1">
@@ -129,6 +146,10 @@
                                     actionListener="#{pharmacyPurchaseController.makeNull()}" />
                             </p:panelGrid>
                         </p:tab>
+
+
+
+
                     </p:accordionPanel>
                 </div>
                 <div class="col-10">
@@ -137,7 +158,7 @@
                 </div>
             </div>
 
-           
+
 
 
 
