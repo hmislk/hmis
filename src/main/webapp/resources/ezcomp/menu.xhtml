@@ -335,7 +335,7 @@
                             icon="fa fa-user-plus"
                             rendered="true">
                         </p:menuitem>
-                        
+
                         <p:menuitem 
                             ajax="false"
                             action="#{opdBillController.navigateToSearchPatients()}"
@@ -343,7 +343,7 @@
                             icon="fa fa-search"
                             rendered="true" >
                         </p:menuitem>
-                        
+
                         <p:menuitem
                             ajax="false"
                             action="#{admissionController.navigateToEditAdmission()}"
@@ -368,13 +368,55 @@
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" >
                         </p:menuitem>
                     </p:submenu>
-                    
+
                     <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
-                        <p:menuitem ajax="false" action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" value="Room Reservations" icon="fa fa-calendar-check" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="#{admissionController.navigateToRoomOccupancy()}" value="Room Occupancy" icon="fa fa-bed" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="#{admissionController.navigateToRoomVacancy()}" value="Room Vacancy" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="#{admissionController.navigateToRoomChange()}" value="Room Change" icon="fa fa-exchange-alt" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="#{admissionController.navigateToGuardianRoomChange()}" value="Guardian Room Change" icon="fa fa-user-edit" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" ></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" 
+                            value="Room Reservations" 
+                            icon="fa fa-calendar-check" 
+                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
+                        </p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{admissionController.navigateToRoomOccupancy()}" 
+                            value="Room Occupancy" 
+                            icon="fa fa-bed" 
+                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
+                        </p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{admissionController.navigateToRoomVacancy()}" 
+                            value="Room Vacancy" 
+                            icon="fa fa-door-open" 
+                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
+                        </p:menuitem>
+
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{roomChangeController.navigateToAdmitRoomFromMenu()}" 
+                            value="Admit Room" 
+                            icon="fa fa-plus" 
+                            actionListener="#{roomChangeController.recreate()}" 
+                            rendered="#{webUserController.hasPrivilege('WatingRoomAdmitPatient') and not configOptionApplicationController.getBooleanValueByKey('Patient admission and room assignment are simultaneous processes.', true)}" >
+                        </p:menuitem>
+
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{admissionController.navigateToRoomChange()}" 
+                            value="Room Change" 
+                            icon="fa fa-exchange-alt" 
+                            actionListener="#{roomChangeController.recreate()}" 
+                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}" >
+                        </p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{admissionController.navigateToGuardianRoomChange()}" 
+                            value="Guardian Room Change" 
+                            icon="fa fa-user-edit" 
+                            actionListener="#{roomChangeController.recreate()}" 
+                            rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" >
+                        </p:menuitem>
                     </p:submenu>  
                     <p:submenu label="Services &amp; Items" icon="fa fa-toolbox" rendered="#{webUserController.hasPrivilege('InwardServicesAndItems')}">
                         <p:menuitem
@@ -382,37 +424,43 @@
                             action="#{billBhtController.navigateToAddServicesFromMenu}"
                             value="Add Services &amp; Investigations"
                             icon="fa fa-plus-square"
-                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" />
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{opdBillController.navigateToNewInwardServiceBill}"
                             value="Add Services &amp; Investigations with Payments"
                             icon="fa fa-money-bill"
-                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') and configOptionApplicationController.getBooleanValueByKey('Enable Collecting Payments on Add Services &amp; Investigations on Inward',false)}" />
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices') and configOptionApplicationController.getBooleanValueByKey('Enable Collecting Payments on Add Services &amp; Investigations on Inward',false)}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromMenu()}"
                             value="Add Outside Charges"
                             icon="fa fa-plus-circle"
-                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddOutSideCharges')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddOutSideCharges')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromMenu()}"
                             value="Add Professional Fee"
                             icon="fa fa-user-md"
-                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{inwardProfessionalBillController.navigateToAddEstimatedProfessionalFeeFromMenu()}"
                             value="Add Estimated Professional Fee"
                             icon="fa fa-user-clock"
-                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromMenu}"
                             value="Add Timed Services"
                             icon="fa fa-clock"
-                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddTimedServices')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddTimedServices')}" >
+                        </p:menuitem>
                     </p:submenu> 
 
                     <p:submenu label="Billing" icon="fa fa-file-invoice-dollar" rendered="#{webUserController.hasPrivilege('InwardBilling')}">
@@ -561,9 +609,10 @@
                     id="smNursingWorkBench"
                     style="zoom: 1.2;"
                     icon="fa-solid fa-user-nurse"
+                    rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
                     action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">   
                 </p:menuitem>
-                
+
 <!--            Collecting Centre Section-->
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
                     <p:menuitem 

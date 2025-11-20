@@ -463,22 +463,22 @@
 
                             <p:tab title="Management Reports">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="1. Room Occupancy" action="/reports/managementReports/room_occupency" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="1. Room Occupancy" action="#{reportController.navigateToRoomOccupancyReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Surgery Survey" action="/reports/managementReports/surgery_survey"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Surgery Status" action="#{reportController.navigateToSugeryStatus()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Surgery Cost Estimation" action="/reports/managementReports/surgery_cost_estimation"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Duration Service Report" action="/reports/managementReports/duration_service_report"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="6. Pharmacy Department Wise Sale Report" />
                                     <p:commandButton   class="w-100"  ajax="false" value="7. Referring Doctor Wise Revenue" action="#{reportController.navigateToManagementAdmissionCountReport()}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="8. OT Room Wise Sergery Count" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="8. OT Room Wise Sergery Count" action="#{reportController.navigateToOtRoomWiseSergeryCount()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="9. Surgery Count(Surgery Wise)" action="#{reportController.navigateToSurgeryWiseCount()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="10. Surgery Count(Doctor Wise)" action="#{reportController.navigateToSurgeryCountDoctorWise()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="11. Surgery Count(Type)" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="11. Surgery Count(Type)" action="#{reportController.navigateToSurgeryCountTypeWise()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="12. Admission Count(Consultant Wise)" action="#{reportController.navigateToManagementAdmissionCountReport()}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="13. Admission Count(Payment Type Wise)" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="11. Hospital Census" action="#{reportController.navigateToManagementHospitalCensusReport()}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="12. Room Occupancy" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="13. OPD Weekly Report" action="#{reportController.navigateToOpdWeeklyReport()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="13. Admission Count(Payment Type Wise)" action="#{reportController.navigateToAdmissionCountPaymentTypeWise()}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="14. Hospital Census" action="#{reportController.navigateToManagementHospitalCensusReport()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="15. ROOM OCCUPANCY" action="#{reportController.navigateToROOMOCCUPANCY()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="16. OPD Weekly Report" action="#{reportController.navigateToOpdWeeklyReport()}"/>
                                 </div>
                             </p:tab>
 
@@ -525,8 +525,8 @@
                                 <div class="d-grid gap-2">
                                     <p:commandButton   class="w-100"  ajax="false" value="1. Patient Journey" action="#{reportController.navigateToPatientJourney()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="2. Patient Ledger" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="3. Speciality Wise Demographic Data" />
-                                    
+                                    <p:commandButton   class="w-100"  ajax="false" value="3. Speciality Wise Demographic Data" action="#{reportController.navigateToSpecialityWiseDemograhicData}"/>
+
                                 </div>
                             </p:tab>
 

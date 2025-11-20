@@ -35,7 +35,7 @@
                                     timeInput="true"
                                     inputStyleClass="form-control"
                                     value="#{admissionController.toDate}"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                                 </p:datePicker>
 
                                 <p:commandButton
@@ -57,7 +57,7 @@
                                     class="w-100"
                                     value="#{admissionController.patientNameForSearch}" >
                                 </p:inputText>
-                                
+
                                 <p:outputLabel value="MRN / PHN No" ></p:outputLabel>
                                 <p:inputText
                                     class="w-100"
@@ -233,27 +233,30 @@
                                         </p:column>
                                         <p:column headerText="Actions" >
                                             <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                            <p:commandButton ajax="false"
-                                                             class="m-1"
-                                                             icon="fa fa-fw fa-bed"
-                                                             action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-fw fa-bed"
+                                                action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 
-                                            <p:commandButton ajax="false"
-                                                             class="m-1"
-                                                             icon="fa fa-user-md"
-                                                             action="#{patientController.navigateToOpdPatientProfile()}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-user-md"
+                                                action="#{patientController.navigateToOpdPatientProfile()}">
                                                 <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
                                             </p:commandButton>
 
-                                            <p:commandButton ajax="false"
-                                                             class="m-1"
-                                                             icon="fa fa-repeat"
-                                                             title="Convert"
-                                                             action="#{patientController.navigateToConvertNonBhtToBht(a)}"
-                                                             rendered="#{a.currentPatientRoom eq null and configOptionApplicationController.getBooleanValueByKey('Enable Button to Convert Admissions to new Admission',false)}"
-                                                             disabled="#{a.convertedToAnotherEncounter}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-repeat"
+                                                title="Convert"
+                                                action="#{patientController.navigateToConvertNonBhtToBht(a)}"
+                                                rendered="#{a.currentPatientRoom eq null and configOptionApplicationController.getBooleanValueByKey('Enable Button to Convert Admissions to new Admission',false)}"
+                                                disabled="#{a.convertedToAnotherEncounter}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 
