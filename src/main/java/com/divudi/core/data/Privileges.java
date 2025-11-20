@@ -68,6 +68,7 @@ public enum Privileges {
     InwardRoom("Inward Room"),
     InwardRoomRoomOccupency("Inward Room Occupancy"),
     InwardRoomRoomChange("Inward Room Change"),
+    WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
     InwardServicesAndItems("Inward Services and Items"),
@@ -980,6 +981,9 @@ public enum Privileges {
             case NursingWorkBench:
             case ShowDrugCharges:
                 return "Nursing Work Bench";
+                
+            case WatingRoomAdmitPatient:
+                return "Inward";
                 
             default:
                 return this.toString();

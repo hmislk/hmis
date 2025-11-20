@@ -103,6 +103,24 @@ public class RoomChangeController implements Serializable {
         getPatientRoomFacade().edit(pR);
     }
     
+    public String navigateToAdmitRoomFromMenu(){
+        setCurrent(null);
+        setCurrentPatientRoom(null);
+        return "/inward/admit_room?faces-redirect=true";
+    }
+    
+    public void selectRoomForAdmit(){
+        if(current == null){
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        if(current.getCurrentPatientRoom() == null){
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        setCurrentPatientRoom(current.getCurrentPatientRoom());
+    }
+    
     public void admitRoom(){
         if(currentPatientRoom == null){
             JsfUtil.addErrorMessage("No Patient Room Detected");
@@ -253,6 +271,7 @@ public class RoomChangeController implements Serializable {
         patientList = null;
         changeAt = null;
         newRoomFacilityCharge = null;
+        currentPatientRoom = null;
     }
 
     private PatientRoom updatePatientRoom(PatientRoom patientRoom1) {
