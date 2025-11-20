@@ -194,6 +194,8 @@ public class PharmacyController implements Serializable {
     private List<Vmpp> vmppsSelected;
     private List<Ampp> amppsSelected;
 
+    private List<Amp> filteredAmps;
+
     private Atm atm;
     private Vtm vtm;
     private Vmp vmp;
@@ -821,6 +823,127 @@ public class PharmacyController implements Serializable {
         }
         amppFacade.batchEdit(amppsSelected);
         fillAmpps();
+    }
+
+    // Bulk update methods for AMP boolean attributes
+    public void bulkUpdateDiscountAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setDiscountAllowed(true);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Discount Allowed");
+    }
+
+    public void bulkUpdateDiscountNotAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setDiscountAllowed(false);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Discount Not Allowed");
+    }
+
+    public void bulkUpdateFractionsAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setAllowFractions(true);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Fractions Allowed");
+    }
+
+    public void bulkUpdateFractionsNotAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setAllowFractions(false);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Fractions Not Allowed");
+    }
+
+    public void bulkUpdateConsumptionAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setConsumptionAllowed(true);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Consumption Allowed");
+    }
+
+    public void bulkUpdateConsumptionNotAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setConsumptionAllowed(false);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Consumption Not Allowed");
+    }
+
+    public void bulkUpdateRefundsAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setRefundsAllowed(true);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Refunds Allowed");
+    }
+
+    public void bulkUpdateRefundsNotAllowed() {
+        if (ampsSelected == null || ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("No AMPs Selected");
+            return;
+        }
+        int count = 0;
+        for (Amp i : ampsSelected) {
+            i.setRefundsAllowed(false);
+            count++;
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+        JsfUtil.addSuccessMessage(count + " AMP(s) marked as Refunds Not Allowed");
     }
 
     public void clearItemHistory() {
@@ -8006,6 +8129,14 @@ public class PharmacyController implements Serializable {
 
     public void setAmpsSelected(List<Amp> ampsSelected) {
         this.ampsSelected = ampsSelected;
+    }
+
+    public List<Amp> getFilteredAmps() {
+        return filteredAmps;
+    }
+
+    public void setFilteredAmps(List<Amp> filteredAmps) {
+        this.filteredAmps = filteredAmps;
     }
 
     public List<Vmpp> getVmppsSelected() {
