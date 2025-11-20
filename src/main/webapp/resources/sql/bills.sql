@@ -2,7 +2,7 @@ select `ID`, `CREATEDAT`,  `DTYPE`, `BILLTYPEATOMIC`, `DEPTID`, COMPLETED, `PAID
 from BILL 
 order by `ID` desc limit 10;
 
-SELECT ID, BILL_ID, PAIDVALUE, PAYMENTMETHOD FROM PAYMENT where BILL_ID in (1945936 , 1945941);
+
 
 -- select * from billitem order by id desc limit 10;
 -- select * from billitemfinancedetails order by id desc limit 10;
