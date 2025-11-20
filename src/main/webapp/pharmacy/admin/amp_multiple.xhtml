@@ -22,6 +22,31 @@
                     </div>
                 </div>
 
+                <!-- Selection Control Buttons -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <p:commandButton
+                            value="Select All AMPs"
+                            icon="pi pi-check-square"
+                            styleClass="ui-button-info"
+                            action="#{pharmacyController.selectAllAmpDtos()}"
+                            update="ampTable msg"
+                            process="@this">
+                            <p:tooltip value="Select all AMPs in the current view (filtered or all)" position="top"/>
+                        </p:commandButton>
+
+                        <p:commandButton
+                            value="Deselect All"
+                            icon="pi pi-times"
+                            styleClass="ui-button-secondary ml-2"
+                            action="#{pharmacyController.deselectAllAmpDtos()}"
+                            update="ampTable msg"
+                            process="@this">
+                            <p:tooltip value="Clear all selections" position="top"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+
                 <!-- Action Buttons Panel -->
                 <p:panel header="Bulk Actions" styleClass="mb-3" toggleable="true" collapsed="false">
                     <h:panelGrid columns="4" styleClass="w-100" cellpadding="5">

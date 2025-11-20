@@ -86,6 +86,11 @@
 
                                     <p:tab title="Medicines Management - Multiple">
                                         <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToAmpMultiple()}" />
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -101,11 +106,7 @@
                                                 ajax="false" 
                                                 value="VMPs" 
                                                 action="#{pharmacyController.navigateToVmpMultiple()}" />
-                                            <p:commandButton
-                                                class="w-100"
-                                                ajax="false"
-                                                value="Bulk Edit AMPs"
-                                                action="#{pharmacyController.navigateToAmpMultiple()}" />
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -159,8 +160,7 @@
                                                 action="#{dataUploadController.toUploadAmpsMin()}"  ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Update Bulk Categery" 
                                                              action="/pharmacy/pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Update Bulk Discount Allowed" 
-                                                             action="/pharmacy/pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                           
                                             <p:commandButton class="w-100" ajax="false" value="Stock Item List" 
                                                              action="/pharmacy/pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
 

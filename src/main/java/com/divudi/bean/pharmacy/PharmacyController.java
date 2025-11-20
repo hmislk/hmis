@@ -557,7 +557,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToAmpMultiple() {
-        fillAmps();
+        fillAmpsDto();
         return "/pharmacy/admin/amp_multiple?faces-redirect=true";
     }
 
@@ -1115,6 +1115,31 @@ public class PharmacyController implements Serializable {
         ampFacade.batchEdit(ampsToUpdate);
         fillAmpsDto();
         JsfUtil.addSuccessMessage(ampsToUpdate.size() + " AMP(s) marked as Refunds Not Allowed");
+    }
+
+    /**
+     * Select all AMPs in the current list (filtered or unfiltered)
+     */
+    public void selectAllAmpDtos() {
+        if (filteredAmpDtos != null && !filteredAmpDtos.isEmpty()) {
+            // If there's a filtered list, select all from filtered
+            ampDtosSelected = new ArrayList<>(filteredAmpDtos);
+            JsfUtil.addSuccessMessage(filteredAmpDtos.size() + " filtered AMP(s) selected");
+        } else if (ampDtos != null && !ampDtos.isEmpty()) {
+            // Otherwise select all from full list
+            ampDtosSelected = new ArrayList<>(ampDtos);
+            JsfUtil.addSuccessMessage(ampDtos.size() + " AMP(s) selected");
+        } else {
+            JsfUtil.addErrorMessage("No AMPs to select");
+        }
+    }
+
+    /**
+     * Deselect all AMPs
+     */
+    public void deselectAllAmpDtos() {
+        ampDtosSelected = new ArrayList<>();
+        JsfUtil.addSuccessMessage("All AMPs deselected");
     }
 
     public void clearItemHistory() {
