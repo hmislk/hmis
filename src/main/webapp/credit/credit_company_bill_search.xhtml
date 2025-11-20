@@ -89,10 +89,11 @@
                                         <h:outputLabel value="Bill Type" class="m-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu class="w-100" value="#{searchController.settledBillType}">
-                                        <f:selectItem  itemLabel="All Bills"/>    
+                                        <f:selectItem  itemLabel="All Bills"/>
                                         <f:selectItem itemValue="IP" itemLabel="Inpatient Bills(IP)"/>
-                                        <f:selectItem itemValue="OP" itemLabel="Outpatient Bills(IP)"/>
+                                        <f:selectItem itemValue="OP" itemLabel="Outpatient Bills(OP)"/>
                                         <f:selectItem itemValue="PACKAGE" itemLabel="Package Bills (PACKAGE)"/>
+                                        <f:selectItem itemValue="PHARMACY" itemLabel="Pharmacy Bills (PHARMACY)"/>
                                         <p:ajax update="@all"/>
                                     </p:selectOneMenu>
 

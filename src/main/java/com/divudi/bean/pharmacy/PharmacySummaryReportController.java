@@ -289,6 +289,13 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        );
+        reportViewType = ReportViewType.BY_BILL;
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
 
