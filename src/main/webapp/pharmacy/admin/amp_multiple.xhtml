@@ -10,12 +10,13 @@
         <h:form id="ampBulkForm">
             <p:growl id="msg" life="3000" />
 
-            <p:panel header="AMP Bulk Editing" styleClass="mb-3">
+            <p:panel header="AMP Bulk Editing (DTO - Optimized)" styleClass="mb-3">
+                <f:event type="preRenderComponent" listener="#{pharmacyController.fillAmpsDto()}" />
                 <div class="row mb-3">
                     <div class="col-12">
                         <div class="alert alert-info">
                             <i class="fa fa-info-circle"></i>
-                            <strong>Instructions:</strong> Select one or more AMPs (Authorized Medicinal Products) from the list below,
+                            <strong>Instructions:</strong> Select one or more AMPs (Actual Medicinal Products) from the list below,
                             then use the action buttons to update their properties in bulk.
                         </div>
                     </div>
@@ -29,7 +30,7 @@
                             value="Mark as Discount Allowed"
                             icon="pi pi-check"
                             styleClass="ui-button-success w-100"
-                            action="#{pharmacyController.bulkUpdateDiscountAllowed()}"
+                            action="#{pharmacyController.bulkUpdateDiscountAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -41,7 +42,7 @@
                             value="Mark as Discount Not Allowed"
                             icon="pi pi-times"
                             styleClass="ui-button-danger w-100"
-                            action="#{pharmacyController.bulkUpdateDiscountNotAllowed()}"
+                            action="#{pharmacyController.bulkUpdateDiscountNotAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -54,7 +55,7 @@
                             value="Mark as Fractions Allowed"
                             icon="pi pi-check"
                             styleClass="ui-button-success w-100"
-                            action="#{pharmacyController.bulkUpdateFractionsAllowed()}"
+                            action="#{pharmacyController.bulkUpdateFractionsAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -66,7 +67,7 @@
                             value="Mark as Fractions Not Allowed"
                             icon="pi pi-times"
                             styleClass="ui-button-danger w-100"
-                            action="#{pharmacyController.bulkUpdateFractionsNotAllowed()}"
+                            action="#{pharmacyController.bulkUpdateFractionsNotAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -79,7 +80,7 @@
                             value="Mark as Consumption Allowed"
                             icon="pi pi-check"
                             styleClass="ui-button-success w-100"
-                            action="#{pharmacyController.bulkUpdateConsumptionAllowed()}"
+                            action="#{pharmacyController.bulkUpdateConsumptionAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -91,7 +92,7 @@
                             value="Mark as Consumption Not Allowed"
                             icon="pi pi-times"
                             styleClass="ui-button-danger w-100"
-                            action="#{pharmacyController.bulkUpdateConsumptionNotAllowed()}"
+                            action="#{pharmacyController.bulkUpdateConsumptionNotAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -104,7 +105,7 @@
                             value="Mark as Refunds Allowed"
                             icon="pi pi-check"
                             styleClass="ui-button-success w-100"
-                            action="#{pharmacyController.bulkUpdateRefundsAllowed()}"
+                            action="#{pharmacyController.bulkUpdateRefundsAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -116,7 +117,7 @@
                             value="Mark as Refunds Not Allowed"
                             icon="pi pi-times"
                             styleClass="ui-button-danger w-100"
-                            action="#{pharmacyController.bulkUpdateRefundsNotAllowed()}"
+                            action="#{pharmacyController.bulkUpdateRefundsNotAllowedDto()}"
                             update="ampTable msg"
                             process="@form">
                             <p:confirm header="Confirmation"
@@ -129,9 +130,10 @@
                 <!-- AMP Data Table -->
                 <p:dataTable
                     id="ampTable"
-                    value="#{pharmacyController.amps}"
+                    widgetVar="ampTableWidget"
+                    value="#{pharmacyController.ampDtos}"
                     var="amp"
-                    selection="#{pharmacyController.ampsSelected}"
+                    selection="#{pharmacyController.ampDtosSelected}"
                     rowKey="#{amp.id}"
                     rows="20"
                     paginator="true"
@@ -140,7 +142,7 @@
                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} AMPs"
                     rowsPerPageTemplate="10,20,50,100,{ShowAll|'All'}"
                     styleClass="w-100"
-                    filteredValue="#{pharmacyController.filteredAmps}">
+                    filteredValue="#{pharmacyController.filteredAmpDtos}">
 
                     <f:facet name="header">
                         <div class="d-flex justify-content-between align-items-center">
@@ -149,7 +151,7 @@
                                 AMP List - Select items to apply bulk actions
                             </span>
                             <span class="text-muted small">
-                                #{pharmacyController.ampsSelected != null ? pharmacyController.ampsSelected.size() : 0} selected
+                                #{pharmacyController.ampDtosSelected != null ? pharmacyController.ampDtosSelected.size() : 0} selected
                             </span>
                         </div>
                     </f:facet>
@@ -170,11 +172,11 @@
                     <!-- Category Column -->
                     <p:column
                         headerText="Category"
-                        sortBy="#{amp.category.name}"
-                        filterBy="#{amp.category.name}"
+                        sortBy="#{amp.categoryName}"
+                        filterBy="#{amp.categoryName}"
                         filterMatchMode="contains"
                         style="width:20%">
-                        <h:outputText value="#{empty amp.category ? 'N/A' : amp.category.name}" />
+                        <h:outputText value="#{empty amp.categoryName ? 'N/A' : amp.categoryName}" />
                     </p:column>
 
                     <!-- Discount Allowed Column -->
@@ -250,7 +252,7 @@
                     </p:column>
 
                     <f:facet name="footer">
-                        Total: #{pharmacyController.amps != null ? pharmacyController.amps.size() : 0} AMPs
+                        Total: #{pharmacyController.ampDtos != null ? pharmacyController.ampDtos.size() : 0} AMPs
                     </f:facet>
                 </p:dataTable>
 
