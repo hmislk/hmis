@@ -5,7 +5,8 @@
       "Bash(git push:*)",
       "Bash(gh auth:*)",
       "Bash(gh repo set-default:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "ask": [],

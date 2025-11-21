@@ -50,22 +50,10 @@
 
                             <h:panelGroup>
                                 <h:outputText value="&#xf406;" styleClass="fa mr-2" />
-                                <p:outputLabel value="MRN" class="mx-3" />
-
-                            </h:panelGroup>
-
-                            <p:inputText class="form-control" value="">
-                            </p:inputText>
-
-                            <h:panelGroup>
-                                <h:outputText value="&#xf406;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Patient Name" class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="MRN / Patient Name" class="mx-3" />
                             </h:panelGroup>
                             <p:inputText class="form-control" value="">
                             </p:inputText>
-
-
-
                         </p:panelGrid>
 
                         <h:panelGrid columns="6" class="my-3">
@@ -109,6 +97,13 @@
                                 filterBy="">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
+                             <p:column
+                                headerText="Transaction Number"
+                                filterMatchMode="contains"
+                                sortBy=""
+                                filterBy="">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
                             <p:column headerText="Visit No" filterMatchMode="contains" sortBy="" filterBy="">
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
@@ -139,42 +134,9 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Invoice" filterMatchMode="contains" sortBy="" filterBy="" >
-                                <h:outputText value="" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Reciept" filterMatchMode="contains" sortBy="" filterBy="" >
-                                <h:outputText value="" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Drug Issueing" filterMatchMode="contains" sortBy="" filterBy="" >
-                                <h:outputText value="" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-
                         </p:dataTable>
                     </p:panel>
-
                 </h:form>
-
             </ui:define>
         </ui:composition>
 
