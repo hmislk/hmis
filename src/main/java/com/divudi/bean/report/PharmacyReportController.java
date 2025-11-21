@@ -2010,6 +2010,22 @@ public class PharmacyReportController implements Serializable {
                 .sum();
     }
 
+    public Double getTotalStockCorrectionVariance() {
+        if (stockCorrectionRows == null || stockCorrectionRows.isEmpty()) {
+            return 0.0;
+        }
+        return stockCorrectionRows.stream()
+                .mapToDouble(row -> {
+                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
+                    Double beforeAdj = row.getBeforeAdjustment();
+                    Double afterAdj = row.getAfterAdjustment();
+                    double before = beforeAdj != null ? beforeAdj : 0.0;
+                    double after = afterAdj != null ? afterAdj : 0.0;
+                    return (after - before) * qty;
+                })
+                .sum();
+    }
+
     public void processGrnCash() {
         List<BillTypeAtomic> btas = Arrays.asList(
                 BillTypeAtomic.PHARMACY_GRN,
