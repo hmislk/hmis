@@ -2852,6 +2852,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/admission_count_payment_type_wise?faces-redirect=true"; 
     }
     
+    public String navigateToManagementHospitalCensusReport(){
+        
+        return "/reports/managementReports/hospital_census?faces-redirect=true"; 
+    }
+    
     public String navigateToROOMOCCUPANCY(){
         
         return "/reports/managementReports/ROOM_OCCUPANCY?faces-redirect=true";
@@ -3215,10 +3220,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/financialReports/cash_inward_excess_age?faces-redirect=true";
     }
     
-    public String navigateToOutsideBillServiceReport(){
-    
-        return "/reports/financialReports/outside_bill_service_report?faces-redirect=true";
-    }
+//    public String navigateToOutsideBillServiceReport(){
+//    
+//        return "/reports/financialReports/outside_bill_service_report?faces-redirect=true";
+//    }
 
     public String navigateToOutsidePayment() {
 
