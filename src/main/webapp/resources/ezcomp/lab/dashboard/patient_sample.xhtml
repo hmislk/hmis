@@ -232,9 +232,7 @@
                             <p:commandLink 
                                 ajax="false" 
                                 class="text-primary"
-                                value="#{ps.billNumber}" 
-                                action="#{billSearch.navigateToViewOpdBill()}">
-                                <!--<f:setPropertyActionListener value="#{ps.bill}" target="#{billSearch.bill}"/>-->
+                                value="#{ps.billNumber}">
                             </p:commandLink>
                             <br/>
                             <h:outputLabel value="#{ps.billDate}">
@@ -366,13 +364,7 @@
                 
                 
                 <div class="col-md-3">
-                    <p:commandButton
-                                value="TEST"
-                                ajax="false"
-                                action="#{laboratoryManagementController.test()}"
-                                icon="pi pi-plus-circle"
-                                styleClass="w-100 ui-button-danger my-3" >
-                            </p:commandButton>
+                    
                     <h:panelGroup 
                         id="sampleCollect"
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}"
@@ -438,7 +430,7 @@
                             <p:commandButton 
                                 value="Pending to Send"
                                 ajax="false"
-                                action="#{laboratoryManagementController.pendingSendSampleList()}"
+                                action="#{laboratoryManagementController.pendingSendDTOSampleList()}"
                                 title="Send to Lab"
                                 icon="pi pi-external-link"
                                 styleClass="w-100 ui-button-warning" >
@@ -498,7 +490,7 @@
                             <p:commandButton 
                                 value="Non Received Samples"
                                 ajax="false"
-                                action="#{laboratoryManagementController.nonReceivedSampleList()}"
+                                action="#{laboratoryManagementController.nonReceivedDTOSampleList()}"
                                 title="Receive Samples"
                                 icon="pi pi-check-circle"
                                 styleClass="w-100 ui-button-info">
@@ -525,7 +517,7 @@
                                 value="Receive"
                                 ajax="false"
                                 style="width: 11em;"
-                                action="#{laboratoryManagementController.receiveSamplesAtLab()}"
+                                action="#{laboratoryManagementController.receiveDTOSamplesAtLab()}"
                                 title="Receive Samples"
                                 icon="pi pi-check-circle"
                                 styleClass="ui-button-info">
@@ -610,7 +602,7 @@
                                     style="float: right;"
                                     value="Send Samples"
                                     ajax="false"
-                                    action="#{laboratoryManagementController.sendSamplesToLab()}"
+                                    action="#{laboratoryManagementController.sendDTOSamplesToLab()}"
                                     title="Send Samples"
                                     icon="fa fa-paper-plane"
                                     styleClass="m-1 ui-button-info" >
