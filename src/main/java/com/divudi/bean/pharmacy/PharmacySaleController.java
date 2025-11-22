@@ -342,6 +342,114 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         // Register the page metadata
         pageMetadataRegistry.registerPage(metadata);
+
+        // Register metadata for pharmacy_bill_retail_sale page
+        PageMetadata retailSaleMetadata = new PageMetadata();
+        retailSaleMetadata.setPagePath("pharmacy/pharmacy_bill_retail_sale");
+        retailSaleMetadata.setPageName("Pharmacy Retail Sale (Sale 1)");
+        retailSaleMetadata.setDescription("Main point-of-sale interface for pharmacy retail sales with patient details, multiple payment methods, item selection, and bill management");
+        retailSaleMetadata.setControllerClass("PharmacySaleController");
+
+        // Register configuration options
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Find Last Sale Rate of Medicines in Retail Sale",
+            "Enables the medicine search dialog that allows finding and viewing the last sale rate of any medicine in the pharmacy inventory",
+            "Line 30: Medicine search dialog visibility",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Medicine Identification Codes Used",
+            "Shows medicine identification codes in the autocomplete dropdown when selecting medicines for retail sale",
+            "Line 170: Code column visibility in autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Enable label printing for pharmacy medicines",
+            "Enables the prescription label printing feature that allows adding dosage instructions and printing medicine labels for patients",
+            "Lines 355, 1255: Instructions column in bill items table and Print Labels button in bill preview",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Support for Native Printers",
+            "Controls whether to use native printer support or browser-based printing for pharmacy retail sale bills",
+            "Line 1325: Print Bill button rendering (inverted - button shown when config is false)",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill Paper is POS Paper",
+            "Uses standard POS paper format for printing pharmacy retail sale bills (default format)",
+            "Line 1341: Bill paper format selection for standard POS paper",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill Paper is POS Paper Custom 1",
+            "Uses custom POS paper format version 1 for printing pharmacy retail sale bills",
+            "Line 1351: Bill paper format selection for custom POS paper v1",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header",
+            "Uses 5.5 inch paper format without header space for printing pharmacy retail sale bills",
+            "Line 1355: Bill paper format selection for 5.5 inch paper",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill Paper is POS paper with header",
+            "Uses POS paper with header section for printing pharmacy retail sale bills",
+            "Line 1359: Bill paper format selection for POS with header",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill Paper is Custom 1",
+            "Uses custom paper format 1 for printing pharmacy retail sale bills",
+            "Line 1363: Bill paper format selection for custom format 1",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill Paper is Custom 2",
+            "Uses custom paper format 2 for printing pharmacy retail sale bills",
+            "Line 1367: Bill paper format selection for custom format 2",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill Paper is Custom 3",
+            "Uses custom paper format 3 for printing pharmacy retail sale bills",
+            "Line 1371: Bill paper format selection for custom format 3",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill is PosHeaderPaper",
+            "Uses general POS header paper format for printing pharmacy retail sale bills",
+            "Line 1375: Bill paper format selection for general POS header paper",
+            OptionScope.APPLICATION
+        ));
+
+        // Register privileges
+        retailSaleMetadata.addPrivilege(new PrivilegeInfo(
+            "PharmacySale",
+            "Basic access to pharmacy sale pages and ability to create and navigate between different pharmacy sale terminals (Sale 1-4)",
+            "Lines 86-89: Navigation buttons to Sale 1-4 in page header; Lines 1302-1305: Navigation buttons in bill preview"
+        ));
+
+        retailSaleMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Allows administrators to change the paper type configuration for receipt printing (POS paper, custom formats, etc.) via the Settings dialog",
+            "Lines 1293, 1384: Settings button visibility and configuration dialog rendering"
+        ));
+
+        // Register the retail sale page metadata
+        pageMetadataRegistry.registerPage(retailSaleMetadata);
     }
 
     public Token getCurrentToken() {
