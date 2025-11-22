@@ -297,7 +297,7 @@
                             class="ui-button-raised"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardSampleSearch'))}"
                             ajax="false"
-                            action="#{laboratoryManagementController.navigateToSamplesFromSelectedBill(b)}"
+                            action="#{laboratoryManagementController.navigateToDTOSamplesFromSelectedBill(b)}"
                             disabled="#{b.status.label eq 'Ordered'}" >
                         </p:commandButton>
                         <p:commandButton 
