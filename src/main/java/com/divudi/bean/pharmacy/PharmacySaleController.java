@@ -3557,18 +3557,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             System.out.println("Cost values: lineCost: " + bifd.getLineCost() + ", totalCost: " + bifd.getTotalCost());
 
-            // UPDATE VALUE FIELDS in BillItemFinanceDetails (for retail sales, use totalQty including free)
-            bifd.setValueAtCostRate(costRate.multiply(totalQty));
-            bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty));
-            bifd.setValueAtRetailRate(retailRate.multiply(totalQty));
+            // UPDATE VALUE FIELDS in BillItemFinanceDetails (negative for retail sales - stock goes out)
+            bifd.setValueAtCostRate(costRate.multiply(totalQty).negate());
+            bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty).negate());
+            bifd.setValueAtRetailRate(retailRate.multiply(totalQty).negate());
 
             System.out.println("BIFD values: valueAtCostRate: " + bifd.getValueAtCostRate()
                     + ", valueAtPurchaseRate: " + bifd.getValueAtPurchaseRate()
                     + ", valueAtRetailRate: " + bifd.getValueAtRetailRate());
 
-            // UPDATE QUANTITIES in BillItemFinanceDetails
-            bifd.setQuantity(qty);
-            bifd.setQuantityByUnits(qty);
+            // UPDATE QUANTITIES in BillItemFinanceDetails (negative for retail sales - stock goes out)
+            bifd.setQuantity(qty.negate());
+            bifd.setQuantityByUnits(qty.negate());
 
             // UPDATE PHARMACEUTICAL BILL ITEM VALUES
             pharmaItem.setCostRate(costRate.doubleValue());
@@ -3606,12 +3606,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         bfd.setNetTotal(BigDecimal.valueOf(bill.getNetTotal()));
         bfd.setGrossTotal(BigDecimal.valueOf(bill.getTotal()));
 
-        // Set calculated totals
-        bfd.setTotalCostValue(totalCostValue);
-        bfd.setTotalPurchaseValue(totalPurchaseValue);
-        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
-        bfd.setTotalQuantity(totalQuantity);
-        bfd.setTotalFreeQuantity(totalFreeQuantity);
+        // Set calculated totals (negative for retail sales - stock goes out)
+        bfd.setTotalCostValue(totalCostValue.negate());
+        bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
+        bfd.setTotalQuantity(totalQuantity.negate());
+        bfd.setTotalFreeQuantity(totalFreeQuantity.negate());
 
         System.out.println("=== PRECISION DEBUG ===");
         System.out.println("Before saving - totalCostValue BigDecimal: " + totalCostValue);
