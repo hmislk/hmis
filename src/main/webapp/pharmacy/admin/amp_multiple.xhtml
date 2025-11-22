@@ -182,7 +182,11 @@
                     </f:facet>
 
                     <!-- Selection Column -->
-                    <p:column selectionMode="multiple" style="width:40px; text-align:center" />
+                    <p:column selectionMode="multiple" selectionBox="true" style="width:70px; text-align:center">
+                        <f:facet name="header">
+                            <i class="pi pi-check-square" style="color: #6c757d;" title="Select rows"></i>
+                        </f:facet>
+                    </p:column>
 
                     <!-- Name Column -->
                     <p:column
