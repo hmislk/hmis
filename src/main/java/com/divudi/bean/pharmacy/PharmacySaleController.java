@@ -3406,6 +3406,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         bfd.setTotalQuantity(totalQuantity);
         bfd.setTotalFreeQuantity(totalFreeQuantity);
 
+        System.out.println("=== PRECISION DEBUG ===");
+        System.out.println("Before saving - totalCostValue BigDecimal: " + totalCostValue);
+        System.out.println("Before saving - totalCostValue scale: " + totalCostValue.scale());
+        System.out.println("Before saving - totalCostValue precision: " + totalCostValue.precision());
+        System.out.println("Before saving - totalCostValue toString: " + totalCostValue.toString());
+        System.out.println("Before saving - totalCostValue doubleValue: " + totalCostValue.doubleValue());
+
         System.out.println("Bill totals - netTotal: " + bfd.getNetTotal()
                 + ", grossTotal: " + bfd.getGrossTotal()
                 + ", totalCostValue: " + bfd.getTotalCostValue()
@@ -3414,10 +3421,20 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 + ", totalQuantity: " + bfd.getTotalQuantity()
                 + ", totalFreeQuantity: " + bfd.getTotalFreeQuantity());
 
+        System.out.println("After setting - BFD.totalCostValue BigDecimal: " + bfd.getTotalCostValue());
+        System.out.println("After setting - BFD.totalCostValue scale: " + (bfd.getTotalCostValue() != null ? bfd.getTotalCostValue().scale() : "null"));
+        System.out.println("After setting - BFD.totalCostValue toString: " + (bfd.getTotalCostValue() != null ? bfd.getTotalCostValue().toString() : "null"));
+        System.out.println("=== END PRECISION DEBUG ===");
+
         System.out.println("=== Completed updateRetailSaleFinanceDetails ===");
     }
 
     private void updateAll() {
+        System.out.println("=== updateAll() - Before saving to database ===");
+        if (saleBill.getBillFinanceDetails() != null) {
+            System.out.println("SaleBill BFD totalCostValue before DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
+        }
+
         for (BillItem pbi : preBill.getBillItems()) {
             billItemFacade.edit(pbi);
         }
@@ -3426,6 +3443,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             billItemFacade.edit(sbi);
         }
         billFacade.edit(saleBill);
+
+        System.out.println("=== updateAll() - After saving to database ===");
+        if (saleBill.getBillFinanceDetails() != null) {
+            System.out.println("SaleBill BFD totalCostValue after DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
+            System.out.println("*** DATABASE SCHEMA ISSUE CONFIRMED ***");
+            System.out.println("Expected: DECIMAL(18,4) but database has DECIMAL(38,0)");
+            System.out.println("This causes BigDecimal precision loss during JPA save!");
+        }
     }
 
     public String newPharmacyRetailSale() {
