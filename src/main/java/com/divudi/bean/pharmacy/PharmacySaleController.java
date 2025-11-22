@@ -4353,12 +4353,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             // Get cost rate from item batch (which is the actual cost for sales)
             BigDecimal costRate = purchaseRate; // default fallback
             if (pharmaItem.getItemBatch() != null) {
-                double batchPurchaseRate = pharmaItem.getItemBatch().getPurcahseRate();
-                if (batchPurchaseRate > 0) {
-                    costRate = BigDecimal.valueOf(batchPurchaseRate);
-                    System.out.println("Got costRate from itemBatch.purcahseRate: " + costRate);
+                Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
+                if (batchCostRate != null && batchCostRate > 0) {
+                    costRate = BigDecimal.valueOf(batchCostRate);
+                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
                 } else {
-                    System.out.println("ItemBatch purcahseRate is 0 or negative, using pharma purchaseRate: " + costRate);
+                    System.out.println("ItemBatch costRate is null or negative, using pharma purchaseRate: " + costRate);
                 }
             } else {
                 System.out.println("No itemBatch found, using pharma purchaseRate: " + costRate);
@@ -4410,7 +4410,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             // UPDATE PHARMACEUTICAL BILL ITEM VALUES
             pharmaItem.setCostRate(costRate.doubleValue());
-            pharmaItem.setQty(qty.doubleValue());
+//            pharmaItem.setQty(qty.doubleValue()); / NEVER DO THIS. QTY is MINUS WHEN STOCKS GO OUT
 
             // Calculate PBI values (positive as these are stock valuations in PBI context)
             BigDecimal pbiCostValue = costRate.multiply(absQty);
