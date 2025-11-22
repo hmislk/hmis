@@ -195,7 +195,7 @@
                         value="#{laboratoryManagementController.sampleDtos}"
                         var="ps" 
                         paginator="true"
-                        rowKey="#{ps.id}"
+                        rowKey="#{ps.sampleId}"
                         paginatorPosition="bottom"
                         selectionMode="multiple"
                         selection="#{laboratoryManagementController.selectedSampleDtos}"
@@ -371,7 +371,7 @@
                                 ajax="false"
                                 action="#{laboratoryManagementController.test()}"
                                 icon="pi pi-plus-circle"
-                                styleClass="w-100 ui-button-danger mb-3" >
+                                styleClass="w-100 ui-button-danger my-3" >
                             </p:commandButton>
                     <h:panelGroup 
                         id="sampleCollect"
