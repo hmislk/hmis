@@ -1167,7 +1167,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         handleSelectAction();
     }
 
-    //    public void calculateRates(BillItem bi) {
+    //    public void calculateRatesOfSelectedBillItemBeforeAddingToTheList(BillItem bi) {
 //        ////////System.out.println("calculating rates");
 //        if (bi.getPharmaceuticalBillItem().getStock() == null) {
 //            ////////System.out.println("stock is null");
@@ -1551,7 +1551,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     //    public void calculateAllRatesNew() {
 //        ////////System.out.println("calculating all rates");
 //        for (BillItem tbi : getPreBill().getBillItems()) {
-//            calculateRates(tbi);
+//            calculateRatesOfSelectedBillItemBeforeAddingToTheList(tbi);
 //            calculateBillItemForEditing(tbi);
 //        }
 //        calTotal();
@@ -1825,7 +1825,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     private BillBeanController billBean;
 
     private void saveSaleBill() {
-        //  calculateAllRates();
+        //  calculateRatesForAllBillItemsInPreBill();
 
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
@@ -3362,7 +3362,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         calculateAllRates();
     }
 
-    //    public void calculateAllRates() {
+    //    public void calculateRatesForAllBillItemsInPreBill() {
 //        //////System.out.println("calculating all rates");
 //        for (BillItem tbi : getPreBill().getBillItems()) {
 //            calculateDiscountRates(tbi);
