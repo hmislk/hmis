@@ -1837,6 +1837,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
 
+        getBillFacade().edit(getPreBill());
     }
 
     private void saveSaleBill() {
@@ -1944,7 +1945,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         calculateRatesForAllBillItemsInPreBill();
 
-        getBillFacade().edit(getPreBill());
     }
 
     private void savePreBillItemsFinally(List<BillItem> list) {
@@ -2001,7 +2001,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         calculateRatesForAllBillItemsInPreBill();
 
-        getBillFacade().edit(getPreBill());
     }
 
     public Staff getToStaff() {
@@ -2422,7 +2421,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
     public void settlePreBill() {
-        configOptionFacade.flush();
         editingQty = null;
 
         if (getPreBill().getBillItems().isEmpty()) {
