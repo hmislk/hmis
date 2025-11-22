@@ -4445,7 +4445,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             try {
                 Long id = Long.valueOf(value);
                 PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
-                        .getValue(facesContext.getELContext(), null, "pharmacySaleController");
+                        .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
                 if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
                     return controller.getStockDto();
                 }
