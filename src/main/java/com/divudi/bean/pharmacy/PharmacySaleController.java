@@ -261,6 +261,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
      */
     private void registerPageMetadata() {
         if (pageMetadataRegistry == null) {
+            // WARNING: pageMetadataRegistry is null during startup - admin configuration features will not be available
             return;
         }
 
@@ -275,7 +276,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             "Enable token system in sale for cashier",
             "Enables the counter/token selection system for managing pharmacy queues and customer flow",
             "Line 25: Counter selection dropdown visibility in header",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
@@ -303,28 +304,28 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             "Pharmacy Sale for Cashier Token Bill is Pos paper",
             "Uses POS paper format for printing pharmacy sale tokens when token system is enabled",
             "Line 689: Token bill paper format selection",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Sale for Cashier Bill is Pos paper",
             "Uses POS paper format for printing pharmacy sale bills instead of standard paper formats",
             "Line 707: Bill paper format selection for POS paper",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill is PosHeaderPaper",
             "Uses POS paper with header format for printing pharmacy retail sale bills",
             "Line 723: Bill paper format selection for POS header paper",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Sale for cashier Bill is FiveFiveCustom3",
             "Uses custom 5.5 inch paper format (FiveFiveCustom3) for printing pharmacy sale bills",
             "Line 733: Bill paper format selection for custom 5.5 inch paper",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         // Register privileges
@@ -383,56 +384,56 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             "Pharmacy Retail Sale Bill Paper is POS Paper",
             "Uses standard POS paper format for printing pharmacy retail sale bills (default format)",
             "Line 1341: Bill paper format selection for standard POS paper",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill Paper is POS Paper Custom 1",
             "Uses custom POS paper format version 1 for printing pharmacy retail sale bills",
             "Line 1351: Bill paper format selection for custom POS paper v1",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header",
             "Uses 5.5 inch paper format without header space for printing pharmacy retail sale bills",
             "Line 1355: Bill paper format selection for 5.5 inch paper",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill Paper is POS paper with header",
             "Uses POS paper with header section for printing pharmacy retail sale bills",
             "Line 1359: Bill paper format selection for POS with header",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill Paper is Custom 1",
             "Uses custom paper format 1 for printing pharmacy retail sale bills",
             "Line 1363: Bill paper format selection for custom format 1",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill Paper is Custom 2",
             "Uses custom paper format 2 for printing pharmacy retail sale bills",
             "Line 1367: Bill paper format selection for custom format 2",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill Paper is Custom 3",
             "Uses custom paper format 3 for printing pharmacy retail sale bills",
             "Line 1371: Bill paper format selection for custom format 3",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Retail Sale Bill is PosHeaderPaper",
             "Uses general POS header paper format for printing pharmacy retail sale bills",
             "Line 1375: Bill paper format selection for general POS header paper",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         // Register privileges
