@@ -74,11 +74,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 /**
  *
@@ -108,6 +114,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     FinancialTransactionController financialTransactionController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 ////////////////////////
     @EJB
     DiscountSchemeValidationService discountSchemeValidationService;
@@ -171,6 +179,73 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     double total;
     Double editingQty;
     private Token token;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_bill_pre_settle");
+        metadata.setPageName("Pharmacy Bill Accept Payment (Pre-Settle)");
+        metadata.setDescription("Accept payment for pharmacy retail bills created in sale for cashier mode");
+        metadata.setControllerClass("PharmacyPreSettleController");
+
+        // Configuration Options from XHTML
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable token system in sale for cashier",
+            "Enables token number display and token system functionality for pharmacy retail sales",
+            "Lines 240, 246, 353, 354 (XHTML): Token panel visibility and navigation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy accept payment for sale for cashier bill with Items is PosPaper",
+            "Uses POS paper format with items for pharmacy retail sale bills",
+            "Line 365 (XHTML): Bill preview format selection",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3",
+            "Uses FiveFiveCustom3 format for pharmacy retail sale bills",
+            "Line 371 (XHTML): Bill preview format selection",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper",
+            "Uses POS header paper format for pharmacy retail sale bills",
+            "Line 377 (XHTML): Bill preview format selection",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options from Controller
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy billing can be done after shift start",
+            "Allows pharmacy billing operations to be performed after the shift has started",
+            "Lines 1507, 1596, 1987 (Controller): Shift timing validation",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page settings",
+            "Lines 22-32 (XHTML): Config button visibility"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public double calculatRemainForMultiplePaymentTotal() {
 
@@ -728,7 +803,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
-        getBillFacade().editAndCommit(getPreBill());
     }
 
     /**
@@ -782,7 +856,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             //   getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             getSaleBill().getBillItems().add(newBil);
         }
-        getBillFacade().editAndCommit(getSaleBill());
 
     }
 
@@ -1572,6 +1645,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems();
 
+        // Consolidated edit: Save both SaleBill and PreBill in single transaction
+        getBillFacade().editAndCommit(getSaleBill());
         getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
@@ -1658,6 +1733,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems();
 
+        // Consolidated edit: Save both SaleBill and PreBill in single transaction
+        getBillFacade().editAndCommit(getSaleBill());
         getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());

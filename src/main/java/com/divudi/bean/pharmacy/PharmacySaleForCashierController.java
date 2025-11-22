@@ -20,11 +20,6 @@ import com.divudi.bean.common.TokenController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.bean.common.PageMetadataRegistry;
-import com.divudi.core.data.OptionScope;
-import com.divudi.core.data.admin.ConfigOptionInfo;
-import com.divudi.core.data.admin.PageMetadata;
-import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -101,7 +96,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -122,7 +116,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+public class PharmacySaleForCashierController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     @Inject
     private UserStockController userStockController;
@@ -150,8 +144,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private TokenController tokenController;
     @Inject
     private DrawerController drawerController;
-    @Inject
-    private PageMetadataRegistry pageMetadataRegistry;
     @EJB
     private ConfigOptionFacade configOptionFacade;
     @EJB
@@ -248,209 +240,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     /**
      * Creates a new instance of PharmacySaleController
      */
-    public PharmacySaleController() {
-    }
-
-    @PostConstruct
-    public void init() {
-        registerPageMetadata();
-    }
-
-    /**
-     * Register page metadata for the admin interface
-     */
-    private void registerPageMetadata() {
-        if (pageMetadataRegistry == null) {
-            // WARNING: pageMetadataRegistry is null during startup - admin configuration features will not be available
-            return;
-        }
-
-        PageMetadata metadata = new PageMetadata();
-        metadata.setPagePath("pharmacy/pharmacy_bill_retail_sale_for_cashier");
-        metadata.setPageName("Pharmacy Retail Sale for Cashier");
-        metadata.setDescription("Point-of-sale interface for pharmacy cashiers to process retail medication sales with patient details, payment methods, and bill management");
-        metadata.setControllerClass("PharmacySaleController");
-
-        // Register configuration options
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable token system in sale for cashier",
-            "Enables the counter/token selection system for managing pharmacy queues and customer flow",
-            "Line 25: Counter selection dropdown visibility in header",
-            OptionScope.DEPARTMENT
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Analytics - Show Single Items Summary",
-            "Shows the analytics button to open single item summary in a new tab for detailed item transaction history",
-            "Line 80: Single Item Summary button visibility",
-            OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Allow Tendered Amount for pharmacy sale for cashier",
-            "Enables tendered amount and balance calculation section in the bill details panel for cash transactions",
-            "Line 550: Tendered amount and balance section visibility",
-            OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Bill Support for Native Printers",
-            "Controls whether to use native printer support or browser-based printing for pharmacy bills",
-            "Line 604: Print Bill button rendering (inverted - button shown when config is false)",
-            OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Sale for Cashier Token Bill is Pos paper",
-            "Uses POS paper format for printing pharmacy sale tokens when token system is enabled",
-            "Line 689: Token bill paper format selection",
-            OptionScope.DEPARTMENT
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Sale for Cashier Bill is Pos paper",
-            "Uses POS paper format for printing pharmacy sale bills instead of standard paper formats",
-            "Line 707: Bill paper format selection for POS paper",
-            OptionScope.DEPARTMENT
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill is PosHeaderPaper",
-            "Uses POS paper with header format for printing pharmacy retail sale bills",
-            "Line 723: Bill paper format selection for POS header paper",
-            OptionScope.DEPARTMENT
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Sale for cashier Bill is FiveFiveCustom3",
-            "Uses custom 5.5 inch paper format (FiveFiveCustom3) for printing pharmacy sale bills",
-            "Line 733: Bill paper format selection for custom 5.5 inch paper",
-            OptionScope.DEPARTMENT
-        ));
-
-        // Register privileges
-        metadata.addPrivilege(new PrivilegeInfo(
-            "ChangeReceiptPrintingPaperTypes",
-            "Allows users to change the paper type selection for receipt printing (POS paper, 5.5 paper, etc.)",
-            "Line 588: Paper type selection dropdown visibility"
-        ));
-
-        metadata.addPrivilege(new PrivilegeInfo(
-            "PharmacySale",
-            "Basic access to pharmacy sale pages and ability to create pharmacy sales",
-            "Lines 642, 643, 644, 645: Navigation buttons to different sale for cashier pages (Sale 1-4)"
-        ));
-
-        // Register the page metadata
-        pageMetadataRegistry.registerPage(metadata);
-
-        // Register metadata for pharmacy_bill_retail_sale page
-        PageMetadata retailSaleMetadata = new PageMetadata();
-        retailSaleMetadata.setPagePath("pharmacy/pharmacy_bill_retail_sale");
-        retailSaleMetadata.setPageName("Pharmacy Retail Sale (Sale 1)");
-        retailSaleMetadata.setDescription("Main point-of-sale interface for pharmacy retail sales with patient details, multiple payment methods, item selection, and bill management");
-        retailSaleMetadata.setControllerClass("PharmacySaleController");
-
-        // Register configuration options
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Find Last Sale Rate of Medicines in Retail Sale",
-            "Enables the medicine search dialog that allows finding and viewing the last sale rate of any medicine in the pharmacy inventory",
-            "Line 30: Medicine search dialog visibility",
-            OptionScope.APPLICATION
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Medicine Identification Codes Used",
-            "Shows medicine identification codes in the autocomplete dropdown when selecting medicines for retail sale",
-            "Line 170: Code column visibility in autocomplete",
-            OptionScope.APPLICATION
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Enable label printing for pharmacy medicines",
-            "Enables the prescription label printing feature that allows adding dosage instructions and printing medicine labels for patients",
-            "Lines 355, 1255: Instructions column in bill items table and Print Labels button in bill preview",
-            OptionScope.APPLICATION
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Bill Support for Native Printers",
-            "Controls whether to use native printer support or browser-based printing for pharmacy retail sale bills",
-            "Line 1325: Print Bill button rendering (inverted - button shown when config is false)",
-            OptionScope.APPLICATION
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill Paper is POS Paper",
-            "Uses standard POS paper format for printing pharmacy retail sale bills (default format)",
-            "Line 1341: Bill paper format selection for standard POS paper",
-            OptionScope.DEPARTMENT
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill Paper is POS Paper Custom 1",
-            "Uses custom POS paper format version 1 for printing pharmacy retail sale bills",
-            "Line 1351: Bill paper format selection for custom POS paper v1",
-            OptionScope.DEPARTMENT
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header",
-            "Uses 5.5 inch paper format without header space for printing pharmacy retail sale bills",
-            "Line 1355: Bill paper format selection for 5.5 inch paper",
-            OptionScope.DEPARTMENT
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill Paper is POS paper with header",
-            "Uses POS paper with header section for printing pharmacy retail sale bills",
-            "Line 1359: Bill paper format selection for POS with header",
-            OptionScope.DEPARTMENT
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill Paper is Custom 1",
-            "Uses custom paper format 1 for printing pharmacy retail sale bills",
-            "Line 1363: Bill paper format selection for custom format 1",
-            OptionScope.DEPARTMENT
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill Paper is Custom 2",
-            "Uses custom paper format 2 for printing pharmacy retail sale bills",
-            "Line 1367: Bill paper format selection for custom format 2",
-            OptionScope.DEPARTMENT
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill Paper is Custom 3",
-            "Uses custom paper format 3 for printing pharmacy retail sale bills",
-            "Line 1371: Bill paper format selection for custom format 3",
-            OptionScope.DEPARTMENT
-        ));
-
-        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill is PosHeaderPaper",
-            "Uses general POS header paper format for printing pharmacy retail sale bills",
-            "Line 1375: Bill paper format selection for general POS header paper",
-            OptionScope.DEPARTMENT
-        ));
-
-        // Register privileges
-        retailSaleMetadata.addPrivilege(new PrivilegeInfo(
-            "PharmacySale",
-            "Basic access to pharmacy sale pages and ability to create and navigate between different pharmacy sale terminals (Sale 1-4)",
-            "Lines 86-89: Navigation buttons to Sale 1-4 in page header; Lines 1302-1305: Navigation buttons in bill preview"
-        ));
-
-        retailSaleMetadata.addPrivilege(new PrivilegeInfo(
-            "ChangeReceiptPrintingPaperTypes",
-            "Allows administrators to change the paper type configuration for receipt printing (POS paper, custom formats, etc.) via the Settings dialog",
-            "Lines 1293, 1384: Settings button visibility and configuration dialog rendering"
-        ));
-
-        // Register the retail sale page metadata
-        pageMetadataRegistry.registerPage(retailSaleMetadata);
+    public PharmacySaleForCashierController() {
     }
 
     public Token getCurrentToken() {
@@ -465,8 +255,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        prepareForPharmacySaleWithoutStock();
 //        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true";
 //    }
-    
-    @Deprecated // Use the same method in the PharmacySaleForCashierController
     public String navigateToPharmacyBillForCashier() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
@@ -2049,6 +1837,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
 
+        getBillFacade().edit(getPreBill());
     }
 
     private void saveSaleBill() {
@@ -2156,7 +1945,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         calculateRatesForAllBillItemsInPreBill();
 
-        getBillFacade().edit(getPreBill());
     }
 
     private void savePreBillItemsFinally(List<BillItem> list) {
@@ -2213,7 +2001,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         calculateRatesForAllBillItemsInPreBill();
 
-        getBillFacade().edit(getPreBill());
     }
 
     public Staff getToStaff() {
@@ -2634,7 +2421,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
     public void settlePreBill() {
-        configOptionFacade.flush();
         editingQty = null;
 
         if (getPreBill().getBillItems().isEmpty()) {
@@ -4658,8 +4444,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
             try {
                 Long id = Long.valueOf(value);
-                PharmacySaleController controller = (PharmacySaleController) facesContext.getApplication().getELResolver()
-                        .getValue(facesContext.getELContext(), null, "pharmacySaleController");
+                PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
                 if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
                     return controller.getStockDto();
                 }
