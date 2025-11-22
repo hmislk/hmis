@@ -8,6 +8,9 @@
 -- Reason: Rolling back would truncate decimal precision and cause data loss
 -- This is a one-way improvement that should not be reversed
 -- If rollback is absolutely necessary, restore from database backup
+--
+-- PRODUCTION NOTE: This migration may not complete all columns due to MySQL limitations
+-- If any columns remain as decimal(38,0), migration v2.1.2 will complete the fix
 
 -- ==========================================
 -- STEP 1: CORE FINANCIAL VALUE COLUMNS
