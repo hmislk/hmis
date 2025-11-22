@@ -116,7 +116,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+public class PharmacySaleForCashierController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     @Inject
     private UserStockController userStockController;
@@ -240,7 +240,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     /**
      * Creates a new instance of PharmacySaleController
      */
-    public PharmacySaleController() {
+    public PharmacySaleForCashierController() {
     }
 
     public Token getCurrentToken() {
@@ -4446,7 +4446,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
             try {
                 Long id = Long.valueOf(value);
-                PharmacySaleController controller = (PharmacySaleController) facesContext.getApplication().getELResolver()
+                PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
                         .getValue(facesContext.getELContext(), null, "pharmacySaleController");
                 if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
                     return controller.getStockDto();
