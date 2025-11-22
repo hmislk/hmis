@@ -47,7 +47,7 @@
 
                             <!-- Component 1: Without Institution and Site -->
                             <p:selectOneMenu
-                                    
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{searchController.department}"
                                     filterMatchMode="contains"
@@ -60,7 +60,7 @@
                                         itemValue="#{d}" />
                             </p:selectOneMenu>
 
-<!--                             Component 2: With Site Only 
+                            <!-- Component 2: With Site Only -->
                             <p:selectOneMenu
                                     rendered="#{searchController.institution eq null and searchController.site ne null}"
                                     styleClass="w-100 form-control"
@@ -75,7 +75,7 @@
                                         itemValue="#{d}" />
                             </p:selectOneMenu>
 
-                             Component 3: With Institution Only 
+                            <!-- Component 3: With Institution Only -->
                             <p:selectOneMenu
                                     rendered="#{searchController.institution ne null and searchController.site eq null}"
                                     styleClass="w-100 form-control"
@@ -90,7 +90,7 @@
                                         itemValue="#{d}" />
                             </p:selectOneMenu>
 
-                             Component 4: With Both Institution and Site 
+                            <!-- Component 4: With Both Institution and Site -->
                             <p:selectOneMenu
                                     rendered="#{searchController.institution ne null and searchController.site ne null}"
                                     styleClass="w-100 form-control"
@@ -103,7 +103,7 @@
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
-                            </p:selectOneMenu>-->
+                            </p:selectOneMenu>
 
                         </h:panelGroup>
 
