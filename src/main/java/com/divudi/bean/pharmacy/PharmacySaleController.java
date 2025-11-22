@@ -356,6 +356,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        prepareForPharmacySaleWithoutStock();
 //        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true";
 //    }
+    
+    @Deprecated // Use the same method in the PharmacySaleForCashierController
     public String navigateToPharmacyBillForCashier() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
