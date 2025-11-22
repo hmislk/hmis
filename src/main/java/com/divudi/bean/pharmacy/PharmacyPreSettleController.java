@@ -728,7 +728,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
-        getBillFacade().editAndCommit(getPreBill());
     }
 
     /**
@@ -782,7 +781,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             //   getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             getSaleBill().getBillItems().add(newBil);
         }
-        getBillFacade().editAndCommit(getSaleBill());
 
     }
 
@@ -1572,6 +1570,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems();
 
+        // Consolidated edit: Save both SaleBill and PreBill in single transaction
+        getBillFacade().editAndCommit(getSaleBill());
         getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
@@ -1658,6 +1658,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems();
 
+        // Consolidated edit: Save both SaleBill and PreBill in single transaction
+        getBillFacade().editAndCommit(getSaleBill());
         getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
