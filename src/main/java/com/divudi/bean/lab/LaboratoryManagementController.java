@@ -556,6 +556,8 @@ public class LaboratoryManagementController implements Serializable {
         this.sampleSendingDepartment = null;
         this.tempSelectedItems = new ArrayList();
         this.selectedItems = new ArrayList();
+        this.sampleDtos = new ArrayList<>();
+        this.selectedSampleDtos = new ArrayList<>();
     }
 
     public void searchLabBillsForWorkSheet() {
