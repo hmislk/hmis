@@ -306,7 +306,15 @@ public class IncomeRow implements Serializable {
 
         // Set direct properties on the IncomeRow
         if (dto.getTotalCostValue() != null) {
+            System.out.println("=== PRECISION LOSS DETECTED IN REPORT GENERATION ===");
+            System.out.println("Original BigDecimal from BFD: " + dto.getTotalCostValue());
+            System.out.println("Original BigDecimal scale: " + dto.getTotalCostValue().scale());
+            System.out.println("Original BigDecimal toString: " + dto.getTotalCostValue().toString());
+
             this.totalCostValue = dto.getTotalCostValue().doubleValue();
+
+            System.out.println("Converted to double: " + this.totalCostValue);
+            System.out.println("=== END PRECISION LOSS DETECTION ===");
         }
 
         this.bill = bill;

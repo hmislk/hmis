@@ -284,9 +284,9 @@ public class BillItem implements Serializable, RetirableEntity {
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
         //  referanceBillItem=billItem.getReferanceBillItem();
-        // Copy BillItemFinanceDetails if present
-        if (billItem.getBillItemFinanceDetails() != null) {
-            BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
+        // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
+        if (billItem.billItemFinanceDetails != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.billItemFinanceDetails.clone();
             clonedFinanceDetails.setBillItem(this);
             this.setBillItemFinanceDetails(clonedFinanceDetails);
         }
@@ -326,9 +326,12 @@ public class BillItem implements Serializable, RetirableEntity {
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
 
-        BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
-        clonedFinanceDetails.setBillItem(this);
-        this.setBillItemFinanceDetails(clonedFinanceDetails);
+        // Access field directly to avoid auto-creation, then use getter for cloning
+        if (billItem.billItemFinanceDetails != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.billItemFinanceDetails.clone();
+            clonedFinanceDetails.setBillItem(this);
+            this.setBillItemFinanceDetails(clonedFinanceDetails);
+        }
         
         PharmaceuticalBillItem clonedPharmaceuticalBillItem = new PharmaceuticalBillItem();
         clonedPharmaceuticalBillItem.copy(billItem.getPharmaceuticalBillItem());
