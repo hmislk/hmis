@@ -305,7 +305,7 @@
                             title="To Investigations" 
                             class="ui-button-warning"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardInvestigationSearch'))}"
-                            action="#{laboratoryManagementController.navigateToInvestigationsFromSelectedBill(b)}"
+                            action="#{laboratoryManagementController.navigateToDTOInvestigationsFromSelectedBill(b)}"
                             ajax="false" >
                         </p:commandButton>
                         <p:commandButton 
