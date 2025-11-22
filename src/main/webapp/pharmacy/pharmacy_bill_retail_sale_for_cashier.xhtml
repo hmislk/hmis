@@ -35,6 +35,18 @@
                                         </p:selectOneMenu>
                                     </h:panelGroup>
                                     <div class="d-flex gap-2">
+                                        <!-- Admin Configuration Button (only for administrators) -->
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                            <p:commandButton
+                                                value="Config"
+                                                icon="fa fa-cog"
+                                                title="Page Configuration Management"
+                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_for_cashier')}"
+                                                ajax="false"
+                                                class="ui-button-secondary">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
                                         <p:commandButton
                                             value="Back"
                                             class="ui-button-secondary"
