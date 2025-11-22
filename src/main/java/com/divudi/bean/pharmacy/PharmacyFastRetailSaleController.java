@@ -2742,10 +2742,10 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             // Get cost rate from item batch (which is the actual cost for sales)
             BigDecimal costRate = purchaseRate; // default fallback
             if (pharmaItem.getItemBatch() != null) {
-                double batchPurchaseRate = pharmaItem.getItemBatch().getPurcahseRate();
-                if (batchPurchaseRate > 0) {
-                    costRate = BigDecimal.valueOf(batchPurchaseRate);
-                    System.out.println("Got costRate from itemBatch.purcahseRate: " + costRate);
+                Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
+                if (batchCostRate != null && batchCostRate > 0) {
+                    costRate = BigDecimal.valueOf(batchCostRate);
+                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
 
                     // Also update the pharmaceutical bill item with this cost rate
                     pharmaItem.setCostRate(costRate.doubleValue());

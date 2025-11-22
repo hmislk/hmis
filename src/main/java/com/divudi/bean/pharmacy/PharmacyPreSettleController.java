@@ -2541,10 +2541,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             // Calculate stock valuations for this item based on pharmaceutical bill item rates
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
             if (pharmaItem != null) {
-                // Calculate value at cost rate
-                if (pharmaItem.getPurchaseRate() > 0) {
-                    java.math.BigDecimal costRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
-                    java.math.BigDecimal valueAtCostRate = quantity.multiply(costRate);
+                // Calculate value at cost rate - use actual cost rate from ItemBatch
+                Double costRateValue = null;
+                if (pharmaItem.getItemBatch() != null) {
+                    costRateValue = pharmaItem.getItemBatch().getCostRate();
+                }
+                if (costRateValue == null || costRateValue <= 0) {
+                    costRateValue = pharmaItem.getPurchaseRate(); // fallback
+                }
+                if (costRateValue > 0) {
+                    java.math.BigDecimal costRate = java.math.BigDecimal.valueOf(costRateValue);
+                    java.math.BigDecimal valueAtCostRate = quantity.multiply(costRate).negate();
                     itemFinanceDetails.setValueAtCostRate(valueAtCostRate);
                     totalCostValue = totalCostValue.add(valueAtCostRate);
                 }
@@ -2552,7 +2559,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 // Calculate value at purchase rate (same as cost rate for now)
                 if (pharmaItem.getPurchaseRate() > 0) {
                     java.math.BigDecimal purchaseRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
-                    java.math.BigDecimal valueAtPurchaseRate = quantity.multiply(purchaseRate);
+                    java.math.BigDecimal valueAtPurchaseRate = quantity.multiply(purchaseRate).negate();
                     itemFinanceDetails.setValueAtPurchaseRate(valueAtPurchaseRate);
                     totalPurchaseValue = totalPurchaseValue.add(valueAtPurchaseRate);
                 }
@@ -2560,7 +2567,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 // Calculate value at retail rate (based on retail rate)
                 if (pharmaItem.getRetailRate() > 0) {
                     java.math.BigDecimal retailRate = java.math.BigDecimal.valueOf(pharmaItem.getRetailRate());
-                    java.math.BigDecimal valueAtRetailRate = quantity.multiply(retailRate);
+                    java.math.BigDecimal valueAtRetailRate = quantity.multiply(retailRate).negate();
                     itemFinanceDetails.setValueAtRetailRate(valueAtRetailRate);
                     totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetailRate);
                 }
@@ -2572,7 +2579,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
                 if (wholesaleRate > 0) {
                     java.math.BigDecimal wholsaleRateBd = java.math.BigDecimal.valueOf(wholesaleRate);
-                    java.math.BigDecimal valueAtWholesaleRate = quantity.multiply(wholsaleRateBd);
+                    java.math.BigDecimal valueAtWholesaleRate = quantity.multiply(wholsaleRateBd).negate();
                     itemFinanceDetails.setValueAtWholesaleRate(valueAtWholesaleRate);
                     totalWholesaleValue = totalWholesaleValue.add(valueAtWholesaleRate);
                 }
