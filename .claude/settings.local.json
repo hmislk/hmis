@@ -6,7 +6,8 @@
       "Bash(gh auth:*)",
       "Bash(gh repo set-default:*)",
       "Bash(git config:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": [],

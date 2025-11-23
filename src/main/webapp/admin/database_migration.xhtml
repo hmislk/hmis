@@ -139,16 +139,15 @@
                                         </p:dataTable>
 
                                         <div class="mt-3">
-                                            <p:commandButton value="Execute All Pending Migrations"
-                                                             action="#{databaseMigrationController.executeAllPendingMigrations()}"
-                                                             update="migrationForm"
-                                                             class="ui-button-warning"
-                                                             icon="pi pi-play"
-                                                             onclick="return confirm('Are you sure you want to execute all pending migrations? This action cannot be undone easily.')">
-                                                <p:confirm header="Confirm Migration Execution"
-                                                           message="This will execute all pending migrations. Continue?"
-                                                           icon="pi pi-exclamation-triangle" />
-                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnExecuteAll"
+                                                value="Execute All Pending Migrations"
+                                                action="#{databaseMigrationController.executeAllPendingMigrations()}"
+                                                update="migrationForm"
+                                                class="ui-button-warning"
+                                                icon="pi pi-play"
+                                                onclick="return confirm('Are you sure you want to execute all pending migrations? This action cannot be undone easily.');" />
+
                                         </div>
                                     </div>
                                 </div>
@@ -186,7 +185,7 @@
                                             <p:column headerText="Actions">
                                                 <p:commandButton value="View Details"
                                                                  action="#{databaseMigrationController.setSelectedMigration(migration)}"
-                                                                 update="migrationDetailsDialog"
+                                                                 update=":migrationDetailsDialog"
                                                                  oncomplete="PF('migrationDetailsDialog').show()"
                                                                  class="ui-button-secondary ui-button-sm"
                                                                  icon="pi pi-eye" />
@@ -252,59 +251,6 @@
                         </div>
                     </div>
 
-                    <!-- Migration Details Dialog -->
-                    <p:dialog header="Migration Details"
-                              widgetVar="migrationDetailsDialog"
-                              id="migrationDetailsDialog"
-                              modal="true"
-                              width="800"
-                              height="600"
-                              resizable="true">
-                        <h:panelGroup rendered="#{not empty databaseMigrationController.selectedMigration}">
-                            <h:panelGrid columns="2" class="w-100" columnClasses="col-4,col-8">
-                                <h:outputLabel value="Version:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.version}" />
-
-                                <h:outputLabel value="Description:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.description}" />
-
-                                <h:outputLabel value="Author:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.author}" />
-
-                                <h:outputLabel value="Estimated Duration:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.estimatedDurationMinutes} minutes" />
-
-                                <h:outputLabel value="Requires Downtime:" class="fw-bold" />
-                                <span class="badge #{databaseMigrationController.selectedMigration.requiresDowntime ? 'bg-warning' : 'bg-success'}">
-                                    #{databaseMigrationController.selectedMigration.requiresDowntime ? 'Yes' : 'No'}
-                                </span>
-
-                                <h:outputLabel value="Affected Tables:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.affectedTablesDisplay}" />
-
-                                <h:outputLabel value="Affected Modules:" class="fw-bold" />
-                                <h:outputText value="#{databaseMigrationController.selectedMigration.affectedModulesDisplay}" />
-                            </h:panelGrid>
-
-                            <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasPreRequisites()}">
-                                <h6 class="fw-bold">Prerequisites:</h6>
-                                <ul>
-                                    <ui:repeat value="#{databaseMigrationController.selectedMigration.preRequisites}" var="prereq">
-                                        <li>#{prereq}</li>
-                                    </ui:repeat>
-                                </ul>
-                            </h:panelGroup>
-
-                            <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasMigrationSteps()}">
-                                <h6 class="fw-bold">Migration Steps:</h6>
-                                <ol>
-                                    <ui:repeat value="#{databaseMigrationController.selectedMigration.migrationSteps}" var="step">
-                                        <li><strong>#{step.description}</strong></li>
-                                    </ui:repeat>
-                                </ol>
-                            </h:panelGroup>
-                        </h:panelGroup>
-                    </p:dialog>
 
                     <!-- Progress Polling for Active Migrations -->
                     <p:poll interval="2"
@@ -312,6 +258,60 @@
                             rendered="#{databaseMigrationController.migrationInProgress}"
                             autoStart="true" />
                 </h:form>
+
+                <!-- Migration Details Dialog (Outside form for proper component resolution) -->
+                <p:dialog header="Migration Details"
+                          widgetVar="migrationDetailsDialog"
+                          id="migrationDetailsDialog"
+                          modal="true"
+                          width="800"
+                          height="600"
+                          resizable="true">
+                    <h:panelGroup rendered="#{not empty databaseMigrationController.selectedMigration}">
+                        <h:panelGrid columns="2" class="w-100" columnClasses="col-4,col-8">
+                            <h:outputLabel value="Version:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.version}" />
+
+                            <h:outputLabel value="Description:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.description}" />
+
+                            <h:outputLabel value="Author:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.author}" />
+
+                            <h:outputLabel value="Estimated Duration:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.estimatedDurationMinutes} minutes" />
+
+                            <h:outputLabel value="Requires Downtime:" class="fw-bold" />
+                            <span class="badge #{databaseMigrationController.selectedMigration.requiresDowntime ? 'bg-warning' : 'bg-success'}">
+                                #{databaseMigrationController.selectedMigration.requiresDowntime ? 'Yes' : 'No'}
+                            </span>
+
+                            <h:outputLabel value="Affected Tables:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.affectedTablesDisplay}" />
+
+                            <h:outputLabel value="Affected Modules:" class="fw-bold" />
+                            <h:outputText value="#{databaseMigrationController.selectedMigration.affectedModulesDisplay}" />
+                        </h:panelGrid>
+
+                        <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasPreRequisites()}">
+                            <h6 class="fw-bold">Prerequisites:</h6>
+                            <ul>
+                                <ui:repeat value="#{databaseMigrationController.selectedMigration.preRequisites}" var="prereq">
+                                    <li>#{prereq}</li>
+                                </ui:repeat>
+                            </ul>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="mt-3" rendered="#{databaseMigrationController.selectedMigration.hasMigrationSteps()}">
+                            <h6 class="fw-bold">Migration Steps:</h6>
+                            <ol>
+                                <ui:repeat value="#{databaseMigrationController.selectedMigration.migrationSteps}" var="step">
+                                    <li><strong>#{step.description}</strong></li>
+                                </ui:repeat>
+                            </ol>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </p:dialog>
             </ui:define>
         </ui:composition>
     </h:body>
