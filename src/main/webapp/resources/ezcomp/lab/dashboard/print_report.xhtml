@@ -180,8 +180,8 @@
                 <h:panelGrid columns="1" class="w-100">
                     <p:commandButton 
                         ajax="false" 
-                        action="#{laboratoryManagementController.searchPatientReportPrint()}"  
-                        value="Search Patient Reports" 
+                        action="#{laboratoryManagementController.searchPatientReportPrintDTO()}"  
+                        value="Search Patient Reports DTO" 
                         icon="fas fa-file-invoice-dollar" 
                         styleClass="m-1 ui-button-success w-100">
                     </p:commandButton>
@@ -191,10 +191,10 @@
 
             <p:dataTable  
                 class="w-100 mt-3"
-                value="#{laboratoryManagementController.items}" 
-                var="patientInvestigation" 
+                value="#{laboratoryManagementController.investigationDTO}" 
+                var="pi" 
                 paginator="true"
-                rowKey="#{patientInvestigation.id}"
+                rowKey="#{pi.investigationId}"
                 paginatorPosition="bottom"
                 rows="15"
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -206,67 +206,66 @@
                     <p:commandLink 
                         ajax="false" 
                         class="text-primary"
-                        value="#{patientInvestigation.billItem.bill.deptId}" 
-                        action="#{billSearch.navigateToViewOpdBill()}">
-                        <f:setPropertyActionListener value="#{patientInvestigation.billItem.bill}" target="#{billSearch.bill}"/>
+                        value="#{pi.billNumber}">
                     </p:commandLink>
                     <br/>
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.createdAt}">
+                    <h:outputLabel value="#{pi.billDate}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
-                    <br/>
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.patientEncounter ne null}">
-                        <h:outputLabel style="color: #0d6efd;" value="#{patientInvestigation.billItem.bill.patientEncounter.bhtNo}"/>
+                    <h:panelGroup rendered="#{pi.billType eq 'IP'}">
+                        <br/>
+                        <h:outputLabel class="text-primary" value="#{laboratoryCommonController.getBHTNumberFromPatientInvestigationId(pi.investigationId)}"/>
                     </h:panelGroup>
                 </p:column>
 
                 <!-- Patient Details Column with Icons -->
                 <p:column headerText="Patient" style="vertical-align: top;">
                     <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}" />
+                    <h:outputLabel value="#{pi.patientNameWithTitle}" />
                     <br/>
                     <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.ageAsString}" />
+                    <h:outputLabel value="#{pi.patientAge}" />
                     <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
                     <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.sex.label}" />
+                    <h:outputLabel value="#{pi.patientGender}" />
                     <br/>
-                    <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.patient.person.mobile.blank}">
+                    <h:panelGroup rendered="#{!pi.patientMobile.blank}">
                         <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
+                        <h:outputLabel value="#{pi.patientMobile}" />
                     </h:panelGroup>
                 </p:column>
 
                 <!-- Investigation Name Column -->
                 <p:column headerText="Investigation" style="width: 400px; vertical-align: top;">
                     <i class="fas fa-vial text-danger" style="width: 27px;"></i> <!-- Investigation Icon -->
-                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{patientInvestigation.investigation.name}"/>
+                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{pi.itemName}"/>
                     <p:commandLink 
-                        value="#{patientInvestigation.investigation.name}" 
+                        value="#{pi.itemName}"
+                        ajax="false"
                         rendered="#{webUserController.hasPrivilege('Developers')}" 
-                        action="#{investigationController.navigateToManageInvestigation()}">
-                        <f:setPropertyActionListener value="#{patientInvestigation.investigation}" target="#{investigationController.current}"/>
+                        action="#{patientInvestigationController.navigateToManageInvestigation(pi.investigationId)}">
                     </p:commandLink>
                 </p:column>
 
                 <!-- Ordered Institution and Department Column with Icons -->
                 <p:column headerText="Ordered Institute" style="vertical-align: top;">
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre == null}">
+                    <h:panelGroup rendered="#{pi.billType eq 'CC'}">
+                        <i class="fas fa-box text-secondary" style="width: 27px;"></i>
+                        <h:outputLabel value="#{laboratoryCommonController.getCollectingCentrNameFromPatientInvestigationID(pi.investigationId)}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pi.billType ne 'CC'}">
                         <i class="fas fa-hospital text-info" style="width: 27px;"></i> <!-- Institution Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.institution.name}" />
+                        <h:outputLabel value="#{pi.orderedInstitution}" />
                         <br/>
                         <i class="fas fa-building text-primary" style="width: 27px;"></i> <!-- Department Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.department.name}" />
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre != null}">
-                        <i class="fas fa-box text-secondary" style="width: 27px;"></i> <!-- Collecting Centre Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.collectingCentre.name}" />
+                        <h:outputLabel value="#{pi.orderedDepartment}" />
                     </h:panelGroup>
                 </p:column>
 
                 <!-- Samples Column -->
                 <p:column headerText="Sample IDs" style="width:10em; vertical-align: top;">
-                    <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="sample">
+                    <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(pi.investigationId)}" var="sample">
                         <div class="ui-g d-grid" style="margin-bottom: 10px;">
                             <div class="ui-g-6 d-flex">
                                 <i class="fa fa-vial"></i>
@@ -278,41 +277,62 @@
 
                 <!-- Status Column -->
                 <p:column headerText="Status" style="width: 12em; vertical-align: top;">
-                    <h:outputLabel value="#{patientInvestigation.status.label}"/>
+                    <h:panelGroup rendered="#{!pi.itemRefunded and !pi.billCanceled}">
+                        <h:outputLabel value="#{pi.status.label}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pi.itemRefunded or pi.billCanceled}">
+                        <br/>
+                        <p:badge 
+                            value="Item Refunded" 
+                            severity="info"
+                            style="width: 200px;"
+                            rendered="#{pi.itemRefunded}"
+                            styleClass="ui-badge-warning" >
+                        </p:badge>
+
+                        <p:badge 
+                            value="Bill Cancel" 
+                            severity="info"
+                            rendered="#{pi.billCanceled}"
+                            style="width: 200px;"
+                            styleClass="ui-badge-danger" >
+                        </p:badge>
+                    </h:panelGroup>
                 </p:column>
 
                 <!-- Actions Column -->
-                <p:column headerText="Actions" style="width: 270px; vertical-align: top;">
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled}" class=" d-flex justify-content-center">
+                <p:column headerText="Actions" style="width: 370px; vertical-align: top;">
+                    <h:panelGroup rendered="#{pi.billCanceled}" class=" d-flex justify-content-center">
                         <p:badge 
                             value="Bill Cancel" 
-                            class="w-75"
+                            class="w-50"
                             size="large"
                             severity="danger" >
                         </p:badge>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.refunded}" class=" d-flex justify-content-center">
+                    <h:panelGroup rendered="#{pi.itemRefunded}" class=" d-flex justify-content-center">
                         <p:badge 
                             value="Item Refunded"
                             severity="info"
                             size="large"
-                            class="w-75" >
+                            class="w-50" >
                         </p:badge>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.cancelled and !patientInvestigation.billItem.refunded}">
-                        <h:panelGroup rendered="#{!laboratoryManagementController.hasPatientReports(patientInvestigation)}" class=" d-flex justify-content-center">
+                    <h:panelGroup rendered="#{!pi.billCanceled and !pi.itemRefunded}">
+                        <h:panelGroup rendered="#{!laboratoryManagementController.hasPatientReports(pi.investigationId)}" class=" d-flex justify-content-center">
                             <p:badge 
                                 value="Sample Prossesing.." 
                                 severity="warning"
                                 size="large"
-                                class="w-100">
+                                class="w-50">
                             </p:badge>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(patientInvestigation)}">
-                            <ui:repeat value="#{laboratoryManagementController.patientReports(patientInvestigation)}" var="dpr">
+                        <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(pi.investigationId)}">
+                            <ui:repeat value="#{laboratoryManagementController.patientReports(pi.investigationId)}" var="dpr">
                                 <div class="d-flex justify-content-between">
                                     <div class="d-flex gap-2 mb-2">
 
@@ -339,10 +359,6 @@
                                             class="mt-2"
                                             rendered="#{!dpr.approved}">
                                         </p:badge>
-
-                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers') and dpr.approved}" style="float: right;" >
-                                            <a target="_blank" href="#{dpr.qrCodeContentsLink}" class="fa fa-link fa-xl mt-3"  title="SMS Link"></a>
-                                        </h:panelGroup>
 
                                     </div>
 
