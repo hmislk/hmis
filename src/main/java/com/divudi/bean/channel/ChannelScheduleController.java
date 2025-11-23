@@ -1916,12 +1916,8 @@ public class ChannelScheduleController implements Serializable {
 
         if (fees != null) {
             for (ItemFee fee : fees) {
-                if (fee.getFee() != null) {
-                    total += fee.getFee();
-                }
-                if (fee.getFfee() != null) {
-                    totalForForeigner += fee.getFfee();
-                }
+                total += fee.getFee();
+                totalForForeigner += fee.getFfee();
             }
         }
 
