@@ -1822,13 +1822,10 @@ public class ChannelScheduleController implements Serializable {
                 + "LEFT JOIN ss.department d "
                 + "WHERE f.retired = false "
                 + "AND ss.retired = false "
-                + "AND f.feeType = :feeType "
+                + "AND f.feeType = com.divudi.core.data.FeeType.OwnInstitution "
                 + "ORDER BY st.person.name, ss.sessionWeekday, ss.name";
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("feeType", FeeType.OwnInstitution);
-
-        hospitalFeeDTOs = feeFacade.findByJpql(jpql, params, TemporalType.DATE);
+        hospitalFeeDTOs = (List<ChannelHospitalFeeDTO>) itemFeeFacade.findLightsByJpql(jpql);
 
         if (hospitalFeeDTOs == null) {
             hospitalFeeDTOs = new ArrayList<>();
@@ -1867,7 +1864,7 @@ public class ChannelScheduleController implements Serializable {
 
         int updatedCount = 0;
         for (ChannelHospitalFeeDTO dto : selectedFees) {
-            ItemFee itemFee = feeFacade.find(dto.getItemFeeId());
+            ItemFee itemFee = itemFeeFacade.find(dto.getItemFeeId());
             if (itemFee != null) {
                 if (newHospitalFee != null) {
                     itemFee.setFee(newHospitalFee);
@@ -1879,7 +1876,7 @@ public class ChannelScheduleController implements Serializable {
                 }
                 itemFee.setEditer(sessionController.getLoggedUser());
                 itemFee.setEditedAt(new Date());
-                feeFacade.edit(itemFee);
+                itemFeeFacade.edit(itemFee);
                 updatedCount++;
             }
         }
