@@ -9,6 +9,11 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.store.StoreIssueController;
@@ -64,6 +69,7 @@ import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.TemporalType;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -98,6 +104,176 @@ public class PharmacyIssueController implements Serializable {
      * Creates a new instance of PharmacySaleController
      */
     public PharmacyIssueController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_issue");
+        metadata.setPageName("Pharmacy Disposal Issue");
+        metadata.setDescription("Direct issue of pharmacy items (medicines/devices) as disposal to departments");
+        metadata.setControllerClass("PharmacyIssueController");
+
+        // Configuration Options - Rate and Value Display
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Consumption - Show Rate and Value",
+            "Controls visibility of purchase rate, retail rate, cost rate, and their corresponding values in autocomplete dropdown, input fields, bill items table, and totals section",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Print Formats
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy DIsposal Issue Receipt is A4 Paper",
+            "Uses A4 paper format for disposal issue receipts (default format)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy DIsposal Issue Receipt is Custom 1",
+            "Uses Custom format 1 for disposal issue receipts",
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy DIsposal Issue Receipt is Custom 2",
+            "Uses Custom format 2 for disposal issue receipts",
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        // Configuration Options - Search Settings
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Search Items by Item Code",
+            "Enables searching for items by their code in autocomplete fields",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Search Items by Generic Name",
+            "Enables searching for items by their generic name in autocomplete fields",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Restrict Consumption to Stock Availability",
+            "Restricts item selection to only items with available stock",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Bill Number Generation Strategies
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: Prefix-DeptCode-InstCode-Year-Number (e.g., PDI-PHARM-001-2024-0001)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers in format: Prefix-InstCode-DeptCode-Year-Number (e.g., PDI-001-PHARM-2024-0001)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: Prefix-InstCode-Year-Number (e.g., PDI-001-2024-0001) - institution-wide counter",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department",
+            "Generates separate bill number sequences based on the logged-in user's department",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department",
+            "Generates separate bill number sequences based on the department receiving the issue",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination",
+            "Generates separate bill number sequences based on the combination of logged and issuing departments",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Business Logic
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add quantity from multiple batches in pharmacy disposal issue",
+            "Allows adding quantities from multiple batches of the same item to a single bill line",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disposal is by Purchase Rate",
+            "Uses purchase rate for calculating disposal issue values (default rate type)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disposal is by Cost Rate",
+            "Uses cost rate for calculating disposal issue values",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Disposal is by Retail Rate",
+            "Uses retail rate for calculating disposal issue values",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add the Institution Code to the Bill Number Generator",
+            "Includes institution code in the generated bill numbers",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management - displays the Config button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ConsumptionViewRates",
+            "Permission to view purchase rates, retail rates, cost rates, and their corresponding values throughout the disposal issue interface"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to access printer configuration settings dialog for changing disposal issue receipt paper formats"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     @Inject
@@ -136,6 +312,8 @@ public class PharmacyIssueController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private StockController stockController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     @EJB
     private CashTransactionBean cashTransactionBean;
@@ -177,24 +355,6 @@ public class PharmacyIssueController implements Serializable {
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
 
-    public static class ConfigOptionInfo {
-
-        private final String key;
-        private final String defaultValue;
-
-        public ConfigOptionInfo(String key, String defaultValue) {
-            this.key = key;
-            this.defaultValue = defaultValue;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getDefaultValue() {
-            return defaultValue;
-        }
-    }
 
     public void makeNull() {
         selectedAlternative = null;
@@ -1696,9 +1856,9 @@ public class PharmacyIssueController implements Serializable {
 
     public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
         List<ConfigOptionInfo> list = new ArrayList<>();
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Purchase Rate", "true"));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Cost Rate", "false"));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Retail Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Purchase Rate", "Uses purchase rate for calculating pharmacy issue values (default rate type)", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Cost Rate", "Uses cost rate for calculating pharmacy issue values", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Retail Rate", "Uses retail rate for calculating pharmacy issue values", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
         return list;
     }
 

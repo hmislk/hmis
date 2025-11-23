@@ -79,6 +79,33 @@ public void init() {
 
 ### Step 4: Implement registerPageMetadata() Method
 
+🚨 **CRITICAL: ConfigOptionInfo Constructor Options** 🚨
+
+The `ConfigOptionInfo` class provides **TWO constructor options**. Choose the one that fits your needs:
+
+#### Option 1: 4-Parameter Constructor (Detailed Documentation)
+```java
+new ConfigOptionInfo(
+    "Configuration Key Name",           // Config key (exact match required)
+    "Description of what this config does",  // Human-readable description
+    "Line XXX: Where it's used in XHTML",   // Usage location for developers
+    OptionScope.APPLICATION             // Scope (APPLICATION/DEPARTMENT/USER)
+)
+```
+
+#### Option 2: 3-Parameter Constructor (Convenience - No Usage Location)
+```java
+new ConfigOptionInfo(
+    "Configuration Key Name",           // Config key (exact match required)
+    "Description of what this config does",  // Human-readable description
+    OptionScope.APPLICATION             // Scope (APPLICATION/DEPARTMENT/USER)
+)
+```
+
+⚠️ **NEVER create your own ConfigOptionInfo class!** Always use `com.divudi.core.data.admin.ConfigOptionInfo`
+
+#### Complete Implementation Example
+
 ```java
 /**
  * Register page metadata for the admin interface
@@ -94,7 +121,7 @@ private void registerPageMetadata() {
     metadata.setDescription("Description of what this page does");
     metadata.setControllerClass("YourControllerClassName");
 
-    // Register configuration options
+    // Register configuration options - USE 4-PARAMETER FOR DETAILED TRACKING
     metadata.addConfigOption(new ConfigOptionInfo(
         "Configuration Key Name",
         "Description of what this configuration does",
@@ -102,15 +129,14 @@ private void registerPageMetadata() {
         OptionScope.APPLICATION  // or OptionScope.DEPARTMENT or OptionScope.USER
     ));
 
-    // Add more configuration options as needed
+    // OR USE 3-PARAMETER FOR SIMPLER IMPLEMENTATION
     metadata.addConfigOption(new ConfigOptionInfo(
         "Another Config Key",
-        "Description",
-        "Line YYY: Usage location",
+        "Description of what this configuration does",
         OptionScope.APPLICATION
     ));
 
-    // Register privileges
+    // Register privileges - PrivilegeInfo uses different constructor pattern
     metadata.addPrivilege(new PrivilegeInfo(
         "PrivilegeName",
         "Description of what this privilege controls",
@@ -348,25 +374,116 @@ List<PageMetadata> allPages = pageMetadataRegistry.getAllPages();
 boolean isRegistered = pageMetadataRegistry.isPageRegistered("module/example_page");
 ```
 
-## Troubleshooting
+## 🚨 CRITICAL ERROR PREVENTION & TROUBLESHOOTING 🚨
 
-### Admin Button Not Showing
+### 🛑 COMPILATION ERRORS - MOST COMMON ISSUES
+
+#### Error: "constructor ConfigOptionInfo cannot be applied to given types"
+
+**CAUSE**: Using wrong number of parameters or creating local ConfigOptionInfo class
+
+**SOLUTIONS**:
+1. **✅ Use the correct core class**: Always import `com.divudi.core.data.admin.ConfigOptionInfo`
+2. **✅ Choose the right constructor**:
+   - 3-parameter: `new ConfigOptionInfo(key, description, scope)`
+   - 4-parameter: `new ConfigOptionInfo(key, description, usageLocation, scope)`
+3. **❌ NEVER**: Create your own inner ConfigOptionInfo class
+4. **❌ NEVER**: Use 2-parameter constructor (doesn't exist in core class)
+
+**Example of WRONG approach**:
+```java
+// ❌ WRONG - Don't create inner class
+public static class ConfigOptionInfo {
+    // This causes type conflicts!
+}
+
+// ❌ WRONG - 2-parameter constructor doesn't exist
+new ConfigOptionInfo("key", "defaultValue")
+```
+
+**Example of CORRECT approach**:
+```java
+// ✅ CORRECT - Use core class with 3 parameters
+import com.divudi.core.data.admin.ConfigOptionInfo;
+
+new ConfigOptionInfo("key", "description", OptionScope.APPLICATION)
+
+// ✅ CORRECT - Use core class with 4 parameters
+new ConfigOptionInfo("key", "description", "usage location", OptionScope.APPLICATION)
+```
+
+#### Error: "incompatible types: cannot be converted to ConfigOptionInfo"
+
+**CAUSE**: Type conflict between local class and core class
+
+**SOLUTION**: Remove any local ConfigOptionInfo class and use only the core class
+
+#### Error: "PageMetadataRegistry cannot be resolved"
+
+**CAUSE**: Missing import or injection
+
+**SOLUTION**:
+```java
+import com.divudi.bean.common.PageMetadataRegistry;
+
+@Inject
+PageMetadataRegistry pageMetadataRegistry;
+```
+
+### 🔧 RUNTIME ERRORS
+
+#### Admin Button Not Showing
 
 1. **Check privilege**: User must have 'Admin' privilege
 2. **Check registration**: Verify page is registered in controller's @PostConstruct
 3. **Check XHTML**: Ensure admin button code is added to the page
+4. **Check imports**: Verify all required imports are present
 
-### Metadata Not Showing
+#### Metadata Not Showing
 
-1. **Check injection**: Ensure `PageMetadataRegistry` is properly injected
+1. **Check injection**: Ensure `PageMetadataRegistry` is properly injected with `@Inject`
 2. **Check null check**: Verify the null check in `registerPageMetadata()`
 3. **Check page path**: Ensure page path matches exactly (case-sensitive)
+4. **Check @PostConstruct**: Ensure `registerPageMetadata()` is called during initialization
 
-### Configuration Values Not Displaying
+#### Configuration Values Not Displaying
 
-1. **Check config key**: Ensure configuration key matches exactly
-2. **Check scope**: Verify the correct scope is used
+1. **Check config key**: Ensure configuration key matches exactly (case-sensitive)
+2. **Check scope**: Verify the correct scope is used (APPLICATION/DEPARTMENT/USER)
 3. **Check application settings**: Verify configuration exists in database
+4. **Check constructor parameters**: Verify using correct parameter order
+
+### 🔍 VALIDATION CHECKLIST
+
+Before implementing, verify:
+
+- [ ] **Imports Complete**: All required imports added
+  ```java
+  import com.divudi.bean.common.PageMetadataRegistry;
+  import com.divudi.core.data.OptionScope;
+  import com.divudi.core.data.admin.ConfigOptionInfo;
+  import com.divudi.core.data.admin.PageMetadata;
+  import com.divudi.core.data.admin.PrivilegeInfo;
+  import javax.annotation.PostConstruct;
+  ```
+
+- [ ] **Injection Correct**: PageMetadataRegistry properly injected
+  ```java
+  @Inject
+  PageMetadataRegistry pageMetadataRegistry;
+  ```
+
+- [ ] **Constructor Choice**: Using correct ConfigOptionInfo constructor
+  - 3-parameter: `(key, description, scope)`
+  - 4-parameter: `(key, description, usageLocation, scope)`
+
+- [ ] **No Local Classes**: No local ConfigOptionInfo class created
+
+- [ ] **PostConstruct Present**: @PostConstruct method calls registerPageMetadata()
+
+- [ ] **Null Check**: Proper null check for pageMetadataRegistry
+
+- [ ] **Page Path Accurate**: Page path matches exactly (case-sensitive)
 
 ## Maintenance
 
