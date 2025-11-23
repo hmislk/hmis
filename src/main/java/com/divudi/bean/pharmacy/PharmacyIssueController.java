@@ -341,10 +341,23 @@ public class PharmacyIssueController implements Serializable {
 
         private final String key;
         private final String defaultValue;
+        private final String description;
+        private final OptionScope scope;
 
+        // Original 2-parameter constructor for backward compatibility
         public ConfigOptionInfo(String key, String defaultValue) {
             this.key = key;
             this.defaultValue = defaultValue;
+            this.description = null;
+            this.scope = null;
+        }
+
+        // New 3-parameter constructor with description and scope
+        public ConfigOptionInfo(String key, String description, OptionScope scope) {
+            this.key = key;
+            this.defaultValue = "false"; // Default value for configuration options
+            this.description = description;
+            this.scope = scope;
         }
 
         public String getKey() {
@@ -353,6 +366,14 @@ public class PharmacyIssueController implements Serializable {
 
         public String getDefaultValue() {
             return defaultValue;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public OptionScope getScope() {
+            return scope;
         }
     }
 
