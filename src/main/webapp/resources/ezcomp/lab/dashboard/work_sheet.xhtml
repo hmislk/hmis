@@ -288,7 +288,6 @@
                             icon="fa-regular fa-rectangle-list"
                             value="To WorkSheet" 
                             class="ui-button-warning"
-                            disabled="#{b.status eq 'ORDERED' or b.status eq 'SAMPLE_GENERATED' or b.status eq 'SAMPLE_COLLECTED' or b.status eq 'SAMPLE_SENT' or b.status eq 'SAMPLE_REJECTED'}"
                             action="#{laboratoryManagementController.navigateToPrintWorkSheetFromSelectedBill(b)}"
                             ajax="false" >
                         </p:commandButton>
