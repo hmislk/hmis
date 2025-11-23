@@ -1,0 +1,15 @@
+Need to Manage all the utilized Configuration Options and Privileges for a Page
+
+Start from the Feature Branch, not from the Development
+
+Feature Branch Name : [Fill it here. If not give, request before starting]
+
+Find the following documents with details instructions
+
+/developer_docs/admin/config-button-implementation-guide.md
+/developer_docs/admin/page-configuration-tracking.md
+
+FOllow that guidelines and add the Config button to the following pages
+[Fill at least one or more pages here. If not listed, ask for the pages before starting]
+
+
