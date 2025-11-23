@@ -1486,49 +1486,49 @@ public class TransferReceiveController implements Serializable {
         receiveMetadata.setControllerClass("TransferReceiveController");
 
         // Configuration Options
-        receiveMetadata.addConfigOption(new ConfigOptionInfo(
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
             "Report Font Size of Item List in Pharmacy Disbursement Reports",
             "Sets the font size for item lists in pharmacy disbursement reports",
             "Line 41 (XHTML): DataTable font size styling",
             OptionScope.APPLICATION
         ));
 
-        receiveMetadata.addConfigOption(new ConfigOptionInfo(
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
             "Pharmacy Transfer Receive Receipt is A4",
             "Uses A4 paper format for transfer receive receipts",
             "Line 232 (XHTML): Receipt format selection",
             OptionScope.APPLICATION
         ));
 
-        receiveMetadata.addConfigOption(new ConfigOptionInfo(
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
             "Pharmacy Transfer Receive Bill is Template",
             "Uses template format for transfer receive bills",
             "Line 240 (XHTML): Bill format selection",
             OptionScope.APPLICATION
         ));
 
-        receiveMetadata.addConfigOption(new ConfigOptionInfo(
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
             "Pharmacy Transfer Receive Receipt is Letter Paper Custom 1",
             "Uses custom letter paper format for transfer receive receipts",
             "Line 246 (XHTML): Receipt format selection",
             OptionScope.APPLICATION
         ));
 
-        receiveMetadata.addConfigOption(new ConfigOptionInfo(
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
             "Pharmacy Transfer Receive Receipt is A4 Detailed",
             "Uses detailed A4 paper format for transfer receive receipts",
             "Line 252 (XHTML): Receipt format selection",
             OptionScope.APPLICATION
         ));
 
-        receiveMetadata.addConfigOption(new ConfigOptionInfo(
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
             "Pharmacy Transfer Receive Receipt is A4 Custom 1",
             "Uses A4 Custom Format 1 for transfer receive receipts",
             "Line 258 (XHTML): Receipt format selection",
             OptionScope.APPLICATION
         ));
 
-        receiveMetadata.addConfigOption(new ConfigOptionInfo(
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
             "Pharmacy Transfer Receive Receipt is A4 Custom 2",
             "Uses A4 Custom Format 2 for transfer receive receipts",
             "Line 264 (XHTML): Receipt format selection",
