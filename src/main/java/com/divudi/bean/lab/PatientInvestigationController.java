@@ -165,6 +165,8 @@ public class PatientInvestigationController implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     LimsMiddlewareController limsMiddlewareController;
+    @Inject
+    InvestigationController investigationController;
 
     /**
      * Class Variables
@@ -305,6 +307,21 @@ public class PatientInvestigationController implements Serializable {
             sampleComponentName += "  ";
         }
         return sampleComponentName;
+    }
+    
+    public String navigateToManageInvestigation(Long patientInvestigationId) {
+        if(patientInvestigationId == null){
+            JsfUtil.addErrorMessage("Error in ID");
+            return "";
+        }
+        PatientInvestigation pi = ejbFacade.findWithoutCache(patientInvestigationId);
+        if(pi == null){
+            JsfUtil.addErrorMessage("PatientInvestigation is Null");
+            return "";
+        }
+        investigationController.setCurrent(pi.getInvestigation());
+        
+        return "/admin/lims/investigation?faces-redirect=true";
     }
 
     public String navigateToSampleSeparate() {
