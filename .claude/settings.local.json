@@ -7,7 +7,12 @@
       "Bash(gh repo set-default:*)",
       "Bash(git config:*)",
       "Bash(mysql:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(gh api:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr close:*)",
+      "Bash(gh pr reopen:*)"
     ],
     "deny": [],
     "ask": [],
