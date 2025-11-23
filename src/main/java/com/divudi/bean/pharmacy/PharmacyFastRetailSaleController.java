@@ -1678,12 +1678,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
         // Update BillFinanceDetails for retail sale to ensure proper report data
         if (getSaleBill() != null) {
-            pharmacyCostingService.updateBillFinanceDetailsForRetailSale(getSaleBill());
+            updateRetailSaleFinanceDetails(getSaleBill());
             getBillFacade().edit(getSaleBill());
-
-            // Calculate and record comprehensive financial details for retail sale
-            System.out.println("=== Calculating comprehensive financial details for retail sale ===");
-            calculateAndRecordCostingValues(getSaleBill());
         }
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
@@ -2664,33 +2660,23 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
      *
      * @param bill The retail sale bill to calculate financial details for
      */
-    private void calculateAndRecordCostingValues(Bill bill) {
-        System.out.println("=== calculateAndRecordCostingValues START (Retail Sale) ===");
-        System.out.println("Bill ID: " + (bill != null ? bill.getId() : "null"));
-        System.out.println("Bill Type: " + (bill != null ? bill.getBillTypeAtomic() : "null"));
+    /**
+     * Comprehensive method to update retail sale finance details for bill and bill items.
+     * Combines functionality from updateBillFinanceDetailsForRetailSale and calculateAndRecordCostingValues
+     * with simplified retail-only calculations and proper cost rate handling.
+     */
+    public void updateRetailSaleFinanceDetails(Bill bill) {
+        System.out.println("=== Starting updateRetailSaleFinanceDetails ===");
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             System.out.println("Early return - no bill or bill items");
             return;
         }
 
-        System.out.println("Number of bill items: " + bill.getBillItems().size());
-
-        // Initialize bill finance details if not present (should already exist from service call)
-        if (bill.getBillFinanceDetails() == null) {
-            BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
-            billFinanceDetails.setBill(bill);
-            bill.setBillFinanceDetails(billFinanceDetails);
-            System.out.println("Created new BillFinanceDetails for bill");
-        } else {
-            System.out.println("BillFinanceDetails already exists for bill");
-        }
-
         // Initialize bill-level totals
-        BigDecimal totalCostValue = BigDecimal.ZERO;
-        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
         BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
-        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
         BigDecimal totalQuantity = BigDecimal.ZERO;
         BigDecimal totalFreeQuantity = BigDecimal.ZERO;
 
@@ -2708,7 +2694,148 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 continue;
             }
 
-            // Initialize bill item finance details if not present
+            // Get pharmaceutical bill item for rate information
+            PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
+            if (pharmaItem == null) {
+                System.out.println("Skipping - no pharmaceutical bill item");
+                continue;
+            }
+
+            // Get quantities
+            BigDecimal qty = BigDecimal.valueOf(billItem.getQty());
+            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty());
+            BigDecimal totalQty = qty.add(freeQty);
+            System.out.println("Quantities - qty: " + qty + ", freeQty: " + freeQty + ", totalQty: " + totalQty);
+
+            // Get rates from pharmaceutical bill item
+            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+            BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
+
+            System.out.println("Pharma rates - retail: " + retailRate + ", purchase: " + purchaseRate + ", wholesale: " + wholesaleRate);
+
+            // Get cost rate from item batch (correct approach) with fallback to purchase rate
+            BigDecimal costRate = purchaseRate; // default fallback
+            if (pharmaItem.getItemBatch() != null) {
+                Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
+                if (batchCostRate != null && batchCostRate > 0) {
+                    costRate = BigDecimal.valueOf(batchCostRate);
+                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
+                } else {
+                    System.out.println("ItemBatch costRate is null or negative, using pharma purchaseRate: " + costRate);
+                }
+            } else {
+                System.out.println("No itemBatch found, using pharma purchaseRate: " + costRate);
+            }
+
+            // Get BillItemFinanceDetails (note: getBillItemFinanceDetails() auto-creates if null)
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            System.out.println("BillItemFinanceDetails for item - ID: " + bifd.getId() + " (will be null if newly created)");
+
+            // Calculate absolute quantity for calculations
+            BigDecimal absQty = qty.abs();
+
+            // UPDATE RATE FIELDS in BillItemFinanceDetails
+            bifd.setLineNetRate(BigDecimal.valueOf(billItem.getNetRate()));
+            bifd.setGrossRate(BigDecimal.valueOf(billItem.getRate()));
+            bifd.setLineGrossRate(BigDecimal.valueOf(billItem.getRate()));
+            bifd.setBillCostRate(BigDecimal.ZERO); // Set to 0 as per user requirement
+            bifd.setTotalCostRate(costRate);
+            bifd.setLineCostRate(costRate);
+            bifd.setCostRate(costRate);
+            bifd.setPurchaseRate(purchaseRate);
+            bifd.setRetailSaleRate(retailRate);
+
+            System.out.println("Set rates - costRate: " + costRate.doubleValue() + ", purchaseRate: " + purchaseRate.doubleValue() + ", retailSaleRate: " + retailRate.doubleValue());
+
+            // UPDATE TOTAL FIELDS in BillItemFinanceDetails
+            bifd.setLineGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+            bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+
+            // SIMPLIFIED RETAIL SALE CALCULATIONS (positive values for retail sales)
+            BigDecimal itemCostValue = costRate.multiply(absQty);
+            BigDecimal itemRetailValue = retailRate.multiply(totalQty); // Include free quantity
+            BigDecimal itemPurchaseValue = purchaseRate.multiply(totalQty); // Include free quantity
+
+            // UPDATE COST VALUES in BillItemFinanceDetails
+            bifd.setLineCost(itemCostValue);
+            bifd.setBillCost(BigDecimal.ZERO); // Set to 0 as per user requirement
+            bifd.setTotalCost(itemCostValue);
+
+            System.out.println("Cost values: lineCost: " + bifd.getLineCost() + ", totalCost: " + bifd.getTotalCost());
+
+            // UPDATE VALUE FIELDS in BillItemFinanceDetails (for retail sales, use totalQty including free)
+            bifd.setValueAtCostRate(costRate.multiply(totalQty));
+            bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty));
+            bifd.setValueAtRetailRate(retailRate.multiply(totalQty));
+
+            System.out.println("BIFD values: valueAtCostRate: " + bifd.getValueAtCostRate()
+                    + ", valueAtPurchaseRate: " + bifd.getValueAtPurchaseRate()
+                    + ", valueAtRetailRate: " + bifd.getValueAtRetailRate());
+
+            // UPDATE QUANTITIES in BillItemFinanceDetails
+            bifd.setQuantity(qty);
+            bifd.setQuantityByUnits(qty);
+
+            // UPDATE PHARMACEUTICAL BILL ITEM VALUES
+            pharmaItem.setCostRate(costRate.doubleValue());
+            pharmaItem.setCostValue(itemCostValue.doubleValue());
+            pharmaItem.setRetailValue(itemRetailValue.doubleValue());
+            pharmaItem.setPurchaseValue(itemPurchaseValue.doubleValue());
+
+            System.out.println("PBI values: costValue: " + pharmaItem.getCostValue()
+                    + ", retailValue: " + pharmaItem.getRetailValue()
+                    + ", purchaseValue: " + pharmaItem.getPurchaseValue());
+
+            // Accumulate bill-level totals
+            totalCostValue = totalCostValue.add(itemCostValue);
+            totalPurchaseValue = totalPurchaseValue.add(itemPurchaseValue);
+            totalRetailSaleValue = totalRetailSaleValue.add(itemRetailValue);
+            totalQuantity = totalQuantity.add(qty);
+            totalFreeQuantity = totalFreeQuantity.add(freeQty);
+
+            System.out.println("Item " + itemIndex + " processing complete");
+        }
+
+        // UPDATE BILL-LEVEL FINANCE DETAILS (check if auto-creation happens here too)
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            System.out.println("WARNING: BillFinanceDetails missing for bill ID " + bill.getId() + " - creating new one");
+            bfd = new BillFinanceDetails();
+            bfd.setBill(bill);
+            bill.setBillFinanceDetails(bfd);
+            System.out.println("Created new BillFinanceDetails for bill");
+        } else {
+            System.out.println("BillFinanceDetails for bill - ID: " + bfd.getId());
+        }
+
+        // Set basic totals from bill
+        bfd.setNetTotal(BigDecimal.valueOf(bill.getNetTotal()));
+        bfd.setGrossTotal(BigDecimal.valueOf(bill.getTotal()));
+
+        // Set calculated totals
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalFreeQuantity(totalFreeQuantity);
+
+        System.out.println("Bill totals - netTotal: " + bfd.getNetTotal()
+                + ", grossTotal: " + bfd.getGrossTotal()
+                + ", totalCostValue: " + bfd.getTotalCostValue()
+                + ", totalPurchaseValue: " + bfd.getTotalPurchaseValue()
+                + ", totalRetailSaleValue: " + bfd.getTotalRetailSaleValue()
+                + ", totalQuantity: " + bfd.getTotalQuantity()
+                + ", totalFreeQuantity: " + bfd.getTotalFreeQuantity());
+
+        System.out.println("=== Completed updateRetailSaleFinanceDetails ===");
+    }
+
+    // ========= OLD METHOD FRAGMENTS BELOW - TO BE REMOVED IN FUTURE CLEANUP =========
+    // The functionality below has been replaced by updateRetailSaleFinanceDetails()
+    /*
+    private void OLD_calculateAndRecordCostingValues_FRAGMENTS() {
             if (billItem.getBillItemFinanceDetails() == null) {
                 BillItemFinanceDetails itemFinanceDetails = new BillItemFinanceDetails();
                 itemFinanceDetails.setBillItem(billItem);
@@ -2742,10 +2869,10 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             // Get cost rate from item batch (which is the actual cost for sales)
             BigDecimal costRate = purchaseRate; // default fallback
             if (pharmaItem.getItemBatch() != null) {
-                double batchPurchaseRate = pharmaItem.getItemBatch().getPurcahseRate();
-                if (batchPurchaseRate > 0) {
-                    costRate = BigDecimal.valueOf(batchPurchaseRate);
-                    System.out.println("Got costRate from itemBatch.purcahseRate: " + costRate);
+                Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
+                if (batchCostRate != null && batchCostRate > 0) {
+                    costRate = BigDecimal.valueOf(batchCostRate);
+                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
 
                     // Also update the pharmaceutical bill item with this cost rate
                     pharmaItem.setCostRate(costRate.doubleValue());
@@ -2848,45 +2975,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                              ", retail: " + totalRetailSaleValue + ", quantity: " + totalQuantity);
 
             // Save bill item finance details using JPA cascade persistence
-            if (billItem.getBillItemFinanceDetails().getId() == null) {
-                System.out.println("BillItemFinanceDetails is new (id == null) - will be saved via cascade");
-            } else {
-                System.out.println("BillItemFinanceDetails exists, calling billItemFacade.edit()");
-                billItemFacade.edit(billItem);
-            }
-        }
 
-        System.out.println("=== Finished processing all bill items ===");
 
-        // Update bill-level finance details with negative stock valuations
-        System.out.println("Updating BillFinanceDetails with negative stock valuations...");
-        BillFinanceDetails bfd = bill.getBillFinanceDetails();
 
-        // Override the existing positive values with negative ones (stock going out)
-        bfd.setTotalCostValue(totalCostValue); // Negative
-        bfd.setTotalPurchaseValue(totalPurchaseValue); // Negative
-        bfd.setTotalRetailSaleValue(totalRetailSaleValue); // Negative
-        bfd.setTotalWholesaleValue(totalWholesaleValue); // Negative
 
-        // Set missing quantity totals needed for pharmacy income reports
-        bfd.setTotalQuantity(totalQuantity);
-        bfd.setTotalFreeQuantity(totalFreeQuantity);
-
-        // Keep existing net and gross totals (these should remain positive)
-        System.out.println("Final BillFinanceDetails totals - cost: " + totalCostValue +
-                         ", purchase: " + totalPurchaseValue + ", retail: " + totalRetailSaleValue +
-                         ", quantity: " + totalQuantity + ", netTotal: " + bill.getNetTotal());
-
-        // Save bill finance details
-        if (bill.getBillFinanceDetails().getId() == null) {
-            System.out.println("BillFinanceDetails is new (id == null) - will be saved via cascade");
-        } else {
-            System.out.println("BillFinanceDetails exists, calling billFacade.edit()");
-            billFacade.edit(bill);
-        }
-
-        System.out.println("=== calculateAndRecordCostingValues COMPLETE (Retail Sale) ===");
-    }
+    } // END OLD METHOD FRAGMENTS - TO BE REMOVED
+    */
 
     @FacesConverter("stockDtoConverter")
     public static class StockDtoConverter implements Converter {
