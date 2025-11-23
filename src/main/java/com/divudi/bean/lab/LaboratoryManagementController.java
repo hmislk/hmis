@@ -426,7 +426,7 @@ public class LaboratoryManagementController implements Serializable {
     
     public void navigateToPatientReportsFromSelectedInvestigation(Long patientInvestigationId) {
         if(patientInvestigationId == null){
-            JsfUtil.addErrorMessage("Errorin PatientInvestigation ID");
+            JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
             return ;
         }
         PatientInvestigation pi = patientInvestigationFacade.findWithoutCache(patientInvestigationId);
@@ -438,7 +438,7 @@ public class LaboratoryManagementController implements Serializable {
     
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigationDTO dto) {
         if(dto == null){
-            JsfUtil.addErrorMessage("Errorin PatientInvestigation ID");
+            JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
             return ;
         }
         investigationDTO = new ArrayList<>();
@@ -1437,11 +1437,6 @@ public class LaboratoryManagementController implements Serializable {
 
             JsfUtil.addSuccessMessage("Selected Samples Collected");
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.collectSamples", sessionController.getLoggedUser());
-    }
-
-    public void test() {
-        System.out.println("Sample DTO = " + sampleDtos);
-        System.out.println("Selected DTO = " + selectedSampleDtos);
     }
 
     public void collectDTOSamples() {
@@ -2630,7 +2625,7 @@ public class LaboratoryManagementController implements Serializable {
                     + " COALESCE(r.patientInvestigation.billItem.bill.deptId, ''), "
                     + " r.patientInvestigation.billItem.bill.createdAt, "
                     + " COALESCE(r.patientInvestigation.billItem.bill.patient.id, 0 ), "
-                    + " i.billItem.bill.patient.person.title,"
+                    + " r.patientInvestigation.billItem.bill.patient.person.title,"
                     + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.name, ''), "
                     + " r.patientInvestigation.billItem.bill.patient.person.dob, "
                     + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.sex, ''), "
