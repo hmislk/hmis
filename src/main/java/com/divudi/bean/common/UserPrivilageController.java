@@ -1381,9 +1381,8 @@ public class UserPrivilageController implements Serializable {
         }
 
         try {
-            Privileges privilege = Privileges.valueOf(privilegeName);
-            return getWebUserController().checkPrivilege(currentWebUser, privilege, department);
-        } catch (IllegalArgumentException e) {
+            return getWebUserController().checkPrivilege(currentWebUser, privilegeName, department);
+        } catch (Exception e) {
             return false;
         }
     }
