@@ -5,13 +5,18 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
@@ -30,6 +35,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -69,6 +75,94 @@ public class PreReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_bill_return_pre");
+        metadata.setPageName("Pharmacy Pre Bill Return (Items Only)");
+        metadata.setDescription("Return items from pharmacy pre bills without processing refund payments");
+        metadata.setControllerClass("PreReturnController");
+
+        // Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Display a link to navigate to original pharmacy retail sale bill at the time of return items",
+            "Shows a button to view the original sale bill during the return process",
+            "Line 227 (XHTML): View Sale Bill button visibility in print preview",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper",
+            "Uses 5.5 inch custom format 3 for return bill printing",
+            "Line 247 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is POS Header Paper",
+            "Uses POS header paper format for return bill printing",
+            "Line 253 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper",
+            "Uses POS paper custom 1 format for return bill printing",
+            "Line 259 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Return Items only - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Bill number format: Prefix-DeptCode-InsCode-Year-Number (e.g., PHRET-PH-HOS-2025-001)",
+            "Line 165 (Controller): Return bill department ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Return Items only - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Bill number format: Prefix-InsCode-DeptCode-Year-Number (e.g., PHRET-HOS-PH-2025-001)",
+            "Line 168 (Controller): Return bill department ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Return Items only - Prefix + Institution Code + Year + Yearly Number",
+            "Bill number format: Prefix-InsCode-Year-Number (e.g., PHRET-HOS-2025-001) - institution-wide numbering",
+            "Line 171 (Controller): Return bill department and institution ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page settings",
+            "Config button visibility (added via implementation)"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Ability to change receipt printing paper format settings",
+            "Line 217 (XHTML): Settings button visibility for paper format configuration"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public String navigateToReturnRetailSaleItemsOnly() {
         Bill tmpBill = bill;
