@@ -299,9 +299,9 @@ public class ChannelScheduleController implements Serializable {
 
 ## Related Documentation
 
-- [JSF Ajax Update Guidelines](jsf/ajax-update-guidelines.md)
+- [JSF Ajax Update Guidelines](ajax-update-guidelines.md)
 - [PrimeFaces Official Documentation](https://primefaces.github.io/primefaces/)
-- [Comprehensive UI Guidelines](ui/comprehensive-ui-guidelines.md)
+- [Comprehensive UI Guidelines](../ui/comprehensive-ui-guidelines.md)
 
 ---
 
