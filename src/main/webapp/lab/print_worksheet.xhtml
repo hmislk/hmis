@@ -53,6 +53,7 @@
                                 class="w-100 mt-2"
                                 value="#{laboratoryManagementController.items}" 
                                 selection="#{laboratoryManagementController.tempSelectedItems}"
+                                selectionDisabled="#{!patientInvestigation.sampleAccepted}"
                                 var="patientInvestigation" 
                                 paginator="true"
                                 rowKey="#{patientInvestigation.id}"
@@ -122,8 +123,12 @@
                                         </div>
                                     </ui:repeat>
                                 </p:column>
+                                
+                                <p:column headerText="Status" style="width:12em; vertical-align: top;">
+                                    <h:outputText value="#{patientInvestigation.status.label}" class="mx-2" />
+                                </p:column>
 
-                                <p:column selectionBox="true"  style=" width:1.5em; vertical-align: top;"></p:column>
+                                <p:column selectionBox="true" style=" width:1.5em; vertical-align: top;"></p:column>
 
                             </p:dataTable>
 

@@ -4,6 +4,7 @@ import com.divudi.core.data.dto.SampleDTO;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientReportFacade;
@@ -148,7 +149,7 @@ public class LaboratoryCommonController implements Serializable {
         }
     }
 
-    public List<PatientInvestigation> getPatientInvestigationsFromSample(Long sampleId) {
+    public List<PatientSampleComponant> getPatientInvestigationsFromSample(Long sampleId) {
         String j = "select psc from PatientSampleComponant psc where psc.patientSample.id = :psId and psc.separated =:sept and psc.retired = :ret";
 
         Map m = new HashMap();
@@ -197,10 +198,12 @@ public class LaboratoryCommonController implements Serializable {
         params.put("id", sampleId);
 
         List<SampleDTO> sampleDtos = (List<SampleDTO>) patientSampleFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("sampleDtos = " + sampleDtos.size());
-        SampleDTO dto = sampleDtos.get(0);
 
-        return dto;
+        if (sampleDtos == null || sampleDtos.isEmpty()) {
+            return null;
+        }
+
+        return sampleDtos.get(0);
     }
     
     
