@@ -1939,7 +1939,7 @@ public class LaboratoryManagementController implements Serializable {
     
     public void searchDTOPatientInvestigations() {
         reportTimerController.trackReportExecution(() -> {
-            items = new ArrayList();
+            investigationDTO = new ArrayList();
 
             if (sampleId != null) {
                 try {
@@ -2269,6 +2269,20 @@ public class LaboratoryManagementController implements Serializable {
         }
     }
 
+    
+    public List<PatientReportLight> patientReports( Long patientInvestigationId) {
+        String jpql = "SELECT new com.divudi.core.data.PatientReportLight("
+                + " r.id, r.approved, r.printed, r.reportType, r.qrCodeContentsLink)"
+                + " from PatientReport r "
+                + " where r.patientInvestigation.id=:piId"
+                + " and r.retired = :ret ";
+        Map params = new HashMap();
+        params.put("piId", patientInvestigationId);
+        params.put("ret", false);
+        return patientReportFacade.findLightsByJpql(jpql, params);
+    }
+    
+    @Deprecated
     public List<PatientReportLight> patientReports(PatientInvestigation pi) {
         String jpql = "SELECT new com.divudi.core.data.PatientReportLight("
                 + " r.id, r.approved, r.printed, r.reportType, r.qrCodeContentsLink)"
@@ -2281,6 +2295,7 @@ public class LaboratoryManagementController implements Serializable {
         return patientReportFacade.findLightsByJpql(jpql, params);
     }
 
+    @Deprecated
     public boolean hasPatientReports(PatientInvestigation pi) {
         String jpql = "SELECT r"
                 + " from PatientReport r "
@@ -2288,6 +2303,23 @@ public class LaboratoryManagementController implements Serializable {
                 + " and r.retired = :ret ";
         Map params = new HashMap();
         params.put("pi", pi);
+        params.put("ret", false);
+        PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params);
+
+        if (pr == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    public boolean hasPatientReports(Long patientInvestigationId) {
+        String jpql = "SELECT r"
+                + " from PatientReport r "
+                + " where r.patientInvestigation.id=:piId"
+                + " and r.retired = :ret ";
+        Map params = new HashMap();
+        params.put("piId", patientInvestigationId);
         params.put("ret", false);
         PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params);
 
@@ -2334,6 +2366,7 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.removePatientReport", sessionController.getLoggedUser());
     }
 
+    @Deprecated
     public void searchPatientReports() {
         reportTimerController.trackReportExecution(() -> {
             if (filteringStatus == null) {
@@ -2347,7 +2380,30 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReports", sessionController.getLoggedUser());
 
     }
+    
+    public void searchPatientReportsDTO() {
+        System.out.println("searchPatientReportsDTO");
+        reportTimerController.trackReportExecution(() -> {
+            if (filteringStatus == null) {
+                System.out.println("Filter Null ");
+                searchDTOPatientInvestigations();
+            } else if (filteringStatus.equalsIgnoreCase("Processing")) {
+                System.out.println("Processing");
+                searchProcessingPatientReportsDTO();
+            } else {
+                System.out.println("Else");
+                searchPendingAndApprovedPatientReportsDTO();
+            }
+            System.out.println("-------------------------------------------------------------- ");
+            System.out.println("investigationDTO = " + investigationDTO);
+            System.out.println("investigationDTO = " + investigationDTO.size());
+            System.out.println("-------------------------------------------------------------- ");
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportsDTO", sessionController.getLoggedUser());
 
+    }
+    
+    @Deprecated
     public void searchProcessingPatientReports() {
         reportTimerController.trackReportExecution(() -> {
             searchPatientInvestigations();
@@ -2363,6 +2419,26 @@ public class LaboratoryManagementController implements Serializable {
             listingEntity = ListingEntity.PATIENT_REPORTS;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReports", sessionController.getLoggedUser());
     }
+    
+    
+    public void searchProcessingPatientReportsDTO() {
+        System.out.println("searchProcessingPatientReportsDT");
+        reportTimerController.trackReportExecution(() -> {
+            searchDTOPatientInvestigations();
+
+            List<PatientInvestigationDTO> processingList = new ArrayList<>();
+
+            for (PatientInvestigationDTO piDto : investigationDTO) {
+                if (!hasPatientReports(piDto.getInvestigationId())) {
+                    processingList.add(piDto);
+                }
+            }
+            setInvestigationDTO(processingList);
+            System.out.println("investigationDTO = " + investigationDTO);
+            System.out.println("investigationDTO = " + investigationDTO.size());
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReportsDTO", sessionController.getLoggedUser());
+    }
 
     public void searchPatientReportPrint() {
         reportTimerController.trackReportExecution(() -> {
@@ -2377,6 +2453,7 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportPrint", sessionController.getLoggedUser());
     }
 
+    @Deprecated
     public void searchPendingAndApprovedPatientReports() {
         reportTimerController.trackReportExecution(() -> {
             listingEntity = ListingEntity.PATIENT_REPORTS;
@@ -2472,6 +2549,127 @@ public class LaboratoryManagementController implements Serializable {
             }
 
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReports", sessionController.getLoggedUser());
+    }
+    
+    public void searchPendingAndApprovedPatientReportsDTO() {
+        System.out.println("searchPendingAndApprovedPatientReportsDTO");
+        reportTimerController.trackReportExecution(() -> {
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+            List<PatientInvestigationDTO> patientReports = new ArrayList<>();
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
+
+            jpql = "SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
+                    + " COALESCE(r.patientInvestigation.id, 0), "
+                    + " COALESCE(r.patientInvestigation.billItem.item.name, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.deptId, ''), "
+                    + " r.patientInvestigation.billItem.bill.createdAt, "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.id, 0 ), "
+                    + " i.billItem.bill.patient.person.title,"
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.name, ''), "
+                    + " r.patientInvestigation.billItem.bill.patient.person.dob, "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.sex, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.mobile, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.ipOpOrCc, ''), "
+                    + " r.patientInvestigation.status, "
+                    + " r.patientInvestigation.billItem.bill.cancelled, "
+                    + " r.patientInvestigation.billItem.refunded, "
+                    + " r.patientInvestigation.sampleAccepted, "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.institution.name, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.department.name, '') "
+                    + " )"
+                    
+                    + " FROM PatientReport r "
+                    + " WHERE r.retired = :ret "
+                    + " AND r.patientInvestigation.billItem.bill.createdAt BETWEEN :fd AND :td ";
+
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+
+            if (orderedInstitution != null) {
+                jpql += " AND r.patientInvestigation.billItem.bill.institution = :orderedInstitution ";
+                params.put("orderedInstitution", getOrderedInstitution());
+            }
+
+            if (orderedDepartment != null) {
+                jpql += " AND r.patientInvestigation.billItem.bill.department = :orderedDepartment ";
+                params.put("orderedDepartment", getOrderedDepartment());
+            }
+
+            if (performingInstitution != null) {
+                jpql += " AND r.approveInstitution = :performingInstitution ";
+                params.put("performingInstitution", getPerformingInstitution());
+            }
+
+            if (performingDepartment != null) {
+                jpql += " AND r.approveDepartment = :performingDepartment ";
+                params.put("performingDepartment", getPerformingDepartment());
+            }
+
+            if (collectionCenter != null) {
+                jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre = :collectionCenter OR r.patientInvestigation.billItem.bill.fromInstitution = :collectionCenter) ";
+                params.put("collectionCenter", getCollectionCenter());
+            }
+
+            if (route != null) {
+                jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre.route = :route OR r.patientInvestigation.billItem.bill.fromInstitution.route = :route) ";
+                params.put("route", getRoute());
+            }
+
+            if (patientName != null && !patientName.trim().isEmpty()) {
+                jpql += " AND r.patientInvestigation.billItem.bill.patient.person.name LIKE :patientName ";
+                params.put("patientName", "%" + getPatientName().trim() + "%");
+            }
+
+            if (type != null && !type.trim().isEmpty()) {
+                jpql += " AND r.patientInvestigation.billItem.bill.ipOpOrCc = :tp ";
+                params.put("tp", getType().trim());
+            }
+
+            if (referringDoctor != null) {
+                jpql += " AND r.patientInvestigation.billItem.bill.referringDoctor = :referringDoctor ";
+                params.put("referringDoctor", getReferringDoctor());
+            }
+
+            if (investigationName != null && !investigationName.trim().isEmpty()) {
+                jpql += " AND r.patientInvestigation.billItem.item.name like :investigation ";
+                params.put("investigation", "%" + investigationName.trim() + "%");
+            }
+
+            if (patientInvestigationStatus != null) {
+                jpql += " AND r.status = :patientReportStatus ";
+                params.put("patientReportStatus", patientInvestigationStatus);
+            }
+
+            if ("Pending".equals(filteringStatus)) {
+                jpql += " AND r.approved = :approved ";
+                params.put("approved", false);
+            }
+
+            if ("Approved".equals(filteringStatus)) {
+                jpql += " AND r.approved = :approved ";
+                params.put("approved", true);
+            }
+
+            jpql += " group by r, r.patientInvestigation ";
+            jpql += " ORDER BY r.id DESC";
+            params.put("ret", false);
+
+            patientReports = (List<PatientInvestigationDTO>) patientReportFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+            investigationDTO = new ArrayList();
+
+            for (PatientInvestigationDTO prDTO : patientReports) {
+                if (!investigationDTO.contains(prDTO)) {
+                    investigationDTO.add(prDTO);
+                }
+            }
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            System.out.println("investigationDTO = " + investigationDTO);
+            System.out.println("investigationDTO = " + investigationDTO.size());
+
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReportsDTO", sessionController.getLoggedUser());
     }
 
     public Department getDefaultSampleSendingDepartment() {
