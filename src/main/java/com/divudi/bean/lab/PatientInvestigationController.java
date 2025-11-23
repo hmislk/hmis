@@ -4632,7 +4632,7 @@ public class PatientInvestigationController implements Serializable {
         String jpql = "SELECT psc.patientInvestigation "
                 + " FROM PatientSampleComponant psc "
                 + " WHERE psc.retired = :retired "
-                + " And psc.separated =:sept"
+                + " AND psc.separated =:sept"
                 + " AND psc.patientSample = :patientSample";
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records3
