@@ -12,7 +12,8 @@
       "Bash(gh pr edit:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr close:*)",
-      "Bash(gh pr reopen:*)"
+      "Bash(gh pr reopen:*)",
+      "Bash(gh pr merge:*)"
     ],
     "deny": [],
     "ask": [],
