@@ -436,6 +436,162 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             OptionScope.DEPARTMENT
         ));
 
+        // Bill Number Generation Strategy Configuration Options
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: PREFIX-DEPT-INS-YEAR-COUNT for pharmacy sale pre-bills (e.g., PSL-PHARM-001-2024-0001)",
+            "Line 1944: savePreBill() method - deptId generation strategy selection",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers in format: PREFIX-INS-DEPT-YEAR-COUNT for pharmacy sale pre-bills (e.g., PSL-001-PHARM-2024-0001)",
+            "Line 1947: savePreBill() method - deptId generation strategy selection",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: PREFIX-INS-YEAR-COUNT for pharmacy sale pre-bills (e.g., PSL-001-2024-0001) - institution-wide numbering",
+            "Line 1950: savePreBill() method - deptId generation strategy selection",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: PREFIX-DEPT-INS-YEAR-COUNT for pharmacy sale cashier pre-bills (e.g., PSL-PHARM-001-2024-0001)",
+            "Line 2019: savePreBillForSettleInCashier() method - deptId generation strategy selection",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers in format: PREFIX-INS-DEPT-YEAR-COUNT for pharmacy sale cashier pre-bills (e.g., PSL-001-PHARM-2024-0001)",
+            "Line 2022: savePreBillForSettleInCashier() method - deptId generation strategy selection",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers in format: PREFIX-INS-YEAR-COUNT for pharmacy sale cashier pre-bills (e.g., PSL-001-2024-0001) - institution-wide numbering",
+            "Line 2025: savePreBillForSettleInCashier() method - deptId generation strategy selection",
+            OptionScope.APPLICATION
+        ));
+
+        // Patient Validation Configuration Options
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Patient details are required for retail sale",
+            "Requires patient name and mobile number to be entered before settling retail sale bills",
+            "Line 3293: settleBillWithPay() method - patient details validation in bill settlement",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy retail sale CreditCard last digits is Mandatory",
+            "Requires last 4 digits of credit card to be entered when using Card payment method",
+            "Line 3302: settleBillWithPay() method - credit card validation during settlement",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy discount should be staff when select Staff_welfare as payment method",
+            "Enforces staff discount scheme selection when Staff Welfare payment method is chosen",
+            "Line 3309: settleBillWithPay() method - staff welfare payment validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Patient is required in Pharmacy Retail Sale Bill for " + "departmentName",
+            "Requires patient selection before settling pharmacy retail sale bills for specific departments (department-specific configuration)",
+            "Line 3324: settleBillWithPay() method - patient requirement validation by department",
+            OptionScope.DEPARTMENT
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Title And Gender To Save Patient in Pharmacy Sale",
+            "Requires patient title and gender to be selected before settling pharmacy sale bills",
+            "Line 3340: settleBillWithPay() method - patient title and gender validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Name to save Patient in Pharmacy Sale",
+            "Requires patient name to be entered before settling pharmacy sale bills",
+            "Line 3353: settleBillWithPay() method - patient name validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Age to Save Patient in Pharmacy Sale",
+            "Requires patient date of birth (age) to be entered before settling pharmacy sale bills",
+            "Line 3361: settleBillWithPay() method - patient age validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Phone Number to save Patient in Pharmacy Sale",
+            "Requires patient phone number to be entered before settling pharmacy sale bills",
+            "Line 3369: settleBillWithPay() method - patient phone validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Address to save Patient in Pharmacy Sale",
+            "Requires patient address to be entered before settling pharmacy sale bills",
+            "Line 3377: settleBillWithPay() method - patient address validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Mail to save Patient in Pharmacy Sale",
+            "Requires patient email address to be entered before settling pharmacy sale bills",
+            "Line 3385: settleBillWithPay() method - patient email validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient NIC to save Patient in Pharmacy Sale",
+            "Requires patient National Identity Card (NIC) number to be entered before settling pharmacy sale bills",
+            "Line 3393: settleBillWithPay() method - patient NIC validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Area to save Patient in Pharmacy Sale",
+            "Requires patient area/location to be selected before settling pharmacy sale bills",
+            "Line 3401: settleBillWithPay() method - patient area validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need Referring Doctor to settlle bill in Pharmacy Sale",
+            "Requires referring doctor to be selected before settling pharmacy sale bills",
+            "Line 3409: settleBillWithPay() method - referring doctor validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Check for Allergies during Dispensing",
+            "Enables allergy checking system that validates patient allergies against selected medications during bill settlement",
+            "Line 3417: settleBillWithPay() method - allergy validation during dispensing",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill",
+            "Requires cash tendered amount to be entered for cash payments in pharmacy retail bills",
+            "Line 1930: savePreBill() method - cash tendered amount validation",
+            OptionScope.APPLICATION
+        ));
+
+        retailSaleMetadata.addConfigOption(new ConfigOptionInfo(
+            "Add quantity from multiple batches in pharmacy retail billing",
+            "Allows adding quantities from multiple batches for the same item in a single bill transaction",
+            "Line 1531: addBillItem() method - multiple batch quantity handling",
+            OptionScope.APPLICATION
+        ));
+
         // Register privileges
         retailSaleMetadata.addPrivilege(new PrivilegeInfo(
             "PharmacySale",
