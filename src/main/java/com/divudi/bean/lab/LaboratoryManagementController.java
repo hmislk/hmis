@@ -126,6 +126,11 @@ public class LaboratoryManagementController implements Serializable {
     private Department sampleReceiveFromDepartment;
     private List<PatientInvestigation> tempSelectedItems;
     private List<PatientInvestigation> selectedItems;
+    
+    private List<PatientInvestigationDTO> tempSelectedDTOItems;
+    private List<PatientInvestigationDTO> selectedDTOItems;
+    
+    
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -347,14 +352,24 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public String navigateToPrintWorkSheetFromSelectedBill(Bill bill) {
-        tempSelectedItems = new ArrayList<>();
-        navigateToInvestigationsFromSelectedBill(bill);
+        tempSelectedDTOItems = new ArrayList<>();
+        navigateToDTOInvestigationsFromSelectedBill(bill);
         return "/lab/print_worksheet?faces-redirect=true";
     }
 
     public void processWorkSheet() {
         selectedItems = new ArrayList<>();
-        selectedItems.addAll(tempSelectedItems);
+        for(PatientInvestigationDTO dto : tempSelectedDTOItems){
+            PatientInvestigation pi = patientInvestigationFacade.findWithoutCache(dto.getInvestigationId());
+            if(pi == null){
+                JsfUtil.addErrorMessage("Error in PatientInvestigation");
+                return ;
+            }else{
+                selectedItems.add(pi);
+            }
+        }
+        System.out.println("tempSelectedDTOItems = " + tempSelectedDTOItems.size());
+        System.out.println("selectedItems = " + selectedItems.size());
     }
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
@@ -377,7 +392,7 @@ public class LaboratoryManagementController implements Serializable {
     
     
     public void navigateToDTOInvestigationsFromSelectedBill(Bill bill) {
-        items = new ArrayList<>();
+        investigationDTO = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -608,7 +623,9 @@ public class LaboratoryManagementController implements Serializable {
         this.selectedItems = new ArrayList();
         this.sampleDtos = new ArrayList<>();
         this.selectedSampleDtos = new ArrayList<>();
-        this.investigationDTO  = new ArrayList<>();
+        this.investigationDTO = new ArrayList<>();
+        this.tempSelectedDTOItems = new ArrayList<>();
+        this.selectedDTOItems = new ArrayList<>();
     }
 
     public void searchLabBillsForWorkSheet() {
@@ -3079,6 +3096,22 @@ public class LaboratoryManagementController implements Serializable {
 
     public void setInvestigationDTO(List<PatientInvestigationDTO> investigationDTO) {
         this.investigationDTO = investigationDTO;
+    }
+
+    public List<PatientInvestigationDTO> getTempSelectedDTOItems() {
+        return tempSelectedDTOItems;
+    }
+
+    public void setTempSelectedDTOItems(List<PatientInvestigationDTO> tempSelectedDTOItems) {
+        this.tempSelectedDTOItems = tempSelectedDTOItems;
+    }
+
+    public List<PatientInvestigationDTO> getSelectedDTOItems() {
+        return selectedDTOItems;
+    }
+
+    public void setSelectedDTOItems(List<PatientInvestigationDTO> selectedDTOItems) {
+        this.selectedDTOItems = selectedDTOItems;
     }
 
 }
