@@ -2,14 +2,17 @@ Need to Manage all the utilized Configuration Options and Privileges for a Page
 
 Start from the Feature Branch, not from the Development
 
-Feature Branch Name : [Fill it here. If not give, request before starting]
+Feature Branch Name : 
+[For Developers - Add the branch name here.]
+[For agents - If no branch is given, request the name of the starting branch before starting]
 
 Find the following documents with details instructions
 
 /developer_docs/admin/config-button-implementation-guide.md
 /developer_docs/admin/page-configuration-tracking.md
 
-FOllow that guidelines and add the Config button to the following pages
-[Fill at least one or more pages here. If not listed, ask for the pages before starting]
+Follow that guidelines and add the Config button to the following pages
+[For Developers - Add at least one or more pages here.]
+[For agents - If not listed, ask for the pages before starting.]
 
 
