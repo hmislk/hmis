@@ -4630,11 +4630,13 @@ public class PatientInvestigationController implements Serializable {
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
         String jpql = "SELECT psc.patientInvestigation "
-                + "FROM PatientSampleComponant psc "
-                + "WHERE psc.retired = :retired "
-                + "AND psc.patientSample = :patientSample";
+                + " FROM PatientSampleComponant psc "
+                + " WHERE psc.retired = :retired "
+                + " AND psc.separated =:sept"
+                + " AND psc.patientSample = :patientSample";
         Map<String, Object> params = new HashMap<>();
-        params.put("retired", false);  // Assuming you want only non-retired records
+        params.put("retired", false);  // Assuming you want only non-retired records3
+        params.put("sept", false);
         params.put("patientSample", patientSample);
         List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(jpql, params);
         return patientInvestigations;
