@@ -179,20 +179,23 @@
                 <h:panelGrid columns="1" class="w-100">
                     <p:commandButton 
                         ajax="false" 
-                        action="#{laboratoryManagementController.searchPatientInvestigations()}"  
-                        value="Search Investigations" 
+                        action="#{laboratoryManagementController.searchDTOPatientInvestigations()}"  
+                        value="Search Investigations DTO" 
                         icon="fas fa-file-invoice-dollar" 
                         styleClass="m-1 ui-button-success w-100">
                     </p:commandButton>
                 </h:panelGrid>
 
             </h:panelGrid>
+
+
+
             <p:dataTable  
                 class="w-100 mt-3"
-                value="#{laboratoryManagementController.items}" 
-                var="patientInvestigation" 
+                value="#{laboratoryManagementController.investigationDTO}" 
+                var="pi" 
                 paginator="true"
-                rowKey="#{patientInvestigation.id}"
+                rowKey="#{patientInvestigation.investigationId}"
                 paginatorPosition="bottom"
                 rows="15"
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -204,68 +207,66 @@
                     <p:commandLink 
                         ajax="false" 
                         class="text-primary"
-                        value="#{patientInvestigation.billItem.bill.deptId}" 
-                        action="#{billSearch.navigateToViewOpdBill()}">
-                        <f:setPropertyActionListener value="#{patientInvestigation.billItem.bill}" target="#{billSearch.bill}"/>
+                        value="#{pi.billNumber}">
                     </p:commandLink>
                     <br/>
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.createdAt}">
+                    <h:outputLabel value="#{pi.billDate}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
-                    <br/>
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.patientEncounter ne null}">
-                        <h:outputLabel style="color: #0d6efd;" value="#{patientInvestigation.billItem.bill.patientEncounter.bhtNo}"/>
+                    <h:panelGroup rendered="#{pi.billType eq 'IP'}">
+                        <br/>
+                        <h:outputLabel class="text-primary" value="#{laboratoryCommonController.getBHTNumberFromPatientInvestigationId(pi.investigationId)}"/>
                     </h:panelGroup>
-                    
                 </p:column>
 
                 <!-- Patient Details Column with Icons -->
                 <p:column headerText="Patient" style="vertical-align: top;">
                     <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}" />
+                    <h:outputLabel value="#{pi.patientNameWithTitle}" />
                     <br/>
                     <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.ageAsString}" />
+                    <h:outputLabel value="#{pi.patientAge}" />
                     <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
                     <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.sex.label}" />
+                    <h:outputLabel value="#{pi.patientGender}" />
                     <br/>
-                    <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.patient.person.mobile.blank}">
+                    <h:panelGroup rendered="#{!pi.patientMobile.blank}">
                         <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
+                        <h:outputLabel value="#{pi.patientMobile}" />
                     </h:panelGroup>
                 </p:column>
 
                 <!-- Investigation Name Column -->
-                <p:column headerText="Investigation" style="width: 400px; vertical-align: top;">
+                <p:column headerText="Investigation" style="width: 500px; vertical-align: top;">
                     <i class="fas fa-vial text-danger" style="width: 27px;"></i> <!-- Investigation Icon -->
-                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{patientInvestigation.investigation.name}"/>
+                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{pi.itemName}"/>
                     <p:commandLink 
-                        value="#{patientInvestigation.investigation.name}" 
+                        value="#{pi.itemName}"
+                        ajax="false"
                         rendered="#{webUserController.hasPrivilege('Developers')}" 
-                        action="#{investigationController.navigateToManageInvestigation()}">
-                        <f:setPropertyActionListener value="#{patientInvestigation.investigation}" target="#{investigationController.current}"/>
+                        action="#{patientInvestigationController.navigateToManageInvestigation(pi.investigationId)}">
                     </p:commandLink>
                 </p:column>
 
-                <!-- Ordered Institution and Department Column with Icons -->
                 <p:column headerText="Ordered Institute" style="vertical-align: top;">
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre == null}">
+                    <h:panelGroup rendered="#{pi.billType eq 'CC'}">
+                        <i class="fas fa-box text-secondary" style="width: 27px;"></i>
+                        <h:outputLabel value="#{laboratoryCommonController.getCollectingCentrNameFromPatientInvestigationID(pi.investigationId)}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pi.billType ne 'CC'}">
                         <i class="fas fa-hospital text-info" style="width: 27px;"></i> <!-- Institution Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.institution.name}" />
+                        <h:outputLabel value="#{pi.orderedInstitution}" />
                         <br/>
                         <i class="fas fa-building text-primary" style="width: 27px;"></i> <!-- Department Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.department.name}" />
+                        <h:outputLabel value="#{pi.orderedDepartment}" />
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre != null}">
-                        <i class="fas fa-box text-secondary" style="width: 27px;"></i> <!-- Collecting Centre Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.collectingCentre.name}" />
-                    </h:panelGroup>
+
                 </p:column>
 
                 <!-- Samples Column -->
                 <p:column headerText="Sample IDs" style="width:10em; vertical-align: top;">
-                    <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="sample">
+                    <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(pi.investigationId)}" var="sample">
                         <div class="ui-g d-grid" style="margin-bottom: 10px;">
                             <div class="ui-g-6 d-flex">
                                 <i class="fa fa-vial"></i>
@@ -277,66 +278,58 @@
 
                 <!-- Status Column -->
                 <p:column headerText="Status" style="width: 12em; vertical-align: top;">
-                    <h:outputLabel value="#{patientInvestigation.status.label}"/>
-                    <br/>
-                    <br/>
-                    <p:badge 
-                        value="Item Refunded" 
-                        severity="info"
-                        style="width: 200px;"
-                        rendered="#{patientInvestigation.billItem.refunded}"
-                        styleClass="ui-badge-warning" >
-                    </p:badge>
+                    <h:panelGroup rendered="#{!pi.itemRefunded and !pi.billCanceled}">
+                        <h:outputLabel value="#{pi.status.label}"/>
+                    </h:panelGroup>
 
-                    <p:badge 
-                        value="Bill Cancel" 
-                        severity="info"
-                        rendered="#{patientInvestigation.billItem.bill.cancelled}"
-                        style="width: 200px;"
-                        styleClass="ui-badge-danger" >
-                    </p:badge>
+                    <h:panelGroup rendered="#{pi.itemRefunded or pi.billCanceled}">
+                        <br/>
+                        <p:badge 
+                            value="Item Refunded" 
+                            severity="info"
+                            style="width: 200px;"
+                            rendered="#{pi.itemRefunded}"
+                            styleClass="ui-badge-warning" >
+                        </p:badge>
+
+                        <p:badge 
+                            value="Bill Cancel" 
+                            severity="info"
+                            rendered="#{pi.billCanceled}"
+                            style="width: 200px;"
+                            styleClass="ui-badge-danger" >
+                        </p:badge>
+                    </h:panelGroup>
                 </p:column>
 
                 <!-- Actions Column -->
-                <p:column headerText="Actions" style="width: 390px; vertical-align: top;">
-
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true and patientInvestigation.billItem.refunded ne true}">
+                <p:column headerText="Actions" style="width: 280px; vertical-align: top;">
+                    <h:panelGroup rendered="#{pi.billCanceled ne true and pi.itemRefunded ne true}">
                         <div class="d-flex gap-2">
-                            <p:commandButton 
-                                icon="fa fa-file-text"
-                                value="Worksheet" 
-                                class="ui-button-info"
-                                ajax="false" 
-                                id="btnPrintWorksheets" 
-                                disabled="#{patientInvestigation.sampleAccepted ne true}" 
-                                action="/lab/single_worksheet?faces-redirect=true"
-                                >
-                                <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
                             <p:commandButton 
                                 icon="fa fa-file-text"
                                 value="New Report" 
                                 id="btnNewReport"
                                 rendered="#{webUserController.hasPrivilege('LabDataentry')}"
-                                disabled="#{!patientInvestigation.sampleAccepted}" 
-                                action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
+                                disabled="#{!pi.sampleAccepted}" 
+                                action="#{patientReportController.navigateToCreatedPatientReport(pi.investigationId)}"
                                 class="ui-button-danger"
                                 onclick="if (!confirm('Are you sure you want to create a new patient report?'))
                                             return false;"
                                 ajax="false">
                             </p:commandButton>
-                            <p:commandButton 
-                                icon="fa fa-file-text"
-                                value="Upload Report" 
-                                id="btnNewUpload"
-                                rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
-                                disabled="#{patientInvestigation.sampleSentAt eq null}"
-                                action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
-                                class="ui-button-warning"
-                                onclick="if (!confirm('Are you sure you want to upload a new patient report ?'))
-                                            return false;"
-                                ajax="false">
-                            </p:commandButton>
+                            <!--   <p:commandButton 
+                                                            icon="fa fa-file-text"
+                                                            value="Upload Report" 
+                                                            id="btnNewUpload"
+                                                            rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
+                                                            disabled="#{patientInvestigation.sampleSentAt eq null}"
+                                                            action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
+                                                            class="ui-button-warning"
+                                                            onclick="if (!confirm('Are you sure you want to upload a new patient report ?'))
+                                                                                            return false;"
+                                                            ajax="false">
+                                                        </p:commandButton>-->
                             <p:commandButton 
                                 icon="fa fa-file-text"
                                 value="Reports" 
@@ -349,7 +342,7 @@
 
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled}" class="d-flex justify-content-center mt-2">
+                    <h:panelGroup rendered="#{pi.billCanceled}" class="d-flex justify-content-center mt-2">
                         <p:badge 
                             value="Bill Cancel" 
                             severity="info"
@@ -359,67 +352,58 @@
                         </p:badge>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.refunded}">
-                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
-                            <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    icon="fa fa-file-text"
-                                    value="Worksheet" 
-                                    class="ui-button-info"
-                                    ajax="false" 
-                                    id="btnPrintWorksheetsForRefund" 
-                                    disabled="#{patientInvestigation.sampleAccepted ne true}" 
-                                    action="/lab/single_worksheet?faces-redirect=true"
-                                    >
-                                    <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fa fa-file-text"
-                                    value="New Report" 
-                                    id="btnNewReportForRefund"
-                                    rendered="#{webUserController.hasPrivilege('LabDataentry')}"
-                                    disabled="#{!patientInvestigation.sampleAccepted}" 
-                                    action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
-                                    class="ui-button-danger"
-                                    onclick="if (!confirm('Are you sure you want to create a new patient report?'))
-                                                return false;"
-                                    ajax="false">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fa fa-file-text"
-                                    value="Report Upload" 
-                                    id="btnNewUploadForRefund"
-                                    rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
-                                    disabled="#{patientInvestigation.sampleSentAt eq null}"
-                                    action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
-                                    class="ui-button-warning"
-                                    onclick="if (!confirm('Are you sure you want to upload a new patient report?'))
-                                                return false;"
-                                    ajax="false">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fa fa-file-text"
-                                    value="Reports" 
-                                    rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
-                                    class="ui-button-success"
-                                    ajax="false" 
-                                    action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}">
-                                </p:commandButton>
-                            </div>
+                    <h:panelGroup rendered="#{pi.itemRefunded}">
+                        <p:badge 
+                            value="Item Refunded" 
+                            severity="info"
+                            size="large"
+                            style="width: 200px;"
+                            styleClass="ui-badge-warning" >
+                        </p:badge>
+<!--                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
+                    <div class="d-flex gap-2">
 
-                        </h:panelGroup>
+                        <p:commandButton 
+                            icon="fa fa-file-text"
+                            value="New Report" 
+                            id="btnNewReportForRefund"
+                            rendered="#{webUserController.hasPrivilege('LabDataentry')}"
+                            disabled="#{!patientInvestigation.sampleAccepted}" 
+                            action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
+                            class="ui-button-danger"
+                            onclick="if (!confirm('Are you sure you want to create a new patient report?'))
+                                                            return false;"
+                            ajax="false">
+                        </p:commandButton>
+                        <p:commandButton 
+                            icon="fa fa-file-text"
+                            value="Report Upload" 
+                            id="btnNewUploadForRefund"
+                            rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
+                            disabled="#{patientInvestigation.sampleSentAt eq null}"
+                            action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
+                            class="ui-button-warning"
+                            onclick="if (!confirm('Are you sure you want to upload a new patient report?'))
+                                                            return false;"
+                            ajax="false">
+                        </p:commandButton>
+                        <p:commandButton 
+                            icon="fa fa-file-text"
+                            value="Reports" 
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
+                            class="ui-button-success"
+                            ajax="false" 
+                            action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}">
+                        </p:commandButton>
+                    </div>
 
-                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
-                            <div class="d-flex justify-content-center mt-2">
-                                <p:badge 
-                                    value="Item Refunded" 
-                                    severity="info"
-                                    size="large"
-                                    style="width: 200px;"
-                                    styleClass="ui-badge-warning" >
-                                </p:badge>
-                            </div>
-                        </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
+                    <div class="d-flex justify-content-center mt-2">
+                        
+                    </div>
+                </h:panelGroup>-->
                     </h:panelGroup>
                 </p:column>
             </p:dataTable>

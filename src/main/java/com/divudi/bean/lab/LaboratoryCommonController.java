@@ -119,6 +119,15 @@ public class LaboratoryCommonController implements Serializable {
             return currentSample.getBill().getCollectingCentre().getName();
         }
     }
+    
+    public String getCollectingCentrNameFromPatientInvestigationID(Long patientInvestigationId) {
+        PatientInvestigation pi = patientInvestigationFacade.findWithoutCache(patientInvestigationId);
+        if (pi == null || pi.getBillItem() == null || pi.getBillItem().getBill() == null || pi.getBillItem().getBill().getCollectingCentre() == null) {
+            return "";
+        } else {
+            return pi.getBillItem().getBill().getCollectingCentre().getName();
+        }
+    }
 
     public String getBHTNumberFromSampleID(Long sampleId) {
         PatientSample currentSample = patientSampleFacade.findWithoutCache(sampleId);
@@ -126,6 +135,16 @@ public class LaboratoryCommonController implements Serializable {
             return "";
         } else {
             return currentSample.getBill().getPatientEncounter().getBhtNo();
+        }
+    }
+    
+    public String getBHTNumberFromPatientInvestigationId(Long patientInvestigationId) {
+        PatientInvestigation pi = patientInvestigationFacade.findWithoutCache(patientInvestigationId);
+        
+        if (pi == null || pi.getBillItem() == null || pi.getBillItem().getBill() == null || pi.getBillItem().getBill().getPatientEncounter() == null) {
+            return "";
+        } else {
+            return pi.getBillItem().getBill().getPatientEncounter().getBhtNo();
         }
     }
 
