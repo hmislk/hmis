@@ -735,13 +735,13 @@
                                     </p:column>
 
                                     <p:column headerText="Purchase Rate" width="5em" style="text-align: right; padding-right: 10px;">
-                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.purchaseRate}">
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.purchaseRate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Purchase Value" width="5em" style="text-align: right; padding-right: 10px;">
-                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty * i.billItem.pharmaceuticalBillItem.purchaseRate}">
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </p:outputLabel>
                                         <f:facet name="footer">
@@ -753,14 +753,16 @@
 
                                     <p:column headerText="Cost Rate" width="5em" style="text-align: right; padding-right: 10px;"
                                               rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                        <p:outputLabel value="#{i.itemBatch.costRate}">
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.costRate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Cost Value" width="5em" style="text-align: right; padding-right: 10px;"
                                               rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty * i.itemBatch.costRate}">
+                                        <p:outputLabel
+                                            id="lblCostValueInDetailedReport"
+                                            value="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </p:outputLabel>
                                         <f:facet name="footer">
@@ -771,7 +773,7 @@
                                     </p:column>
 
                                     <p:column headerText="Retail Rate" width="5em" style="text-align: right; padding-right: 10px;">
-                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.retailRate}">
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.retailSaleRate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </p:outputLabel>
                                     </p:column>
