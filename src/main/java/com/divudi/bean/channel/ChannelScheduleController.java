@@ -1853,6 +1853,9 @@ public class ChannelScheduleController implements Serializable {
         }
 
         int updatedCount = 0;
+        Map<Long, ServiceSession> affectedSessions = new HashMap<>();
+
+        // Update ItemFees and track affected sessions
         for (ChannelHospitalFeeDTO dto : selectedHospitalFeeDTOs) {
             ItemFee itemFee = itemFeeFacade.find(dto.getItemFeeId());
             if (itemFee != null) {
@@ -1868,14 +1871,68 @@ public class ChannelScheduleController implements Serializable {
                 itemFee.setEditedAt(new Date());
                 itemFeeFacade.edit(itemFee);
                 updatedCount++;
+
+                // Track affected ServiceSession
+                ServiceSession serviceSession = itemFee.getServiceSession();
+                if (serviceSession != null && serviceSession.getId() != null) {
+                    affectedSessions.put(serviceSession.getId(), serviceSession);
+                }
             }
         }
 
-        JsfUtil.addSuccessMessage("Successfully updated " + updatedCount + " hospital fee(s)");
+        // Recalculate and update totals for all affected ServiceSessions
+        for (ServiceSession session : affectedSessions.values()) {
+            recalculateServiceSessionTotals(session);
+        }
+
+        JsfUtil.addSuccessMessage("Successfully updated " + updatedCount + " hospital fee(s) and "
+                + affectedSessions.size() + " session total(s)");
 
         // Clear selection and reload the list to reflect changes
         selectedHospitalFeeDTOs = null;
         loadHospitalFeeDTOs();
+    }
+
+    /**
+     * Recalculate and persist ServiceSession totals based on all its ItemFees
+     */
+    private void recalculateServiceSessionTotals(ServiceSession session) {
+        if (session == null || session.getId() == null) {
+            return;
+        }
+
+        // Load all ItemFees for this ServiceSession
+        String jpql = "SELECT f FROM ItemFee f "
+                + "WHERE f.serviceSession.id = :sessionId "
+                + "AND f.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("sessionId", session.getId());
+
+        List<ItemFee> fees = itemFeeFacade.findByJpql(jpql, params);
+
+        // Calculate totals
+        double total = 0.0;
+        double totalForForeigner = 0.0;
+
+        if (fees != null) {
+            for (ItemFee fee : fees) {
+                if (fee.getFee() != null) {
+                    total += fee.getFee();
+                }
+                if (fee.getFfee() != null) {
+                    totalForForeigner += fee.getFfee();
+                }
+            }
+        }
+
+        // Update ServiceSession totals
+        session.setTotal(total);
+        session.setTotalForForeigner(totalForForeigner);
+        session.setEditer(sessionController.getLoggedUser());
+        session.setEditedAt(new Date());
+
+        // Persist the ServiceSession
+        facade.edit(session);
     }
 
     public List<ChannelHospitalFeeDTO> getHospitalFeeDTOs() {
