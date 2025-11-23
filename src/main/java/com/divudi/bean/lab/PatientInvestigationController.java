@@ -4639,8 +4639,6 @@ public class PatientInvestigationController implements Serializable {
         params.put("sept", false);
         params.put("patientSample", patientSample);
         List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(jpql, params);
-        System.out.println("patientInvestigations = " + patientInvestigations);
-        System.out.println("patientInvestigations = " + patientInvestigations.size());
         return patientInvestigations;
     }
 
