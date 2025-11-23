@@ -224,8 +224,9 @@
                             <p:commandButton
                                 value="View Sale Bill"
                                 ajax="false"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Display a link to navigate to original pharmacy retail sale bill at the time of return items',false)}"
                                 icon="fas fa-file-invoice"
-                                action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillItemId(preReturnController.bill.id)}"
+                                action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(preReturnController.bill.id)}"
                                 class="ui-button-info mx-1">
                             </p:commandButton>
 
