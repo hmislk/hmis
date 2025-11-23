@@ -770,6 +770,23 @@
                                         </f:facet>
                                     </p:column>
 
+                                    <p:column headerText="Retail Rate" width="5em" style="text-align: right; padding-right: 10px;">
+                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.retailsaleValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Retail Value" width="5em" style="text-align: right; padding-right: 10px;">
+                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty * i.billItem.pharmaceuticalBillItem.retailsaleValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyController.departmentTotalsMap.get(deptEntry.key)[2]}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
                                     <p:column headerText="Issue Approved User" width="10em">
                                         <h:outputText value="#{i.billItem.bill.creater.webUserPerson.name}"/>
                                     </p:column>
