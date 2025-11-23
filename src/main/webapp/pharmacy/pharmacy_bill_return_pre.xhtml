@@ -17,9 +17,22 @@
                             <div>
                                 <h:outputText styleClass="fas fa-pills"></h:outputText>
                                 <h:outputLabel value="Pharmacy Item Return" class="mx-3"></h:outputLabel>
-                                <!--                                <p:commandButton 
+
+                                <!-- Config Button (Admin Only) -->
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_return_pre')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                                        style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <!--                                <p:commandButton
                                                                     ajax="false"
-                                                                    value="Back to Reprint" 
+                                                                    value="Back to Reprint"
                                                                     class="ui-button-secondary mx-2"
                                                                     icon="fa fa-arrow-left"
                                                                     action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />-->
