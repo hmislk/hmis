@@ -337,45 +337,6 @@ public class PharmacyIssueController implements Serializable {
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
 
-    public static class ConfigOptionInfo {
-
-        private final String key;
-        private final String defaultValue;
-        private final String description;
-        private final OptionScope scope;
-
-        // Original 2-parameter constructor for backward compatibility
-        public ConfigOptionInfo(String key, String defaultValue) {
-            this.key = key;
-            this.defaultValue = defaultValue;
-            this.description = null;
-            this.scope = null;
-        }
-
-        // New 3-parameter constructor with description and scope
-        public ConfigOptionInfo(String key, String description, OptionScope scope) {
-            this.key = key;
-            this.defaultValue = "false"; // Default value for configuration options
-            this.description = description;
-            this.scope = scope;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getDefaultValue() {
-            return defaultValue;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public OptionScope getScope() {
-            return scope;
-        }
-    }
 
     public void makeNull() {
         selectedAlternative = null;
@@ -1877,9 +1838,9 @@ public class PharmacyIssueController implements Serializable {
 
     public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
         List<ConfigOptionInfo> list = new ArrayList<>();
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Purchase Rate", "true"));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Cost Rate", "false"));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Retail Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Issue is by Purchase Rate", "Uses purchase rate for calculating pharmacy issue values (default rate type)", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Issue is by Cost Rate", "Uses cost rate for calculating pharmacy issue values", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Issue is by Retail Rate", "Uses retail rate for calculating pharmacy issue values", OptionScope.APPLICATION));
         return list;
     }
 
