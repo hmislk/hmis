@@ -129,6 +129,7 @@ public class PharmacyIssueController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
             "Consumption - Show Rate and Value",
             "Controls visibility of purchase rate, retail rate, cost rate, and their corresponding values in autocomplete dropdown, input fields, bill items table, and totals section",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
@@ -136,37 +137,43 @@ public class PharmacyIssueController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy DIsposal Issue Receipt is A4 Paper",
             "Uses A4 paper format for disposal issue receipts (default format)",
-            OptionScope.APPLICATION
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy DIsposal Issue Receipt is Custom 1",
             "Uses Custom format 1 for disposal issue receipts",
-            OptionScope.APPLICATION
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy DIsposal Issue Receipt is Custom 2",
             "Uses Custom format 2 for disposal issue receipts",
-            OptionScope.APPLICATION
+            "pharmacy/pharmacy_issue",
+            OptionScope.DEPARTMENT
         ));
 
         // Configuration Options - Search Settings
         metadata.addConfigOption(new ConfigOptionInfo(
             "Search Items by Item Code",
             "Enables searching for items by their code in autocomplete fields",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Search Items by Generic Name",
             "Enables searching for items by their generic name in autocomplete fields",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Restrict Consumption to Stock Availability",
             "Restricts item selection to only items with available stock",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
@@ -174,36 +181,42 @@ public class PharmacyIssueController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
             "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number",
             "Generates bill numbers in format: Prefix-DeptCode-InstCode-Year-Number (e.g., PDI-PHARM-001-2024-0001)",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Department Code + Year + Yearly Number",
             "Generates bill numbers in format: Prefix-InstCode-DeptCode-Year-Number (e.g., PDI-001-PHARM-2024-0001)",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number",
             "Generates bill numbers in format: Prefix-InstCode-Year-Number (e.g., PDI-001-2024-0001) - institution-wide counter",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged Department",
             "Generates separate bill number sequences based on the logged-in user's department",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Issuing Department",
             "Generates separate bill number sequences based on the department receiving the issue",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Bill Number Generation Strategy for Disposal Issue - Separate Bill Numbers for Logged and Issuing Department Combination",
             "Generates separate bill number sequences based on the combination of logged and issuing departments",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
@@ -211,30 +224,35 @@ public class PharmacyIssueController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
             "Add quantity from multiple batches in pharmacy disposal issue",
             "Allows adding quantities from multiple batches of the same item to a single bill line",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Disposal is by Purchase Rate",
             "Uses purchase rate for calculating disposal issue values (default rate type)",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Disposal is by Cost Rate",
             "Uses cost rate for calculating disposal issue values",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Disposal is by Retail Rate",
             "Uses retail rate for calculating disposal issue values",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "Add the Institution Code to the Bill Number Generator",
             "Includes institution code in the generated bill numbers",
+            "pharmacy/pharmacy_issue",
             OptionScope.APPLICATION
         ));
 
@@ -1838,9 +1856,9 @@ public class PharmacyIssueController implements Serializable {
 
     public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
         List<ConfigOptionInfo> list = new ArrayList<>();
-        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Purchase Rate", "Uses purchase rate for calculating pharmacy issue values (default rate type)", OptionScope.APPLICATION));
-        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Cost Rate", "Uses cost rate for calculating pharmacy issue values", OptionScope.APPLICATION));
-        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Retail Rate", "Uses retail rate for calculating pharmacy issue values", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Purchase Rate", "Uses purchase rate for calculating pharmacy issue values (default rate type)", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Cost Rate", "Uses cost rate for calculating pharmacy issue values", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Retail Rate", "Uses retail rate for calculating pharmacy issue values", "pharmacy/pharmacy_issue", OptionScope.APPLICATION));
         return list;
     }
 
