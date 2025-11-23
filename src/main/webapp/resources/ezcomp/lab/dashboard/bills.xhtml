@@ -314,8 +314,7 @@
                             class="ui-button-danger"
                             ajax="false" 
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardPatientReportSearch'))}"
-                            disabled="#{b.status eq 'ORDERED' or b.status eq 'SAMPLE_GENERATED' or b.status eq 'SAMPLE_COLLECTED'or b.status eq 'SAMPLE_SENT'}"
-                            action="#{laboratoryManagementController.navigateToPatientReportsPrintFromSelectedBill(b)}" >
+                            action="#{laboratoryManagementController.navigateToPatientReportsPrintDTOFromSelectedBill(b)}" >
                         </p:commandButton>
                     </div>
                 </p:column>
