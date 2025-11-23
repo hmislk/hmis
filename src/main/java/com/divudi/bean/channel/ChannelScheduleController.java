@@ -13,6 +13,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.FeeChangeType;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.dto.ChannelHospitalFeeDTO;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.FeeChange;
@@ -65,6 +66,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
 
@@ -264,6 +266,13 @@ public class ChannelScheduleController implements Serializable {
             e.setStartDate(CommonFunctions.convertDateToLocalDateTime(s.getTransStartTime()));
             e.setEndDate(CommonFunctions.convertDateToLocalDateTime(s.getTransEndTime()));
             eventModel.addEvent(e);
+        }
+    }
+
+    public void onEventSelect(SelectEvent<ChannelScheduleEvent> selectEvent) {
+        ChannelScheduleEvent event = selectEvent.getObject();
+        if (event != null && event.getSessionInstance() != null) {
+            currentSessionInstance = event.getSessionInstance();
         }
     }
 
@@ -1777,6 +1786,154 @@ public class ChannelScheduleController implements Serializable {
 
     public void setRetiredItems(List<ServiceSession> retiredItems) {
         this.retiredItems = retiredItems;
+    }
+
+    // Bulk Hospital Fee Editing Properties
+    private List<ChannelHospitalFeeDTO> hospitalFeeDTOs;
+    private Double newHospitalFee;
+    private Double newHospitalForeignerFee;
+
+    /**
+     * Navigate to bulk hospital fee editing page
+     */
+    public String navigateToBulkHospitalFeeEdit() {
+        loadHospitalFeeDTOs();
+        return "/channel/bulk_hospital_fee_edit?faces-redirect=true";
+    }
+
+    /**
+     * Load all hospital fees (OwnInstitution fees) as DTOs
+     */
+    public void loadHospitalFeeDTOs() {
+        String jpql = "SELECT new com.divudi.core.data.dto.ChannelHospitalFeeDTO("
+                + "f.id, "
+                + "ss.id, "
+                + "ss.name, "
+                + "st.person.name, "
+                + "sp.name, "
+                + "d.name, "
+                + "ss.sessionWeekday, "
+                + "f.fee, "
+                + "f.ffee) "
+                + "FROM ItemFee f "
+                + "JOIN f.serviceSession ss "
+                + "LEFT JOIN ss.staff st "
+                + "LEFT JOIN st.speciality sp "
+                + "LEFT JOIN ss.department d "
+                + "WHERE f.retired = false "
+                + "AND ss.retired = false "
+                + "AND f.feeType = :feeType "
+                + "ORDER BY st.person.name, ss.sessionWeekday, ss.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("feeType", FeeType.OwnInstitution);
+
+        hospitalFeeDTOs = feeFacade.findByJpql(jpql, params, TemporalType.DATE);
+
+        if (hospitalFeeDTOs == null) {
+            hospitalFeeDTOs = new ArrayList<>();
+        }
+
+        // Reset selection and new fee values
+        newHospitalFee = null;
+        newHospitalForeignerFee = null;
+    }
+
+    /**
+     * Update selected hospital fees with new values
+     */
+    public void updateSelectedHospitalFees() {
+        if (hospitalFeeDTOs == null || hospitalFeeDTOs.isEmpty()) {
+            JsfUtil.addErrorMessage("No hospital fees available to update");
+            return;
+        }
+
+        List<ChannelHospitalFeeDTO> selectedFees = new ArrayList<>();
+        for (ChannelHospitalFeeDTO dto : hospitalFeeDTOs) {
+            if (dto.isSelected()) {
+                selectedFees.add(dto);
+            }
+        }
+
+        if (selectedFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select at least one hospital fee to update");
+            return;
+        }
+
+        if (newHospitalFee == null && newHospitalForeignerFee == null) {
+            JsfUtil.addErrorMessage("Please enter at least one fee value (Local or Foreigner)");
+            return;
+        }
+
+        int updatedCount = 0;
+        for (ChannelHospitalFeeDTO dto : selectedFees) {
+            ItemFee itemFee = feeFacade.find(dto.getItemFeeId());
+            if (itemFee != null) {
+                if (newHospitalFee != null) {
+                    itemFee.setFee(newHospitalFee);
+                    dto.setHospitalFee(newHospitalFee);
+                }
+                if (newHospitalForeignerFee != null) {
+                    itemFee.setFfee(newHospitalForeignerFee);
+                    dto.setHospitalForeignerFee(newHospitalForeignerFee);
+                }
+                itemFee.setEditer(sessionController.getLoggedUser());
+                itemFee.setEditedAt(new Date());
+                feeFacade.edit(itemFee);
+                updatedCount++;
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Successfully updated " + updatedCount + " hospital fee(s)");
+
+        // Reload the list to reflect changes
+        loadHospitalFeeDTOs();
+    }
+
+    /**
+     * Select all hospital fees
+     */
+    public void selectAllHospitalFees() {
+        if (hospitalFeeDTOs != null) {
+            for (ChannelHospitalFeeDTO dto : hospitalFeeDTOs) {
+                dto.setSelected(true);
+            }
+        }
+    }
+
+    /**
+     * Deselect all hospital fees
+     */
+    public void deselectAllHospitalFees() {
+        if (hospitalFeeDTOs != null) {
+            for (ChannelHospitalFeeDTO dto : hospitalFeeDTOs) {
+                dto.setSelected(false);
+            }
+        }
+    }
+
+    public List<ChannelHospitalFeeDTO> getHospitalFeeDTOs() {
+        return hospitalFeeDTOs;
+    }
+
+    public void setHospitalFeeDTOs(List<ChannelHospitalFeeDTO> hospitalFeeDTOs) {
+        this.hospitalFeeDTOs = hospitalFeeDTOs;
+    }
+
+    public Double getNewHospitalFee() {
+        return newHospitalFee;
+    }
+
+    public void setNewHospitalFee(Double newHospitalFee) {
+        this.newHospitalFee = newHospitalFee;
+    }
+
+    public Double getNewHospitalForeignerFee() {
+        return newHospitalForeignerFee;
+    }
+
+    public void setNewHospitalForeignerFee(Double newHospitalForeignerFee) {
+        this.newHospitalForeignerFee = newHospitalForeignerFee;
     }
 
 }
