@@ -6,6 +6,9 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -13,6 +16,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.annotation.PostConstruct;
 
 /**
  * Controller for the page administration interface.
@@ -34,6 +38,42 @@ public class PageAdminController implements Serializable {
     private PageMetadata currentMetadata;
 
     public PageAdminController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (metadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("admin/page_configuration_view");
+        metadata.setPageName("Page Configuration Management");
+        metadata.setDescription("Administrative interface for viewing and managing page-specific configuration options and privileges");
+        metadata.setControllerClass("PageAdminController");
+
+        // Configuration Options - Global Bill Number Settings
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add the Institution Code to the Bill Number Generator",
+            "Includes institution code in generated bill numbers across all modules system-wide",
+            "admin/page_configuration_view",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management interface - required to view and manage page metadata, configuration options, and privileges"
+        ));
+
+        metadataRegistry.registerPage(metadata);
     }
 
     /**
