@@ -53,7 +53,7 @@
                                 class="w-100 mt-2"
                                 value="#{laboratoryManagementController.investigationDTO}" 
                                 selection="#{laboratoryManagementController.tempSelectedDTOItems}"
-                                selectionDisabled="#{b.status eq 'ORDERED' or b.status eq 'SAMPLE_GENERATED' or b.status eq 'SAMPLE_COLLECTED' or b.status eq 'SAMPLE_SENT' or b.status eq 'SAMPLE_REJECTED'}"
+                                selectionDisabled="#{pi.status eq 'ORDERED' or pi.status eq 'SAMPLE_GENERATED' or pi.status eq 'SAMPLE_COLLECTED' or pi.status eq 'SAMPLE_SENT' or pi.status eq 'SAMPLE_REJECTED'}"
                                 var="pi" 
                                 paginator="true"
                                 rowKey="#{pi.investigationId}"

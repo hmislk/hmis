@@ -288,6 +288,7 @@
                             icon="fa-regular fa-rectangle-list"
                             value="To WorkSheet" 
                             class="ui-button-warning"
+                            disabled="#{b.cancelled}"
                             action="#{laboratoryManagementController.navigateToPrintWorkSheetFromSelectedBill(b)}"
                             ajax="false" >
                         </p:commandButton>
