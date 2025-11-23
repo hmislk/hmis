@@ -1790,6 +1790,7 @@ public class ChannelScheduleController implements Serializable {
 
     // Bulk Hospital Fee Editing Properties
     private List<ChannelHospitalFeeDTO> hospitalFeeDTOs;
+    private ChannelHospitalFeeDTO[] selectedHospitalFeeDTOs;
     private Double newHospitalFee;
     private Double newHospitalForeignerFee;
 
@@ -1832,6 +1833,7 @@ public class ChannelScheduleController implements Serializable {
         }
 
         // Reset selection and new fee values
+        selectedHospitalFeeDTOs = null;
         newHospitalFee = null;
         newHospitalForeignerFee = null;
     }
@@ -1840,19 +1842,7 @@ public class ChannelScheduleController implements Serializable {
      * Update selected hospital fees with new values
      */
     public void updateSelectedHospitalFees() {
-        if (hospitalFeeDTOs == null || hospitalFeeDTOs.isEmpty()) {
-            JsfUtil.addErrorMessage("No hospital fees available to update");
-            return;
-        }
-
-        List<ChannelHospitalFeeDTO> selectedFees = new ArrayList<>();
-        for (ChannelHospitalFeeDTO dto : hospitalFeeDTOs) {
-            if (dto.isSelected()) {
-                selectedFees.add(dto);
-            }
-        }
-
-        if (selectedFees.isEmpty()) {
+        if (selectedHospitalFeeDTOs == null || selectedHospitalFeeDTOs.length == 0) {
             JsfUtil.addErrorMessage("Please select at least one hospital fee to update");
             return;
         }
@@ -1863,7 +1853,7 @@ public class ChannelScheduleController implements Serializable {
         }
 
         int updatedCount = 0;
-        for (ChannelHospitalFeeDTO dto : selectedFees) {
+        for (ChannelHospitalFeeDTO dto : selectedHospitalFeeDTOs) {
             ItemFee itemFee = itemFeeFacade.find(dto.getItemFeeId());
             if (itemFee != null) {
                 if (newHospitalFee != null) {
@@ -1883,30 +1873,9 @@ public class ChannelScheduleController implements Serializable {
 
         JsfUtil.addSuccessMessage("Successfully updated " + updatedCount + " hospital fee(s)");
 
-        // Reload the list to reflect changes
+        // Clear selection and reload the list to reflect changes
+        selectedHospitalFeeDTOs = null;
         loadHospitalFeeDTOs();
-    }
-
-    /**
-     * Select all hospital fees
-     */
-    public void selectAllHospitalFees() {
-        if (hospitalFeeDTOs != null) {
-            for (ChannelHospitalFeeDTO dto : hospitalFeeDTOs) {
-                dto.setSelected(true);
-            }
-        }
-    }
-
-    /**
-     * Deselect all hospital fees
-     */
-    public void deselectAllHospitalFees() {
-        if (hospitalFeeDTOs != null) {
-            for (ChannelHospitalFeeDTO dto : hospitalFeeDTOs) {
-                dto.setSelected(false);
-            }
-        }
     }
 
     public List<ChannelHospitalFeeDTO> getHospitalFeeDTOs() {
@@ -1931,6 +1900,14 @@ public class ChannelScheduleController implements Serializable {
 
     public void setNewHospitalForeignerFee(Double newHospitalForeignerFee) {
         this.newHospitalForeignerFee = newHospitalForeignerFee;
+    }
+
+    public ChannelHospitalFeeDTO[] getSelectedHospitalFeeDTOs() {
+        return selectedHospitalFeeDTOs;
+    }
+
+    public void setSelectedHospitalFeeDTOs(ChannelHospitalFeeDTO[] selectedHospitalFeeDTOs) {
+        this.selectedHospitalFeeDTOs = selectedHospitalFeeDTOs;
     }
 
 }

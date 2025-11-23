@@ -72,22 +72,6 @@
                                                 action="#{channelScheduleController.updateSelectedHospitalFees()}" />
 
                                             <p:commandButton
-                                                value="Select All"
-                                                icon="fa fa-check-square"
-                                                styleClass="ui-button-info"
-                                                process="@this"
-                                                update="tblHospitalFees"
-                                                action="#{channelScheduleController.selectAllHospitalFees()}" />
-
-                                            <p:commandButton
-                                                value="Deselect All"
-                                                icon="fa fa-square"
-                                                styleClass="ui-button-secondary"
-                                                process="@this"
-                                                update="tblHospitalFees"
-                                                action="#{channelScheduleController.deselectAllHospitalFees()}" />
-
-                                            <p:commandButton
                                                 value="Refresh List"
                                                 icon="fa fa-refresh"
                                                 styleClass="ui-button-success"
@@ -103,6 +87,8 @@
                                 id="tblHospitalFees"
                                 value="#{channelScheduleController.hospitalFeeDTOs}"
                                 var="fee"
+                                selection="#{channelScheduleController.selectedHospitalFeeDTOs}"
+                                rowKey="#{fee.itemFeeId}"
                                 paginator="true"
                                 rows="20"
                                 rowsPerPageTemplate="10,20,50,100"
@@ -114,9 +100,7 @@
                                     <h:outputText value="Hospital Fees List" />
                                 </f:facet>
 
-                                <p:column headerText="Select" styleClass="text-center" style="width: 80px;">
-                                    <p:selectBooleanCheckbox value="#{fee.selected}" />
-                                </p:column>
+                                <p:column selectionMode="multiple" style="width: 60px;" />
 
                                 <p:column headerText="Consultant" sortBy="#{fee.consultantName}" filterBy="#{fee.consultantName}" filterMatchMode="contains">
                                     <h:outputText value="#{fee.consultantName}" />

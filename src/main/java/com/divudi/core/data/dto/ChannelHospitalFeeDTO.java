@@ -19,7 +19,6 @@ public class ChannelHospitalFeeDTO implements Serializable {
     private String weekdayName;
     private Double hospitalFee;
     private Double hospitalForeignerFee;
-    private boolean selected;
 
     public ChannelHospitalFeeDTO() {
     }
@@ -40,7 +39,6 @@ public class ChannelHospitalFeeDTO implements Serializable {
         this.sessionWeekday = sessionWeekday;
         this.hospitalFee = hospitalFee;
         this.hospitalForeignerFee = hospitalForeignerFee;
-        this.selected = false;
         this.weekdayName = getWeekdayNameFromNumber(sessionWeekday);
     }
 
@@ -140,13 +138,5 @@ public class ChannelHospitalFeeDTO implements Serializable {
 
     public void setHospitalForeignerFee(Double hospitalForeignerFee) {
         this.hospitalForeignerFee = hospitalForeignerFee;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
     }
 }
