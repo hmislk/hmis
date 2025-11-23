@@ -138,13 +138,13 @@
                                     <h:outputText value="#{fee.departmentName}" />
                                 </p:column>
 
-                                <p:column headerText="Local Fee" styleClass="text-right" style="width: 120px;">
+                                <p:column headerText="Local Fee" sortBy="#{fee.hospitalFee}" filterBy="#{fee.hospitalFee}" filterMatchMode="contains" styleClass="text-right" style="width: 120px;">
                                     <h:outputText value="#{fee.hospitalFee}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column headerText="Foreigner Fee" styleClass="text-right" style="width: 120px;">
+                                <p:column headerText="Foreigner Fee" sortBy="#{fee.hospitalForeignerFee}" filterBy="#{fee.hospitalForeignerFee}" filterMatchMode="contains" styleClass="text-right" style="width: 120px;">
                                     <h:outputText value="#{fee.hospitalForeignerFee}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
