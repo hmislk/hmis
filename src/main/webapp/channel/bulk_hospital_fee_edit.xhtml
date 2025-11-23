@@ -68,7 +68,8 @@
                                                 styleClass="ui-button-warning"
                                                 process="@form"
                                                 update="@form"
-                                                onclick="if (!confirm('Are you sure you want to update all selected hospital fees?')) return false;"
+                                                onclick="if (!confirm('Are you sure you want to update all selected hospital fees?'))
+                                                            return false;"
                                                 action="#{channelScheduleController.updateSelectedHospitalFees()}" />
 
                                             <p:commandButton
@@ -91,6 +92,9 @@
                                 rowKey="#{fee.itemFeeId}"
                                 paginator="true"
                                 rows="20"
+                                selectionMode="multiple"
+                                selectAllFilteredOnly="true"
+                                selectionPageOnly="false"
                                 rowsPerPageTemplate="10,20,50,100"
                                 paginatorPosition="bottom"
                                 emptyMessage="No hospital fees found"
@@ -100,7 +104,7 @@
                                     <h:outputText value="Hospital Fees List" />
                                 </f:facet>
 
-                                <p:column selectionMode="multiple" style="width: 60px;" />
+                                <p:column selectionBox="true" style="width: 60px;" />
 
                                 <p:column headerText="Consultant" sortBy="#{fee.consultantName}" filterBy="#{fee.consultantName}" filterMatchMode="contains">
                                     <h:outputText value="#{fee.consultantName}" />
