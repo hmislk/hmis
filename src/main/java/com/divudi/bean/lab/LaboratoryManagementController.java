@@ -435,6 +435,18 @@ public class LaboratoryManagementController implements Serializable {
         listingEntity = ListingEntity.REPORT_PRINT;
 
     }
+    
+    public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigationDTO dto) {
+        if(dto == null){
+            JsfUtil.addErrorMessage("Errorin PatientInvestigation ID");
+            return ;
+        }
+        investigationDTO = new ArrayList<>();
+        investigationDTO.add(dto);
+        
+        listingEntity = ListingEntity.REPORT_PRINT;
+
+    }
 
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
@@ -461,6 +473,7 @@ public class LaboratoryManagementController implements Serializable {
         items.add(patientInvestigation);
     }
 
+    @Deprecated
     public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
         listingEntity = ListingEntity.REPORT_PRINT;
@@ -477,6 +490,43 @@ public class LaboratoryManagementController implements Serializable {
         params.put("bill", bill);
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public void navigateToPatientReportsPrintDTOFromSelectedBill(Bill bill) {
+        investigationDTO = new ArrayList<>();
+        listingEntity = ListingEntity.REPORT_PRINT;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql ="SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
+                    + " COALESCE(i.id, 0), "
+                    + " COALESCE(i.billItem.item.name, ''), "
+                    + " COALESCE(i.billItem.bill.deptId, ''), "
+                    + " i.billItem.bill.createdAt, "
+                    + " COALESCE(i.billItem.bill.patient.id, 0 ), "
+                    + " i.billItem.bill.patient.person.title,"
+                    + " COALESCE(i.billItem.bill.patient.person.name, ''), "
+                    + " i.billItem.bill.patient.person.dob, "
+                    + " COALESCE(i.billItem.bill.patient.person.sex, ''), "
+                    + " COALESCE(i.billItem.bill.patient.person.mobile, ''), "
+                    + " COALESCE(i.billItem.bill.ipOpOrCc, ''), "
+                    + " i.status, "
+                    + " i.billItem.bill.cancelled, "
+                    + " i.billItem.refunded, "
+                    + " i.sampleAccepted, "
+                    + " COALESCE(i.billItem.bill.institution.name, ''), "
+                    + " COALESCE(i.billItem.bill.department.name, '') "
+                    + " )"
+                    
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired =:ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        investigationDTO = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
     }
 
     @Inject
@@ -558,6 +608,7 @@ public class LaboratoryManagementController implements Serializable {
         this.selectedItems = new ArrayList();
         this.sampleDtos = new ArrayList<>();
         this.selectedSampleDtos = new ArrayList<>();
+        this.investigationDTO  = new ArrayList<>();
     }
 
     public void searchLabBillsForWorkSheet() {
@@ -2451,6 +2502,20 @@ public class LaboratoryManagementController implements Serializable {
             }
             listingEntity = ListingEntity.REPORT_PRINT;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportPrint", sessionController.getLoggedUser());
+    }
+    
+    public void searchPatientReportPrintDTO() {
+        
+        reportTimerController.trackReportExecution(() -> {
+            if (filteringStatus == null) {
+                searchDTOPatientInvestigations();
+            } else if (filteringStatus.equalsIgnoreCase("Processing")) {
+                searchProcessingPatientReportsDTO();
+            } else {
+                searchPendingAndApprovedPatientReportsDTO();
+            }
+            listingEntity = ListingEntity.REPORT_PRINT;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportPrintDTO", sessionController.getLoggedUser());
     }
 
     @Deprecated
