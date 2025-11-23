@@ -1,15 +1,22 @@
 # Config Button Implementation Guide
 
+## ⚠️ CRITICAL WARNING: MAMMOTH EFFORT REQUIRED ⚠️
+
+**DO NOT UNDERESTIMATE THIS TASK!** This is not a simple copy-paste operation. Finding ALL configuration options requires a **SYSTEMATIC, EXHAUSTIVE, AND METICULOUS** analysis that can take **HOURS OR EVEN DAYS** per page. Missing even one configuration option renders the admin interface incomplete and unreliable.
+
 ## Overview
 
 This guide provides step-by-step instructions for implementing a "Config" button on HMIS pages that allows administrators to navigate to the admin configuration interface where they can modify configuration options and privileges used by that specific page.
 
+**🚨 REALITY CHECK**: Each HMIS page can contain **20-50+ configuration options** scattered across XHTML files and multiple Java controller methods. **EVERY SINGLE ONE** must be found, documented, and registered.
+
 ## Objectives
 
-1. **Deep Analysis**: Systematically find ALL configuration options and privileges used in a page
-2. **Config Button**: Add a subtle admin-only Config button to navigate to admin interface
-3. **Page Registration**: Register page metadata for the admin configuration system
-4. **Documentation**: Create complete documentation of page configurations
+1. **🔍 EXHAUSTIVE Deep Analysis**: Systematically find **ALL** configuration options and privileges used in a page - NO EXCEPTIONS
+2. **🔘 Config Button**: Add a subtle admin-only Config button to navigate to admin interface
+3. **📋 Page Registration**: Register complete page metadata for the admin configuration system
+4. **📚 Documentation**: Create complete documentation of page configurations
+5. **💰 CRITICAL: Bill Number Generation**: Identify ALL bill numbering strategies - these are often the most important configurations
 
 ## Example Reference Page
 
@@ -17,34 +24,77 @@ This guide provides step-by-step instructions for implementing a "Config" button
 **Controller**: `PharmacySaleBhtController.java`
 **Admin Interface**: `http://localhost:8080/rh/faces/admin/page_configuration_view.xhtml`
 
-## Step 1: Deep Analysis Methodology
+## Step 1: EXHAUSTIVE Deep Analysis Methodology
 
-### 1.1 Analyze XHTML File
+**⚠️ WARNING**: This step requires **EXTREME ATTENTION TO DETAIL**. You are hunting for needles in haystacks across thousands of lines of code. **DO NOT SKIP ANY STEP** or you will miss critical configurations.
 
-**Search Patterns in XHTML:**
+### Phase 1: COMPLETE XHTML File Analysis
+
+**🚨 MANDATORY**: Read the **ENTIRE** XHTML file line by line. Do NOT rely only on search patterns!
+
+#### 1.1 Full XHTML Scan Process
+
+**Step 1: Comprehensive Pattern Search**
 
 ```bash
-# Configuration Options (search for these patterns)
+# Configuration Options - SEARCH FOR ALL THESE PATTERNS
 configOptionApplicationController.getBooleanValueByKey(
 configOptionApplicationController.getShortTextValueByKey(
 configOptionApplicationController.getIntegerValueByKey(
 configOptionApplicationController.getDoubleValueByKey(
 configOptionApplicationController.getLongTextValueByKey(
 
-# Privileges (search for these patterns)
+# Privileges - SEARCH FOR ALL THESE PATTERNS
 webUserController.hasPrivilege(
 webUserController.checkPrivilege(
+hasPrivilege(
+rendered="#{webUserController.hasPrivilege
+
+# ALSO SEARCH FOR VARIATIONS:
+configOptionApplicationController.get
+getBooleanValueByKey
+getShortTextValueByKey
+hasPrivilege
 ```
 
-**Example Analysis Process:**
+**Step 2: Manual Line-by-Line Review**
 
-1. Open the XHTML file
-2. Search for each pattern above
-3. For each match found, record:
-   - Line number
-   - Configuration key or privilege name
-   - What UI element it controls
-   - Method parameters and default values
+**🔍 READ EVERY LINE** looking for:
+- `rendered="#{...}"` expressions
+- `disabled="#{...}"` expressions
+- `styleClass="#{...}"` expressions
+- `value="#{...}"` expressions that might contain config logic
+- EL expressions with conditional logic
+- Component attributes that reference controllers
+
+#### 1.2 Document EVERY Finding
+
+**CREATE A DETAILED LOG** - Example format:
+
+```
+=== XHTML ANALYSIS LOG ===
+
+Line 25: <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+  - Type: PRIVILEGE
+  - Key: 'NursingWorkBench'
+  - UI Element: Navigation panel for nursing workbench
+  - Effect: Shows/hides entire workbench section
+
+Line 121: <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+  - Type: PRIVILEGE
+  - Key: 'Admin'
+  - UI Element: Config button container
+  - Effect: Shows config button only to admins
+
+Line 250: rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}"
+  - Type: CONFIG OPTION
+  - Key: 'Medicine Identification Codes Used'
+  - Default: true
+  - UI Element: Medicine code column in autocomplete
+  - Effect: Shows/hides identification codes
+
+[CONTINUE FOR EVERY SINGLE OCCURRENCE...]
+```
 
 **Actual Findings from `pharmacy_bill_issue_bht.xhtml`:**
 
@@ -77,60 +127,172 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inw
 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"
 ```
 
-### 1.2 Analyze Controller Methods
+### Phase 2: COMPREHENSIVE Controller Analysis
 
-**Deep-Dive Process:**
+**🚨 THIS IS WHERE MOST CONFIGURATIONS HIDE!** Controllers contain the majority of configuration logic, especially **BILL NUMBER GENERATION STRATEGIES** which are often the most critical configurations.
 
-1. **Identify Main Methods**: Start with public methods and action methods
-2. **Follow Method Calls**: For each method, check what other methods it calls
-3. **Search Configuration Usage**: Look for configuration option usage in each method
-4. **Document Findings**: Record all configuration options and privileges found
+#### 2.1 Systematic Controller Scanning Process
 
-**Search Patterns in Java Controller:**
+**Step 1: Identify ALL Action Methods**
+
+Find these method patterns (these are where configurations are typically used):
+```java
+// Action methods (called from XHTML)
+public String settle*
+public void settle*
+public String save*
+public void save*
+public String process*
+public void add*
+public String navigate*
+public void calculate*
+public void validate*
+public String print*
+
+// Listener methods
+*Listener()
+*ActionListener()
+```
+
+**Step 2: EXHAUSTIVE Configuration Pattern Search**
+
+**🔍 SEARCH THE ENTIRE CONTROLLER** for these patterns:
 
 ```java
-// Configuration Options
+// Configuration Options - ALL VARIATIONS
 configOptionApplicationController.getBooleanValueByKey(
 configOptionApplicationController.getShortTextValueByKey(
 configOptionApplicationController.getIntegerValueByKey(
+configOptionApplicationController.getDoubleValueByKey(
+configOptionApplicationController.getLongTextValueByKey(
+configOptionApplicationController.get
+getBooleanValueByKey
+getShortTextValueByKey
+getIntegerValueByKey
 
 // Privileges
 webUserController.hasPrivilege(
-Privileges.PRIVILEGE_NAME
+webUserController.checkPrivilege(
+hasPrivilege(
+Privileges.
+
+// 🚨 CRITICAL: Bill Number Generation Patterns
+billNumberGenerator
+billNumberBean
+generateBillNumber
+deptId
+insId
+Bill Number Generation Strategy
+departmentBillNumberGenerator
+institutionBillNumberGenerator
 ```
 
-**Actual Controller Analysis from `PharmacySaleBhtController.java`:**
+**Step 3: Method Deep-Dive Analysis**
 
+**🔄 RECURSIVE METHOD FOLLOWING**: For EACH method, you must:
+
+1. **Read the entire method**
+2. **Follow every method call** within that method
+3. **Document every configuration found**
+4. **Continue recursively** until you reach the bottom
+
+**Example Deep-Dive Pattern:**
 ```java
-// Line 394: Decimal quantity validation
-boolean allowDecimalsUniversally = configOptionApplicationController.getBooleanValueByKey(
-    "Allow Quantity in Decimals Universally for all the items", false);
-
-// Line 407: Integer-only quantity validation
-boolean mustBeInteger = configOptionApplicationController.getBooleanValueByKey(
-    "Enforce Integer Value Quantity Only for " + getPharmacyItem().getName(), false);
-
-// Line 965: Price matrix calculation (admission department)
-matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey(
-    "Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
-
-// Line 966: Price matrix calculation (issuing department)
-matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey(
-    "Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
-
-// Line 1139: Allergy checking during dispensing
-if (!configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-    // Skip allergy check logic
+// Start with main action method
+public void settleBillWithPay() {
+    // Read entire method for configs
+    // Follow these method calls:
+    savePreBill();           // ← FOLLOW THIS METHOD
+    saveSaleBill();          // ← FOLLOW THIS METHOD
+    validatePatient();       // ← FOLLOW THIS METHOD
+    calculateTotals();       // ← FOLLOW THIS METHOD
 }
 
-// Line 1395-1397: Transfer pricing options
-boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
-boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
-boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+private void savePreBill() {
+    // Read entire method for configs
+    // Found: Bill generation logic!
+    if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy...")) {
+        deptId = billNumberBean.generateXXX();
+    }
+    // Follow more method calls...
+}
+```
 
-// Line 2545: Item search configuration
-boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
-    "Search Item by Code in " + sessionController.getDepartment().getName(), true);
+#### 2.2 🚨 CRITICAL: Bill Number Generation Strategy Discovery
+
+**🏆 MOST IMPORTANT CONFIGURATIONS**: Bill number generation strategies are often the **MOST CRITICAL** configurations in any billing page. **NEVER MISS THESE!**
+
+**Specific Search Strategy for Bill Generation:**
+
+1. **Search for Settlement/Save Methods**:
+   ```java
+   // Primary targets - these usually contain bill generation
+   settleBill*
+   saveBill*
+   savePreBill*
+   saveSaleBill*
+   ```
+
+2. **Search for Bill Generation Patterns**:
+   ```bash
+   # Search patterns in the controller
+   deptId
+   insId
+   Bill Number Generation Strategy
+   billNumberGenerator
+   billNumberBean
+   departmentBillNumberGenerator
+   institutionBillNumberGenerator
+   generateBillNumber
+   BillNumberSuffix
+   BillClassType
+   ```
+
+3. **Look for Conditional Logic**:
+   ```java
+   // Typical bill generation pattern
+   if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for...")) {
+       deptId = billNumberBean.methodA();
+   } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for...")) {
+       deptId = billNumberBean.methodB();
+   } else {
+       deptId = billNumberBean.defaultMethod();
+   }
+   ```
+
+**Example Bill Generation Configurations Found in PharmacySaleController:**
+
+```java
+// Line 1944: CRITICAL BILL GENERATION STRATEGY
+if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+    deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+} else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+    deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+} else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+    deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+}
+```
+
+**🚨 TYPICAL MISSED CONFIGURATIONS**: These are commonly overlooked but critical:
+
+```java
+// Patient validation configurations
+boolean patientRequired = configOptionApplicationController.getBooleanValueByKey(
+    "Patient is required in Pharmacy Retail Sale Bill for " + sessionController.getDepartment().getName(), false);
+
+// Payment method validations
+if (getPaymentMethod() == PaymentMethod.Card &&
+    configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
+    // Credit card validation
+}
+
+// Cash tendering requirements
+if (configOptionApplicationController.getBooleanValueByKey("Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
+    // Cash amount validation
+}
 ```
 
 ### 1.3 Find Navigation Methods
@@ -157,46 +319,95 @@ public String navigateToPharmacyBhtIssue() {
 }
 ```
 
-## Step 2: Configuration Documentation Template
+## Step 2: SYSTEMATIC Documentation Requirements
 
-### 2.1 Create Analysis Document
+### 🚨 MANDATORY: Complete Configuration Discovery Log
 
-Create a comprehensive list of all findings:
+**DO NOT PROCEED** to implementation until you have a **COMPLETE AND DETAILED** log of ALL findings. **INCOMPLETE DOCUMENTATION = INCOMPLETE IMPLEMENTATION**.
+
+#### 2.1 MASTER CONFIGURATION TRACKING SPREADSHEET
+
+Create a comprehensive tracking document - **NO EXCEPTIONS**:
 
 ```markdown
-## Configuration Options Found (Actual Analysis)
+=== COMPLETE CONFIGURATION DISCOVERY LOG ===
+Page: [PAGE_NAME]
+Controller: [CONTROLLER_NAME]
+Analysis Date: [DATE]
+Analyst: [NAME]
 
-| Option Key | Default Value | Line/Location | Description | Scope |
-|------------|---------------|---------------|-------------|-------|
-| "Medicine Identification Codes Used" | true | Line 250 (XHTML) | Shows medicine identification codes in autocomplete | APPLICATION |
-| "Pharmacy Bill Support for Native Printers" | varies | Line 444 (XHTML) | Enables native printer support for bills | APPLICATION |
-| "Pharmacy Inward Direct Issue Bill is FiveFiveCustom3" | true | Line 550 (XHTML) | Uses FiveFiveCustom3 bill format | APPLICATION |
-| "Pharmacy Inward Direct Issue Bill is PosHeaderPaper" | true | Line 556 (XHTML) | Uses POS header paper format | APPLICATION |
-| "Allow Quantity in Decimals Universally for all the items" | false | Line 394 (Controller) | Allows decimal quantities for all items | APPLICATION |
-| "Enforce Integer Value Quantity Only for [Item Name]" | false | Line 407 (Controller) | Forces integer quantities for specific items | APPLICATION |
-| "Price Matrix is calculated from Inpatient Department for [Dept]" | true | Line 965 (Controller) | Price calculation based on admission dept | DEPARTMENT |
-| "Price Matrix is calculated from Issuing Department for [Dept]" | true | Line 966 (Controller) | Price calculation based on issuing dept | DEPARTMENT |
-| "Check for Allergies during Dispensing" | varies | Line 1139 (Controller) | Enables allergy checking during dispensing | APPLICATION |
-| "Pharmacy Transfer is by Purchase Rate" | false | Line 1395 (Controller) | Uses purchase rate for transfers | APPLICATION |
-| "Pharmacy Transfer is by Cost Rate" | false | Line 1396 (Controller) | Uses cost rate for transfers | APPLICATION |
-| "Pharmacy Transfer is by Retail Rate" | true | Line 1397 (Controller) | Uses retail rate for transfers | APPLICATION |
-| "Search Item by Code in [Department]" | true | Line 2545 (Controller) | Enables item code search by department | DEPARTMENT |
+🚨 CRITICAL CONFIGURATIONS FOUND:
 
-## Privileges Found (Actual Analysis)
+## BILL NUMBER GENERATION STRATEGIES (PRIORITY 1)
 
-| Privilege Name | Line/Location | Description | UI Element Affected |
-|----------------|---------------|-------------|---------------------|
-| Admin | Line 121 (XHTML) | Administrative access | Config button visibility |
-| NursingWorkBench | Lines 25, 132, 159, 469, 503 (XHTML) | Nursing workbench access | Workbench navigation buttons |
-| ShowDrugCharges | Lines 258, 314, 322, 330, 338, 393, 398 (XHTML) | View drug prices and charges | Rate and value columns, price fields |
+| Config Key | Default | Format Generated | Method Called |
+|------------|---------|------------------|---------------|
+| "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number" | false | PSL-PHARM-001-2024-0001 | departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount |
+| "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number" | false | PSL-001-PHARM-2024-0001 | departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount |
+| [CONTINUE FOR ALL BILL GENERATION STRATEGIES...] |
 
-## Navigation Methods (To Be Identified)
+## PATIENT VALIDATION CONFIGURATIONS (PRIORITY 2)
 
-| Method Name | Controller | Description |
-|-------------|-----------|-------------|
-| action="pharmacy_bill_issue_bht" | Multiple controllers | Direct navigation to page |
-| pageAdminController.navigateToPageAdmin() | PageAdminController | Navigate to admin config interface |
+| Config Key | Default | Validation Rule | Error Message |
+|------------|---------|-----------------|---------------|
+| "Patient details are required for retail sale" | varies | Name + mobile required | "Please enter patient name and mobile number." |
+| "Patient is required in Pharmacy Retail Sale Bill for [DEPT]" | false | Patient selection required | "Please Select a Patient" |
+| [CONTINUE FOR ALL PATIENT VALIDATIONS...] |
+
+## PAYMENT METHOD CONFIGURATIONS (PRIORITY 2)
+
+| Config Key | Default | Payment Type | Validation Rule |
+|------------|---------|--------------|-----------------|
+| "Pharmacy retail sale CreditCard last digits is Mandatory" | varies | Card | Last 4 digits required |
+| "Pharmacy discount should be staff when select Staff_welfare as payment method" | false | Staff Welfare | Staff discount scheme required |
+| [CONTINUE FOR ALL PAYMENT VALIDATIONS...] |
+
+## UI DISPLAY CONFIGURATIONS (PRIORITY 3)
+
+| Config Key | Default | UI Element | Effect |
+|------------|---------|------------|--------|
+| "Medicine Identification Codes Used" | true | Autocomplete column | Shows/hides medicine codes |
+| "Pharmacy Bill Support for Native Printers" | varies | Print button | Native vs browser printing |
+| [CONTINUE FOR ALL UI CONFIGURATIONS...] |
+
+## PRIVILEGE REQUIREMENTS
+
+| Privilege Name | UI Element | Access Level |
+|----------------|------------|--------------|
+| Admin | Config button | Administrative only |
+| ShowDrugCharges | Rate/value columns | Financial data access |
+| [CONTINUE FOR ALL PRIVILEGES...] |
+
+🔍 ANALYSIS SUMMARY:
+- Total Configurations Found: [NUMBER]
+- Bill Generation Strategies: [NUMBER]
+- Patient Validations: [NUMBER]
+- Payment Validations: [NUMBER]
+- UI Display Options: [NUMBER]
+- Privileges: [NUMBER]
+
+⚠️ VERIFICATION STATUS:
+[ ] XHTML completely analyzed line-by-line
+[ ] All action methods analyzed
+[ ] All settle/save methods analyzed
+[ ] All listener methods analyzed
+[ ] Bill generation logic completely mapped
+[ ] All configuration keys verified for accuracy
+[ ] All default values confirmed
+[ ] All UI impacts documented
 ```
+
+#### 2.2 QUALITY CONTROL CHECKLIST
+
+**BEFORE PROCEEDING**, verify:
+
+- [ ] **Page read completely**: Every line of XHTML reviewed
+- [ ] **Controller scanned exhaustively**: Every method checked
+- [ ] **Bill generation mapped**: All numbering strategies found
+- [ ] **Cross-reference completed**: Each config traced to its usage
+- [ ] **Default values confirmed**: All defaults accurately documented
+- [ ] **UI impact described**: What each configuration actually does
+- [ ] **Privilege mapping complete**: All access controls documented
 
 ## Step 3: Implementation
 
@@ -288,83 +499,71 @@ private void registerPageMetadata() {
     metadata.addConfigOption(new ConfigOptionInfo(
         "Medicine Identification Codes Used",
         "Shows medicine identification codes in autocomplete dropdown",
-        "Line 250 (XHTML): Autocomplete column visibility",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Pharmacy Bill Support for Native Printers",
         "Enables native printer support for bill printing",
-        "Line 444 (XHTML): Print button rendering condition",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Pharmacy Inward Direct Issue Bill is FiveFiveCustom3",
         "Uses FiveFiveCustom3 format for inward direct issue bills",
-        "Line 550 (XHTML): Bill preview format selection",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Pharmacy Inward Direct Issue Bill is PosHeaderPaper",
         "Uses POS header paper format for inward direct issue bills",
-        "Line 556 (XHTML): Bill preview format selection",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Allow Quantity in Decimals Universally for all the items",
         "Allows decimal quantities for all pharmacy items globally",
-        "Line 394 (Controller): Quantity validation logic",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Check for Allergies during Dispensing",
         "Enables allergy checking when dispensing medications",
-        "Line 1139 (Controller): Allergy validation in dispensing process",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Pharmacy Transfer is by Purchase Rate",
         "Uses purchase rate for pharmacy transfer calculations",
-        "Line 1395 (Controller): Transfer rate calculation method",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Pharmacy Transfer is by Cost Rate",
         "Uses cost rate for pharmacy transfer calculations",
-        "Line 1396 (Controller): Transfer rate calculation method",
         OptionScope.APPLICATION
     ));
 
     metadata.addConfigOption(new ConfigOptionInfo(
         "Pharmacy Transfer is by Retail Rate",
         "Uses retail rate for pharmacy transfer calculations",
-        "Line 1397 (Controller): Transfer rate calculation method",
         OptionScope.APPLICATION
     ));
 
     // Privileges (actual findings from analysis)
     metadata.addPrivilege(new PrivilegeInfo(
         "Admin",
-        "Administrative access to system configuration",
-        "Line 121 (XHTML): Config button visibility"
+        "Administrative access to system configuration"
     ));
 
     metadata.addPrivilege(new PrivilegeInfo(
         "NursingWorkBench",
-        "Access to nursing workbench functionality and navigation",
-        "Lines 25, 132, 159, 469, 503 (XHTML): Workbench navigation buttons"
+        "Access to nursing workbench functionality and navigation"
     ));
 
     metadata.addPrivilege(new PrivilegeInfo(
         "ShowDrugCharges",
-        "View drug prices, rates, and financial charges in pharmacy interfaces",
-        "Lines 258, 314, 322, 330, 338, 393, 398 (XHTML): Rate and value fields visibility"
+        "View drug prices, rates, and financial charges in pharmacy interfaces"
     ));
 
     // Register the metadata
@@ -567,8 +766,60 @@ Create a mapping of where each configuration is used:
 - Admin privilege system
 - Configuration option system
 
+## ⏱️ REALISTIC TIME ESTIMATION
+
+**DO NOT UNDERESTIMATE**: This is a complex, time-intensive task requiring extreme attention to detail.
+
+### Time Requirements by Page Complexity
+
+#### Simple Pages (5-10 configs)
+- **Analysis Phase**: 2-4 hours
+- **Documentation**: 1-2 hours
+- **Implementation**: 1-2 hours
+- **Testing**: 1 hour
+- **TOTAL**: 5-9 hours
+
+#### Medium Pages (10-25 configs)
+- **Analysis Phase**: 4-8 hours
+- **Documentation**: 2-3 hours
+- **Implementation**: 2-3 hours
+- **Testing**: 1-2 hours
+- **TOTAL**: 9-16 hours
+
+#### Complex Pages (25+ configs) - Like Pharmacy Sales
+- **Analysis Phase**: 8-16 hours ⚠️
+- **Documentation**: 3-5 hours
+- **Implementation**: 3-4 hours
+- **Testing**: 2-3 hours
+- **TOTAL**: 16-28 hours (2-4 DAYS!)
+
+### ⚠️ WARNING SIGNS: You're Missing Configurations If...
+
+- [ ] You found fewer than 10 configuration options
+- [ ] You found no bill number generation strategies
+- [ ] You didn't find patient validation configurations
+- [ ] You completed analysis in under 2 hours
+- [ ] You didn't follow method calls recursively
+- [ ] You only searched for obvious patterns
+
+### 🚨 CRITICAL SUCCESS FACTORS
+
+1. **Patience**: This requires methodical, line-by-line analysis
+2. **Persistence**: You MUST follow every method call recursively
+3. **Documentation**: Log EVERY finding as you discover it
+4. **Cross-validation**: Double-check every configuration key
+5. **Testing**: Verify every configuration works in admin interface
+
 ---
 
-**Implementation Time Estimate**: 2-4 hours per page
+**Implementation Time Estimate**:
+- Simple pages: 5-9 hours
+- Medium pages: 9-16 hours
+- Complex pages: 16-28 hours
+
 **Maintenance**: Update when page configurations change
-**Prerequisites**: Admin privilege system, configuration option system
+
+**Prerequisites**:
+- Admin privilege system
+- Configuration option system
+- **EXTREME PATIENCE AND ATTENTION TO DETAIL**

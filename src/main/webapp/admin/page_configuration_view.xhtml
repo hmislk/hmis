@@ -50,29 +50,29 @@
                                 var="config"
                                 emptyMessage="No configuration options found for this page"
                                 styleClass="table table-striped"
-                                paginator="false">
+                                paginator="true"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25,50"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} configurations">
 
-                                <p:column headerText="Configuration Key" style="width: 30%">
+                                <p:column headerText="Configuration Key" style="width: 35%">
                                     <h:outputText value="#{config.key}" styleClass="fw-bold"/>
                                 </p:column>
 
-                                <p:column headerText="Current Value" style="width: 12%; text-align: center;">
+                                <p:column headerText="Current Value" style="width: 15%; text-align: center;">
                                     <h:panelGroup styleClass="badge #{configOptionApplicationController.getBooleanValueByKey(config.key, true) ? 'badge-success' : 'badge-danger'}">
                                         <h:outputText
                                             value="#{configOptionApplicationController.getBooleanValueByKey(config.key, true) ? 'Enabled' : 'Disabled'}"/>
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Scope" style="width: 10%; text-align: center;">
+                                <p:column headerText="Scope" style="width: 15%; text-align: center;">
                                     <h:outputText value="#{config.scope}"/>
                                 </p:column>
 
-                                <p:column headerText="Description" style="width: 28%">
+                                <p:column headerText="Description" style="width: 35%">
                                     <h:outputText value="#{config.description}"/>
-                                </p:column>
-
-                                <p:column headerText="Usage Location" style="width: 15%">
-                                    <h:outputText value="#{config.usageLocation}" styleClass="text-muted small"/>
                                 </p:column>
                             </p:dataTable>
 
@@ -94,18 +94,18 @@
                                 var="priv"
                                 emptyMessage="No privileges found for this page"
                                 styleClass="table table-striped"
-                                paginator="false">
+                                paginator="true"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25,50"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} privileges">
 
-                                <p:column headerText="Privilege Name" style="width: 25%">
+                                <p:column headerText="Privilege Name" style="width: 30%">
                                     <h:outputText value="#{priv.privilegeName}" styleClass="fw-bold"/>
                                 </p:column>
 
-                                <p:column headerText="Description" style="width: 40%">
+                                <p:column headerText="Description" style="width: 70%">
                                     <h:outputText value="#{priv.description}"/>
-                                </p:column>
-
-                                <p:column headerText="Usage Location" style="width: 35%">
-                                    <h:outputText value="#{priv.usageLocation}" styleClass="text-muted small"/>
                                 </p:column>
                             </p:dataTable>
 

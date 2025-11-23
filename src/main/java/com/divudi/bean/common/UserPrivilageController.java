@@ -21,6 +21,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.WebUserRole;
 import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.facade.WebUserRolePrivilegeFacade;
+import com.divudi.bean.common.WebUserController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
@@ -57,6 +59,9 @@ public class UserPrivilageController implements Serializable {
     private WebUserRolePrivilegeFacade facede;
     @EJB
     DepartmentFacade departmentFacade;
+
+    @Inject
+    WebUserController webUserController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -1316,6 +1321,75 @@ public class UserPrivilageController implements Serializable {
 
     public void setSearchText(String searchText) {
         this.searchText = searchText;
+    }
+
+    /**
+     * Toggle a specific privilege for the current user and department
+     */
+    public void togglePrivilege(String privilegeName) {
+        if (currentWebUser == null || department == null) {
+            JsfUtil.addErrorMessage("Please select user and department first");
+            return;
+        }
+
+        try {
+            // Find the privilege enum
+            Privileges privilege = Privileges.valueOf(privilegeName);
+
+            // Check if the privilege currently exists
+            String jpql = "select w from WebUserPrivilege w where w.department=:dep and w.webUser=:wu and w.privilege=:p and w.retired=:ret";
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", department);
+            params.put("wu", currentWebUser);
+            params.put("p", privilege);
+            params.put("ret", false);
+
+            WebUserPrivilege existingPrivilege = getFacade().findFirstByJpql(jpql, params);
+
+            if (existingPrivilege != null) {
+                // Privilege exists - remove it by setting retired=true
+                existingPrivilege.setRetired(true);
+                getFacade().edit(existingPrivilege);
+                JsfUtil.addSuccessMessage("Privilege '" + privilegeName + "' removed successfully");
+            } else {
+                // Privilege doesn't exist - add it
+                WebUserPrivilege newPrivilege = new WebUserPrivilege();
+                newPrivilege.setWebUser(currentWebUser);
+                newPrivilege.setDepartment(department);
+                newPrivilege.setPrivilege(privilege);
+                newPrivilege.setRetired(false);
+                getFacade().create(newPrivilege);
+                JsfUtil.addSuccessMessage("Privilege '" + privilegeName + "' assigned successfully");
+            }
+
+            // Refresh the current user privileges
+            fillUserPrivileges();
+
+        } catch (IllegalArgumentException e) {
+            JsfUtil.addErrorMessage("Invalid privilege name: " + privilegeName);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error toggling privilege: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Check if the current user has a specific privilege in the current department
+     */
+    public boolean hasPrivilege(String privilegeName) {
+        if (currentWebUser == null || department == null) {
+            return false;
+        }
+
+        try {
+            Privileges privilege = Privileges.valueOf(privilegeName);
+            return getWebUserController().checkPrivilege(currentWebUser, privilege, department);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
     }
 
     // </editor-fold>
