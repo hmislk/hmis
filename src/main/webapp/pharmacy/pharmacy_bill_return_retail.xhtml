@@ -14,10 +14,26 @@
                 <p:panel class="w-100">
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center">
-                            <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
-                            <p:commandButton 
+                            <div>
+                                <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
+
+                                <!-- Config Button (Admin Only) -->
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_return_retail')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ui-button-sm p-button-outlined mx-2"
+                                        style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+
+                            <p:commandButton
                                 ajax="false"
-                                value="Back to Reprint" 
+                                value="Back to Reprint"
                                 class="ui-button-secondary"
                                 icon="fa fa-arrow-left"
                                 action="#{pharmacyBillSearch.navigateBackToReprintBill()}" />
