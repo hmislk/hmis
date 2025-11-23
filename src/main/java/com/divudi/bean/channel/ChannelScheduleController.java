@@ -157,7 +157,7 @@ public class ChannelScheduleController implements Serializable {
     private Date sessionInstanceOldTime;
     private List<ServiceSession> retiredItems;
 
-    public void channelSheduleForAllDoctor(Staff stf) {
+    public String channelSheduleForAllDoctor(Staff stf) {
         if (stf == null) {
             getSelectedConsultants();
             for (Staff st : listConsultant) {
@@ -166,6 +166,7 @@ public class ChannelScheduleController implements Serializable {
         }
         generateSessions(stf);
 
+        return "/channel/all_doctor_channel?faces-redirect=true";
     }
 
     public String navigateSheduleManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session) {
