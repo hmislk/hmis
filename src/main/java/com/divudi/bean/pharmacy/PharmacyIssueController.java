@@ -1838,9 +1838,9 @@ public class PharmacyIssueController implements Serializable {
 
     public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
         List<ConfigOptionInfo> list = new ArrayList<>();
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Purchase Rate", "Uses purchase rate for calculating pharmacy issue values (default rate type)", OptionScope.APPLICATION));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Cost Rate", "Uses cost rate for calculating pharmacy issue values", OptionScope.APPLICATION));
-        list.add(new ConfigOptionInfo("Pharmacy Issue is by Retail Rate", "Uses retail rate for calculating pharmacy issue values", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Purchase Rate", "Uses purchase rate for calculating pharmacy issue values (default rate type)", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Cost Rate", "Uses cost rate for calculating pharmacy issue values", OptionScope.APPLICATION));
+        list.add(new ConfigOptionInfo("Pharmacy Disposal is by Retail Rate", "Uses retail rate for calculating pharmacy issue values", OptionScope.APPLICATION));
         return list;
     }
 
