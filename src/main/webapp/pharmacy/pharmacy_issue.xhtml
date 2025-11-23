@@ -194,7 +194,7 @@
                                                     <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
                                                     <p:ajax event="itemSelect"
                                                             listener="#{pharmacyIssueController.handleSelect}"
-                                                            update="txtQty txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal focusQty" ></p:ajax>
+                                                            update="txtQty txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal focusQty" ></p:ajax>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-2">
@@ -211,7 +211,7 @@
                                                         event="keyup"
                                                         listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
                                                         process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                        update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:ajax>
+                                                        update="txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:ajax>
                                                 </p:inputText>
                                                 <p:keyFilter for="txtQty" mask="#{pharmacyIssueController.stockDto.allowFractions ? 'num' : 'int'}" />
                                             </div>
@@ -225,7 +225,7 @@
                                                     value="Add"
                                                     action="#{pharmacyIssueController.addBillItem}"
                                                     process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtQtyDisplay txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
                                                 </p:commandButton>
 
                                                 <p:defaultCommand  target="btnAdd" />
