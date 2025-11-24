@@ -872,6 +872,27 @@ public class CashRecieveBillController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
             return;
         }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForOpdPackageBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -934,6 +955,27 @@ public class CashRecieveBillController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
             return;
         }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForOpdBatchBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -1024,6 +1066,27 @@ public class CashRecieveBillController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
             return;
         }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -1252,6 +1315,26 @@ public class CashRecieveBillController implements Serializable {
         }
 
         if (errorCheckPharmacy()) {
+            return;
+        }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
             return;
         }
 
@@ -2066,6 +2149,26 @@ public class CashRecieveBillController implements Serializable {
             return;
         }
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return;
+        }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
             return;
         }
 
