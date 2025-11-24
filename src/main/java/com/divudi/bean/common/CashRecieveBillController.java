@@ -875,7 +875,7 @@ public class CashRecieveBillController implements Serializable {
 
         // Validate that no bill items have zero or negative values
         for (BillItem item : getBillItems()) {
-            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+            if (item.getNetValue() <= 0) {
                 JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
                     (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
                 return;
@@ -958,7 +958,7 @@ public class CashRecieveBillController implements Serializable {
 
         // Validate that no bill items have zero or negative values
         for (BillItem item : getBillItems()) {
-            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+            if (item.getNetValue() <= 0) {
                 JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
                     (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
                 return;
@@ -1069,7 +1069,7 @@ public class CashRecieveBillController implements Serializable {
 
         // Validate that no bill items have zero or negative values
         for (BillItem item : getBillItems()) {
-            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+            if (item.getNetValue() <= 0) {
                 JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
                     (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
                 return;
@@ -1320,7 +1320,7 @@ public class CashRecieveBillController implements Serializable {
 
         // Validate that no bill items have zero or negative values
         for (BillItem item : getBillItems()) {
-            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+            if (item.getNetValue() <= 0) {
                 JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
                     (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
                 return;
@@ -2154,7 +2154,7 @@ public class CashRecieveBillController implements Serializable {
 
         // Validate that no bill items have zero or negative values
         for (BillItem item : getBillItems()) {
-            if (item.getNetValue() == null || item.getNetValue() <= 0) {
+            if (item.getNetValue() <= 0) {
                 JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
                     (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
                 return;
