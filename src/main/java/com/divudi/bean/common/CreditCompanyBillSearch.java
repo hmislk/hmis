@@ -697,19 +697,41 @@ public class CreditCompanyBillSearch implements Serializable {
     @EJB
     private CreditBean creditBean;
 
-    private void updateReferenceBill(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
+    private void updateReferenceBill(BillItem cancellationBillItem) {
+        Bill referenceBill = cancellationBillItem.getReferenceBill();
 
-        tmp.getReferenceBill().setPaidAmount(0 - dbl);
-        getBillFacade().edit(tmp.getReferenceBill());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from paidAmount
+        double currentPaidAmount = referenceBill.getPaidAmount();
+        referenceBill.setPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        // Recalculate settled amounts (will exclude the cancelled settlement)
+        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
+        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
+
+        // Update the settled amount fields
+        referenceBill.setSettledAmountByPatient(settledCreditValueByPatient);
+        referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
+
+        getBillFacade().edit(referenceBill);
 
     }
 
-    private void updateReferenceBht(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
+    private void updateReferenceBht(BillItem cancellationBillItem) {
+        PatientEncounter encounter = cancellationBillItem.getPatientEncounter();
 
-        tmp.getPatientEncounter().setCreditPaidAmount(0 - dbl);
-        getPatientEncounterFacade().edit(tmp.getPatientEncounter());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from creditPaidAmount
+        double currentPaidAmount = encounter.getCreditPaidAmount();
+        encounter.setCreditPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        getPatientEncounterFacade().edit(encounter);
 
     }
 
