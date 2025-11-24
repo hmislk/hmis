@@ -14,57 +14,70 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="From" for="fromDate" styleClass="m-3"/>
+                                <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:calendar id="fromDate"
-                                        styleClass="w-100"
-                                        inputStyleClass="w-100 form-control"
-                                        pattern="dd/MM/yyyy"
-                                        />
-
+                            <p:datePicker
+                                id="fromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy hh:mm a"   
+                                showTime="true"                 
+                                hourFormat="12"                 
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+                            
                             <p:spacer width="40"/>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="To" for="toDate" styleClass="m-3"/>
+                                <p:outputLabel value="To Date" for="toDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:calendar id="toDate"
-                                        styleClass="w-100"
-                                        inputStyleClass="w-100 form-control"
-                                        pattern="dd/MM/yyyy"
-                                        />
+                            <p:datePicker
+                                id="toDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy hh:mm a"   
+                                showTime="true"                 
+                                hourFormat="12"                 
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Surgery Name" for="cmdFromSurgery" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmdFromSurgery" value="" filter="true" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="Select Name" itemValue="" />
-                            </p:selectOneMenu>
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0f1;" styleClass="fa mr-2"/> 
+                                    <p:outputLabel value="Surgery Name" for="cmdFromSurgery" styleClass="m-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu id="cmdFromSurgery" value="" filter="true" styleClass="w-100 form-control">
+                                    <f:selectItem itemLabel="Select Name" itemValue="" />
+                                </p:selectOneMenu>
 
-                            <p:spacer width="40"/>
+                                <p:spacer width="40"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="All" itemValue="" />
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/> 
+                                    <p:outputLabel value="Surgery Category" for="cmdSurgeryCategory" styleClass="m-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu id="cmdSurgeryCategory" value="" filter="true" styleClass="w-100 form-control">
+                                    <f:selectItem itemLabel="All" itemValue="" />
 
-                            </p:selectOneMenu>
+                                </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="chartType" styleClass="w-100">
-                                <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
-                                <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
-                                <f:selectItem itemLabel="Line Chart" itemValue="line"/>
-                            </p:selectOneMenu>
+
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
+                                    <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu id="chartType" styleClass="w-100">
+                                    <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
+                                    <f:selectItem itemLabel="Line Chart" itemValue="line"/>
+                                </p:selectOneMenu>
 
                         </h:panelGrid>
 
