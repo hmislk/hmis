@@ -52,7 +52,9 @@
                                             id="btnAddIx"
                                             value="Add"
                                             action="#{cashRecieveBillController.addToBillCombined()}"
-                                            ajax="false"
+                                            ajax="true"
+                                            process="acIx val"
+                                            update=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} val acIx"
                                             icon="fa fa-plus"
                                             class="ui-button-success gap-2"/>
                                     </div>
@@ -159,6 +161,7 @@
                                             value="#{cashRecieveBillController.currentBillItem.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
+                                        <p:message for="val" display="text" style="color: red;" />
                                     </div>
                                 </div>
 
