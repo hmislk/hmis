@@ -182,6 +182,57 @@ Add this button in the page header (adjust placement as needed):
 3. Extract the configuration key name (first parameter)
 4. Note the line number and what it controls
 
+### 🚨 MANDATORY: Bill Number Suffix Configuration Discovery
+
+**CRITICAL**: If your controller calls ANY BillNumberGenerator method, you MUST register the bill number suffix configuration.
+
+#### Step 1: Find BillNumberGenerator Method Calls
+
+Search your controller for these patterns:
+```bash
+billNumberBean.departmentBillNumberGenerator
+billNumberBean.institutionBillNumberGenerator
+billNumberGenerator.departmentBillNumberGenerator
+billNumberGenerator.institutionBillNumberGenerator
+generateBillNumber
+generateDirectBillNumber
+generateInstitutionBillNumber
+```
+
+#### Step 2: Extract BillTypeAtomic Parameters
+
+For each method call, identify the BillTypeAtomic parameter:
+```java
+// Example
+billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+    sessionController.getDepartment(),
+    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE  // ← Extract this value
+);
+```
+
+#### Step 3: Register the Required Suffix Configuration
+
+For each BillTypeAtomic found, add this configuration:
+```java
+metadata.addConfigOption(new ConfigOptionInfo(
+    "Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE",  // Exact enum name
+    "Custom suffix to append to pharmacy disposal issue bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount)",
+    "Line XXX: Bill generation method call",
+    OptionScope.APPLICATION
+));
+```
+
+**Key Pattern**: `"Bill Number Suffix for " + [EXACT_BILL_TYPE_ATOMIC_NAME]`
+
+**Common BillTypeAtomic Values**:
+- `PHARMACY_DISPOSAL_ISSUE`
+- `PHARMACY_RETAIL_SALE_PRE`
+- `PHARMACY_RETAIL_SALE`
+- `OPD_BILL`
+- `INWARD_PROFESSIONAL_PAYMENT`
+- `INWARD_SERVICE_BILL`
+- And many others...
+
 Example:
 ```xml
 <!-- Line 221 -->
@@ -452,6 +503,39 @@ PageMetadataRegistry pageMetadataRegistry;
 2. **Check scope**: Verify the correct scope is used (APPLICATION/DEPARTMENT/USER)
 3. **Check application settings**: Verify configuration exists in database
 4. **Check constructor parameters**: Verify using correct parameter order
+
+#### 🚨 Bill Number Suffix Not Working
+
+**Symptom**: Custom bill number suffixes are ignored, all generated bill numbers use default format
+
+**Root Cause**: Incorrect configuration key registration
+
+**Diagnostic Steps**:
+1. **Check BillNumberGenerator method calls** in your controller:
+   ```bash
+   grep -n "billNumberBean\|billNumberGenerator" YourController.java
+   ```
+
+2. **Extract BillTypeAtomic parameter** from each method call:
+   ```java
+   // Example: Extract "PHARMACY_DISPOSAL_ISSUE"
+   billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+       dept, BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+   ```
+
+3. **Verify exact configuration key** in your metadata registration:
+   ```java
+   // Must match exactly - use enum name, not human-readable name
+   "Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE"  // ✅ CORRECT
+   "Bill Number Suffix for PharmacyIssue"           // ❌ WRONG
+   ```
+
+4. **Test configuration** in admin interface:
+   - Set a test suffix value (e.g., "TEST")
+   - Generate a bill
+   - Verify suffix appears in generated bill number
+
+**Quick Fix**: Update configuration key to use exact BillTypeAtomic enum name
 
 ### 🔍 VALIDATION CHECKLIST
 
