@@ -7,7 +7,13 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -23,7 +29,6 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
-import com.divudi.core.entity.StockBill;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
@@ -39,8 +44,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.enterprise.context.Dependent;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -77,7 +82,11 @@ public class IssueReturnController implements Serializable {
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    private ConfigOptionController configOptionController;
+    @Inject
     private DisposalReturnWorkflowController disposalReturnWorkflowController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     private Bill originalBill;
     private Bill returnBill;
@@ -88,6 +97,98 @@ public class IssueReturnController implements Serializable {
     private List<BillItem> returnBillItems;
 
     private List<BillItem> selectedBillItems;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_bill_return_issue");
+        metadata.setPageName("Pharmacy Disposal Issue Return");
+        metadata.setDescription("Return of previously issued pharmacy disposal items back to issuing department");
+        metadata.setControllerClass("IssueReturnController");
+
+        // Configuration Options - Print Formats
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Return Issue Receipt is A4 Paper",
+            "Uses A4 paper format for bill return issue receipts (default format)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Return Issue Receipt is Custom 1",
+            "Uses Custom format 1 for bill return issue receipts",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Return Issue Receipt is Custom 2",
+            "Uses Custom format 2 for bill return issue receipts",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Bill Number Generation Strategies
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers for issue returns in format: Prefix-DeptCode-InstCode-Year-Number (e.g., PIR-PHARM-001-2024-0001)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers for issue returns in format: Prefix-InstCode-DeptCode-Year-Number (e.g., PIR-001-PHARM-2024-0001)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers for issue returns in format: Prefix-InstCode-Year-Number (e.g., PIR-001-2024-0001) - institution-wide counter",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management - displays the Config button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "CreateDisposalReturn",
+            "Permission to create new disposal return requests from issued bills"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "FinalizeDisposalReturn",
+            "Permission to finalize disposal return requests, marking them ready for approval"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ApproveDisposalReturn",
+            "Permission to approve and settle disposal return requests, completing the return process"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ViewDisposalReturn",
+            "Permission to view completed disposal return records"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to access printer configuration settings dialog for changing bill return issue receipt paper formats"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public void saveDisposalIssueReturnBill() {
         // No validation required for saving drafts - users can save incomplete data

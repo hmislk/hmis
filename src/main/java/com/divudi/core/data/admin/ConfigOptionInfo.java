@@ -33,6 +33,17 @@ public class ConfigOptionInfo implements Serializable {
         this.scope = scope;
     }
 
+    /**
+     * Convenience constructor without usage location for simpler usage.
+     * Usage location can be set later via setter if needed.
+     */
+    public ConfigOptionInfo(String key, String description, OptionScope scope) {
+        this.key = key;
+        this.description = description;
+        this.scope = scope;
+        this.usageLocation = null; // Optional field
+    }
+
     // Getters and Setters
 
     public String getKey() {

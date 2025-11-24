@@ -149,7 +149,7 @@
                                                 emptyMessage="No privileges found for this page"
                                                 styleClass="table table-striped">
 
-                                                <p:column headerText="Privilege Name" style="width: 25%">
+                                                <p:column headerText="Privilege Name" style="width: 30%">
                                                     <h:outputText value="#{privInfo.privilegeName}" styleClass="fw-bold"/>
                                                 </p:column>
 
@@ -157,32 +157,56 @@
                                                     <h:outputText value="#{privInfo.description}"/>
                                                 </p:column>
 
-                                                <p:column headerText="Usage Location" style="width: 25%">
-                                                    <h:outputText value="#{privInfo.usageLocation}" styleClass="text-muted small"/>
-                                                </p:column>
-
-                                                <p:column headerText="Assigned" style="width: 10%; text-align: center;">
+                                                <p:column headerText="Current Status" style="width: 15%; text-align: center;">
                                                     <h:panelGroup
                                                         rendered="#{webUserController.checkPrivilege(userPrivilageController.currentWebUser, privInfo.privilegeName, userPrivilageController.department)}">
-                                                        <i class="fa fa-check-circle text-success fa-lg" title="Privilege is assigned"/>
+                                                        <span class="badge badge-success">
+                                                            <i class="fa fa-check-circle"/> Assigned
+                                                        </span>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         rendered="#{not webUserController.checkPrivilege(userPrivilageController.currentWebUser, privInfo.privilegeName, userPrivilageController.department)}">
-                                                        <i class="fa fa-times-circle text-danger fa-lg" title="Privilege is not assigned"/>
+                                                        <span class="badge badge-danger">
+                                                            <i class="fa fa-times-circle"/> Not Assigned
+                                                        </span>
+                                                    </h:panelGroup>
+                                                </p:column>
+
+                                                <p:column headerText="Action" style="width: 15%; text-align: center;">
+                                                    <h:panelGroup
+                                                        rendered="#{webUserController.checkPrivilege(userPrivilageController.currentWebUser, privInfo.privilegeName, userPrivilageController.department)}">
+                                                        <p:commandButton
+                                                            value="Remove"
+                                                            icon="fa fa-minus-circle"
+                                                            styleClass="ui-button-danger ui-button-sm"
+                                                            title="Remove this privilege from the user"
+                                                            action="#{userPrivilageController.togglePrivilege(privInfo.privilegeName)}"
+                                                            update="privilegesTable messages">
+                                                            <p:confirm header="Confirm Privilege Removal"
+                                                                message="Are you sure you want to remove the '#{privInfo.privilegeName}' privilege from #{userPrivilageController.currentWebUser.name}?"
+                                                                icon="fa fa-exclamation-triangle"/>
+                                                        </p:commandButton>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup
+                                                        rendered="#{not webUserController.checkPrivilege(userPrivilageController.currentWebUser, privInfo.privilegeName, userPrivilageController.department)}">
+                                                        <p:commandButton
+                                                            value="Assign"
+                                                            icon="fa fa-plus-circle"
+                                                            styleClass="ui-button-success ui-button-sm"
+                                                            title="Assign this privilege to the user"
+                                                            action="#{userPrivilageController.togglePrivilege(privInfo.privilegeName)}"
+                                                            update="privilegesTable messages"/>
                                                     </h:panelGroup>
                                                 </p:column>
                                             </p:dataTable>
 
-                                            <div class="alert alert-info mt-3" role="alert">
-                                                <i class="fa fa-info-circle"></i>
-                                                <strong class="ms-2">How to Assign Privileges</strong>
+                                            <div class="alert alert-success mt-3" role="alert">
+                                                <i class="fa fa-lightbulb-o"></i>
+                                                <strong class="ms-2">Privilege Management</strong>
                                                 <p class="mt-2 ms-2">
-                                                    To assign or remove privileges shown above, please navigate to the
-                                                    <a href="/systemAdmin/user_privileges?faces-redirect=true" class="alert-link">
-                                                        full user privileges management page
-                                                    </a>
-                                                    where you can select the specific privileges for this user.
-                                                    This page shows which of the page-specific privileges are currently assigned.
+                                                    You can directly assign or remove privileges using the buttons above.
+                                                    Changes take effect immediately. Use the "Assign" button to grant a privilege
+                                                    or "Remove" to revoke it from the selected user in the selected department.
                                                 </p>
                                             </div>
 
@@ -190,9 +214,10 @@
                                                 <p:commandButton
                                                     value="Go to Full Privilege Management"
                                                     icon="fa fa-external-link"
-                                                    styleClass="ui-button-warning"
+                                                    styleClass="ui-button-info ui-button-outlined"
                                                     action="/systemAdmin/user_privileges?faces-redirect=true"
-                                                    ajax="false">
+                                                    ajax="false"
+                                                    title="Manage all privileges for this user across the entire system">
                                                     <f:setPropertyActionListener
                                                         value="#{userPrivilageController.currentWebUser}"
                                                         target="#{userPrivilageController.currentWebUser}"/>
@@ -229,6 +254,12 @@
                                 </div>
                             </p:panel>
                         </h:panelGroup>
+
+                        <!-- Confirmation Dialog -->
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fa fa-check"/>
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times"/>
+                        </p:confirmDialog>
                     </h:form>
                 </h:panelGroup>
 
