@@ -52,7 +52,9 @@
                                             id="btnAddIx"
                                             value="Add"
                                             action="#{cashRecieveBillController.addToBillCombined()}"
-                                            ajax="false"
+                                            ajax="true"
+                                            process="acIx val"
+                                            update=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} val acIx"
                                             icon="fa fa-plus"
                                             class="ui-button-success gap-2"/>
                                     </div>
@@ -156,9 +158,14 @@
                                             class="w-100"
                                             id="val"
                                             onfocus="this.select();"
-                                            value="#{cashRecieveBillController.currentBillItem.netValue}">
+                                            value="#{cashRecieveBillController.currentBillItem.netValue}"
+                                            required="true"
+                                            requiredMessage="Value is required">
                                             <f:convertNumber pattern="#,##0.00" />
+                                            <f:validateDoubleRange minimum="0.01"
+                                                                 minimumMessage="Value must be greater than zero" />
                                         </p:inputText>
+                                        <p:message for="val" display="text" style="color: red;" />
                                     </div>
                                 </div>
 
