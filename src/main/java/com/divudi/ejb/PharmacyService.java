@@ -214,9 +214,6 @@ public class PharmacyService {
         if (billItem == null) {
             return;
         }
-        if (billItem.getPharmaceuticalBillItem() == null) {
-            return;
-        }
         Item item = billItem.getItem();
         if (item == null) {
             return;

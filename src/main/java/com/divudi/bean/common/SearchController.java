@@ -3506,9 +3506,9 @@ public class SearchController implements Serializable {
      * DTO-based version of createPharmacyTableRe() for improved performance.
      * Uses PharmacyCashierPreBillSearchDTO to avoid loading full entity graphs.
      *
-     * This method creates a lightweight query that fetches only the required fields
-     * for display in pharmacy_search_sale_pre_bill.xhtml without loading entire
-     * entity relationships.
+     * This method creates a lightweight query that fetches only the required
+     * fields for display in pharmacy_search_sale_pre_bill.xhtml without loading
+     * entire entity relationships.
      */
     public void createPharmacyTableReDto() {
         cashierPreBillSearchDtos = null;
@@ -3569,7 +3569,6 @@ public class SearchController implements Serializable {
 
         // Department filter already applied via b.department.id = :deptid above
         // No additional department filtering needed
-
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             try {
                 Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
@@ -3613,8 +3612,9 @@ public class SearchController implements Serializable {
     }
 
     /**
-     * Populate missing reference bill fields for DTOs via separate queries
-     * This method fills in the reference bill details that couldn't be captured in the main DTO query
+     * Populate missing reference bill fields for DTOs via separate queries This
+     * method fills in the reference bill details that couldn't be captured in
+     * the main DTO query
      */
     private void populateReferenceBillFields(List<PharmacyCashierPreBillSearchDTO> dtos) {
         for (PharmacyCashierPreBillSearchDTO dto : dtos) {
@@ -3646,10 +3646,10 @@ public class SearchController implements Serializable {
                 if (preBill.getRefundedBill() != null) {
                     dto.setRefundedBillCreatedAt(preBill.getRefundedBill().getCreatedAt());
                     dto.setRefundedBillComments(preBill.getRefundedBill().getComments());
-                    if (preBill.getRefundedBill().getCreater() != null &&
-                        preBill.getRefundedBill().getCreater().getWebUserPerson() != null) {
+                    if (preBill.getRefundedBill().getCreater() != null
+                            && preBill.getRefundedBill().getCreater().getWebUserPerson() != null) {
                         dto.setRefundedBillCreatorName(
-                            preBill.getRefundedBill().getCreater().getWebUserPerson().getName());
+                                preBill.getRefundedBill().getCreater().getWebUserPerson().getName());
                     }
                 }
 
@@ -3657,10 +3657,10 @@ public class SearchController implements Serializable {
                 if (preBill.getCancelledBill() != null) {
                     dto.setCancelledBillCreatedAt(preBill.getCancelledBill().getCreatedAt());
                     dto.setCancelledBillComments(preBill.getCancelledBill().getComments());
-                    if (preBill.getCancelledBill().getCreater() != null &&
-                        preBill.getCancelledBill().getCreater().getWebUserPerson() != null) {
+                    if (preBill.getCancelledBill().getCreater() != null
+                            && preBill.getCancelledBill().getCreater().getWebUserPerson() != null) {
                         dto.setCancelledBillCreatorName(
-                            preBill.getCancelledBill().getCreater().getWebUserPerson().getName());
+                                preBill.getCancelledBill().getCreater().getWebUserPerson().getName());
                     }
                 }
 
@@ -4420,9 +4420,9 @@ public class SearchController implements Serializable {
             System.out.println("DEBUG: First few bill details:");
             for (int i = 0; i < Math.min(5, bills.size()); i++) {
                 Bill b = bills.get(i);
-                System.out.println("  Bill ID: " + b.getId() + ", DeptId: " + b.getDeptId() + ", Atomic: " + b.getBillTypeAtomic() +
-                    ", Dept: " + (b.getDepartment() != null ? b.getDepartment().getId() + "-" + b.getDepartment().getName() : "NULL") +
-                    ", CreatedAt: " + b.getCreatedAt());
+                System.out.println("  Bill ID: " + b.getId() + ", DeptId: " + b.getDeptId() + ", Atomic: " + b.getBillTypeAtomic()
+                        + ", Dept: " + (b.getDepartment() != null ? b.getDepartment().getId() + "-" + b.getDepartment().getName() : "NULL")
+                        + ", CreatedAt: " + b.getCreatedAt());
             }
         } else {
             System.out.println("DEBUG: No bills found. Let's check if any PHARMACY_STOCK_ADJUSTMENT_BILL bills exist in this department...");
@@ -11150,6 +11150,10 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
 
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+
         if (showLoggedDepartmentOnly) {
             Department dept = sessionController.getDepartment();
             if (dept != null) {
@@ -11221,9 +11225,6 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //
-        temMap.put("billTypesAtomics", billTypesAtomics);
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -12629,7 +12630,8 @@ public class SearchController implements Serializable {
 
     /**
      * Generate all bill list report using DTO approach for improved performance
-     * This method creates a direct DTO query avoiding entity relationship loading
+     * This method creates a direct DTO query avoiding entity relationship
+     * loading
      */
     public void listBillsDto() {
         billListReportDtos = null;
@@ -12637,23 +12639,23 @@ public class SearchController implements Serializable {
 
         // Build JPQL query with constructor expression for direct DTO creation
         StringBuilder jpql = new StringBuilder(
-            "SELECT new com.divudi.core.data.dto.BillListReportDTO("
-            + "b.id, "
-            + "COALESCE(b.deptId, ''), "
-            + "COALESCE(b.billClassType, ''), "  // billClass is a trasnsient attribute
-            + "b.billTypeAtomic, "  // billTypeAtomic enum - DTO will convert to string
-            + "b.paymentMethod, "  // paymentMethod enum - DTO will convert to string
-            + "COALESCE(b.patient.person.name, ''), " // b.patient.person.nameWithTitle is a transient
-            + "b.createdAt, "
-            + "COALESCE(b.creater.name, ''), "
-            + "COALESCE(b.retired, false), "
-            + "COALESCE(b.cancelled, false), "
-            + "COALESCE(b.refunded, false), "
-            + "COALESCE(b.total, 0), "
-            + "COALESCE(b.discount, 0), "
-            + "COALESCE(b.netTotal, 0)) "
-            + "FROM Bill b "
-            + "WHERE 1=1 "
+                "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "COALESCE(b.billClassType, ''), " // billClass is a trasnsient attribute
+                + "b.billTypeAtomic, " // billTypeAtomic enum - DTO will convert to string
+                + "b.paymentMethod, " // paymentMethod enum - DTO will convert to string
+                + "COALESCE(b.patient.person.name, ''), " // b.patient.person.nameWithTitle is a transient
+                + "b.createdAt, "
+                + "COALESCE(b.creater.name, ''), "
+                + "COALESCE(b.retired, false), "
+                + "COALESCE(b.cancelled, false), "
+                + "COALESCE(b.refunded, false), "
+                + "COALESCE(b.total, 0), "
+                + "COALESCE(b.discount, 0), "
+                + "COALESCE(b.netTotal, 0)) "
+                + "FROM Bill b "
+                + "WHERE 1=1 "
         );
 
         // Apply date range filter
@@ -12755,8 +12757,8 @@ public class SearchController implements Serializable {
                 }
             }
 
-            JsfUtil.addSuccessMessage("Report generated successfully with " +
-                    (billListReportDtos != null ? billListReportDtos.size() : 0) + " records");
+            JsfUtil.addSuccessMessage("Report generated successfully with "
+                    + (billListReportDtos != null ? billListReportDtos.size() : 0) + " records");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error generating report: " + e.getMessage());
             billListReportDtos = new ArrayList<>();
@@ -16238,7 +16240,6 @@ public class SearchController implements Serializable {
 //            ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
 //            bundle.getBundles().add(opdCreditCompanyCollection);
 //            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
-
             // Generate Inward Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
             bundle.getBundles().add(inwardCreditCompanyCollection);
@@ -16831,7 +16832,6 @@ public class SearchController implements Serializable {
 //            creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
 //            bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
 //            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
-
 // Generate Outpatient Credit Settling - Unified section combining OPD and Pharmacy credit payments
             List<BillTypeAtomic> outpatientCreditSettling = new ArrayList<>();
             outpatientCreditSettling.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
@@ -16963,7 +16963,6 @@ public class SearchController implements Serializable {
 //            opdCreditRefundBundle.setName("OPD Credit Refunds");
 //            bundle.getBundles().add(opdCreditRefundBundle);
 //            collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
-
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
             // COMMENTED OUT: Duplicate of pharmacy credit bills processing already done at lines 16310-16315
             // This duplicate was causing erroneous total increases
@@ -16978,8 +16977,7 @@ public class SearchController implements Serializable {
             pharmacyCreditBillsBundle.setName("Pharmacy Credit Bills");
             bundle.getBundles().add(pharmacyCreditBillsBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditBillsBundle);
-            */
-
+             */
             List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
@@ -17259,7 +17257,6 @@ public class SearchController implements Serializable {
 //            creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
 //            bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
 //            collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
-
             // Generate Outpatient Credit Settling - Unified section combining OPD and Pharmacy credit payments
             List<BillTypeAtomic> outpatientCreditSettling = new ArrayList<>();
             outpatientCreditSettling.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
@@ -17410,8 +17407,7 @@ public class SearchController implements Serializable {
             pharmacyCreditBillsBundle.setName("Pharmacy Credit Bills");
             bundle.getBundles().add(pharmacyCreditBillsBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditBillsBundle);
-            */
-
+             */
             List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);

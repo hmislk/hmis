@@ -165,6 +165,8 @@ public class PatientInvestigationController implements Serializable {
     LabTestHistoryController labTestHistoryController;
     @Inject
     LimsMiddlewareController limsMiddlewareController;
+    @Inject
+    InvestigationController investigationController;
 
     /**
      * Class Variables
@@ -305,6 +307,21 @@ public class PatientInvestigationController implements Serializable {
             sampleComponentName += "  ";
         }
         return sampleComponentName;
+    }
+    
+    public String navigateToManageInvestigation(Long patientInvestigationId) {
+        if(patientInvestigationId == null){
+            JsfUtil.addErrorMessage("Error in ID");
+            return "";
+        }
+        PatientInvestigation pi = ejbFacade.findWithoutCache(patientInvestigationId);
+        if(pi == null){
+            JsfUtil.addErrorMessage("PatientInvestigation is Null");
+            return "";
+        }
+        investigationController.setCurrent(pi.getInvestigation());
+        
+        return "/admin/lims/investigation?faces-redirect=true";
     }
 
     public String navigateToSampleSeparate() {
@@ -4613,11 +4630,13 @@ public class PatientInvestigationController implements Serializable {
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
         String jpql = "SELECT psc.patientInvestigation "
-                + "FROM PatientSampleComponant psc "
-                + "WHERE psc.retired = :retired "
-                + "AND psc.patientSample = :patientSample";
+                + " FROM PatientSampleComponant psc "
+                + " WHERE psc.retired = :retired "
+                + " AND psc.separated =:sept"
+                + " AND psc.patientSample = :patientSample";
         Map<String, Object> params = new HashMap<>();
-        params.put("retired", false);  // Assuming you want only non-retired records
+        params.put("retired", false);  // Assuming you want only non-retired records3
+        params.put("sept", false);
         params.put("patientSample", patientSample);
         List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(jpql, params);
         return patientInvestigations;
