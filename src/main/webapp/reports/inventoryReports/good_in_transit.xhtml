@@ -386,7 +386,7 @@
                             </p:column>
                             <p:column headerText="Stock"
                                       sortBy="#{bi.billItem.pharmaceuticalBillItem.qty}"
-                                      >
+                                      styleClass="text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock"/>
                                 </f:facet>
@@ -447,31 +447,46 @@
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Retail Sale Value"
-                                      styleClass="averageNumericColumn">
+                                      styleClass="averageNumericColumn text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Retail Sale Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.retailRateInUnit * bi.billItem.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Purchase Value"
-                                      styleClass="averageNumericColumn">
+                                      styleClass="averageNumericColumn text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Purchase Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.purchaseRate * bi.billItem.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Cost Value"
-                                      styleClass="averageNumericColumn">
+                                      styleClass="averageNumericColumn text-end">
                                 <f:facet name="header">
                                     <h:outputLabel value="Cost Value"/>
                                 </f:facet>
                                 <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.costRate * bi.billItem.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                              <p:column>
                                 <f:facet name="header">
