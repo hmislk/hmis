@@ -323,7 +323,7 @@
                             value="To Cancel Bill"
                             disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
                             ajax="false"
-                            action="credit_company_bill_cancel"
+                            action="credit_company_bill_cancel?faces-redirect=true"
                             icon="pi pi-times"
                             styleClass="ui-button-danger m-1">
                             <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
