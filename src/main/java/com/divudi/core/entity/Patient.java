@@ -4,6 +4,7 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.data.SpecificPatientStatus;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
@@ -13,6 +14,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -138,8 +140,8 @@ public class Patient implements Serializable, RetirableEntity {
 
     private Boolean cardIssues;
     
-    @Enumerated //This is defined for mark patient labels as vip, vvip and normal.
-    private String specificStatus;
+    @Enumerated(EnumType.STRING) //This is defined for mark patient labels as vip, vvip and normal.
+    private SpecificPatientStatus specificStatus = SpecificPatientStatus.NORMAL;
     private String specificStatusComment;
 
     @Temporal(javax.persistence.TemporalType.DATE)
