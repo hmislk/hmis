@@ -342,7 +342,7 @@ public class CashRecieveBillController implements Serializable {
         double dbl = getReferenceBallance(getCurrentBillItem());
         System.out.println(getCurrentBillItem().getReferenceBill());
 
-        if (dbl > 0.1) {
+        if (dbl > 0.01) {
             getCurrentBillItem().setNetValue(dbl);
         }
 
@@ -351,7 +351,7 @@ public class CashRecieveBillController implements Serializable {
     public void selectBhtListener() {
         double dbl = getReferenceBhtBallance(getCurrentBillItem());
 
-        if (dbl > 0.1) {
+        if (dbl > 0.01) {
             getCurrentBillItem().setNetValue(dbl);
         }
 
