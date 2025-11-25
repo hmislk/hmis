@@ -3467,6 +3467,32 @@ public class PharmacyReportController implements Serializable {
 
             billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
+            // Calculate totals for footer using BIFD values
+            totalRetailValue = 0.0;
+            totalPurchaseValue = 0.0;
+            totalCostValue = 0.0;
+
+            for (BillItem billItem : billItems) {
+                if (billItem.getBillItemFinanceDetails() != null) {
+                    BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+                    // Retail Value calculation using BIFD
+                    if (bifd.getValueAtRetailRate() != null) {
+                        totalRetailValue += Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                    }
+
+                    // Purchase Value calculation using BIFD
+                    if (bifd.getValueAtPurchaseRate() != null) {
+                        totalPurchaseValue += Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                    }
+
+                    // Cost Value calculation using BIFD
+                    if (bifd.getValueAtCostRate() != null) {
+                        totalCostValue += Math.abs(bifd.getValueAtCostRate().doubleValue());
+                    }
+                }
+            }
+
             if (billItems.isEmpty()) {
                 pharmacyRows = new ArrayList<>();
                 return;

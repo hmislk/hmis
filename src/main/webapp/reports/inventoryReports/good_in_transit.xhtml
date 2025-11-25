@@ -451,7 +451,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Retail Sale Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.retailRateInUnit * bi.billItem.pharmaceuticalBillItem.qty)}">
+                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtRetailRate)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -465,7 +465,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Purchase Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.purchaseRate * bi.billItem.pharmaceuticalBillItem.qty)}">
+                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtPurchaseRate)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -479,7 +479,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Cost Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.pharmaceuticalBillItem.costRate * bi.billItem.pharmaceuticalBillItem.qty)}">
+                                <h:outputLabel value="#{commonFunctionsProxy.abs(bi.billItem.billItemFinanceDetails.valueAtCostRate)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
