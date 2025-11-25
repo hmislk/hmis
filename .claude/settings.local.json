@@ -15,7 +15,9 @@
       "Bash(gh pr reopen:*)",
       "Bash(gh pr merge:*)",
       "Bash(gh pr list:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(./detect-maven.sh:*)",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": [],

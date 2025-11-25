@@ -4,8 +4,13 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import java.util.HashMap;
@@ -47,6 +52,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -98,6 +104,9 @@ public class TransferReceiveController implements Serializable {
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
     @Inject
     private com.divudi.bean.common.SearchController searchController;
     private List<Bill> bills;
@@ -1454,6 +1463,98 @@ public class TransferReceiveController implements Serializable {
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        // Register pharmacy_transfer_receive.xhtml
+        PageMetadata receiveMetadata = new PageMetadata();
+        receiveMetadata.setPagePath("pharmacy/pharmacy_transfer_receive");
+        receiveMetadata.setPageName("Pharmacy Transfer Receive");
+        receiveMetadata.setDescription("Receive and confirm pharmacy items from transfer issues");
+        receiveMetadata.setControllerClass("TransferReceiveController");
+
+        // Configuration Options
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Report Font Size of Item List in Pharmacy Disbursement Reports",
+            "Sets the font size for item lists in pharmacy disbursement reports",
+            "Line 41 (XHTML): DataTable font size styling",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4",
+            "Uses A4 paper format for transfer receive receipts",
+            "Line 232 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Bill is Template",
+            "Uses template format for transfer receive bills",
+            "Line 240 (XHTML): Bill format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is Letter Paper Custom 1",
+            "Uses custom letter paper format for transfer receive receipts",
+            "Line 246 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4 Detailed",
+            "Uses detailed A4 paper format for transfer receive receipts",
+            "Line 252 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4 Custom 1",
+            "Uses A4 Custom Format 1 for transfer receive receipts",
+            "Line 258 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4 Custom 2",
+            "Uses A4 Custom Format 2 for transfer receive receipts",
+            "Line 264 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        receiveMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        receiveMetadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyTransferViewRates",
+            "View rate and value information in pharmacy transfers",
+            "Lines 75, 81, 105, 124-125, 129-130, 181-182, 186-187, 191-192 (XHTML): Rate and value visibility"
+        ));
+
+        receiveMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Access to receipt printing configuration settings",
+            "Line 212 (XHTML): Settings button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(receiveMetadata);
     }
 
 }
