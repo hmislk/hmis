@@ -52,7 +52,9 @@
                                             id="btnAddIx"
                                             value="Add"
                                             action="#{cashRecieveBillController.addToBillCombined()}"
-                                            ajax="false"
+                                            ajax="true"
+                                            process="acIx val"
+                                            update=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} val acIx"
                                             icon="fa fa-plus"
                                             class="ui-button-success gap-2"/>
                                     </div>
@@ -159,6 +161,7 @@
                                             value="#{cashRecieveBillController.currentBillItem.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
+                                        <p:message for="val" display="text" style="color: red;" />
                                     </div>
                                 </div>
 
@@ -320,7 +323,7 @@
                             value="To Cancel Bill"
                             disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
                             ajax="false"
-                            action="credit_company_bill_cancel"
+                            action="credit_company_bill_cancel?faces-redirect=true"
                             icon="pi pi-times"
                             styleClass="ui-button-danger m-1">
                             <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>

@@ -10,17 +10,7 @@
     <ui:define name="subcontent">
         <!-- Admin Config Button (Admin Only) -->
         <div class="d-flex justify-content-start mb-2">
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
-                <p:commandButton
-                    value="Config"
-                    icon="fa fa-cog"
-                    title="Page Configuration Management"
-                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request')}"
-                    ajax="false"
-                    styleClass="ui-button-secondary ui-button-sm p-button-outlined"
-                    style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                </p:commandButton>
-            </h:panelGroup>
+
         </div>
 
         <h:form>
@@ -106,6 +96,16 @@
                                         ajax="false"
                                         icon="pi pi-plus"
                                         class="ui-button-warning"/>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Page Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary mx-1">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
                             </div>
                             <div class="col-5" >
