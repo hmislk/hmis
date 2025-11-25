@@ -10,15 +10,20 @@ public enum SpecificPatientStatus {
     
     VIP("Very Important Person"),
     VVIP("Very Very Important Person"),
-    NORMAL("Normal person");
+    NORMAL("Normal Person"),
+    STAFF("Staff Member");
     
     private final String label;
 
-    private SpecificPatientStatus(String label) {
+    SpecificPatientStatus(String label) {
         this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
     }
     
     
-    
+ 
     
 }
