@@ -13,6 +13,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -136,6 +137,10 @@ public class Patient implements Serializable, RetirableEntity {
     private String mobileNumberStringTransient;
 
     private Boolean cardIssues;
+    
+    @Enumerated //This is defined for mark patient labels as vip, vvip and normal.
+    private String specificStatus;
+    private String specificStatusComment;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
@@ -752,5 +757,21 @@ public class Patient implements Serializable, RetirableEntity {
         calShortAgeFromDob(billDate);
         return shortAgeOnBilledDate;
 
+    }
+
+    public String getSpecificStatus() {
+        return specificStatus;
+    }
+
+    public void setSpecificStatus(String specificStatus) {
+        this.specificStatus = specificStatus;
+    }
+
+    public String getSpecificStatusComment() {
+        return specificStatusComment;
+    }
+
+    public void setSpecificStatusComment(String specificStatusComment) {
+        this.specificStatusComment = specificStatusComment;
     }
 }
