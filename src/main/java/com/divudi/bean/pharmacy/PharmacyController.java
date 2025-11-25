@@ -4348,12 +4348,22 @@ public class PharmacyController implements Serializable {
                     dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getCode() != null ? i.getBillItem().getItem().getCode() : "-");
                     dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getPharmaceuticalBillItem().getQty());
                     dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getVmp() != null && i.getBillItem().getItem().getVmp().getStrengthUnit() != null ? i.getBillItem().getItem().getVmp().getStrengthUnit().getName() : "-");
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate());
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate());
+                    // Use BIFD purchase rate instead of PharmaceuticalBillItem purchase rate for consistency
+                    double purchaseRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getPurchaseRate() != null
+                        ? i.getBillItem().getBillItemFinanceDetails().getPurchaseRate().doubleValue() : 0;
+                    double purchaseValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate() != null
+                        ? i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue() : 0;
+                    dataRow.createCell(colIndex++).setCellValue(purchaseRate);
+                    dataRow.createCell(colIndex++).setCellValue(purchaseValue);
 
                     if (costingEnabled) {
-                        dataRow.createCell(colIndex++).setCellValue(i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? i.getItemBatch().getCostRate() : 0);
-                        dataRow.createCell(colIndex++).setCellValue(i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? (i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getItemBatch().getCostRate()) : 0);
+                        // Use BIFD cost rate instead of ItemBatch cost rate for consistency
+                        double costRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getCostRate() != null
+                            ? i.getBillItem().getBillItemFinanceDetails().getCostRate().doubleValue() : 0;
+                        double costValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate() != null
+                            ? i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0;
+                        dataRow.createCell(colIndex++).setCellValue(costRate);
+                        dataRow.createCell(colIndex++).setCellValue(costValue);
                     }
 
                     dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-");
@@ -4434,12 +4444,22 @@ public class PharmacyController implements Serializable {
                     table.addCell(new PdfPCell(new Phrase(i.getBillItem().getItem().getCode() != null ? i.getBillItem().getItem().getCode() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
                     table.addCell(new PdfPCell(new Phrase(String.valueOf(i.getBillItem().getPharmaceuticalBillItem().getQty()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
                     table.addCell(new PdfPCell(new Phrase(i.getBillItem().getItem().getVmp() != null && i.getBillItem().getItem().getVmp().getStrengthUnit() != null ? i.getBillItem().getItem().getVmp().getStrengthUnit().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate()), FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", (i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getBillItem().getPharmaceuticalBillItem().getPurchaseRate())), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    // Use BIFD purchase rate instead of PharmaceuticalBillItem purchase rate for consistency
+                    double purchaseRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getPurchaseRate() != null
+                        ? i.getBillItem().getBillItemFinanceDetails().getPurchaseRate().doubleValue() : 0;
+                    double purchaseValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate() != null
+                        ? i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue() : 0;
+                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", purchaseRate), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                    table.addCell(new PdfPCell(new Phrase(String.format("%.2f", purchaseValue), FontFactory.getFont(FontFactory.HELVETICA, 8))));
 
                     if (costingEnabled) {
-                        table.addCell(new PdfPCell(new Phrase(i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? String.format("%.2f", i.getItemBatch().getCostRate()) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
-                        table.addCell(new PdfPCell(new Phrase(i.getItemBatch() != null && i.getItemBatch().getCostRate() != null ? String.format("%.2f", (i.getBillItem().getPharmaceuticalBillItem().getQty() * i.getItemBatch().getCostRate())) : "0.00", FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                        // Use BIFD cost rate instead of ItemBatch cost rate for consistency
+                        double costRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getCostRate() != null
+                            ? i.getBillItem().getBillItemFinanceDetails().getCostRate().doubleValue() : 0;
+                        double costValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate() != null
+                            ? i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0;
+                        table.addCell(new PdfPCell(new Phrase(String.format("%.2f", costRate), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                        table.addCell(new PdfPCell(new Phrase(String.format("%.2f", costValue), FontFactory.getFont(FontFactory.HELVETICA, 8))));
                     }
 
                     table.addCell(new PdfPCell(new Phrase(i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8))));
@@ -4931,6 +4951,8 @@ public class PharmacyController implements Serializable {
     }
 
     private List<PharmacyRow> createPharmacyRowsByBillItemsAndItemBatch(List<BillItem> billItems, List<ItemBatch> itemBatches) {
+        // For Detail reports, we use BIFD rates instead of ItemBatch rates to avoid inconsistencies
+        // ItemBatch is still provided for other data (batch number, expiry, etc.) but rates come from BIFD
         Map<Long, ItemBatch> latestBatchMap = itemBatches.stream()
                 .filter(ib -> ib.getItem() != null)
                 .collect(Collectors.toMap(ib -> ib.getItem().getId(), Function.identity(),
@@ -4941,6 +4963,8 @@ public class PharmacyController implements Serializable {
                     ItemBatch latestBatch = latestBatchMap.get(
                             bi.getItem() != null ? bi.getItem().getId() : null
                     );
+                    // Create PharmacyRow with ItemBatch for non-rate data only
+                    // Rates will be sourced from BillItemFinanceDetails in the UI
                     return new PharmacyRow(bi, latestBatch);
                 })
                 .collect(Collectors.toList());
