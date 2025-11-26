@@ -304,13 +304,22 @@
                                                 class="ui-button-warning mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                value="Approve" 
+                                            <p:commandButton
+                                                value="Approve"
                                                 action="#{grnReturnWorkflowController.approve}"
                                                 ajax="false"
-                                                icon="fas fa-check-circle" 
+                                                icon="fas fa-check-circle"
                                                 class="ui-button-success mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy ne null and (grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveGrnReturn')}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Cancel"
+                                                action="#{grnReturnWorkflowController.cancelCurrentReturn}"
+                                                ajax="false"
+                                                icon="fas fa-times"
+                                                onclick="return confirm('Are you sure you want to cancel this GRN return? All unsaved changes will be lost.')"
+                                                class="ui-button-danger mx-1"
+                                                rendered="#{grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null}">
                                             </p:commandButton>
                                         </div>
                                     </div>

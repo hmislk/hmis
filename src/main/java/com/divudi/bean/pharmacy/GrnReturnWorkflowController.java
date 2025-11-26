@@ -145,12 +145,12 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         // Check for existing unapproved GRN returns with detailed error message
-        RefundBill pendingReturn = getPendingGrnReturn();
+        Bill pendingReturn = getPendingGrnReturn();
         if (pendingReturn != null) {
             String status = "";
-            if (pendingReturn.isChecked() == null || !pendingReturn.isChecked()) {
+            if (!pendingReturn.isChecked()) {
                 status = "unchecked/unapproved";
-            } else if (pendingReturn.isCompleted() == null || !pendingReturn.isCompleted()) {
+            } else if (!pendingReturn.isCompleted()) {
                 status = "checked but not completed";
             }
 
@@ -237,6 +237,16 @@ public class GrnReturnWorkflowController implements Serializable {
             JsfUtil.addErrorMessage("Error loading GRN Return: " + e.getMessage());
             return "";
         }
+    }
+
+    public String cancelCurrentReturn() {
+        resetBillValues();
+        makeListNull();
+        if (searchController != null) {
+            searchController.makeListNull();
+        }
+        JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
+        return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
     }
 
     // Core workflow methods
@@ -2446,7 +2456,7 @@ public class GrnReturnWorkflowController implements Serializable {
         return count != null && count > 0;
     }
 
-    private RefundBill getPendingGrnReturn() {
+    private Bill getPendingGrnReturn() {
         if (selectedGrn == null) {
             return null;
         }
@@ -2465,7 +2475,7 @@ public class GrnReturnWorkflowController implements Serializable {
         params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
         params.put("refBill", selectedGrn);
 
-        List<RefundBill> pendingReturns = billFacade.findByJpql(jpql, params);
+        List<Bill> pendingReturns = billFacade.findByJpql(jpql, params);
         return (pendingReturns != null && !pendingReturns.isEmpty()) ? pendingReturns.get(0) : null;
     }
 
