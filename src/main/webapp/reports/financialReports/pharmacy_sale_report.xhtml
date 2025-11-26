@@ -17,11 +17,15 @@
                                 <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
 
-                            <p:calendar
+                            <p:datePicker
                                 id="fromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm"
+                                pattern="dd/MM/yyyy HH:mm:ss "   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <p:spacer width="20"></p:spacer>
@@ -32,12 +36,16 @@
                                               styleClass="fa mr-2"/> 
                                 <p:outputLabel value="To" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            <p:calendar
+                            
+                            <p:datePicker
+                                id="toDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                id="toDate"
-                                navigator="false"
-                                pattern="dd/MM/yyyy HH:mm"
+                                pattern="dd/MM/yyyy HH:mm:ss "   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -69,10 +77,10 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf54e;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Store" for="sto" class="m-3"/>
+                                <h:outputLabel value="Store/Department" for="sto" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="sto" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All Stores" ></f:selectItem>
+                                <f:selectItem itemLabel="All Stores/Departments" ></f:selectItem>
 
                             </p:selectOneMenu>
 
@@ -126,7 +134,21 @@
                             <table class="table table-bordered table-sm mb-3">
 
                                 <tr>
+                                    <th style="width: 200px;">Institution :</th>
+                                    <td>
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+                                
+                                <tr>
                                     <th style="width: 200px;">Site :</th>
+                                    <td>
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <th style="width: 200px;">Store/Department :</th>
                                     <td>
                                         <h:outputText value="" />
                                     </td>
@@ -146,12 +168,6 @@
                                     </td>
                                 </tr>
 
-                                <tr>
-                                    <th>Store :</th>
-                                    <td>
-                                        <h:outputText value="" />
-                                    </td>
-                                </tr>
 
                             </table>
 
