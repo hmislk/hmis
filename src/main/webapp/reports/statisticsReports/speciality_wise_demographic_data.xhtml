@@ -17,11 +17,16 @@
                                 <p:outputLabel value="From" for="fromDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:calendar id="fromDate"
-                                        styleClass="w-100"
-                                        inputStyleClass="w-100 form-control"
-                                        pattern="dd/MM/yyyy HH:mm"
-                                        />
+                            <p:datePicker
+                                id="fromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss "   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                             <p:spacer width="40"/>
 
@@ -31,11 +36,16 @@
                                 <p:outputLabel value="To" for="toDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:calendar id="toDate"
-                                        styleClass="w-100"
-                                        inputStyleClass="w-100 form-control"
-                                        pattern="dd/MM/yyyy HH:mm"
-                                        />
+                            <p:datePicker
+                                id="toDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss "   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
@@ -64,6 +74,19 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" for="phmDept" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDept"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf2b9;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Speciality" for="acSpeciality" class="m-3"/>
                             </h:panelGroup>
@@ -75,7 +98,6 @@
                                 >
                             </p:autoComplete>
 
-                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
@@ -87,6 +109,8 @@
                                 filter="true">
                                 <f:selectItem itemLabel="Please Select"/>
                             </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
@@ -178,9 +202,9 @@
 
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="No Age"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="1 &lt;"/></f:facet></p:column>
-                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="5-Jan"/></f:facet></p:column>
-                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="10-May"/></f:facet></p:column>
-                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-Nov"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="1-5"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="5-10"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="10-15"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-20"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="20-30"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="30-40"/></f:facet></p:column>
@@ -264,9 +288,9 @@
 
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="No Age"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="1 &lt;"/></f:facet></p:column>
-                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="5-Jan"/></f:facet></p:column>
-                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="10-May"/></f:facet></p:column>
-                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-Nov"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="1-5"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="5-10"/></f:facet></p:column>
+                                            <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="10-15"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="15-20"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="20-30"/></f:facet></p:column>
                                             <p:column styleClass="border-1 text-center"><f:facet name="header"><h:outputText value="30-40"/></f:facet></p:column>

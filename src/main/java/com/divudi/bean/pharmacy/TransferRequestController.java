@@ -1452,6 +1452,13 @@ public class TransferRequestController implements Serializable {
         ));
 
         requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+            "Custom suffix to append to pharmacy transfer request bill numbers (used by BillNumberGenerator methods)",
+            "Lines 436, 440, 443 (Controller): Bill number generation method calls",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Transfer is by Purchase Rate",
             "Uses purchase rate for transfer pricing calculations",
             "Line 1328 (Controller): Transfer rate determination",
@@ -1518,6 +1525,55 @@ public class TransferRequestController implements Serializable {
             "Pharmacy Transfer Request Receipt is Custom 2",
             "Uses Custom Format 2 for transfer request receipts",
             "Line 183 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+            "Custom suffix to append to pharmacy transfer request bill numbers (inherited from pre-bill)",
+            "Lines 328-329 (Controller): Bill number copied from pre-bill",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Purchase Rate",
+            "Uses purchase rate for transfer pricing calculations when editing transfer rates",
+            "Line 1335 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Cost Rate",
+            "Uses cost rate for transfer pricing calculations when editing transfer rates",
+            "Line 1336 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Retail Rate",
+            "Uses retail rate for transfer pricing calculations when editing transfer rates",
+            "Line 1337 (Controller): Transfer rate determination",
             OptionScope.APPLICATION
         ));
 
