@@ -2485,14 +2485,24 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "AND b.cancelled = false "
                 + "AND b.retired = false "
                 + "AND b.department = :dept "
-                + "ORDER BY b.createdAt DESC";
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        // Add additional search criteria from searchController
+        jpql += buildSearchCriteria();
+
+        jpql += "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
         params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
         params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", searchController.getFromDate());
+        params.put("toDate", searchController.getToDate());
 
-        grnReturnsToFinalize = billFacade.findByJpql(jpql, params);
+        // Add search keyword parameters
+        addSearchParameters(params);
+
+        grnReturnsToFinalize = billFacade.findByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP, searchController.getMaxResult());
         if (grnReturnsToFinalize == null) {
             grnReturnsToFinalize = new ArrayList<>();
         }
