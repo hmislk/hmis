@@ -44,13 +44,26 @@
                                         </div>
                                         <div class="mb-3">
                                             <h:outputLabel value="To Date" styleClass="form-label"/>
-                                            <p:calendar 
-                                                id="toDate" 
+                                            <p:calendar
+                                                id="toDate"
                                                 styleClass="w-100"
                                                 inputStyleClass="form-control"
-                                                value="#{searchController.toDate}" 
-                                                navigator="false" 
+                                                value="#{searchController.toDate}"
+                                                navigator="false"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <h:outputLabel value="Payment Method" styleClass="form-label"/>
+                                            <p:selectOneMenu
+                                                id="paymentMethod"
+                                                value="#{searchController.paymentMethod}"
+                                                styleClass="w-100">
+                                                <f:selectItem itemLabel="All Payment Methods" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{enumController.paymentMethods}"
+                                                               var="pm"
+                                                               itemLabel="#{pm.label}"
+                                                               itemValue="#{pm}"/>
+                                            </p:selectOneMenu>
                                         </div>
                                         <p:commandButton
                                             id="btnSearch"
