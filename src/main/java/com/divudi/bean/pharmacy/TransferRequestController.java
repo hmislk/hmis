@@ -5,10 +5,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.NotificationController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.*;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.entity.*;
 import com.divudi.core.util.BigDecimalUtil;
 import com.divudi.core.util.CommonFunctions;
@@ -47,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -100,6 +105,8 @@ public class TransferRequestController implements Serializable {
     private SearchController searchController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -464,20 +471,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             getBill().getBillItems().add(b);
         }
@@ -585,20 +584,12 @@ public class TransferRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+            // Fixed: Use cascade relationship - save only BillItem, PBI will be saved automatically
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
             }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
 
             if (b.getId() == null || !getTransferRequestBillPre().getBillItems().contains(b)) {
                 getTransferRequestBillPre().getBillItems().add(b);
@@ -1388,6 +1379,262 @@ public class TransferRequestController implements Serializable {
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        // Register pharmacy_transfer_request.xhtml
+        PageMetadata requestMetadata = new PageMetadata();
+        requestMetadata.setPagePath("pharmacy/pharmacy_transfer_request");
+        requestMetadata.setPageName("Pharmacy Transfer Request");
+        requestMetadata.setDescription("Create and manage pharmacy transfer requests between departments");
+        requestMetadata.setControllerClass("TransferRequestController");
+
+        // Configuration Options
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Stock Request - Show Rate and Value",
+            "Controls visibility of rate and value fields in transfer request forms",
+            "Lines 169, 179, 251, 258, 292-294 (XHTML): Rate/value input fields and display",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is A4",
+            "Uses A4 paper format for transfer request receipts",
+            "Line 347 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 1",
+            "Uses Custom Format 1 for transfer request receipts",
+            "Line 351 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 2",
+            "Uses Custom Format 2 for transfer request receipts",
+            "Line 356 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number",
+            "Lines 421, 531 (Controller): Bill number generation logic",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-Year-Number",
+            "Lines 423, 533 (Controller): Bill number generation logic",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number",
+            "Lines 430, 548 (Controller): Bill number generation logic",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+            "Custom suffix to append to pharmacy transfer request bill numbers (used by BillNumberGenerator methods)",
+            "Lines 436, 440, 443 (Controller): Bill number generation method calls",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Purchase Rate",
+            "Uses purchase rate for transfer pricing calculations",
+            "Line 1328 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Cost Rate",
+            "Uses cost rate for transfer pricing calculations",
+            "Line 1329 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Retail Rate",
+            "Uses retail rate for transfer pricing calculations",
+            "Line 1330 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        requestMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        requestMetadata.addPrivilege(new PrivilegeInfo(
+            "StockRequestViewRates",
+            "View rate and value information in stock requests",
+            "Lines 169, 179, 251, 258, 292-294 (XHTML): Rate and value fields visibility"
+        ));
+
+        requestMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Access to receipt printing configuration settings",
+            "Line 319 (XHTML): Settings button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(requestMetadata);
+
+        // Register pharmacy_transfer_request_approval.xhtml
+        PageMetadata approvalMetadata = new PageMetadata();
+        approvalMetadata.setPagePath("pharmacy/pharmacy_transfer_request_approval");
+        approvalMetadata.setPageName("Pharmacy Transfer Request Approval");
+        approvalMetadata.setDescription("Approve transfer requests from other departments");
+        approvalMetadata.setControllerClass("TransferRequestController");
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is A4",
+            "Uses A4 paper format for transfer request receipts",
+            "Line 174 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 1",
+            "Uses Custom Format 1 for transfer request receipts",
+            "Line 178 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer Request Receipt is Custom 2",
+            "Uses Custom Format 2 for transfer request receipts",
+            "Line 183 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+            "Custom suffix to append to pharmacy transfer request bill numbers (inherited from pre-bill)",
+            "Lines 328-329 (Controller): Bill number copied from pre-bill",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Purchase Rate",
+            "Uses purchase rate for transfer pricing calculations when editing transfer rates",
+            "Line 1335 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Cost Rate",
+            "Uses cost rate for transfer pricing calculations when editing transfer rates",
+            "Line 1336 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Retail Rate",
+            "Uses retail rate for transfer pricing calculations when editing transfer rates",
+            "Line 1337 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        approvalMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Access to receipt printing configuration settings",
+            "Line 150 (XHTML): Settings button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(approvalMetadata);
+
+        // Register pharmacy_transfer_request_list_to_finalize.xhtml
+        PageMetadata finalizeListMetadata = new PageMetadata();
+        finalizeListMetadata.setPagePath("pharmacy/pharmacy_transfer_request_list_to_finalize");
+        finalizeListMetadata.setPageName("Pharmacy Transfer Requests to Finalize");
+        finalizeListMetadata.setDescription("List of saved transfer requests that need to be finalized");
+        finalizeListMetadata.setControllerClass("SearchController");
+
+        finalizeListMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(finalizeListMetadata);
+
+        // Register pharmacy_transfer_request_list_to_approve.xhtml
+        PageMetadata approveListMetadata = new PageMetadata();
+        approveListMetadata.setPagePath("pharmacy/pharmacy_transfer_request_list_to_approve");
+        approveListMetadata.setPageName("Pharmacy Transfer Requests to Approve");
+        approveListMetadata.setDescription("List of finalized transfer requests awaiting approval");
+        approveListMetadata.setControllerClass("SearchController");
+
+        approveListMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(approveListMetadata);
+
+        // Register pharmacy_transfer_request_list.xhtml
+        PageMetadata requestListMetadata = new PageMetadata();
+        requestListMetadata.setPagePath("pharmacy/pharmacy_transfer_request_list");
+        requestListMetadata.setPageName("Pharmacy Transfer Request List");
+        requestListMetadata.setDescription("List of approved transfer requests ready for issue");
+        requestListMetadata.setControllerClass("SearchController");
+
+        requestListMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(requestListMetadata);
     }
 
 }

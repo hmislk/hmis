@@ -2010,12 +2010,34 @@ public class PharmacyReportController implements Serializable {
                 .sum();
     }
 
+    public Double getTotalStockCorrectionVariance() {
+        if (stockCorrectionRows == null || stockCorrectionRows.isEmpty()) {
+            return 0.0;
+        }
+        return stockCorrectionRows.stream()
+                .mapToDouble(row -> {
+                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
+                    Double beforeAdj = row.getBeforeAdjustment();
+                    Double afterAdj = row.getAfterAdjustment();
+                    double before = beforeAdj != null ? beforeAdj : 0.0;
+                    double after = afterAdj != null ? afterAdj : 0.0;
+                    return (after - before) * qty;
+                })
+                .sum();
+    }
+
     public void processGrnCash() {
         List<BillTypeAtomic> btas = Arrays.asList(
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
         retrieveBillItems(btas, getNonCreditPaymentMethods());
+        totalCostValue = 0.0;
+        totalCostValue = billItems.stream()
+                    .map(BillItem::getBillItemFinanceDetails)
+                    .distinct()
+                    .mapToDouble(details -> details.getTotalCost().doubleValue())
+                    .sum();
     }
 
     public void processGrnCredit() {
@@ -2024,6 +2046,13 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
         retrieveBillItems(btas, getCreditPaymentMethods());
+        
+        totalCostValue = 0.0;
+        totalCostValue = billItems.stream()
+                    .map(BillItem::getBillItemFinanceDetails)
+                    .distinct()
+                    .mapToDouble(details -> details.getTotalCost().doubleValue())
+                    .sum();
     }
     
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
@@ -3438,6 +3467,32 @@ public class PharmacyReportController implements Serializable {
 
             billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
+            // Calculate totals for footer using BIFD values
+            totalRetailValue = 0.0;
+            totalPurchaseValue = 0.0;
+            totalCostValue = 0.0;
+
+            for (BillItem billItem : billItems) {
+                if (billItem.getBillItemFinanceDetails() != null) {
+                    BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+                    // Retail Value calculation using BIFD
+                    if (bifd.getValueAtRetailRate() != null) {
+                        totalRetailValue += Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                    }
+
+                    // Purchase Value calculation using BIFD
+                    if (bifd.getValueAtPurchaseRate() != null) {
+                        totalPurchaseValue += Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                    }
+
+                    // Cost Value calculation using BIFD
+                    if (bifd.getValueAtCostRate() != null) {
+                        totalCostValue += Math.abs(bifd.getValueAtCostRate().doubleValue());
+                    }
+                }
+            }
+
             if (billItems.isEmpty()) {
                 pharmacyRows = new ArrayList<>();
                 return;
@@ -3807,19 +3862,23 @@ public class PharmacyReportController implements Serializable {
             } else if ("returnWithoutReceiptDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
             } else if ("stockAdjustmentDoc".equals(documentType)) {
+                // Only include adjustments that change quantities, not rate adjustments
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
+                // Note: Rate adjustments are excluded as they don't change quantities
                 billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             } else if ("rateAdjustmentDoc".equals(documentType)) {
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+                
+//                Rate adjustments should NOT be listed 
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
             } else {
                 billTypes.add(BillType.PharmacyBhtPre);
 
@@ -3845,19 +3904,18 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
 
+                // Only quantity-changing adjustments for stock ledger
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
-
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
-
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
-                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT);
+                // Note: Rate adjustments excluded as they don't change stock quantities
+                // billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+                // billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+                // billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+                // billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
+                // billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
 
                 billTypes.add(BillType.PharmacyIssue);
                 billTypes.add(BillType.PharmacyTransferIssue);

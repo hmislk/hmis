@@ -2222,11 +2222,108 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return false;
     }
 
+    /**
+     * Validates if the original credit bill has been fully or partially settled.
+     * Prevents refunds for bills where credit companies have already made payments.
+     *
+     * @return true if credit is settled (validation fails), false if not settled (validation passes)
+     */
+    private boolean isCreditSettled() {
+        if (getItemReturnBill() == null) {
+            return false; // No item return bill to validate
+        }
+
+        Bill originalSaleBill = getItemReturnBill().getReferenceBill();
+        if (originalSaleBill == null) {
+            return false; // No original bill to validate
+        }
+
+        // Check if this is a credit bill
+        if (originalSaleBill.getPaymentMethod() != PaymentMethod.Credit) {
+            return false; // Not a credit bill, allow refund
+        }
+
+        // Check if credit has been settled (fully or partially)
+        // Any positive value in these fields indicates settlement has occurred
+        boolean hasSettlement =
+            (originalSaleBill.getPaidAmount() > 0.01) ||
+            (originalSaleBill.getSettledAmountByPatient() > 0.01) ||
+            (originalSaleBill.getSettledAmountBySponsor() > 0.01);
+
+        return hasSettlement;
+    }
+
+    /**
+     * Validates that refunds for Credit payment method sales can only use Credit payment method.
+     * This ensures refunds maintain the same payment method as the original sale for proper accounting.
+     *
+     * @return true if validation fails (error condition), false if validation passes
+     */
+    private boolean validateCreditReturnPaymentMethod() {
+        if (getRefundBill() == null || getRefundBill().getPaymentMethod() == null) {
+            return false; // No validation needed
+        }
+
+        // Get the original sale bill to check its payment method
+        Bill originalSaleBill = getOriginalSaleBill();
+        if (originalSaleBill == null) {
+            return false; // Cannot determine original payment method
+        }
+
+        // Check if the original bill used Credit payment method
+        if (originalSaleBill.getPaymentMethod() == PaymentMethod.Credit) {
+            // If original was Credit, refund must also be Credit
+            if (getRefundBill().getPaymentMethod() != PaymentMethod.Credit) {
+                JsfUtil.addErrorMessage("This sale was paid using Credit payment method. Refunds must also use Credit payment method only.");
+                return true; // Validation failed
+            }
+        }
+
+        return false; // Validation passed
+    }
+
+    /**
+     * Gets the original sale bill to check its payment method.
+     *
+     * @return The original sale bill, or null if not found
+     */
+    private Bill getOriginalSaleBill() {
+        if (getItemReturnBill() == null) {
+            return null;
+        }
+        return getItemReturnBill().getReferenceBill();
+    }
+
+    /**
+     * Checks if the original bill used Credit payment method.
+     * This can be used in the UI to restrict payment method selection.
+     *
+     * @return true if original bill was paid using Credit, false otherwise
+     */
+    public boolean isOriginalBillCredit() {
+        Bill originalSaleBill = getOriginalSaleBill();
+        if (originalSaleBill == null) {
+            return false;
+        }
+        return originalSaleBill.getPaymentMethod() == PaymentMethod.Credit;
+    }
+
     public void settleRefundForReturnItems() {
         editingQty = null;
 
         // Validate that payment total matches refund total
         if (validatePaymentRefundMatch()) {
+            return; // Validation failed, error message already displayed
+        }
+
+        // Check if original credit bill has been settled (fully or partially)
+        if (isCreditSettled()) {
+            JsfUtil.addErrorMessage("Cannot process refund for this return. The original credit bill has been fully or partially settled by the credit company.");
+            return;
+        }
+
+        // Validate that Credit payment method sales can only be returned using Credit payment method
+        if (validateCreditReturnPaymentMethod()) {
             return; // Validation failed, error message already displayed
         }
 
@@ -3026,27 +3123,62 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
      *
      * @param bill The refund bill to calculate costing values for
      */
+    /**
+     * Calculates and records comprehensive financial details for refund bills.
+     * This method ensures BillFinanceDetails and BillItemFinanceDetails are properly populated
+     * for pharmacy cashier refund transactions, maintaining consistency with other return processing.
+     *
+     * Key financial details calculated:
+     * - Stock valuations (cost, purchase, retail, wholesale rates)
+     * - Quantity tracking (including free quantities)
+     * - Bill and line totals (net, gross)
+     * - Individual item financial metrics
+     *
+     * This ensures pharmacy income reports have complete financial data for cashier-processed refunds.
+     *
+     * @param bill The refund bill to calculate financial details for
+     */
     private void calculateAndRecordCostingValues(Bill bill) {
+        System.out.println("=== calculateAndRecordCostingValues START (Cashier Refund) ===");
+        System.out.println("Bill ID: " + (bill != null ? bill.getId() : "null"));
+        System.out.println("Bill Type: " + (bill != null ? bill.getBillTypeAtomic() : "null"));
+
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            System.out.println("Early return - no bill or bill items");
             return;
         }
+
+        System.out.println("Number of bill items: " + bill.getBillItems().size());
 
         // Initialize bill finance details if not present
         if (bill.getBillFinanceDetails() == null) {
             BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
             billFinanceDetails.setBill(bill);
             bill.setBillFinanceDetails(billFinanceDetails);
+            System.out.println("Created new BillFinanceDetails for bill");
+        } else {
+            System.out.println("BillFinanceDetails already exists for bill");
         }
 
         // Initialize bill-level totals
-        double totalCostValue = 0.0;
-        double totalPurchaseValue = 0.0;
-        double totalRetailSaleValue = 0.0;
-        double totalWholesaleValue = 0.0;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalFreeQuantity = BigDecimal.ZERO;
 
         // Process each bill item
+        int itemIndex = 0;
         for (BillItem billItem : bill.getBillItems()) {
-            if (billItem == null || billItem.getQty() == 0) {
+            itemIndex++;
+            System.out.println("--- Processing Bill Item " + itemIndex + " ---");
+            System.out.println("BillItem ID: " + (billItem != null ? billItem.getId() : "null"));
+            System.out.println("BillItem retired: " + (billItem != null ? billItem.isRetired() : "null"));
+            System.out.println("BillItem qty: " + (billItem != null ? billItem.getQty() : "null"));
+
+            if (billItem == null || billItem.isRetired()) {
+                System.out.println("Skipping retired or null bill item");
                 continue;
             }
 
@@ -3055,70 +3187,180 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
                 BillItemFinanceDetails itemFinanceDetails = new BillItemFinanceDetails();
                 itemFinanceDetails.setBillItem(billItem);
                 billItem.setBillItemFinanceDetails(itemFinanceDetails);
+                System.out.println("Created new BillItemFinanceDetails for item");
+            } else {
+                System.out.println("BillItemFinanceDetails already exists for item");
             }
 
             // Get pharmaceutical bill item for rate information
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
             if (pharmaItem == null) {
+                System.out.println("Skipping - no pharmaceutical bill item");
                 continue;
             }
 
-            // Calculate values based on quantity and rates
-            // For refunds, quantities are already negative, so we keep the sign for proper accounting
-            double qty = billItem.getQty();
+            // Get quantities - for returns these will be negative
+            BigDecimal qty = BigDecimal.valueOf(billItem.getQty());
+            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty());
+            BigDecimal totalQty = qty.add(freeQty);
+            System.out.println("Quantities - qty: " + qty + ", freeQty: " + freeQty + ", totalQty: " + totalQty);
 
-            // Calculate item-level stock valuations
-            double costValue = 0.0;
-            double purchaseValue = 0.0;
-            double retailValue = 0.0;
-            double wholesaleValue = 0.0;
+            // Get rates from pharmaceutical bill item
+            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+            BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
 
-            // Calculate based on available rates from PharmaceuticalBillItem
-            if (pharmaItem.getPurchaseRate() != 0) {
-                purchaseValue = qty * pharmaItem.getPurchaseRate();
-                costValue = purchaseValue; // Use purchase rate as cost value
+            System.out.println("Pharma rates - retail: " + retailRate + ", purchase: " + purchaseRate + ", wholesale: " + wholesaleRate);
+
+            // Get cost rate from item batch (which is the actual cost for returns)
+            BigDecimal costRate = purchaseRate; // default fallback
+            if (pharmaItem.getItemBatch() != null) {
+                Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
+                if (batchCostRate != null && batchCostRate > 0) {
+                    costRate = BigDecimal.valueOf(batchCostRate);
+                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
+
+                    // Also update the pharmaceutical bill item with this cost rate
+                    pharmaItem.setCostRate(costRate.doubleValue());
+                    pharmaItem.setPurchaseRate(costRate.doubleValue());
+                    System.out.println("Updated PharmaceuticalBillItem costRate to: " + costRate);
+                } else {
+                    System.out.println("ItemBatch purcahseRate is zero, using purchaseRate as fallback");
+                }
+            } else {
+                System.out.println("No itemBatch available, using purchaseRate as costRate fallback");
             }
 
-            if (pharmaItem.getRetailRate() != 0) {
-                retailValue = qty * pharmaItem.getRetailRate();
-            }
+            // Calculate values based on total quantity (including free quantities)
+            BigDecimal itemRetailValue = retailRate.multiply(totalQty);
+            BigDecimal itemPurchaseValue = purchaseRate.multiply(totalQty);
+            BigDecimal itemCostValue = costRate.multiply(totalQty);
+            BigDecimal itemWholesaleValue = wholesaleRate.multiply(totalQty);
 
-            if (pharmaItem.getWholesaleRate() != 0) {
-                wholesaleValue = qty * pharmaItem.getWholesaleRate();
-            }
+            System.out.println("Calculated values - retail: " + itemRetailValue + ", purchase: " + itemPurchaseValue +
+                             ", cost: " + itemCostValue + ", wholesale: " + itemWholesaleValue);
 
-            // Set item-level finance details
-            billItem.getBillItemFinanceDetails().setValueAtCostRate(BigDecimal.valueOf(costValue));
-            billItem.getBillItemFinanceDetails().setValueAtPurchaseRate(BigDecimal.valueOf(purchaseValue));
-            billItem.getBillItemFinanceDetails().setValueAtRetailRate(BigDecimal.valueOf(retailValue));
-            billItem.getBillItemFinanceDetails().setValueAtWholesaleRate(BigDecimal.valueOf(wholesaleValue));
+            // Set item-level finance details - enhanced with more comprehensive data
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            System.out.println("Setting values in BillItemFinanceDetails...");
+
+            // RATES (no signs - always positive rates)
+            bifd.setLineNetRate(BigDecimal.valueOf(Math.abs(billItem.getNetRate())));
+            bifd.setLineGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
+            bifd.setGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
+            bifd.setLineCostRate(costRate.abs()); // costRate from itemBatch (no sign)
+            bifd.setCostRate(costRate.abs());
+            bifd.setPurchaseRate(purchaseRate.abs());
+            bifd.setRetailSaleRate(retailRate.abs());
+
+            // BILL-LEVEL RATES (always 0 for now)
+            bifd.setBillCostRate(BigDecimal.ZERO);
+
+            // TOTAL RATES (lineCostRate + billCostRate)
+            bifd.setTotalCostRate(bifd.getLineCostRate()); // since billCostRate = 0
+
+            // TOTALS
+            bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+            bifd.setLineGrossTotal(bifd.getGrossTotal()); // no bill-level discounts
+            bifd.setLineNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
+
+            // COSTS (with signs - negative for returns as cost goes out)
+            BigDecimal lineCost = costRate.multiply(qty.abs()).negate(); // Always negative for returns
+            bifd.setLineCost(lineCost);
+            bifd.setBillCost(BigDecimal.ZERO);
+            bifd.setTotalCost(lineCost); // totalCost = lineCost + billCost
+
+            // QUANTITIES
+            bifd.setQuantity(qty);
+            bifd.setFreeQuantity(freeQty);
+            bifd.setTotalQuantity(totalQty);
+            bifd.setQuantityByUnits(qty.abs()); // no packs, same as quantity but positive
+
+            // VALUES AT RATES (positive - valuation of quantity)
+            BigDecimal absQty = qty.abs(); // absolute quantity for valuation
+            bifd.setValueAtCostRate(costRate.multiply(absQty));
+            bifd.setValueAtPurchaseRate(purchaseRate.multiply(absQty));
+            bifd.setValueAtRetailRate(retailRate.multiply(absQty));
+            bifd.setValueAtWholesaleRate(wholesaleRate.multiply(absQty));
+
+            System.out.println("Set all BillItemFinanceDetails fields successfully");
+            System.out.println("Rates - lineNet: " + bifd.getLineNetRate() + ", lineGross: " + bifd.getLineGrossRate() +
+                             ", lineCost: " + bifd.getLineCostRate());
+            System.out.println("Costs - line: " + lineCost + ", bill: " + bifd.getBillCost() + ", total: " + bifd.getTotalCost());
+            System.out.println("Values - cost: " + bifd.getValueAtCostRate() + ", purchase: " + bifd.getValueAtPurchaseRate() +
+                             ", retail: " + bifd.getValueAtRetailRate());
+
+            // Set PharmaceuticalBillItem values (positive valuations)
+            System.out.println("Setting PharmaceuticalBillItem values...");
+            BigDecimal absQtyForPBI = qty.abs(); // absolute quantity for PBI valuations
+            pharmaItem.setCostValue(costRate.multiply(absQtyForPBI).doubleValue());
+            pharmaItem.setPurchaseValue(purchaseRate.multiply(absQtyForPBI).doubleValue());
+            pharmaItem.setRetailValue(retailRate.multiply(absQtyForPBI).doubleValue());
+
+            System.out.println("PBI values - cost: " + pharmaItem.getCostValue() +
+                             ", purchase: " + pharmaItem.getPurchaseValue() +
+                             ", retail: " + pharmaItem.getRetailValue());
+
+            // Save PharmaceuticalBillItem to ensure values are persisted
+            if (pharmaItem.getId() == null) {
+                System.out.println("PharmaceuticalBillItem is new - will be saved via cascade");
+            } else {
+                System.out.println("PharmaceuticalBillItem exists, saving explicitly");
+                pharmaceuticalBillItemFacade.edit(pharmaItem);
+            }
 
             // Aggregate values for bill level
-            totalCostValue += costValue;
-            totalPurchaseValue += purchaseValue;
-            totalRetailSaleValue += retailValue;
-            totalWholesaleValue += wholesaleValue;
+            totalCostValue = totalCostValue.add(itemCostValue);
+            totalPurchaseValue = totalPurchaseValue.add(itemPurchaseValue);
+            totalRetailSaleValue = totalRetailSaleValue.add(itemRetailValue);
+            totalWholesaleValue = totalWholesaleValue.add(itemWholesaleValue);
+            totalQuantity = totalQuantity.add(qty);
+            totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            // Save bill item finance details
+            System.out.println("Aggregated totals - cost: " + totalCostValue + ", purchase: " + totalPurchaseValue +
+                             ", retail: " + totalRetailSaleValue + ", quantity: " + totalQuantity);
+
+            // Save bill item finance details using JPA cascade persistence
             if (billItem.getBillItemFinanceDetails().getId() == null) {
-                // Let JPA handle cascade persistence - no need to explicitly save
+                System.out.println("BillItemFinanceDetails is new (id == null) - will be saved via cascade");
             } else {
+                System.out.println("BillItemFinanceDetails exists, calling billItemFacade.edit()");
                 billItemFacade.edit(billItem);
             }
         }
 
-        // Set bill-level finance details
-        bill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(totalCostValue));
-        bill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(totalPurchaseValue));
-        bill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(totalRetailSaleValue));
-        bill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(totalWholesaleValue));
+        System.out.println("=== Finished processing all bill items ===");
+
+        // Set bill-level finance details - enhanced with missing fields
+        System.out.println("Setting BillFinanceDetails totals...");
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+        bfd.setTotalWholesaleValue(totalWholesaleValue);
+
+        // Set missing quantity totals needed for pharmacy income reports
+        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalFreeQuantity(totalFreeQuantity);
+
+        // Set basic totals from bill for reporting consistency
+        bfd.setNetTotal(BigDecimal.valueOf(bill.getNetTotal()));
+        bfd.setGrossTotal(BigDecimal.valueOf(bill.getTotal()));
+
+        System.out.println("Final BillFinanceDetails totals - cost: " + totalCostValue +
+                         ", purchase: " + totalPurchaseValue + ", retail: " + totalRetailSaleValue +
+                         ", quantity: " + totalQuantity + ", netTotal: " + bill.getNetTotal());
 
         // Save bill finance details
         if (bill.getBillFinanceDetails().getId() == null) {
-            // Let JPA handle cascade persistence - no need to explicitly save
+            System.out.println("BillFinanceDetails is new (id == null) - will be saved via cascade");
         } else {
+            System.out.println("BillFinanceDetails exists, calling billFacade.edit()");
             billFacade.edit(bill);
         }
+
+        System.out.println("=== calculateAndRecordCostingValues COMPLETE (Cashier Refund) ===");
     }
 
 }

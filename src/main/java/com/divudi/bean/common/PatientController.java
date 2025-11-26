@@ -3219,7 +3219,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         }
 
-        applyPatientNameCapitalization(p);
+        //applyPatientNameCapitalization(p);
 //        if (p.getPerson().getId() == null) {
 //            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
 //            p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3312,7 +3312,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
 
-        applyPatientNameCapitalization(p);
+        //applyPatientNameCapitalization(p);
 
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
@@ -3381,7 +3381,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void saveSelectedPatient() {
-        applyPatientNameCapitalization(getCurrent());
+        //applyPatientNameCapitalization(getCurrent());
 
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());

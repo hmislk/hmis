@@ -632,6 +632,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         return suggestions;
     }
+    
+    public List<Admission> completePatientAdmissionFromWaitingRoom(String query) {
+        List<Admission> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.retired=false "
+                + " and c.discharged=false "
+                + " and c.roomAdmitted=false"
+                + " and c.currentPatientRoom.roomFacilityCharge.department =:department"
+                + " and ((c.bhtNo) like :q "
+                + " or (c.patient.person.name) like :q "
+                + " or (c.patient.code) like :q "
+                + " or (c.patient.phn) like :q) "
+                + " order by c.bhtNo ";
+
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("department", sessionController.getDepartment());
+        suggestions = getFacade().findByJpql(sql, hm, 20);
+        System.out.println("suggestions = " + suggestions);
+        return suggestions;
+    }
 
     public void searchAdmissions() {
         if (fromDate == null || toDate == null) {
@@ -810,12 +832,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("No Patient. Program Error");
             return "";
         }
-        current.getPatient().setEditingMode(false);
-        bhtSummeryController.setPatientEncounter(current);
-        bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
-        return bhtSummeryController.navigateToInpatientProfile();
-    }
 
+        if (current.isRoomAdmitted()) {
+            current.getPatient().setEditingMode(false);
+            bhtSummeryController.setPatientEncounter(current);
+            bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
+            return bhtSummeryController.navigateToInpatientProfile();
+        } else {
+            if(current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null){
+                JsfUtil.addErrorMessage("Selected Room no has a department.");
+                return "";
+            }
+            
+            if(!current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getId().equals(sessionController.getDepartment().getId())){
+                JsfUtil.addErrorMessage("Patient is not in your department. Please transfer to the correct department.");
+                return "";
+            }
+            
+            roomChangeController.setCurrent(current);
+            roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
+            return "/inward/admit_room?faces-redirect=true";
+        }
+    }
+    
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
         String sql;
@@ -859,7 +898,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " (c.patient.person.name) like :q ) "
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findByJpql(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
     }
@@ -1578,7 +1617,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
-            PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+            PatientRoom currentPatientRoom = new PatientRoom();
+            if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
+                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+                getCurrent().setRoomAdmitted(true);
+            } else {
+                getCurrent().setRoomAdmitted(false);
+                currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), getCurrent(), getSessionController().getLoggedUser());
+            }
+
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
         }
 

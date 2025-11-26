@@ -10,36 +10,43 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form >
-                    <p:panel header="Surgery StatusReport" >
-                        <h:panelGrid columns="5" >
+                <h:form class="w-100">
+                    <p:panel header="Surgery Status Report" >
+                        <h:panelGrid columns="3" class="w-100" >
                            
                             <p:outputLabel value="OT Room" >
                             </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.currentSpeciality}">
+                            <p:selectOneMenu value="#{reportController.currentSpeciality}" class=" w-50">
                                 <f:selectItem itemLabel="Select OT Room"/>
-                                
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
                             <p:outputLabel value="Proposed Surgery" >
                             </p:outputLabel>
-                            <p:selectOneMenu >
+                            <p:selectOneMenu  class=" w-50" >
                                 <f:selectItem itemLabel="Select Surgery"/>
-                                
-                            </p:selectOneMenu>
-                            
-                            <p:commandButton ajax="false" value="Process" action="null" class="my-2">
-                            </p:commandButton>
-
+                            </p:selectOneMenu>   
                         </h:panelGrid>
-
+                        <p:spacer width="20"/>
+                         <h:panelGrid columns="6" class="my-3">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
+                                <p:printer target=""/>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
+                                <p:dataExporter fileName="Surgery_Report" type="xlsx" target="" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
+                                <p:dataExporter fileName="Surgery_Report" type="pdf" target="" />
+                            </p:commandButton>
+                        </h:panelGrid>
                         
 
 
                         <p:dataTable value="null" var="c">
                             
-                            <p:column headerText="SL No" style="width: 100px" >
+                            <p:column headerText="SL No." style="width: 100px" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
                             <p:column headerText="MRN" >
@@ -60,7 +67,10 @@
                             <p:column headerText="Ward" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Surgon" >
+                            <p:column headerText="Surgeon" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="OT Status" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
                             <p:column headerText="Consultant" >

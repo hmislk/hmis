@@ -59,6 +59,9 @@ public class RoomChangeController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     NotificationController notificationController;
+    @Inject
+    private InwardBeanController inwardBean;
+    
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -69,7 +72,11 @@ public class RoomChangeController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @EJB
+    private RoomFacilityChargeFacade roomFacilityChargeFacade;
+    
     private List<PatientRoom> patientRoom;
+    private PatientRoom currentPatientRoom;
     List<Admission> selectedItems;
     private Admission current;
     private List<Admission> items = null;
@@ -94,6 +101,57 @@ public class RoomChangeController implements Serializable {
         pR.setCurrentRoomCharge(pR.getRoomFacilityCharge().getRoomCharge());
 
         getPatientRoomFacade().edit(pR);
+    }
+    
+    public String navigateToAdmitRoomFromMenu(){
+        setCurrent(null);
+        setCurrentPatientRoom(null);
+        return "/inward/admit_room?faces-redirect=true";
+    }
+    
+    public void selectRoomForAdmit(){
+        if(current == null){
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        if(current.getCurrentPatientRoom() == null){
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        setCurrentPatientRoom(current.getCurrentPatientRoom());
+    }
+    
+    public void admitRoom(){
+        if(currentPatientRoom == null){
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        
+        if (getCurrentPatientRoom().getAdmittedAt() == null) {
+            JsfUtil.addErrorMessage("Please select room admission time first");
+            return;
+        }
+        
+        if(getCurrentPatientRoom().getPatientEncounter().getDateOfAdmission().after(getCurrentPatientRoom().getAdmittedAt())){
+            JsfUtil.addErrorMessage(" Room admission time cannot be before patient admission time");
+            return;
+        }
+        
+        inwardBean.admitPatientRoom(getCurrentPatientRoom(), getCurrentPatientRoom().getRoomFacilityCharge(), getCurrentPatientRoom().getAdmittedAt() , getSessionController().getWebUser());
+        
+        current.setRoomAdmitted(true);
+        ejbFacade.edit(current);
+        
+        JsfUtil.addSuccessMessage("Room admitted successfully");
+ 
+    }
+    
+    public void getCurrentTime(){
+        if (getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("No Patient Room Detected");
+            return;
+        }
+        getCurrentPatientRoom().setAdmittedAt(new Date());
     }
 
     public void remove(PatientRoom pR) {
@@ -213,6 +271,7 @@ public class RoomChangeController implements Serializable {
         patientList = null;
         changeAt = null;
         newRoomFacilityCharge = null;
+        currentPatientRoom = null;
     }
 
     private PatientRoom updatePatientRoom(PatientRoom patientRoom1) {
@@ -232,9 +291,6 @@ public class RoomChangeController implements Serializable {
         getPatientRoomFacade().edit(patientRoom1);
         return patientRoom1;
     }
-
-    @Inject
-    private InwardBeanController inwardBean;
 
     public void change() {
         if (getCurrent().getCurrentPatientRoom() == null) {
@@ -346,9 +402,7 @@ public class RoomChangeController implements Serializable {
         return selectedItems;
     }
 
-    @EJB
-    private RoomFacilityChargeFacade roomFacilityChargeFacade;
-
+    
     public void prepareAdd() {
         current = new Admission();
     }
@@ -563,6 +617,14 @@ public class RoomChangeController implements Serializable {
 
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
+    }
+
+    public PatientRoom getCurrentPatientRoom() {
+        return currentPatientRoom;
+    }
+
+    public void setCurrentPatientRoom(PatientRoom currentPatientRoom) {
+        this.currentPatientRoom = currentPatientRoom;
     }
 
     /**

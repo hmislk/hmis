@@ -1003,8 +1003,9 @@ public class Bill implements Serializable, RetirableEntity {
             pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
             pharmacyBill.setBill(this);
         }
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -1028,8 +1029,9 @@ public class Bill implements Serializable, RetirableEntity {
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
             this.getPharmacyBill().copyValue(bill.getPharmacyBill());
         }
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -1097,8 +1099,9 @@ public class Bill implements Serializable, RetirableEntity {
         netTotal = bill.getNetTotal();
         paidAmount = bill.getPaidAmount();
 
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }

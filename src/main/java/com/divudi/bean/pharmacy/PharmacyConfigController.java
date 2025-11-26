@@ -91,6 +91,7 @@ public class PharmacyConfigController implements Serializable {
 
     // Direct Purchase Settings
     private boolean directPurchaseA4Paper;
+    private boolean directPurchaseA4PaperCustom1;
     private boolean directPurchaseA4Details;
     private boolean directPurchaseCustom1;
     private boolean directPurchaseCustom2;
@@ -129,6 +130,18 @@ public class PharmacyConfigController implements Serializable {
     // Retail Sale Return with Refund Payment Settings
     private boolean retailSaleReturnRefundBillA4Paper;
     private boolean retailSaleReturnRefundBillPosPaper;
+    
+    // Retail Sale Return Settings
+    private boolean retailSaleReturnPosPaper;
+    private boolean retailSaleReturnFiveFivePaper;
+    private boolean retailSaleReturnPosHeaderPaper;
+    private boolean retailSaleReturnFiveFiveCustom3;
+    private boolean retailSaleReturnPosPaperCustom1;
+
+    // Pharmacy Return Without Tresing Settings
+    private boolean returnWithoutTresingPosPaper;
+    private boolean returnWithoutTresingFiveFivePaper;
+    private boolean returnWithoutTresingA4Paper;
 
     public PharmacyConfigController() {
     }
@@ -204,6 +217,7 @@ public class PharmacyConfigController implements Serializable {
         
         // Direct Purchase Settings
         directPurchaseA4Paper = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4", true);
+        directPurchaseA4PaperCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4 (Custom 1)", true);
         directPurchaseA4Details = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4 Details", false);
         directPurchaseCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 1", false);
         directPurchaseCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 2", false);
@@ -242,6 +256,19 @@ public class PharmacyConfigController implements Serializable {
         // Retail Sale Return with Refund Payment Settings
         retailSaleReturnRefundBillA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", true);
         retailSaleReturnRefundBillPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", false);
+        
+        // Retail Sale Return Settings
+        retailSaleReturnPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper", true);
+        retailSaleReturnFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Paper", true);
+        retailSaleReturnPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Header Paper", true);
+        retailSaleReturnFiveFiveCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper", false);
+        retailSaleReturnPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper", false);
+
+        // Pharmacy Return Without Tresing Settings
+        returnWithoutTresingPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is POS Paper", true);
+        returnWithoutTresingFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is FiveFive Paper", false);
+        returnWithoutTresingA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is A4 Paper", true);
+
     }
 
     /**
@@ -315,6 +342,7 @@ public class PharmacyConfigController implements Serializable {
 
             // Direct Purchase Settings
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4", directPurchaseA4Paper);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 (Custom 1)", directPurchaseA4PaperCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
@@ -345,6 +373,13 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is FiveFive Paper", cancelBillFiveFivePaper);
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Header Paper", cancelBillPosHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is Custom 3", cancelBillCustom3);
+            
+            // Retail Sale Return Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper", retailSaleReturnPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Paper", retailSaleReturnFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Header Paper", retailSaleReturnPosHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper", retailSaleReturnFiveFiveCustom3);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper", retailSaleReturnPosPaperCustom1);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -386,6 +421,7 @@ public class PharmacyConfigController implements Serializable {
         try {
             // Direct Purchase Settings
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4", directPurchaseA4Paper);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 (Custom 1)", directPurchaseA4PaperCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
@@ -523,6 +559,26 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Return Refund Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Pharmacy Return Without Tresing configuration changes specifically
+     */
+    public void saveReturnWithoutTresingConfig() {
+        try {
+            // Pharmacy Return Without Tresing Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Return Without Tresing Bill is POS Paper", returnWithoutTresingPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Return Without Tresing Bill is FiveFive Paper", returnWithoutTresingFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Return Without Tresing Bill is A4 Paper", returnWithoutTresingA4Paper);
+
+            JsfUtil.addSuccessMessage("Return Without Tresing configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Return Without Tresing configuration: " + e.getMessage());
         }
     }
 
@@ -1085,6 +1141,79 @@ public class PharmacyConfigController implements Serializable {
 
     public void setDisposalCancelCustom2(boolean disposalCancelCustom2) {
         this.disposalCancelCustom2 = disposalCancelCustom2;
+    }
+
+    public boolean isDirectPurchaseA4PaperCustom1() {
+        return directPurchaseA4PaperCustom1;
+    }
+
+    public void setDirectPurchaseA4PaperCustom1(boolean directPurchaseA4PaperCustom1) {
+        this.directPurchaseA4PaperCustom1 = directPurchaseA4PaperCustom1;
+    }
+
+    public boolean isRetailSaleReturnPosPaper() {
+        return retailSaleReturnPosPaper;
+    }
+
+    public void setRetailSaleReturnPosPaper(boolean retailSaleReturnPosPaper) {
+        this.retailSaleReturnPosPaper = retailSaleReturnPosPaper;
+    }
+
+    public boolean isRetailSaleReturnFiveFivePaper() {
+        return retailSaleReturnFiveFivePaper;
+    }
+
+    public void setRetailSaleReturnFiveFivePaper(boolean retailSaleReturnFiveFivePaper) {
+        this.retailSaleReturnFiveFivePaper = retailSaleReturnFiveFivePaper;
+    }
+
+    public boolean isRetailSaleReturnPosHeaderPaper() {
+        return retailSaleReturnPosHeaderPaper;
+    }
+
+    public void setRetailSaleReturnPosHeaderPaper(boolean retailSaleReturnPosHeaderPaper) {
+        this.retailSaleReturnPosHeaderPaper = retailSaleReturnPosHeaderPaper;
+    }
+
+    public boolean isRetailSaleReturnFiveFiveCustom3() {
+        return retailSaleReturnFiveFiveCustom3;
+    }
+
+    public void setRetailSaleReturnFiveFiveCustom3(boolean retailSaleReturnFiveFiveCustom3) {
+        this.retailSaleReturnFiveFiveCustom3 = retailSaleReturnFiveFiveCustom3;
+    }
+
+    public boolean isRetailSaleReturnPosPaperCustom1() {
+        return retailSaleReturnPosPaperCustom1;
+    }
+
+    public void setRetailSaleReturnPosPaperCustom1(boolean retailSaleReturnPosPaperCustom1) {
+        this.retailSaleReturnPosPaperCustom1 = retailSaleReturnPosPaperCustom1;
+    }
+
+    // Pharmacy Return Without Tresing Getters and Setters
+    public boolean isReturnWithoutTresingPosPaper() {
+        return returnWithoutTresingPosPaper;
+    }
+
+    public void setReturnWithoutTresingPosPaper(boolean returnWithoutTresingPosPaper) {
+        this.returnWithoutTresingPosPaper = returnWithoutTresingPosPaper;
+    }
+
+    public boolean isReturnWithoutTresingFiveFivePaper() {
+        return returnWithoutTresingFiveFivePaper;
+    }
+
+    public void setReturnWithoutTresingFiveFivePaper(boolean returnWithoutTresingFiveFivePaper) {
+        this.returnWithoutTresingFiveFivePaper = returnWithoutTresingFiveFivePaper;
+    }
+
+    public boolean isReturnWithoutTresingA4Paper() {
+        return returnWithoutTresingA4Paper;
+    }
+
+    public void setReturnWithoutTresingA4Paper(boolean returnWithoutTresingA4Paper) {
+        this.returnWithoutTresingA4Paper = returnWithoutTresingA4Paper;
     }
 
 }

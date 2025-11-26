@@ -36,7 +36,7 @@
                                 icon="fas fa-medkit" 
                                 title="Pharmacy">
                             </p:commandButton>
-                            
+
                             <p:commandButton class="p-0 m-1 ui-button-secondary" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
                                 <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
@@ -274,7 +274,7 @@
                                                 </div>
                                             </p:panel>
 
-                                            <p:panel class="w-100 m-1" >
+                                            <p:panel id="panelDiagnosis" class="w-100 m-1" >
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-stethoscope"/>
                                                     <h:outputText class="mx-4" value="Diagnosis"/>
@@ -291,15 +291,24 @@
                                                                         inputStyleClass="w-100">
                                                         </p:autoComplete>
                                                     </div>
-                                                    <div class="col-md-3" >
-                                                        <p:commandButton ajax="true" 
+                                                    <div class="col-md-3 d-flex gap-2" >
+                                                        <p:commandButton ajax="true"
                                                                          class="ui-button-success"
                                                                          value="Add"
-                                                                         id="btnAddDx" 
+                                                                         id="btnAddDx"
                                                                          action="#{patientEncounterController.addDx}"
-                                                                         process="acDx txtDx btnAddDx" 
+                                                                         process="acDx txtDx btnAddDx"
                                                                          update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:commandButton ajax="true"
+                                                                         class="ui-button-info"
+                                                                         value="Add Favourites"
+                                                                         id="btnAddFavDx"
+                                                                         action="#{patientEncounterController.addFavouriteDiagnosis(patientController.current)}"
+                                                                         process="btnAddFavDx"
+                                                                         update="gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="fas fa-star">
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
@@ -307,8 +316,8 @@
                                                                  id="txtDx" 
                                                                  value="#{patientEncounterController.diagnosisComments}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
@@ -382,8 +391,8 @@
                                                                  id="txtIx" 
                                                                  value="#{patientEncounterController.encounterInvestigation.lobValue}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpIx" >
                                                     <p:dataTable id="tblIx" 
                                                                  rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
@@ -426,6 +435,7 @@
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-pills"/>
                                                     <p:outputLabel class="mx-4" value="Medicines" />
+
 
                                                     <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
 
@@ -509,13 +519,25 @@
                                                         <!-- Add Prescription Button -->
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
-                                                            <p:commandButton value="Add"
-                                                                             class="ui-button-success"
-                                                                             id="btnAddRx"
-                                                                             icon="pi pi-plus"
-                                                                             process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update=" tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
-                                                                             action="#{patientEncounterController.addEncounterMedicine}" />
+                                                            <p:commandButton 
+                                                                value="Add"
+                                                                class="ui-button-success"
+                                                                id="btnAddRx"
+                                                                icon="pi pi-plus"
+                                                                process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addEncounterMedicine}" />
+
+                                                            <p:commandButton 
+                                                                id="btnAddRxFav"
+                                                                value="Add Favourite" 
+                                                                process="btnAddRxFav acMedicine" 
+                                                                class='ui-button-success' 
+                                                                icon='fas fa-star' 
+                                                                style="float: right; margin-right: 5px;" 
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -577,8 +599,8 @@
                                                                  id="txtIxp"
                                                                  value="#{patientEncounterController.encounterInvestigationResult.lobValue}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpIxp" >
                                                     <p:dataTable id="tblIxp"
                                                                  rendered="#{patientEncounterController.encounterInvestigationResults ne null and patientEncounterController.encounterInvestigationResults.size() > 0}"
@@ -667,8 +689,8 @@
                                                                  value="#{patientEncounterController.encounterProcedure.lobValue}">
                                                 </p:inputTextarea>
 
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpSx" >
                                                     <p:dataTable id="tblSx" 
                                                                  rendered="#{patientEncounterController.encounterProcedures ne null and patientEncounterController.encounterProcedures.size() > 0}"
@@ -736,7 +758,7 @@
                                                                  value="#{patientEncounterController.encounterPlanOfAction.lobValue}">
                                                 </p:inputTextarea>
 
-                                                
+
 
                                                 <h:panelGroup id="hgPa">
                                                     <p:dataTable id="tblPa" 
@@ -869,29 +891,51 @@
                                 <p:tab title="Referrals">
                                     <div class="row" >
                                         <div class="col-4 p-1" >
-                                            <p:panelGrid columns="3" class="w-100 m-1" >
+                                            <p:panel class="w-100 m-1">
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generate New Document" ></p:outputLabel>
                                                 </f:facet>
-                                                <p:outputLabel value="Select a Template" ></p:outputLabel>
-                                                <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
-                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                    <f:selectItems 
-                                                        value="#{patientEncounterController.userDocumentTemplates}"
-                                                        var="dt"
-                                                        itemLabel="#{dt.name}"
-                                                        itemValue="#{dt}"></f:selectItems>
-                                                </p:selectOneMenu>
-                                                <p:commandButton 
-                                                    id="btnGenerateNewDocument"
-                                                    value="Generate" 
-                                                    class="ui-button-warning"
-                                                    icon="fas fa-arrows-rotate"
-                                                    process="btnGenerateNewDocument somTemplates"
-                                                    update="lstEncounterDocs gpReferralDoc"
-                                                    action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
-                                                </p:commandButton>
-                                            </p:panelGrid>
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <p:outputLabel value="Select a Template" class="form-label"></p:outputLabel>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" class="w-100">
+                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                            <f:selectItems
+                                                                value="#{patientEncounterController.userDocumentTemplates}"
+                                                                var="dt"
+                                                                itemLabel="#{dt.name}"
+                                                                itemValue="#{dt}"></f:selectItems>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <p:commandButton
+                                                            id="btnRefreshTemplates"
+                                                            value="Refresh"
+                                                            class="ui-button-info"
+                                                            icon="fas fa-sync-alt"
+                                                            title="Refresh template list"
+                                                            process="btnRefreshTemplates"
+                                                            update="somTemplates"
+                                                            action="#{patientEncounterController.refreshUserDocumentTemplates}">
+                                                        </p:commandButton>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <p:commandButton
+                                                            id="btnGenerateNewDocument"
+                                                            value="Generate"
+                                                            class="ui-button-warning"
+                                                            icon="fas fa-arrows-rotate"
+                                                            process="btnGenerateNewDocument somTemplates"
+                                                            update="lstEncounterDocs gpReferralDoc"
+                                                            action="#{patientEncounterController.generateAndAddDocumentFromTemplate}">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                            </p:panel>
                                             <p:panelGrid columns="3" class="w-100 m-1" >
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generated Documents" ></p:outputLabel>

@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Surgery Count(According to Surgery Type)" styleClass="my-2" >
+                        <h:panelGrid columns="5" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:datePicker
+                                id="fromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss "   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <p:spacer width="40"/>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To Date" for="toDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:datePicker
+                                id="toDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
+                                <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="chartType" styleClass="w-100">
+                                <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
+                                <f:selectItem itemLabel="Line Chart" itemValue="line"/>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <div class="d-flex align-items-center my-4">
+
+                            <p:commandButton 
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process" />
+
+                            <p:commandButton 
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All" />
+
+                            <p:commandButton 
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download" />
+
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF" />
+
+                        </div>
+
+
+                        <p:dataTable id="tb"
+                                     value="#"
+                                     var="var"
+                                     rowIndexVar="n"
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     rows="10"
+                                     rendered="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                     styleClass="table-sm">
+                            <p:columnGroup  type="header">
+                                <p:row>
+                                    <p:column rowspan="2">
+                                        <f:facet name="header">
+                                            <h:outputText value="Month"/>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column colspan="5" style="text-align:center;" >
+                                        <f:facet name="header">
+                                            <h:outputText value="2025" />
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>
+                                    <p:column><f:facet name="header"><h:outputText value="MAJOR"/></f:facet></p:column>
+                                    <p:column><f:facet name="header"><h:outputText value="INTERMEDIATE"/></f:facet></p:column>
+                                    <p:column><f:facet name="header"><h:outputText value="MINOR"/></f:facet></p:column>
+                                    <p:column><f:facet name="header"><h:outputText value="CATH LAB"/></f:facet></p:column>
+                                    <p:column><f:facet name="header"><h:outputText value="TOTAL"/></f:facet></p:column>
+                                </p:row>
+                            </p:columnGroup>
+
+                            <p:column><h:outputText value="" /></p:column>
+                            <p:column><h:outputText value="" /></p:column>
+                            <p:column><h:outputText value="" /></p:column>
+                            <p:column><h:outputText value="" /></p:column>
+                            <p:column><h:outputText value="" /></p:column>
+                            <p:column><h:outputText value="" /></p:column>
+
+
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column colspan="1" >
+                                        <f:facet name="footer">
+                                            <h:outputText value="Total:" />
+                                        </f:facet> 
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            <h:outputText value="0" />
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            <h:outputText value="0" />
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            <h:outputText value="0" />
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            <h:outputText value="0" />
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="footer">
+                                            <h:outputText value="0" />
+                                        </f:facet>
+                                    </p:column>
+
+                                </p:row>
+                            </p:columnGroup>
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

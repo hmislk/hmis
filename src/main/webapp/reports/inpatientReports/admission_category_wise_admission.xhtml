@@ -10,227 +10,408 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Admission Category wise Admission" >
-                        <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value=" Admission From Date">
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
-                            <p:outputLabel value=" Admission To Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
+                        <h:panelGrid columns="5" styleClass="w-100">
 
-                            <p:outputLabel value=" Discharge From Date">
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
-                            <p:outputLabel value=" Discharge To Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission From Date" for="admissionFromDate" styleClass="m-3" />
+                                <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
+                            </h:panelGroup>
 
-                            <p:outputLabel value=" Settled From Date">
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
-                            <p:outputLabel value=" Settled To Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
+                             <p:datePicker
+                                id="admissionFromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+                            
+                            <p:spacer width="40"></p:spacer>
 
-                            <p:outputLabel value="Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission To Date" for="admissionToDate" styleClass="m-3" />
+                                <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
+                            </h:panelGroup>
 
-                                value="" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="d"
-                                               itemLabel=""
-                                               itemValue="" ></f:selectItems>
+                            <p:datePicker
+                                id="admissionToDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge From Date" for="dischargeFromDate" styleClass="m-3" />
+                                <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
+                            </h:panelGroup>
+
+                            <p:datePicker
+                                id="dischargeFromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+                            
+                            <p:spacer width="40"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge To Date" for="dischargeToDate" styleClass="m-3" />
+                                <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
+                            </h:panelGroup>
+
+                             <p:datePicker
+                                id="dischargeToDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Approved From Date" for="approvedFromDate" styleClass="m-3" />
+                                <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
+                            </h:panelGroup>
+
+                             <p:datePicker
+                                id="approvedFromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+                            
+                            <p:spacer width="40"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Approved To Date" for="approvedToDate" styleClass="m-3" />
+                                <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
+                            </h:panelGroup>
+
+                             <p:datePicker
+                                id="approvedToDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+                             
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3"/>
+                                
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
-                            <p:outputLabel value="Department" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdFromDepartment"
-                                value="#{reportController.fromDepartment}" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                                
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmSite"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                                                       
 
-                            <p:outputLabel value="Service Center" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" for="phmDept" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDept"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
-
-                            <p:outputLabel value="Discharge Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf2d0;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Service Center" for="center" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="center"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                            
 
-                            <p:outputLabel value="Consultant" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-sign-out-alt mr-2"/>
+                                <p:outputLabel value="Discharge Type" for="disType" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="disType"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
-                            <p:outputLabel value="Sponsor" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-md mr-2"/>
+                                <p:outputLabel value="Consultant" for="scStaff" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="scStaff"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                            
 
-                            <p:outputLabel value="Patient Category" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user mr-2"/>
+                                <p:outputLabel value="Sponser" for="scSponser" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="scSponser"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
-                            <p:outputLabel value="Sponsor" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Patient Category" for="pCat" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="pCat"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                            
 
-                            <p:outputLabel value="Admission Status" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf059;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Admission Status" for="admissionStatus" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="admissionStatus"
+                                class="w-100"
+                                >
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
-                            <p:outputLabel value="Admission Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf2b9;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Admission Category" for="admissionCat" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="admissionCat"
+                                class="w-100"
+                                >
+                                <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                            
+
+                            <h:panelGroup layout="block" class="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission Types" for="admmisionType" styleClass="m-3" />
+                            </h:panelGroup>
+
+                            <p:selectCheckboxMenu id="admmisionType"
+                                                  styleClass="w-100"
+                                                  label="Select Types"
+                                                  updateLabel="true"
+                                                  >
+                                <f:selectItem itemLabel="Normal" itemValue="1" />
+                                <f:selectItem itemLabel="Dialysis" itemValue="2" />
+                                <f:selectItem itemLabel="ETU" itemValue="3" />
+                                <f:selectItem itemLabel="Day Care" itemValue="4" />
+                            </p:selectCheckboxMenu>
 
 
-                        </p:panelGrid>
+                        </h:panelGrid>
 
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
-                            </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
-                            </p:commandButton>
+                        <div class="d-flex align-items-center my-4">
+
+                            <p:commandButton 
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process" />
+
+                            <p:commandButton 
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All" />
+
+                            <p:commandButton 
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download" />
+
+                            <p:commandButton 
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF" />
+
                         </div>
-
-
-                        <p:dataTable id="tbl" value="" 
-                                     paginator="true"
-                                     rows="10">
-                            <p:column headerText="No">
-                                <h:outputText value="" />
+                        
+                         <p:dataTable
+                            id="printPanel"
+                            var="var"
+                            rowIndexVar="n"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            rendered="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                            rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                            styleClass="table-sm">
+                             
+                            <p:column width="4em" styleClass="text-center">
+                                <f:facet name="header" >
+                                    <h:outputText value="No" />
+                                </f:facet>
+                                <h:outputText value="#{n+1}"/>
                             </p:column>
 
-                            <p:column headerText="BHT">
-                                <h:outputText value="" />
+                            <p:column width= "8em" styleClass="text-center" >
+                                <f:facet name="header" >
+                                    <h:outputText value="BHT" />
+                                </f:facet>
+                                <h:outputText value="">
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient Name">
-                                <h:outputText value="" />
+                            <p:column width= "8em" styleClass="text-center" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Patient Name" />
+                                </f:facet>
+                                <h:outputText value="">
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Admission Category">
-                                <h:outputText value="" />
+                            <p:column width="12em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Admission Category" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Advance">
-                                <h:outputText value="" />
+                            <p:column width="8em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Advance" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Professional Fees">
-                                <h:outputText value="" />
+                            <p:column width="12em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Professional Fees" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Hospital Ammount">
-                                <h:outputText value="" />
-                            </p:column>
-                            
-                            <p:column headerText="Sponsor Ammount">
-                                <h:outputText value="" />
-                            </p:column>
-
-                            <p:column headerText="Patient Amount">
-                                <h:outputText value="" />
+                            <p:column width="12em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Hospital Amount" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Discount">
-                                <h:outputText value="" />
+                            <p:column width="8em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Sponsor Amount" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Invoice Amount">
-                                <h:outputText value="" />
+                            <p:column width="8em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Patient Amount" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="BIll Balance">
-                                <h:outputText value="" />
+                            <p:column width="8em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Discount" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient Balance">
-                                <h:outputText value="" />
+                            <p:column width="8em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Invoice Amount" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
                             </p:column>
 
-                            
+                            <p:column width="8em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Bill Balance" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
+                            </p:column>
+                             
+                             <p:column width="8em" styleClass="text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Patient Balance" />
+                                </f:facet>
+                                <h:outputText value=""> 
+                                </h:outputText>
+                            </p:column>
 
                         </p:dataTable>
+
                     </p:panel>
 
                 </h:form>

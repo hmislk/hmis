@@ -2938,6 +2938,21 @@ public class PatientReportController implements Serializable {
         }
         return link;
     }
+    
+    public String navigateToCreatedPatientReport(Long patientInvestigationId) {
+        if(patientInvestigationId == null){
+            JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
+            return null;
+        }
+        PatientInvestigation pi = piFacade.findWithoutCache(patientInvestigationId);
+        
+        if (pi == null) {
+            JsfUtil.addErrorMessage("Error in Patient Investigation");
+            return "";
+        }
+        
+        return navigateToCreatedPatientReport(pi);
+    }
 
     public String navigateToUploadNewPatientReport(PatientInvestigation pi) {
         if (pi == null) {

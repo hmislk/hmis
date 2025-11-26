@@ -8,6 +8,11 @@
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="subcontent">
+        <!-- Admin Config Button (Admin Only) -->
+        <div class="d-flex justify-content-start mb-2">
+
+        </div>
+
         <h:form>
             <p:panel rendered="#{!transferRequestController.printPreview}">
                 <h:panelGroup  class="row" rendered="#{transferRequestController.toDepartment eq null or transferRequestController.toDepartment  eq sessionController.loggedUser.department}">
@@ -91,6 +96,16 @@
                                         ajax="false"
                                         icon="pi pi-plus"
                                         class="ui-button-warning"/>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Page Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary mx-1">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
                             </div>
                             <div class="col-5" >

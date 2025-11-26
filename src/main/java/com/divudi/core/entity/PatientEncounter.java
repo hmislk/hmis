@@ -170,6 +170,7 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     @ManyToOne
     private ClinicalEntity primaryReason;
     private String referringMethod;
+    private boolean roomAdmitted;
 
     // Transient method for BP
     public String getBp() {
@@ -1088,5 +1089,13 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setReferringMethod(String referringMethod) {
         this.referringMethod = referringMethod;
+    }
+
+    public boolean isRoomAdmitted() {
+        return roomAdmitted;
+    }
+
+    public void setRoomAdmitted(boolean roomAdmitted) {
+        this.roomAdmitted = roomAdmitted;
     }
 }

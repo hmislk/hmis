@@ -383,7 +383,8 @@ public class CreditCompanyBillSearch implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
-                createPayment(cb, paymentMethod);
+                paymentService.createPaymentsForCancelling(cb);
+//                createPayment(cb, paymentMethod);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
@@ -434,6 +435,15 @@ public class CreditCompanyBillSearch implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit company payment cancellations are now handled through the unified OPD credit
+     * cancellation methods, as pharmacy credit bills are being consolidated with OPD credit bills.
+     * The separate Pharmacy Credit Settle bill type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED)
+     * and its cancellation type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION) are being deprecated
+     * in favor of the unified OPD Credit Settle bill type.
+     */
+    @Deprecated
     public void cancelPharmacyCreditCompanyPaymentBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
@@ -687,19 +697,41 @@ public class CreditCompanyBillSearch implements Serializable {
     @EJB
     private CreditBean creditBean;
 
-    private void updateReferenceBill(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
+    private void updateReferenceBill(BillItem cancellationBillItem) {
+        Bill referenceBill = cancellationBillItem.getReferenceBill();
 
-        tmp.getReferenceBill().setPaidAmount(0 - dbl);
-        getBillFacade().edit(tmp.getReferenceBill());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from paidAmount
+        double currentPaidAmount = referenceBill.getPaidAmount();
+        referenceBill.setPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        // Recalculate settled amounts (will exclude the cancelled settlement)
+        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
+        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
+
+        // Update the settled amount fields
+        referenceBill.setSettledAmountByPatient(settledCreditValueByPatient);
+        referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
+
+        getBillFacade().edit(referenceBill);
 
     }
 
-    private void updateReferenceBht(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
+    private void updateReferenceBht(BillItem cancellationBillItem) {
+        PatientEncounter encounter = cancellationBillItem.getPatientEncounter();
 
-        tmp.getPatientEncounter().setCreditPaidAmount(0 - dbl);
-        getPatientEncounterFacade().edit(tmp.getPatientEncounter());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from creditPaidAmount
+        double currentPaidAmount = encounter.getCreditPaidAmount();
+        encounter.setCreditPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        getPatientEncounterFacade().edit(encounter);
 
     }
 
