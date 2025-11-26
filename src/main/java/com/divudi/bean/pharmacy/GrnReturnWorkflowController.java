@@ -144,9 +144,26 @@ public class GrnReturnWorkflowController implements Serializable {
             return "";
         }
 
-        // Check for existing unapproved GRN returns
+        // Check for existing unapproved GRN returns with detailed error message
+        RefundBill pendingReturn = getPendingGrnReturn();
+        if (pendingReturn != null) {
+            String status = "";
+            if (pendingReturn.isChecked() == null || !pendingReturn.isChecked()) {
+                status = "unchecked/unapproved";
+            } else if (pendingReturn.isCompleted() == null || !pendingReturn.isCompleted()) {
+                status = "checked but not completed";
+            }
+
+            String errorMessage = String.format("Cannot create new return. GRN Return %s is %s. Please finalize it first.",
+                    pendingReturn.getDeptId() != null ? pendingReturn.getDeptId() : "N/A",
+                    status);
+            JsfUtil.addErrorMessage(errorMessage);
+            return "";
+        }
+
+        // Double-check just before creating to handle concurrent access
         if (hasUnapprovedGrnReturns()) {
-            JsfUtil.addErrorMessage("Cannot create new return. Please approve pending GRN returns first.");
+            JsfUtil.addErrorMessage("Cannot create new return. Another user may have started a return process. Please refresh and try again.");
             return "";
         }
 
@@ -2416,10 +2433,9 @@ public class GrnReturnWorkflowController implements Serializable {
                 + "WHERE b.billType = :bt "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill = :refBill "
-                + "AND b.checkedBy IS NOT NULL "
-                + "AND (b.completed = false OR b.completed IS NULL) "
                 + "AND b.cancelled = false "
-                + "AND b.retired = false";
+                + "AND b.retired = false "
+                + "AND (b.checked IS NULL OR b.checked = false OR b.completed IS NULL OR b.completed = false)";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyGrnReturn);
@@ -2428,6 +2444,29 @@ public class GrnReturnWorkflowController implements Serializable {
 
         Long count = billFacade.findLongByJpql(jpql, params);
         return count != null && count > 0;
+    }
+
+    private RefundBill getPendingGrnReturn() {
+        if (selectedGrn == null) {
+            return null;
+        }
+
+        String jpql = "SELECT b FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.referenceBill = :refBill "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "AND (b.checked IS NULL OR b.checked = false OR b.completed IS NULL OR b.completed = false) "
+                + "ORDER BY b.createdAt ASC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+        params.put("refBill", selectedGrn);
+
+        List<RefundBill> pendingReturns = billFacade.findByJpql(jpql, params);
+        return (pendingReturns != null && !pendingReturns.isEmpty()) ? pendingReturns.get(0) : null;
     }
 
     public void displayItemDetails(BillItem bi) {
