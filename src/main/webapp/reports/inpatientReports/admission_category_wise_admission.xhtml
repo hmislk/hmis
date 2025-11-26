@@ -18,11 +18,15 @@
                                 <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
                             </h:panelGroup>
 
-                            <p:datePicker
+                             <p:datePicker
                                 id="admissionFromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"                               
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
                             
                             <p:spacer width="40"></p:spacer>
@@ -37,7 +41,11 @@
                                 id="admissionToDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"                               
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -50,7 +58,11 @@
                                 id="dischargeFromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"                               
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
                             
                             <p:spacer width="40"></p:spacer>
@@ -61,45 +73,71 @@
                                 <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
                             </h:panelGroup>
 
-                            <p:datePicker
+                             <p:datePicker
                                 id="dischargeToDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"                               
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Settled From Date" for="settledFromDate" styleClass="m-3" />
+                                <p:outputLabel value="Invoice Approved From Date" for="approvedFromDate" styleClass="m-3" />
                                 <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
                             </h:panelGroup>
 
-                            <p:datePicker
-                                id="settledFromDate"
+                             <p:datePicker
+                                id="approvedFromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"                               
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
                             
                             <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Settled To Date" for="settledToDate" styleClass="m-3" />
+                                <p:outputLabel value="Invoice Approved To Date" for="approvedToDate" styleClass="m-3" />
                                 <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
                             </h:panelGroup>
 
-                            <p:datePicker
-                                id="settledToDate"
+                             <p:datePicker
+                                id="approvedToDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"                               
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
+                             
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3"/>
+                                
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
+                            </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
                                 <p:outputLabel value="Site" for="phmSite" class="m-3"/>
-                                <h:outputText value="**" styleClass="text-danger font-weight-bold ml-1" />
+                                
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="phmSite"
@@ -107,8 +145,7 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
-                            
-                            <p:spacer width="40"></p:spacer>
+                                                       
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2"/>
@@ -120,6 +157,8 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf2d0;" styleClass="fa mr-2"/>
@@ -132,7 +171,6 @@
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-sign-out-alt mr-2"/>
@@ -144,6 +182,8 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-user-md mr-2"/>
@@ -156,7 +196,6 @@
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-user mr-2"/>
@@ -168,6 +207,8 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c0;" styleClass="fa mr-2"/>
@@ -180,7 +221,6 @@
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf059;" styleClass="fa mr-2"/>
@@ -192,6 +232,8 @@
                                 >
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
+                             
+                             <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf2b9;" styleClass="fa mr-2"/>
@@ -204,7 +246,6 @@
                                 <f:selectItem itemLabel="All"/>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40"></p:spacer>
 
                             <h:panelGroup layout="block" class="form-group">
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" />
