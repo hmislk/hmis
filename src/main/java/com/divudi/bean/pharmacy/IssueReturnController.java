@@ -218,6 +218,12 @@ public class IssueReturnController implements Serializable {
     }
 
     public void finalizeDisposalIssueReturnBill() {
+        // Validate return comment is provided
+        if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return Comment is required. Please provide a reason for the return.");
+            return;
+        }
+
         // Validate return quantities before finalizing
         if (!validateReturnQuantities()) {
             return;
