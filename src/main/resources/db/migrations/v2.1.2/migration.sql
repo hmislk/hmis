@@ -1,8 +1,9 @@
 -- Migration v2.1.2: Fix remaining decimal precision columns in BILLFINANCEDETAILS
 -- Author: Dr M H B Ariyaratne
 -- Date: 2025-01-23
--- Issue: v2.1.1 migration was marked as successful but missed 5 columns
+-- Issue: v2.1.1 migration was marked as successful but missed 4 columns
 -- This migration completes the decimal precision fix for production environments
+-- Note: Payment method columns are excluded because they are commented out in the entity
 
 -- PRODUCTION SAFETY: Check table exists before proceeding
 SELECT 'Starting migration v2.1.2 - fixing remaining decimal precision columns' AS status;
@@ -24,7 +25,8 @@ ORDER BY COLUMN_NAME;
 -- FIX REMAINING COLUMNS
 -- ==========================================
 
--- Fix the 5 columns that were missed in v2.1.1
+-- Fix the 4 columns that were missed in v2.1.1
+-- Note: TOTALPAIDASCASH is not included because it's commented out in the entity
 ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALEXPENSE DECIMAL(18,4);
 SELECT 'Fixed TOTALEXPENSE column' AS progress;
 
@@ -33,9 +35,6 @@ SELECT 'Fixed TOTALOFBILLLINEDISCOUNTS column' AS progress;
 
 ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALOFFREEITEMVALUES DECIMAL(18,4);
 SELECT 'Fixed TOTALOFFREEITEMVALUES column' AS progress;
-
-ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALPAIDASCASH DECIMAL(18,4);
-SELECT 'Fixed TOTALPAIDASCASH column' AS progress;
 
 ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALTAXVALUE DECIMAL(18,4);
 SELECT 'Fixed TOTALTAXVALUE column' AS progress;
@@ -69,7 +68,7 @@ WHERE TABLE_SCHEMA = DATABASE()
   AND COLUMN_NAME IN (
     'TOTALCOSTVALUE', 'TOTALPURCHASEVALUE', 'TOTALRETAILSALEVALUE',
     'BILLDISCOUNT', 'TOTALDISCOUNT', 'TOTALEXPENSE', 'TOTALTAXVALUE',
-    'TOTALQUANTITY', 'TOTALPAIDASCASH', 'TOTALOFFREEITEMVALUES'
+    'TOTALQUANTITY', 'TOTALOFFREEITEMVALUES'
   )
 ORDER BY COLUMN_NAME;
 
