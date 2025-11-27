@@ -153,10 +153,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             String status = "";
             String action = "";
 
-            if (pendingReturn.getChecked() == null || !pendingReturn.getChecked()) {
+            if (pendingReturn.getCheckedBy() == null || !pendingReturn.isChecked()) {
                 status = "unchecked/unapproved";
                 action = "Please complete or cancel it first.";
-            } else if (pendingReturn.getCompleted() == null || !pendingReturn.getCompleted()) {
+            } else if (!pendingReturn.isCompleted()) {
                 status = "checked but not completed";
                 action = "Please complete or cancel it first.";
             }
