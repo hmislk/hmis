@@ -149,21 +149,27 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         // Check for existing unapproved Direct Purchase returns with detailed error message
         Bill pendingReturn = getPendingDirectPurchaseReturn();
         if (pendingReturn != null) {
+            String billId = pendingReturn.getDeptId() != null ? pendingReturn.getDeptId() : "N/A";
             String status = "";
-            if (!pendingReturn.isChecked()) {
+            String action = "";
+
+            if (pendingReturn.isChecked() == null || !pendingReturn.isChecked()) {
                 status = "unchecked/unapproved";
-            } else if (!pendingReturn.isCompleted()) {
+                action = "Please complete or cancel it first.";
+            } else if (pendingReturn.isCompleted() == null || !pendingReturn.isCompleted()) {
                 status = "checked but not completed";
+                action = "Please complete or cancel it first.";
             }
 
-            String errorMessage = String.format("Cannot create new return. Direct Purchase Return %s is %s. Please finalize it first.",
-                    pendingReturn.getDeptId() != null ? pendingReturn.getDeptId() : "N/A",
-                    status);
+            String errorMessage = String.format(
+                "Cannot create new return. Direct Purchase Return %s is %s. %s",
+                billId, status, action
+            );
             JsfUtil.addErrorMessage(errorMessage);
             return "";
         }
 
-        // Double-check just before creating to handle concurrent access
+        // Best-effort concurrent check - strict enforcement requires DB constraint or locking if needed
         if (hasUnapprovedDirectPurchaseReturns()) {
             JsfUtil.addErrorMessage("Cannot create new return. Another user may have started a return process. Please refresh and try again.");
             return "";
