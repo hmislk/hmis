@@ -240,12 +240,36 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public String cancelCurrentReturn() {
+        if (currentBill != null && currentBill.getId() != null) {
+            try {
+                // Mark the bill as cancelled in the database
+                currentBill.setCancelled(true);
+
+                // Set cancellation metadata if bill has been saved to database
+                if (currentBill.getCreatedAt() != null) {
+                    currentBill.setEditedAt(new Date());
+                    currentBill.setEditor(sessionController.getLoggedUser());
+                }
+
+                // Save the cancelled bill to database
+                billFacade.edit(currentBill);
+
+                JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage("Error cancelling GRN Return: " + e.getMessage());
+                return "";
+            }
+        } else {
+            JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
+        }
+
+        // Reset UI state
         resetBillValues();
         makeListNull();
         if (searchController != null) {
             searchController.makeListNull();
         }
-        JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
+
         return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
     }
 
