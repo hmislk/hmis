@@ -66,52 +66,78 @@
                         </h:panelGrid>
                     </div>
                     <div class="col-10">
-                        <p:dataTable 
-                            id="tblBills"
-                            value="#{searchController.bills}" 
-                            var="p"
-                            class="w-100 va-top"
-                            paginator="true"
-                            rows="10"
-                            rowIndexVar="n"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,15"
-                            filterBy="#{p}"
-                            widgetVar="billTable"
-                            >
+                        <p:panel styleClass="shadow-sm">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Direct Purchase Bills</span>
+                                    <div>
+                                        <p:columnToggler
+                                            datasource="tblBills"
+                                            trigger="columnTogglerBtn">
+                                        </p:columnToggler>
+                                        <p:commandButton
+                                            id="columnTogglerBtn"
+                                            icon="fas fa-columns"
+                                            value="Columns"
+                                            styleClass="ui-button-outlined"
+                                            type="button"
+                                            title="Show/Hide Columns">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                            <p:dataTable
+                                id="tblBills"
+                                value="#{searchController.bills}"
+                                var="p"
+                                class="w-100 va-top"
+                                paginator="true"
+                                rows="10"
+                                rowIndexVar="n"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                filterBy="#{p}"
+                                widgetVar="billTable">
 
-                            <p:column 
+                            <p:column
+                                id="colDistributor"
                                 width="12em"
-                                headerText="Distributor" 
-                                sortBy="#{p.fromInstitution.name}" 
-                                filterBy="#{p.fromInstitution.name}" 
-                                filterMatchMode="contains">
+                                headerText="Distributor"
+                                sortBy="#{p.fromInstitution.name}"
+                                filterBy="#{p.fromInstitution.name}"
+                                filterMatchMode="contains"
+                                toggleable="true">
                                 <h:outputText value="#{p.fromInstitution.name}" />
                             </p:column>
 
-                            <p:column 
-                                headerText="Purchase No" 
-                                width="8em" 
-                                sortBy="#{p.deptId}" 
-                                filterBy="#{p.deptId}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                id="colPurchaseNo"
+                                headerText="Purchase No"
+                                width="8em"
+                                sortBy="#{p.deptId}"
+                                filterBy="#{p.deptId}"
+                                filterMatchMode="contains"
+                                toggleable="true">
                                 <h:outputText value="#{p.deptId}" />
                             </p:column>
 
-                            <p:column 
-                                headerText="Invoice No" 
-                                width="8em" 
-                                sortBy="#{p.invoiceNumber}" 
-                                filterBy="#{p.invoiceNumber}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                id="colInvoiceNo"
+                                headerText="Invoice No"
+                                width="8em"
+                                sortBy="#{p.invoiceNumber}"
+                                filterBy="#{p.invoiceNumber}"
+                                filterMatchMode="contains"
+                                toggleable="true">
                                 <h:outputText value="#{p.invoiceNumber}" />
                             </p:column>
 
-                            <p:column 
+                            <p:column
                                 id="colDpDetails"
-                                headerText="Purchase Details" 
-                                width="16em">
+                                headerText="Purchase Details"
+                                width="16em"
+                                toggleable="true">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
                                         <h:outputText styleClass="fw-bold text-primary" value="#{p.createdAt}">
@@ -161,34 +187,39 @@
                                 </div>
                             </p:column>
 
-                            <p:column 
-                                headerText="Purchase Value" 
-                                width="10em" 
-                                sortBy="#{p.netTotal}" 
-                                filterBy="#{p.netTotal}" 
-                                filterMatchMode="equals" 
-                                styleClass="text-end">
+                            <p:column
+                                id="colPurchaseValue"
+                                headerText="Purchase Value"
+                                width="10em"
+                                sortBy="#{p.netTotal}"
+                                filterBy="#{p.netTotal}"
+                                filterMatchMode="equals"
+                                styleClass="text-end"
+                                toggleable="true">
                                 <h:outputText value="#{p.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Actions" width="10em" styleClass="text-center">
-                                <p:commandButton 
+                                <p:commandButton
                                     ajax="false"
                                     icon="pi pi-undo"
                                     title="Create Return"
                                     value="Create Return"
                                     action="#{directPurchaseReturnWorkflowController.navigateToCreateDirectPurchaseReturnFromPurchase()}"
                                     disabled="#{p.cancelled or p.fullReturned}"
+                                    onclick="return confirm('Are you sure you want to create a return for this Direct Purchase?')"
                                     styleClass="ui-button-sm ui-button-warning mx-1">
                                     <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.selectedDirectPurchase}" value="#{p}" />
                                 </p:commandButton>
                             </p:column>
 
-                            <p:column 
-                                headerText="Previous Returns" 
-                                width="32em">
+                            <p:column
+                                id="colPreviousReturns"
+                                headerText="Previous Returns"
+                                width="32em"
+                                toggleable="true">
                                 <h:dataTable 
                                     value="#{p.listOfBill}" 
                                     var="b" 
@@ -227,6 +258,7 @@
 
                             </p:column>
                         </p:dataTable>
+                        </p:panel>
 
                     </div>
                 </div>
