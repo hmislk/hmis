@@ -252,6 +252,11 @@ public class IssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("Pleace Finalise Bill First. Can not Return");
             return;
         }
+        // Validate return comment is provided
+        if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return Comment is required. Please provide a reason for the return.");
+            return;
+        }
         if (!hasQtyToReturn(returnBillItems)) {
             JsfUtil.addErrorMessage("Return Quantity is Zero. Can not Return");
             return;
