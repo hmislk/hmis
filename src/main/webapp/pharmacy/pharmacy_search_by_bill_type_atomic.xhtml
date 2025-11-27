@@ -72,9 +72,10 @@
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyReturnWithoutTraising'}" >
                                         <se:grn_return_without_traising />
                                     </h:panelGroup>
-
+                                    
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyOrder'}" >
-                                        <se:po_request />
+                                        <se:po_request rendered="#{searchController.billTypeAtomic eq 'PHARMACY_ORDER'}" />
+                                        <se:po_approve rendered="#{searchController.billTypeAtomic eq 'PHARMACY_ORDER_APPROVAL'}" />
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyTransferRequest'}" >
@@ -87,10 +88,6 @@
 
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'StoreTransferReceive'}" >
                                         <se:transfer_recieve />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyOrderApprove'}" >
-                                        <se:po_approve />
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyPre'}" >
@@ -133,6 +130,12 @@
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'GrnPaymentPre'}" >
                                         <se:grn_payment />
                                     </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacyDisposalIssue'}" >
+                                        <se:pharmacy_disposal_issue rendered="#{searchController.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE'}" />
+                                        <se:pharmacy_disposal_issue_returned rendered="#{searchController.billTypeAtomic eq 'PHARMACY_DISPOSAL_ISSUE_RETURN'}" />
+                                    </h:panelGroup>
+                                    
                                 </h:panelGroup>
                             </div>
                         </div>
