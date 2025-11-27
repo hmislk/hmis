@@ -155,10 +155,29 @@
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel header="GRN Return Requests for Approval" styleClass="shadow-sm">
-                            <p:dataTable 
-                                id="tbl" 
-                                value="#{grnReturnWorkflowController.grnReturnsToApprove}" 
+                        <p:panel styleClass="shadow-sm">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>GRN Return Requests for Approval</span>
+                                    <div>
+                                        <p:columnToggler
+                                            datasource="tbl"
+                                            trigger="columnTogglerBtn">
+                                        </p:columnToggler>
+                                        <p:commandButton
+                                            id="columnTogglerBtn"
+                                            icon="fas fa-columns"
+                                            value="Columns"
+                                            styleClass="ui-button-outlined"
+                                            type="button"
+                                            title="Show/Hide Columns">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                            <p:dataTable
+                                id="tbl"
+                                value="#{grnReturnWorkflowController.grnReturnsToApprove}"
                                 var="b"
                                 rows="15"
                                 paginator="true"
@@ -171,7 +190,7 @@
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
-                            <p:column headerText="Requested At">
+                            <p:column id="colRequestedAt" headerText="Requested At" toggleable="true">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     <h:outputLabel value="#{b.createdAt}">
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -188,7 +207,7 @@
                                 </h:panelGroup>                       
                             </p:column> 
 
-                            <p:column headerText="Requested By">
+                            <p:column id="colRequestedBy" headerText="Requested By" toggleable="true">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     <h:outputLabel value="#{b.creater.webUserPerson.name}">                                      
                                     </h:outputLabel>
@@ -203,29 +222,29 @@
                                 </h:panelGroup>
                             </p:column>    
 
-                            <p:column headerText="Supplier">
+                            <p:column id="colSupplier" headerText="Supplier" toggleable="true">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     #{b.toInstitution.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column>
 
-                            <p:column headerText="Return No">
+                            <p:column id="colReturnNo" headerText="Return No" toggleable="true">
                                 <h:outputText value="#{b.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Original GRN">
+                            <p:column id="colOriginalGrn" headerText="Original GRN" toggleable="true">
                                 <h:outputText value="#{b.referenceBill.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Requested Department">
+                            <p:column id="colRequestedDept" headerText="Requested Department" toggleable="true">
                                 <h:commandLink action="pharmacy_reprint_grn_return_request">
                                     #{b.department.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                            <p:column id="colRequestedValue" headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true">
                                 <div class="d-flex align-items-center justify-content-end">
                                     <i class="fas fa-coins text-success me-2"></i>
                                     <span class="fw-bold text-success fs-6">
@@ -236,7 +255,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Approved Person">
+                            <p:column id="colApprovedPerson" headerText="Approved Person" toggleable="true">
                                 <h:commandLink 
                                     action="pharmacy_reprint_grn_return_request" 
                                     value="#{b.completedBy.webUserPerson.nameWithTitle}"
@@ -245,7 +264,7 @@
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                            <p:column id="colApprovedValue" headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end" toggleable="true">
                                 <div class="d-flex align-items-center justify-content-end" rendered="#{b.completed eq true}">
                                     <i class="fas fa-coins text-info me-2"></i>
                                     <span class="fw-bold text-info fs-6">
@@ -256,7 +275,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Status" width="8em">
+                            <p:column id="colStatus" headerText="Status" width="8em" toggleable="true">
                                 <h:panelGroup rendered="#{b.checkedBy ne null and (b.completed eq false or b.completed eq null)}">
                                     <span class="badge bg-warning text-dark">Pending Approval</span>
                                 </h:panelGroup>
