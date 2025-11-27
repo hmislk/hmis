@@ -771,7 +771,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
         if (qry != null) {
             sql = "select c from BilledBill c "
-                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+                    + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
+                    + " OR (c.balance IS NULL AND (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val)) "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
@@ -806,7 +807,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap params = new HashMap();
         if (qry != null) {
             jpql = "select c from BilledBill c "
-                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+                    + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
+                    + " OR (c.balance IS NULL AND (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val)) "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
@@ -874,7 +876,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
         if (qry != null) {
             sql = "select b from BilledBill b "
-                    + " where (abs(b.netTotal)-abs(b.paidAmount))>:val "
+                    + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
+                    + " OR (b.balance IS NULL AND (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val)) "
                     + " and b.billType in :btps "
                     + " and b.paymentMethod= :pm "
                     + " and b.institution=:ins "

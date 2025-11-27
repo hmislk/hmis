@@ -19,11 +19,15 @@
                                 <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
 
-                            <p:calendar
+                           <p:datePicker
                                 id="fromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <p:spacer width="20"></p:spacer>
@@ -33,22 +37,26 @@
                                               styleClass="fa mr-2"/> 
                                 <p:outputLabel value="To" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            <p:calendar
+                            <p:datePicker
+                                id="toDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                id="toDate"
-                                navigator="false"
-                                pattern="dd/MM/yyyy HH:mm"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <h:panelGroup layout="block" class="form-group">
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Admission Types" for="admmisionType" styleClass="m-3" />
+                                <h:outputLabel for="adType" value="Admission Types"  styleClass="m-3" />
                             </h:panelGroup>
 
-                            <p:selectCheckboxMenu id="admmisionType"
+                            <p:selectCheckboxMenu id="adType"
                                                   styleClass="w-100"
-                                                  label="Select Type">
+                                                  label="Select Type"
+                                                  updateLabel="true">
                                 <f:selectItem itemLabel="Normal" itemValue="1" />
                                 <f:selectItem itemLabel="Dialysis" itemValue="2" />
                                 <f:selectItem itemLabel="ETU" itemValue="3" />
@@ -63,7 +71,8 @@
                             </h:panelGroup>
                             <p:selectCheckboxMenu id="rCat"
                                                   styleClass="w-100"
-                                                  label="Select Category">
+                                                  label="Select Category"
+                                                  updateLabel="true">
                                 <f:selectItem itemLabel="Suprior A" itemValue="1" />
                                 <f:selectItem itemLabel="Suprior B" itemValue="2" />
                                 <f:selectItem itemLabel="Premium Rage" itemValue="3" />
@@ -117,29 +126,17 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Patient Name" for="acName" class="m-3"/>
+                                <h:outputLabel value="Patient Name/MRN" for="acName" class="m-3"/>
                             </h:panelGroup>
                             <p:autoComplete 
                                 id="acName"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                placeholder="Patient Name"
+                                placeholder="Patient Name/MRN"
                                 >
                             </p:autoComplete>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Patient MRN" for="acPatientMRN" class="m-3"/>
-                            </h:panelGroup>
-                            <p:autoComplete 
-                                id="acPatientMRN"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                placeholder="Patient MRN"
-                                >
-                            </p:autoComplete>
-
-
+                           
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center my-3">
@@ -171,7 +168,7 @@
                         </div>
 
                         <h:panelGroup id="printPanel" >
-                            <p:panel header="Type: Summery" styleClass="m-3" >
+                            <p:panel header="Type: Summary" styleClass="m-3" >
                                 <p:dataTable
                                     id="summeryWise"
                                     var="var"

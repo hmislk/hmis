@@ -3594,6 +3594,12 @@ public class SearchController implements Serializable {
             params.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
 
+        // Payment Method filter
+        if (paymentMethod != null) {
+            jpql.append("AND b.paymentMethod = :paymentMethod ");
+            params.put("paymentMethod", paymentMethod);
+        }
+
         jpql.append("ORDER BY b.createdAt DESC");
 
         // Execute query using findLightsByJpql for DTO constructor queries
