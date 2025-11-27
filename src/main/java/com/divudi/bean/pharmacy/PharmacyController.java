@@ -5147,7 +5147,7 @@ public class PharmacyController implements Serializable {
                 .append("b.department.name, ")
 //                .append("b.fromDepartment.name, ")
 //                .append("b.toDepartment.name, ")
-                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalRetailSaleValue ELSE 0 END) ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalCostValue ELSE 0 END) ")
                 .append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billTypeAtomic IN :btAtomics ")
@@ -7831,6 +7831,31 @@ public class PharmacyController implements Serializable {
         pendingGrns = new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
         fillDetails();
+    }
+
+    public void loadItemFromUrlParameter() {
+        try {
+            String itemIdParam = FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getRequestParameterMap()
+                    .get("itemId");
+
+            if (itemIdParam != null && !itemIdParam.trim().isEmpty()) {
+                Long itemId = Long.parseLong(itemIdParam);
+                Item item = itemFacade.find(itemId);
+
+                if (item != null) {
+                    setPharmacyItem(item);
+                    JsfUtil.addSuccessMessage("Item loaded: " + item.getName());
+                } else {
+                    JsfUtil.addErrorMessage("Item not found for ID: " + itemId);
+                }
+            }
+        } catch (NumberFormatException e) {
+            JsfUtil.addErrorMessage("Invalid item ID format");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading item: " + e.getMessage());
+        }
     }
 
     public void fillItemDetails(Item pharmacyItem) {
