@@ -153,10 +153,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             String status = "";
             String action = "";
 
-            if (pendingReturn.isChecked() == null || !pendingReturn.isChecked()) {
+            if (pendingReturn.getChecked() == null || !pendingReturn.getChecked()) {
                 status = "unchecked/unapproved";
                 action = "Please complete or cancel it first.";
-            } else if (pendingReturn.isCompleted() == null || !pendingReturn.isCompleted()) {
+            } else if (pendingReturn.getCompleted() == null || !pendingReturn.getCompleted()) {
                 status = "checked but not completed";
                 action = "Please complete or cancel it first.";
             }
@@ -248,27 +248,60 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     }
 
     public String cancelCurrentReturn() {
-        if (currentBill != null && currentBill.getId() != null) {
-            try {
-                // Mark the bill as cancelled in the database
-                currentBill.setCancelled(true);
+        // Validate bill exists and is persisted
+        if (currentBill == null || currentBill.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: No valid Direct Purchase Return found.");
+            return "";
+        }
 
-                // Set cancellation metadata if bill has been saved to database
-                if (currentBill.getCreatedAt() != null) {
-                    currentBill.setEditedAt(new Date());
-                    currentBill.setEditor(sessionController.getLoggedUser());
-                }
+        // Validate bill is in a cancellable state
+        if (currentBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return is already cancelled.");
+            return "";
+        }
 
-                // Save the cancelled bill to database
-                billFacade.edit(currentBill);
+        if (currentBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return has already been refunded.");
+            return "";
+        }
 
-                JsfUtil.addSuccessMessage("Direct Purchase Return cancelled successfully.");
-            } catch (Exception e) {
-                JsfUtil.addErrorMessage("Error cancelling Direct Purchase Return: " + e.getMessage());
-                return "";
+        if (currentBill.isReactivated()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return has been reactivated and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isRetired()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return is retired and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return is completed and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return payment is completed and cannot be cancelled.");
+            return "";
+        }
+
+        try {
+            // Mark the bill as cancelled in the database
+            currentBill.setCancelled(true);
+
+            // Set cancellation metadata if bill has been saved to database
+            if (currentBill.getCreatedAt() != null) {
+                currentBill.setEditedAt(new Date());
+                currentBill.setEditor(sessionController.getLoggedUser());
             }
-        } else {
+
+            // Save the cancelled bill to database
+            billFacade.edit(currentBill);
+
             JsfUtil.addSuccessMessage("Direct Purchase Return cancelled successfully.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error cancelling Direct Purchase Return: " + e.getMessage());
+            return "";
         }
 
         // Reset UI state
@@ -278,7 +311,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             searchController.makeListNull();
         }
 
-        return "/pharmacy/pharmacy_direct_purchase_return_request?faces-redirect=true";
+        return "/pharmacy/returns_and_cancellations_index?faces-redirect=true";
     }
 
     // Core workflow methods

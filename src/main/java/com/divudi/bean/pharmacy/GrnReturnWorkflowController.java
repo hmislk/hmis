@@ -240,27 +240,60 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public String cancelCurrentReturn() {
-        if (currentBill != null && currentBill.getId() != null) {
-            try {
-                // Mark the bill as cancelled in the database
-                currentBill.setCancelled(true);
+        // Validate bill exists and is persisted
+        if (currentBill == null || currentBill.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: No valid GRN Return found.");
+            return "";
+        }
 
-                // Set cancellation metadata if bill has been saved to database
-                if (currentBill.getCreatedAt() != null) {
-                    currentBill.setEditedAt(new Date());
-                    currentBill.setEditor(sessionController.getLoggedUser());
-                }
+        // Validate bill is in a cancellable state
+        if (currentBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return is already cancelled.");
+            return "";
+        }
 
-                // Save the cancelled bill to database
-                billFacade.edit(currentBill);
+        if (currentBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return has already been refunded.");
+            return "";
+        }
 
-                JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
-            } catch (Exception e) {
-                JsfUtil.addErrorMessage("Error cancelling GRN Return: " + e.getMessage());
-                return "";
+        if (currentBill.isReactivated()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return has been reactivated and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isRetired()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return is retired and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return is completed and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: GRN Return payment is completed and cannot be cancelled.");
+            return "";
+        }
+
+        try {
+            // Mark the bill as cancelled in the database
+            currentBill.setCancelled(true);
+
+            // Set cancellation metadata if bill has been saved to database
+            if (currentBill.getCreatedAt() != null) {
+                currentBill.setEditedAt(new Date());
+                currentBill.setEditor(sessionController.getLoggedUser());
             }
-        } else {
+
+            // Save the cancelled bill to database
+            billFacade.edit(currentBill);
+
             JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error cancelling GRN Return: " + e.getMessage());
+            return "";
         }
 
         // Reset UI state
@@ -270,7 +303,7 @@ public class GrnReturnWorkflowController implements Serializable {
             searchController.makeListNull();
         }
 
-        return "/pharmacy/pharmacy_grn_return_request?faces-redirect=true";
+        return "/pharmacy/returns_and_cancellations_index?faces-redirect=true";
     }
 
     // Core workflow methods
