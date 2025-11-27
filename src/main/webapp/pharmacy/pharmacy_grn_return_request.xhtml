@@ -236,13 +236,14 @@
                             </p:column>
 
                             <p:column headerText="Actions" styleClass="text-center">
-                                <p:commandButton 
+                                <p:commandButton
                                     ajax="false"
                                     icon="pi pi-undo"
                                     title="Create Return"
                                     value="Create Return"
                                     action="#{grnReturnWorkflowController.navigateToCreateGrnReturnFromGrn()}"
                                     disabled="#{p.cancelled or p.fullReturned}"
+                                    onclick="return confirm('Are you sure you want to create a return for this GRN?')"
                                     styleClass="ui-button-sm ui-button-warning mx-1">
                                     <f:setPropertyActionListener target="#{grnReturnWorkflowController.selectedGrn}" value="#{p}" />
                                 </p:commandButton>

@@ -98,6 +98,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -109,6 +110,7 @@ import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -1195,6 +1197,37 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public void handleSelect(SelectEvent event) {
         handleSelectAction();
+    }
+
+    public void showItemDetailsForSelectedStock() {
+        try {
+            if (stockDto == null) {
+                JsfUtil.addErrorMessage("Please select a stock first");
+                return;
+            }
+
+            Stock selectedStock = convertStockDtoToEntity(stockDto);
+            if (selectedStock == null || selectedStock.getItemBatch() == null || selectedStock.getItemBatch().getItem() == null) {
+                JsfUtil.addErrorMessage("Selected stock does not have valid item information");
+                return;
+            }
+
+            Item selectedItem = selectedStock.getItemBatch().getItem();
+            Long itemId = selectedItem.getId();
+
+            // Construct the URL with the item ID parameter
+            String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
+            String popupUrl = contextPath + "/faces/pharmacy/pharmacy_item_transactions_popup.xhtml?itemId=" + itemId;
+
+            // Execute JavaScript to open the popup
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
+                "Opening item details for: " + selectedItem.getName(), null));
+
+            PrimeFaces.current().executeScript("window.open('" + popupUrl + "', '_blank');");
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error opening item details: " + e.getMessage());
+        }
     }
 
     //    public void calculateRatesOfSelectedBillItemBeforeAddingToTheList(BillItem bi) {

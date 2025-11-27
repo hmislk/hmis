@@ -17,7 +17,11 @@
       "Bash(gh pr list:*)",
       "WebFetch(domain:localhost)",
       "Bash(./detect-maven.sh:*)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "WebSearch",
+      "WebFetch(domain:www.primefaces.org)",
+      "WebFetch(domain:www.concretepage.com)",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": [],
     "ask": [],
