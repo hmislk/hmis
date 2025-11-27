@@ -536,7 +536,7 @@
 
                                 <!-- Good In Transit Amount Column -->
                                 <p:column headerText="Good In Transit Amount" style="text-align: right;">
-                                    <h:outputText value="#{s.goodInTransistAmount}" 
+                                    <h:outputText id="lblGoodsInTransitForSummeryReport" value="#{s.goodInTransistAmount}"
                                                   style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>

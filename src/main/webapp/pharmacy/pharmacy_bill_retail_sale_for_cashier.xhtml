@@ -87,14 +87,15 @@
                                             <h:outputText styleClass="fa-solid fa-circle-plus" />
                                             <h:outputText value="Add New Item" class="mx-4"></h:outputText>
 
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 id="btnItemDetails"
-                                                disabled="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Single Items Summary')}" 
-                                                class="ui-button-warning float-end" 
-                                                title="Single Item Summary (Opens in new tab)" 
+                                                disabled="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Single Items Summary')}"
+                                                class="ui-button-warning float-end"
+                                                title="Single Item Summary (Opens in new tab for selected stock's item)"
                                                 icon="fa fa-external-link-alt"
-                                                onclick="window.open('#{request.contextPath}/faces/pharmacy/pharmacy_item_transactions_popup.xhtml', '_blank'); return false;"
-                                                type="button"/>
+                                                action="#{pharmacySaleForCashierController.showItemDetailsForSelectedStock}"
+                                                process="@this acStock"
+                                                ajax="true"/>
                                         </f:facet>
 
                                         <div class="row">
