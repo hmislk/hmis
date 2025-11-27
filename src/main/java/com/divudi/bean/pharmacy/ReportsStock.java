@@ -163,6 +163,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         pharmacyStockRows = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_item?faces-redirect=true";
     }
+
     public String navigateToPharmacyReportDepartmentStockByItemDTO() {
         pharmacyStockRows = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_item_DTO?faces-redirect=true";
@@ -1093,23 +1094,23 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     }
 
     public void fillAllStaffStocks() {
-//        Date startTime = new Date();
-//        Date fromDate = null;
-//        Date toDate = null;
-//
-//        Map m = new HashMap();
-//        String sql;
-//        sql = "select s from Stock s where s.stock!=:d "
-//                + " order by s.staff.person.name, "
-//                + " s.itemBatch.item.name ";
-//        m.put("d", 0.0);
-//        stocks = getStockFacade().findByJpql(sql, m);
-//        stockPurchaseValue = 0.0;
-//        stockSaleValue = 0.0;
-//        for (Stock ts : stocks) {
-//            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-//            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-//        }
+        Map m = new HashMap();
+        String sql;
+        sql = "select s from Stock s where s.stock!=:d "
+                + " order by s.staff.person.name, "
+                + " s.itemBatch.item.name ";
+        m.put("d", 0.0);
+        stocks = getStockFacade().findByJpql(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+    }
+
+    public void fillAllStaffStockItems() {
+        //TODO: Improve Logic. This Logic is wrong.
 
         Map<String, Object> m = new HashMap<>();
         String sql = "select bi from BillItem bi"
