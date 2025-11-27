@@ -605,6 +605,7 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         if (finalize) {
+            currentBill.setChecked(true);
             currentBill.setCheckedBy(sessionController.getLoggedUser());
             currentBill.setCheckeAt(new Date());
         }
