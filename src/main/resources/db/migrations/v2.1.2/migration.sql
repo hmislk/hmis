@@ -1,9 +1,9 @@
 -- Migration v2.1.2: Fix remaining decimal precision columns in BILLFINANCEDETAILS
 -- Author: Dr M H B Ariyaratne
 -- Date: 2025-01-23
--- Issue: v2.1.1 migration was marked as successful but missed 4 columns
+-- Issue: v2.1.1 migration was marked as successful but missed 3 columns
 -- This migration completes the decimal precision fix for production environments
--- Note: Payment method columns are excluded because they are commented out in the entity
+-- Note: Payment method columns and TOTALOFBILLLINEDISCOUNTS are excluded because they don't exist in the entity
 
 -- PRODUCTION SAFETY: Check table exists before proceeding
 SELECT 'Starting migration v2.1.2 - fixing remaining decimal precision columns' AS status;
@@ -25,13 +25,10 @@ ORDER BY COLUMN_NAME;
 -- FIX REMAINING COLUMNS
 -- ==========================================
 
--- Fix the 4 columns that were missed in v2.1.1
--- Note: TOTALPAIDASCASH is not included because it's commented out in the entity
+-- Fix the 3 columns that were missed in v2.1.1
+-- Note: TOTALPAIDASCASH and TOTALOFBILLLINEDISCOUNTS are not included because they don't exist in the entity
 ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALEXPENSE DECIMAL(18,4);
 SELECT 'Fixed TOTALEXPENSE column' AS progress;
-
-ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALOFBILLLINEDISCOUNTS DECIMAL(18,4);
-SELECT 'Fixed TOTALOFBILLLINEDISCOUNTS column' AS progress;
 
 ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALOFFREEITEMVALUES DECIMAL(18,4);
 SELECT 'Fixed TOTALOFFREEITEMVALUES column' AS progress;

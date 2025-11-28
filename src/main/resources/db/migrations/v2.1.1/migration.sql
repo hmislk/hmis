@@ -88,11 +88,12 @@ ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALOFFREEITEMVALUES DECIMAL(18,4)
 -- STEP 6: ADDITIONAL FINANCIAL TRACKING
 -- ==========================================
 
--- Fix line-level discount tracking
-ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALOFBILLLINEDISCOUNTS DECIMAL(18,4);
+-- Note: TOTALOFBILLLINEDISCOUNTS column does not exist in entity - skipping
+-- The entity uses lineDiscount, billDiscount, and totalDiscount instead
+-- ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN TOTALOFBILLLINEDISCOUNTS DECIMAL(18,4);
 
 -- ==========================================
--- STEP 6: VERIFICATION
+-- STEP 7: VERIFICATION
 -- ==========================================
 
 -- Show updated column definitions for key financial fields
