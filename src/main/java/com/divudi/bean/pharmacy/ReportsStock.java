@@ -1009,6 +1009,9 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     ItemFacade itemFacade;
 
     List<Item> items;
+    private Item item;
+    
+    
 
     public List<Item> getItems() {
         return items;
@@ -1107,9 +1110,9 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }
 
         // Add item filter if item is selected
-        if (itemController.getCurrent() != null) {
+        if (item != null) {
             sql.append(" and s.itemBatch.item=:item");
-            m.put("item", itemController.getCurrent());
+            m.put("item", item);
         }
 
         sql.append(" order by s.staff.person.name, s.itemBatch.item.name");
@@ -2219,6 +2222,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setIncludeZeroStock(boolean includeZeroStock) {
         this.includeZeroStock = includeZeroStock;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
 }
