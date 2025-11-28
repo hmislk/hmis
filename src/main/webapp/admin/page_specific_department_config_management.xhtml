@@ -1,0 +1,337 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <!-- Privilege Guard: Only administrators can access this page -->
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                    <h:form id="departmentConfigForm">
+                        <!-- Null Safety: Check if metadata is loaded -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata ne null}">
+                            <p:panel header="Department-Specific Configuration Management" styleClass="mb-3">
+
+                                <!-- Page Information Section -->
+                                <h:panelGroup class="card mb-4 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                    <h:outputText value="Page Information" styleClass="h5 d-block mb-3 text-primary"/>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Page Name:</strong>
+                                                <h:outputText value="#{pageAdminController.currentMetadata.pageName}" styleClass="ms-2"/>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Page Path:</strong>
+                                                <h:outputText value="#{pageAdminController.currentMetadata.pagePath}" styleClass="ms-2 text-muted"/>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Controller:</strong>
+                                                <h:outputText value="#{pageAdminController.currentMetadata.controllerClass}" styleClass="ms-2"/>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Current Department:</strong>
+                                                <h:outputText value="#{sessionController.department.name}" styleClass="ms-2 fw-bold text-info"
+                                                              rendered="#{sessionController.department ne null}"/>
+                                                <h:outputText value="No Department Selected" styleClass="ms-2 text-danger"
+                                                              rendered="#{sessionController.department eq null}"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Department Configuration Options Table -->
+                                <p:panel header="Manage Department Configuration Options for This Page" styleClass="my-3">
+                                    <p:messages id="messages" closable="true"/>
+
+                                    <div class="alert alert-info mb-3" role="alert">
+                                        <i class="fa fa-building"></i>
+                                        <strong class="ms-2">Department-Specific Configuration</strong>
+                                        <p class="mt-2 ms-2">
+                                            This page shows only the department-scoped configuration options used by
+                                            <strong>#{pageAdminController.currentMetadata.pageName}</strong>.
+                                            Changes made here will affect the behavior for the
+                                            <strong>#{sessionController.department.name}</strong> department only.
+                                        </p>
+                                    </div>
+
+                                    <!-- Department Warning -->
+                                    <div class="alert alert-warning mb-3" role="alert" rendered="#{sessionController.department eq null}">
+                                        <i class="fa fa-exclamation-triangle"></i>
+                                        <strong class="ms-2">No Department Context</strong>
+                                        <p class="mt-2 ms-2">
+                                            You need to be logged into a specific department to manage department-specific configurations.
+                                        </p>
+                                    </div>
+
+                                    <p:dataTable
+                                        id="departmentOptionsTable"
+                                        value="#{pageAdminController.departmentConfigOptions}"
+                                        var="configInfo"
+                                        emptyMessage="No department configuration options found for this page"
+                                        styleClass="table table-striped"
+                                        paginator="false">
+
+                                        <p:column headerText="Configuration Key" style="width: 25%">
+                                            <h:outputText value="#{configInfo.key.replace('[Department Name]', sessionController.department.name)}" styleClass="fw-bold"/>
+                                        </p:column>
+
+                                        <p:column headerText="Current Value" style="width: 15%; text-align: center;">
+                                            <h:panelGroup styleClass="badge #{configOptionApplicationController.getBooleanValueByKey(configInfo.key.replace('[Department Name]', sessionController.department.name), true) ? 'badge-success' : 'badge-danger'}">
+                                                <h:outputText value="#{configOptionApplicationController.getBooleanValueByKey(configInfo.key.replace('[Department Name]', sessionController.department.name), true) ? 'Enabled' : 'Disabled'}"/>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="Scope" style="width: 12%; text-align: center;">
+                                            <h:panelGroup styleClass="badge badge-info px-2 py-1">
+                                                <i class="fas fa-building me-1"></i>
+                                                <h:outputText value="#{configInfo.scope}"/>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="Description" style="width: 30%">
+                                            <h:outputText value="#{configInfo.description}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Usage Location" style="width: 18%">
+                                            <h:outputText value="#{configInfo.usageLocation}" styleClass="text-muted small"/>
+                                        </p:column>
+
+                                        <p:column headerText="Actions" style="width: 10%; text-align: center;">
+                                            <p:commandButton
+                                                icon="fa fa-edit"
+                                                styleClass="ui-button-success"
+                                                title="Edit Department Configuration Option"
+                                                action="#{configOptionController.prepareOptionForApplicationEdit(configInfo.key.replace('[Department Name]', sessionController.department.name))}"
+                                                oncomplete="PF('departmentOptionEditDialog').show()"
+                                                update=":departmentEditForm"
+                                                rendered="#{sessionController.department ne null}"/>
+
+                                            <h:outputText value="--" styleClass="text-muted"
+                                                          rendered="#{sessionController.department eq null}"
+                                                          title="No department context available"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+
+                                <!-- Action Buttons -->
+                                <div class="text-center mt-4">
+                                    <p:commandButton
+                                        value="Back to Page Configuration View"
+                                        icon="fa fa-arrow-left"
+                                        action="/admin/page_configuration_view?faces-redirect=true"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary"/>
+                                </div>
+
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Error message when metadata is not found -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata eq null}">
+                            <p:panel header="Page Not Found" styleClass="mb-3">
+                                <p:messages id="errorMessages" closable="true"/>
+                                <div class="alert alert-warning" role="alert">
+                                    <h:outputText styleClass="fa fa-exclamation-triangle fa-2x" style="vertical-align: middle;"/>
+                                    <strong class="ms-3">Page Configuration Not Available</strong>
+                                    <p class="mt-2 ms-2">
+                                        The page you're trying to view has not been registered in the admin system yet.
+                                        This page may not have configuration metadata available.
+                                    </p>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Access denied message for non-admin users -->
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('Admin')}">
+                    <p:panel header="Access Denied" styleClass="mb-3">
+                        <div class="alert alert-danger" role="alert">
+                            <h:outputText styleClass="fa fa-ban fa-2x" style="vertical-align: middle;"/>
+                            <strong class="ms-3">Insufficient Privileges</strong>
+                            <p class="mt-2 ms-2">
+                                You do not have permission to access this page.
+                                Only administrators can manage department-specific configuration options.
+                            </p>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+                <!-- Edit Department Option Dialog -->
+                <p:dialog
+                    header="Edit Department Configuration Option"
+                    widgetVar="departmentOptionEditDialog"
+                    modal="true"
+                    style="min-width: 60%; min-height: 400px;">
+                    <h:form id="departmentEditForm" class="w-100">
+                        <p:panel class="w-100">
+                            <f:facet name="header">
+                                <p:outputPanel styleClass="header-style">Department Configuration Option Details</p:outputPanel>
+                            </f:facet>
+
+                            <div class="d-flex">
+                                <div class="col-3">
+                                    <p:outputLabel for="keyInput" value="Option Key" class="w-100"/>
+                                </div>
+                                <div class="col-9">
+                                    <h:outputText class="w-100" id="keyInput" value="#{configOptionController.option.optionKey}"/>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex">
+                                <div class="col-3">
+                                    <p:outputLabel for="departmentInput" value="Department" class="w-100"/>
+                                </div>
+                                <div class="col-9">
+                                    <h:outputText class="w-100" id="departmentInput" value="#{configOptionController.option.department.name}"
+                                                  rendered="#{configOptionController.option.department ne null}"/>
+                                    <h:outputText class="w-100" value="#{sessionController.department.name}"
+                                                  rendered="#{configOptionController.option.department eq null}"/>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Key Value"/>
+                                </div>
+                                <div class="col-9">
+                                    <!-- For SHORT_TEXT -->
+                                    <p:inputText
+                                        class="w-100"
+                                        id="valueInputShortText"
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}"/>
+
+                                    <!-- For LONG -->
+                                    <p:inputText
+                                        class="w-100"
+                                        id="valueInputLong"
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG'}"/>
+
+                                    <!-- For LONG_TEXT -->
+                                    <p:inputTextarea
+                                        class="w-100"
+                                        rows="5"
+                                        id="valueInputLongText"
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}"
+                                        autoResize="false"/>
+
+                                    <!-- For DOUBLE -->
+                                    <p:inputText
+                                        class="w-100"
+                                        id="valueInputDouble"
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'DOUBLE'}"/>
+
+                                    <!-- For COLOR -->
+                                    <p:colorPicker
+                                        id="color"
+                                        mode="inline"
+                                        rendered="#{configOptionController.option.valueType eq 'COLOR'}"
+                                        value="#{configOptionController.option.optionValue}"
+                                        formatToggle="true"
+                                        theme="large"/>
+
+                                    <!-- For ENUM -->
+                                    <p:selectOneMenu
+                                        id="enumValueSelector"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'ENUM'}">
+                                        <f:selectItem itemLabel="Select"/>
+                                        <f:selectItems
+                                            value="#{enumController.getEnumValues(configOptionController.option.enumType)}"
+                                            var="enumVal"
+                                            itemLabel="#{enumVal}"
+                                            itemValue="#{enumVal}"/>
+                                    </p:selectOneMenu>
+
+                                    <!-- For BOOLEAN -->
+                                    <p:toggleSwitch
+                                        value="#{configOptionController.option.optionValue}"
+                                        onIcon="fa fa-check"
+                                        offIcon="fa fa-times"
+                                        rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}"/>
+
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-4">
+                                <div class="col-3"></div>
+                                <div class="col-9">
+                                    <p:commandButton
+                                        icon="fa fa-save"
+                                        value="Save"
+                                        style="width: 250px; background-color: #da8545; float: right;"
+                                        action="#{configOptionController.saveOption(configOptionController.option)}"
+                                        process="@this @form"
+                                        oncomplete="PF('departmentOptionEditDialog').hide();"
+                                        update=":departmentConfigForm:departmentOptionsTable :departmentConfigForm:messages"/>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+
+                <style>
+                    .badge-success {
+                        background-color: #28a745;
+                        color: white;
+                        padding: 4px 12px;
+                        border-radius: 12px;
+                        font-size: 0.85em;
+                        font-weight: bold;
+                    }
+
+                    .badge-danger {
+                        background-color: #dc3545;
+                        color: white;
+                        padding: 4px 12px;
+                        border-radius: 12px;
+                        font-size: 0.85em;
+                        font-weight: bold;
+                    }
+
+                    .badge-info {
+                        background-color: #17a2b8;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+
+                    .card {
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+
+                    .text-primary {
+                        color: #007bff !important;
+                    }
+
+                    .ui-button-sm {
+                        padding: 0.25rem 0.5rem !important;
+                        font-size: 0.75rem !important;
+                        border-radius: 4px !important;
+                    }
+                </style>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

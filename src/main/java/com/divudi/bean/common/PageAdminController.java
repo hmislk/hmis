@@ -143,6 +143,48 @@ public class PageAdminController implements Serializable {
         return "/admin/page_specific_privilege_management?faces-redirect=true";
     }
 
+    /**
+     * Navigate to department-specific configuration management.
+     * Shows department configuration options for the current page.
+     *
+     * @return Navigation outcome to department configuration page
+     */
+    public String navigateToDepartmentConfigManagement() {
+        if (currentMetadata == null) {
+            JsfUtil.addErrorMessage("No page metadata available");
+            return null;
+        }
+        return "/admin/page_specific_department_config_management?faces-redirect=true";
+    }
+
+    /**
+     * Check if the current page has department-scoped configuration options
+     * @return true if department configs exist for this page
+     */
+    public boolean hasDepartmentConfigOptions() {
+        if (currentMetadata == null || currentMetadata.getConfigOptions() == null) {
+            return false;
+        }
+        return currentMetadata.getConfigOptions().stream()
+            .anyMatch(config -> config.getKey().contains("[Department Name]"));
+    }
+
+    /**
+     * Get department-scoped configuration options for the current page.
+     * These are APPLICATION-scoped options with department names embedded in keys.
+     * @return List of department config options with actual department names
+     */
+    public java.util.List<ConfigOptionInfo> getDepartmentConfigOptions() {
+        if (currentMetadata == null || currentMetadata.getConfigOptions() == null) {
+            return new java.util.ArrayList<>();
+        }
+
+        // Get configs that contain "[Department Name]" placeholder (these are department-specific APPLICATION configs)
+        return currentMetadata.getConfigOptions().stream()
+            .filter(config -> config.getKey().contains("[Department Name]"))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     // Getters and Setters
 
     public String getSelectedPagePath() {

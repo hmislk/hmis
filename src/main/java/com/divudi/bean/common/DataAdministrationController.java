@@ -2722,33 +2722,16 @@ public class DataAdministrationController implements Serializable {
         Map m = new HashMap();
         String sql = "select c from Amp c "
                 + " where c.retired=false";
-
-        // Filter by department type only if selected
         if (departmentType != null) {
-            sql += " and (c.departmentType is null or c.departmentType=:dep) ";
+            sql += " and c.departmentType=:dep ";
             m.put("dep", departmentType);
         }
-
-        // Filter by category if selected
         if (itemCategory != null) {
             sql += " and c.category=:cat ";
             m.put("cat", itemCategory);
         }
-
         sql += " order by c.name";
-
         items = itemFacade.findByJpql(sql, m);
-
-        int j = 1;
-
-//        for (Item i : items) {
-//            DecimalFormat df = new DecimalFormat("0000");
-////            df=new DecimalFormat("####");
-////            //System.out.println("df = " + df.format(j));
-//            i.setCode(itemCategory.getDescription() + df.format(j));
-//            itemFacade.edit(i);
-//            j++;
-//        }
     }
 
     public void createremoveAllCodes() {
@@ -3308,6 +3291,10 @@ public class DataAdministrationController implements Serializable {
             }
         }
         return filteredTypes;
+    }
+
+    public List<DepartmentType> getDepartmentTypeList() {
+        return Arrays.asList(DepartmentType.values());
     }
 
     public Date getFromDate() {

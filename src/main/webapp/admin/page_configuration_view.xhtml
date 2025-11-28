@@ -82,8 +82,17 @@
                                     icon="fa fa-cog"
                                     action="#{pageAdminController.navigateToPageSpecificConfigManagement()}"
                                     ajax="false"
-                                    styleClass="ui-button-info"
-                                    title="Manage configuration options specific to this page"/>
+                                    styleClass="ui-button-info me-2"
+                                    title="Manage application-wide configuration options"/>
+
+                                <p:commandButton
+                                    value="Manage Department Configuration"
+                                    icon="fas fa-building"
+                                    action="#{pageAdminController.navigateToDepartmentConfigManagement()}"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    title="Manage department-specific configuration options"
+                                    rendered="#{pageAdminController.hasDepartmentConfigOptions()}"/>
                             </div>
                         </p:panel>
 
