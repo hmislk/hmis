@@ -18,6 +18,19 @@
 
                         <common:institution_site_department_filter controller="#{reportsStock}"/>
 
+                        <h:panelGrid columns="4" styleClass="w-100 form-grid my-2" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Department Type" for="cmbDeptType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmbDeptType" value="#{reportsStock.departmentType}" filter="true" filterMatchMode="contains" styleClass="w-100 form-control">
+                                <f:selectItem itemLabel="All Department Types" itemValue="#{null}" />
+                                <f:selectItems value="#{departmentTypeController.departmentTypes}" var="dt" itemLabel="#{dt.label}" itemValue="#{dt}" />
+                            </p:selectOneMenu>
+                            <p:spacer width="10" />
+                            <p:spacer width="10" />
+                        </h:panelGrid>
+
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning"
                                              actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
