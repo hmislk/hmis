@@ -456,6 +456,8 @@ public class SessionController implements Serializable, HttpSessionListener {
             availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
         }
     }
+    
+    
 
     public void setAvailableDepartmentTypesForPharmacyTransactions(List<DepartmentType> availableDepartmentTypesForPharmacyTransactions) {
         this.availableDepartmentTypesForPharmacyTransactions = availableDepartmentTypesForPharmacyTransactions;
