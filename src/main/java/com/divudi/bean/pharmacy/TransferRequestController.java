@@ -674,15 +674,8 @@ public class TransferRequestController implements Serializable {
         saveTransferRequestPreBillAndBillItems();
         getTransferRequestBillPre().setEditedAt(new Date());
         getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
-
         getTransferRequestBillPre().setCheckeAt(new Date());
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
-
-//        getTransferRequestBillPre().setApproveAt(new Date());
-//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
-//        getTransferRequestBillPre().setCompleted(true);
-//        getTransferRequestBillPre().setCompletedAt(new Date());
-//        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
