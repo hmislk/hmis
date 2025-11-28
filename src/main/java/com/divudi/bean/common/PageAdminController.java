@@ -185,6 +185,22 @@ public class PageAdminController implements Serializable {
             .collect(java.util.stream.Collectors.toList());
     }
 
+    /**
+     * Get pure application-scoped configuration options for the current page.
+     * Excludes department-specific configs with "[Department Name]" placeholders.
+     * @return List of pure application config options
+     */
+    public java.util.List<ConfigOptionInfo> getApplicationConfigOptions() {
+        if (currentMetadata == null || currentMetadata.getConfigOptions() == null) {
+            return new java.util.ArrayList<>();
+        }
+
+        // Get configs that do NOT contain "[Department Name]" placeholder (pure APPLICATION configs)
+        return currentMetadata.getConfigOptions().stream()
+            .filter(config -> !config.getKey().contains("[Department Name]"))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     // Getters and Setters
 
     public String getSelectedPagePath() {
