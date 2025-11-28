@@ -315,17 +315,44 @@ public class CashRecieveBillController implements Serializable {
         return false;
     }
 
+    /**
+     * Calculates the accurate current balance for a bill by querying settled amounts and refunds.
+     * This method should be used for payment validation and settlement calculations instead of
+     * the persisted balance field, which may be stale.
+     *
+     * @param billItem BillItem containing the reference bill to calculate balance for
+     * @return Current outstanding balance (NetTotal + VAT - SettledAmount - RefundAmount)
+     */
     private double getReferenceBallance(BillItem billItem) {
-        System.out.println("getReferenceBallance");
-        System.out.println("billItem = " + billItem);
-        
+        if (billItem == null || billItem.getReferenceBill() == null) {
+            return 0.0;
+        }
+
         double refBallance = 0;
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
-        System.out.println("refAmount = " + refAmount);
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(billItem.getReferenceBill()));
         refBallance = neTotal - (paidAmt + refAmount);
         return refBallance;
+    }
+
+    /**
+     * Calculates the accurate current balance for a bill directly.
+     * Use this method when you have the bill object directly instead of through a BillItem.
+     *
+     * @param bill The bill to calculate balance for
+     * @return Current outstanding balance (NetTotal + VAT - SettledAmount - RefundAmount)
+     */
+    private double calculateCurrentBalance(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+
+        double neTotal = Math.abs(bill.getNetTotal() + bill.getVat());
+        double refAmount = Math.abs(getCreditBean().getRefundAmount(bill));
+        double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(bill));
+        double balance = neTotal - (paidAmt + refAmount);
+        return balance;
     }
 
     private double getReferenceBhtBallance(BillItem billItem) {
@@ -340,7 +367,6 @@ public class CashRecieveBillController implements Serializable {
 
     public void selectBillListener() {
         double dbl = getReferenceBallance(getCurrentBillItem());
-        System.out.println(getCurrentBillItem().getReferenceBill());
 
         if (dbl > 0.01) {
             getCurrentBillItem().setNetValue(dbl);
@@ -593,7 +619,8 @@ public class CashRecieveBillController implements Serializable {
 
         // Validate that payment amount does not exceed due amount
         double paymentAmount = getCurrentBillItem().getNetValue();
-        double dueAmount = referenceBill.getBalance();
+        // Use calculated balance instead of persisted balance field to ensure accuracy
+        double dueAmount = getReferenceBallance(getCurrentBillItem());
 
         if (paymentAmount > dueAmount) {
             String message = String.format("Payment amount (%.2f) cannot exceed the due amount (%.2f). " +
@@ -1048,7 +1075,6 @@ public class CashRecieveBillController implements Serializable {
         calTotal();
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        System.out.println(getSelectedBillItems());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
@@ -1194,7 +1220,6 @@ public class CashRecieveBillController implements Serializable {
 
         //calTotal();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        System.out.println(getSelectedBillItems());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setBalance(getCurrent().getNetTotal());
@@ -1283,7 +1308,6 @@ public class CashRecieveBillController implements Serializable {
                 + "AND b.retired = false "
                 + "AND b.balance > 0 "
                 + "ORDER BY b.id DESC";
-        System.out.println("sql = " + sql);
         Map<String, Object> temMap = new HashMap<>();
         temMap.put("billTypes", billTypes);
         List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
@@ -1703,38 +1727,34 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
-        System.out.println("Starting updateSettlingCreditBillSettledValues");
-        System.out.println("Bill Item Reference: " + billItemWithReferanceToCreditBill);
+        Bill referenceBill = billItemWithReferanceToCreditBill.getReferenceBill();
 
-        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Settled Credit Value By Companies: " + settledCreditValueByCompanies);
-
-        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Settled Credit Value By Patient: " + settledCreditValueByPatient);
-
+        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
+        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
         double settleCreditValueTotal = settledCreditValueByCompanies + settledCreditValueByPatient;
-        System.out.println("Total Settled Credit Value: " + settleCreditValueTotal);
 
-        billItemWithReferanceToCreditBill.getReferenceBill().setPaidAmount(settleCreditValueTotal);
-        System.out.println("Paid Amount Set: " + settleCreditValueTotal);
+        // Update all financial fields consistently
+        referenceBill.setPaidAmount(settleCreditValueTotal);
+        referenceBill.setSettledAmountByPatient(settledCreditValueByPatient);
+        referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
 
-        billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountByPatient(settledCreditValueByPatient);
-        System.out.println("Settled Amount By Patient Set: " + settledCreditValueByPatient);
+        // CRITICAL FIX: Update balance field to stay synchronized with paid amount
+        // Calculate the accurate current balance using the same formula as calculateCurrentBalance
+        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
+        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
+        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount);
+        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
 
-        billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountBySponsor(settledCreditValueByCompanies);
-        System.out.println("Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
-
-        double absBillAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getNetTotal());
-        double absSettledAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getPaidAmount());
+        // Check if bill is fully paid and set paidAt timestamp
+        double absBillAmount = Math.abs(referenceBill.getNetTotal());
+        double absSettledAmount = Math.abs(referenceBill.getPaidAmount());
         double difference = absBillAmount - absSettledAmount;
         double absDifference = Math.abs(difference);
         if (absDifference < 1.0) {
-            billItemWithReferanceToCreditBill.getReferenceBill().setPaidAt(new Date());
+            referenceBill.setPaidAt(new Date());
         }
 
-        getBillFacade().edit(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Completed updateSettlingCreditBillSettledValues");
+        getBillFacade().edit(referenceBill);
     }
 
     private void updateReferenceBht(BillItem tmp) {
