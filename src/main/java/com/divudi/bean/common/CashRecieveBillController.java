@@ -1314,127 +1314,6 @@ public class CashRecieveBillController implements Serializable {
         return bills;
     }
 
-    /**
-     * @deprecated This method will be removed in the next iteration.
-     *
-     * <p><strong>Current Status:</strong> This method creates settlement bills with
-     * {@code BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED}, which is being deprecated.
-     *
-     * <p><strong>Current Routing:</strong> The Combined OPD Credit Collection page
-     * (/credit/credit_company_bill_opd_combined.xhtml) calls {@link #settleCombinedCreditBills()},
-     * which currently still routes pharmacy bills to this deprecated method.
-     *
-     * <p><strong>True Replacement:</strong> {@link #settleUniversalCreditBills()} is the intended
-     * replacement that uses the unified {@code BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}
-     * for all bill types (OPD, Package, and Pharmacy), eliminating the separate pharmacy credit
-     * settlement type.
-     *
-     * <p><strong>Migration Path:</strong> Migration to the unified bill type is DEFERRED. In the next
-     * iteration, either:
-     * <ul>
-     *   <li>Update {@link #settleCombinedCreditBills()} to route pharmacy bills to
-     *       {@link #settleUniversalCreditBills()}, OR</li>
-     *   <li>Replace the page action to call {@link #settleUniversalCreditBills()} directly</li>
-     * </ul>
-     * Once migrated, all new settlements will use {@code OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}
-     * regardless of source bill type (OPD or Pharmacy).
-     *
-     * <p><strong>Action Required:</strong> Do not create new references to this method.
-     * Use the Combined OPD Credit Collection page for all credit settlements.
-     */
-    @Deprecated
-    public void settleBillPharmacy() {
-        // Enhanced pharmacy bill settlement with improved functionality
-
-        // Enhanced validation to ensure proper fromInstitution setting for pharmacy bills
-        // Auto-detection must happen BEFORE errorCheckPharmacy() to avoid early return
-        if (getCurrent().getFromInstitution() == null && !getBillItems().isEmpty()) {
-            // Auto-set fromInstitution from the first bill's toInstitution (credit company)
-            BillItem firstItem = getBillItems().get(0);
-            if (firstItem.getReferenceBill() != null && firstItem.getReferenceBill().getToInstitution() != null) {
-                getCurrent().setFromInstitution(firstItem.getReferenceBill().getToInstitution());
-            }
-        }
-
-        if (errorCheckPharmacy()) {
-            return;
-        }
-
-        // Validate that no bill items have zero or negative values
-        for (BillItem item : getBillItems()) {
-            if (item.getNetValue() <= 0) {
-                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
-                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
-                return;
-            }
-        }
-
-        // Calculate total and validate it's greater than zero
-        double totalSettlementAmount = 0.0;
-        for (BillItem item : getBillItems()) {
-            totalSettlementAmount += item.getNetValue();
-        }
-
-        if (totalSettlementAmount <= 0) {
-            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
-            return;
-        }
-
-        // Use enhanced total calculation method consistent with OPD settlements
-        calulateTotalForSettlingCreditForOpdBatchBills();
-
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        getCurrent().setTotal(getCurrent().getNetTotal());
-
-        // Generate department bill number for proper tracking
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        getCurrent().setInsId(deptId);
-        getCurrent().setDeptId(deptId);
-        getCurrent().setBillType(BillType.CashRecieveBill);
-        getCurrent().setBillTypeAtomic(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-
-        // Set additional required fields
-        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getCurrent().setComments(comment);
-        getCurrent().setBillDate(new Date());
-        getCurrent().setBillTime(new Date());
-        getCurrent().setCreatedAt(new Date());
-        getCurrent().setCreater(getSessionController().getLoggedUser());
-        getCurrent().setNetTotal(getCurrent().getNetTotal());
-
-        // Save the main settlement bill
-        if (getCurrent().getId() == null) {
-            getBillFacade().create(getCurrent());
-        } else {
-            getBillFacade().edit(getCurrent());
-        }
-
-        // Enhanced bill item processing with proper audit trails and settlement tracking
-        // Use defensive copy to avoid ConcurrentModificationException and iterate over the same collection as other settlement flows
-        for (BillItem savingBillItem : new ArrayList<>(getBillItems())) {
-            savingBillItem.setCreatedAt(new Date());
-            savingBillItem.setCreater(getSessionController().getLoggedUser());
-            savingBillItem.setBill(getCurrent());
-            savingBillItem.setGrossValue(savingBillItem.getNetValue());
-            getCurrent().getBillItems().add(savingBillItem);
-
-            if (savingBillItem.getId() == null) {
-                getBillItemFacade().create(savingBillItem);
-            } else {
-                getBillItemFacade().edit(savingBillItem);
-            }
-
-            // Enhanced settlement tracking - replaces simple updateReferenceBill with comprehensive settlement tracking
-            updateSettlingCreditBillSettledValues(savingBillItem);
-        }
-
-        // Add payment service integration for proper payment record keeping
-        paymentService.createPayment(current, getPaymentMethodData());
-
-        JsfUtil.addSuccessMessage("Pharmacy Bill Settled Successfully");
-        printPreview = true;
-    }
 
     public void settleBillBht() {
         Date startTime = new Date();
@@ -2096,11 +1975,10 @@ public class CashRecieveBillController implements Serializable {
      * <p><strong>Action:</strong> This method is called by the Combined OPD Credit Collection page
      * (/credit/credit_company_bill_opd_combined.xhtml).
      *
-     * <p><strong>Current Limitation:</strong> This method still routes pharmacy bills to the deprecated
-     * {@link #settleBillPharmacy()} method, which creates {@code PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED}
-     * settlement bills. In the next iteration, pharmacy routing should be updated to call
-     * {@link #settleUniversalCreditBills()} instead, which uses the unified
-     * {@code OPD_CREDIT_COMPANY_PAYMENT_RECEIVED} bill type for all settlements.
+     * <p><strong>Current Implementation:</strong> This method now routes all bill types to
+     * {@link #settleUniversalCreditBills()}, which uses the unified
+     * {@code OPD_CREDIT_COMPANY_PAYMENT_RECEIVED} bill type for all settlements (OPD, Package, and Pharmacy).
+     * The deprecated pharmacy-specific routing has been removed as part of settlement method unification.
      *
      * @see #settleUniversalCreditBills() for the unified replacement that handles all bill types
      */
@@ -2119,19 +1997,9 @@ public class CashRecieveBillController implements Serializable {
 
         BillTypeAtomic billTypeAtomic = firstItem.getReferenceBill().getBillTypeAtomic();
 
-        // Route to appropriate settlement method based on bill type atomic
-        if (billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
-                || billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
-            settleCreditForOpdBatchBills();
-        } else if (billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT
-                || billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
-            settleCreditForOpdPackageBills();
-        } else if (firstItem.getReferenceBill().getBillType() == BillType.PharmacySale
-                || firstItem.getReferenceBill().getBillType() == BillType.PharmacyWholeSale) {
-            settleBillPharmacy();
-        } else {
-            JsfUtil.addErrorMessage("Unsupported bill type for settlement");
-        }
+        // Route to unified settlement method for all bill types
+        // This replaces the previous individual routing to achieve settlement method unification
+        settleUniversalCreditBills();
     }
 
     /**
@@ -2142,10 +2010,10 @@ public class CashRecieveBillController implements Serializable {
      * credit unification requirement, eliminating the separate {@code PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED}
      * bill type.
      *
-     * <p><strong>Status:</strong> This is the intended replacement for {@link #settleBillPharmacy()}
-     * but is not yet wired to the Combined OPD Credit Collection page. In the next iteration,
-     * {@link #settleCombinedCreditBills()} should be updated to route pharmacy bills here instead
-     * of to the deprecated {@link #settleBillPharmacy()} method.
+     * <p><strong>Status:</strong> This method is now the active universal settlement method that replaced
+     * the deprecated pharmacy-specific settlement method. It is now wired to the Combined OPD Credit
+     * Collection page through {@link #settleCombinedCreditBills()}, which routes all bill types
+     * (OPD, Package, and Pharmacy) to this unified method.
      *
      * <p><strong>Bill Type Used:</strong> All settlements created by this method use
      * {@code BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}, regardless of whether the
