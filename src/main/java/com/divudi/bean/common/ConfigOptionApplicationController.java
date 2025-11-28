@@ -74,7 +74,7 @@ public class ConfigOptionApplicationController implements Serializable {
         return optionFacade.findFirstByJpqlWithLock(jpql.toString(), params);
     }
 
-    private ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
+    public ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
         ConfigOption option = optionFacade.createOptionIfNotExists(key, OptionScope.APPLICATION, null, null, null, type, value);
         if (!isLoadingApplicationOptions) {
             loadApplicationOptions();

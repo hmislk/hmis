@@ -876,6 +876,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (department != null) {
             institution = department.getInstitution();
         }
+        // Clear cached department types when department changes
+        availableDepartmentTypesForPharmacyTransactions = null;
         this.department = department;
     }
 
@@ -1558,6 +1560,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "";
         }
 
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
+
         System.out.println("DEBUG: Setting department and institution...");
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
@@ -1782,6 +1787,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggedUser.setWebUserPerson(p);
             webUserFacade.edit(loggedUser);
         }
+
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
 
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
