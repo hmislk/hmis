@@ -564,24 +564,30 @@ public class PharmacyBean {
         Map m = new HashMap<>();
         String sql;
         m.put("i", batch);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch=:i";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch=:i";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
     public double getStockByPurchaseValue(Item item) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
         Map m = new HashMap<>();
         String sql;
         m.put("i", item);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch.item=:i";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
     public double getStockByPurchaseValue(Item item, Department dept) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
         Map m = new HashMap<>();
         String sql;
         m.put("i", item);
         m.put("d", dept);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
@@ -595,11 +601,86 @@ public class PharmacyBean {
     }
 
     public double getStockByPurchaseValue(Item item, Institution ins) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
         Map m = new HashMap<>();
         String sql;
         m.put("i", item);
         m.put("ins", ins);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    // Cost Rate Valuation Methods
+    public double getStockByCostValue(Item item, Department dept) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("d", dept);
+        sql = "Select sum(COALESCE(s.itemBatch.costRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByCostValue(Item item, Institution ins) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("ins", ins);
+        sql = "Select sum(COALESCE(s.itemBatch.costRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByCostValue(Item item) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(COALESCE(s.itemBatch.costRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    // Retail Sale Rate Valuation Methods
+    public double getStockByRetailSaleValue(Item item, Department dept) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("d", dept);
+        sql = "Select sum(COALESCE(s.itemBatch.retailsaleRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByRetailSaleValue(Item item, Institution ins) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("ins", ins);
+        sql = "Select sum(COALESCE(s.itemBatch.retailsaleRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByRetailSaleValue(Item item) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(COALESCE(s.itemBatch.retailsaleRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
@@ -1214,28 +1295,18 @@ public class PharmacyBean {
             sh.setInstitutionBatchStockValueAtCostRate(institutionBatchStock * costRate);
             sh.setTotalBatchStockValueAtCostRate(totalBatchStock * costRate);
 
-            // This is the Item Batch Stock value at purchase rate of the department
-            //Item Stock Values
-            sh.setItemStockValueAtPurchaseRate(departmentItemStock
-                    * purchaseRate); // Item Stock
-            sh.setInstitutionItemStockValueAtPurchaseRate(institutionItemStock
-                    * purchaseRate);
-            sh.setTotalItemStockValueAtPurchaseRate(totalItemStock
-                    * purchaseRate);
+            // Item Stock Values - CORRECTED: Use weighted calculations across all batches
+            sh.setItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d));
+            sh.setInstitutionItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp));
 
-            sh.setItemStockValueAtCostRate(departmentItemStock
-                    * costRate);
-            sh.setInstitutionItemStockValueAtCostRate(institutionItemStock
-                    * costRate);
-            sh.setTotalItemStockValueAtCostRate(totalItemStock
-                    * costRate);
+            sh.setItemStockValueAtCostRate(getStockByCostValue(amp, d));
+            sh.setInstitutionItemStockValueAtCostRate(getStockByCostValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtCostRate(getStockByCostValue(amp));
 
-            sh.setItemStockValueAtSaleRate(departmentItemStock
-                    * retailSaleRate);
-            sh.setInstitutionItemStockValueAtSaleRate(institutionItemStock
-                    * retailSaleRate);
-            sh.setTotalItemStockValueAtSaleRate(totalItemStock
-                    * retailSaleRate);
+            sh.setItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d));
+            sh.setInstitutionItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtSaleRate(getStockByRetailSaleValue(amp));
         }
 
         if (sh.getId() == null) {
@@ -1327,28 +1398,18 @@ public class PharmacyBean {
             sh.setInstitutionBatchStockValueAtCostRate(institutionBatchStock * costRate);
             sh.setTotalBatchStockValueAtCostRate(totalBatchStock * costRate);
 
-            // This is the Item Batch Stock value at purchase rate of the department
-            //Item Stock Values
-            sh.setItemStockValueAtPurchaseRate(departmentItemStock
-                    * purchaseRate); // Item Stock
-            sh.setInstitutionItemStockValueAtPurchaseRate(institutionItemStock
-                    * purchaseRate);
-            sh.setTotalItemStockValueAtPurchaseRate(totalItemStock
-                    * purchaseRate);
+            // Item Stock Values - CORRECTED: Use weighted calculations across all batches
+            sh.setItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d));
+            sh.setInstitutionItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp));
 
-            sh.setItemStockValueAtCostRate(departmentItemStock
-                    * costRate);
-            sh.setInstitutionItemStockValueAtCostRate(institutionItemStock
-                    * costRate);
-            sh.setTotalItemStockValueAtCostRate(totalItemStock
-                    * costRate);
+            sh.setItemStockValueAtCostRate(getStockByCostValue(amp, d));
+            sh.setInstitutionItemStockValueAtCostRate(getStockByCostValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtCostRate(getStockByCostValue(amp));
 
-            sh.setItemStockValueAtSaleRate(departmentItemStock
-                    * retailSaleRate);
-            sh.setInstitutionItemStockValueAtSaleRate(institutionItemStock
-                    * retailSaleRate);
-            sh.setTotalItemStockValueAtSaleRate(totalItemStock
-                    * retailSaleRate);
+            sh.setItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d));
+            sh.setInstitutionItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtSaleRate(getStockByRetailSaleValue(amp));
         }
 
         if (sh.getId() == null) {
