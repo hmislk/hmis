@@ -23,7 +23,8 @@
       "WebFetch(domain:www.concretepage.com)",
       "WebFetch(domain:stackoverflow.com)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": [],
