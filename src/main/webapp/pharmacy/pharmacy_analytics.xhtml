@@ -38,13 +38,13 @@
                                                              value="Daily Stock Values"
                                                              action="#{pharmacySummaryReportController.navigateToDailyStockValuesReport()}"/>
                                             <p:commandButton
-                                                             class="w-100 ui-button-success"
-                                                             ajax="false"
-                                                             style="text-align: left"
-                                                             icon="fa fa-rocket"
-                                                             value="Daily Stock Values (Optimized)"
-                                                             action="/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true"
-                                                             title="High-performance optimized report - Faster execution"/>
+                                                class="w-100 ui-button-success"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                icon="fa fa-rocket"
+                                                value="Daily Stock Values (Optimized)"
+                                                action="/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true"
+                                                title="High-performance optimized report - Faster execution"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
                                                              class="w-100 ui-button-warning"
                                                              ajax="false"
@@ -111,24 +111,47 @@
 
                                     <p:tab title="Stock Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Stock Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
-                                                <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch')}"
-                                                                 class="w-100"
-                                                                 icon="fa fa-cubes"
-                                                                 value="Stock Report by Batch for Developers to cross check"
-                                                                 action="#{reportsStock.navigateToStockReportByBatch()}"
-                                                                 ajax="false" />
-                                            </h:panelGroup>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch', true)}"
-                                                             class="w-100 ui-button-success"
-                                                             icon="fa fa-rocket"
-                                                             value="Stock Report by Batch"
-                                                             action="#{reportsStock.navigateToStockReportByBatchDto()}"
-                                                             ajax="false"
-                                                             title="High-performance DTO-based report - Recommended" />
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Expiring Stock Report by Batch')}" class="w-100" value="Expiring Stock Report by Batch" action="pharmacy_report_department?faces-redirect=true" ajax="false" />
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}" class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" />
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch', true)}"
+                                                class="w-100 ui-button-success"
+                                                icon="fa fa-rocket"
+                                                value="Batch Stock"
+                                                action="#{reportsStock.navigateToStockReportByBatchDto()}"
+                                                ajax="false"
+                                                title="High-performance DTO-based report - Recommended" />
+
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}"
+                                                class="w-100 ui-button-success"
+                                                icon="fa fa-box"
+                                                value="Item Stock"
+                                                action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
+                                                ajax="false"/>
+
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}" 
+                                                class="w-100 ui-button-warning"
+                                                icon="fa fa-clock"
+                                                value="Expiring Stock"
+                                                action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true"
+                                                ajax="false" />
+
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Staff Stock')}"
+                                                class="w-100 ui-button-info"
+                                                icon="fa fa-users"
+                                                value="Staff Stock" 
+                                                action="pharmacy_report_all_staff_stock_by_batch?faces-redirect=true" 
+                                                ajax="false" />
+
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Expiring Stock Report by Batch')}" 
+                                                class="w-100" 
+                                                value="Expiring Stock Report by Batch" 
+                                                action="pharmacy_report_department?faces-redirect=true" 
+                                                ajax="false" />
+
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Zero Stock Item Report')}"
                                                              class="w-100"
                                                              icon="fa fa-cubes"
@@ -141,12 +164,7 @@
                                                              value="Stock Report by Item"
                                                              action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItem()}"
                                                              ajax="false"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item')}"
-                                                             class="w-100"
-                                                             style="background-color:green;border-color: green"
-                                                             value="Stock Report by Item - DTO"
-                                                             action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
-                                                             ajax="false"/>
+
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Item - Order by VMP')}" 
                                                              class="w-100"
                                                              value="Stock Report by Item - Order by VMP"
@@ -160,7 +178,6 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Category Stock Report')}" class="w-100" value="Category Stock Report" action="pharmacy_report_category_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Category Stock Summary')}" class="w-100" value="Category Stock Summary" action="pharmacy_report_category_stock_by_category?faces-redirect=true" ajax="false" />
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Staff Stock')}" class="w-100" value="All Staff Stock" action="pharmacy_report_all_staff_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock History')}" class="w-100 ui-button-warning" value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Before Stock Taking Report')}" class="w-100 ui-button-warning" value="Before Stock Taking Report" action="pharmacy_report_before_stock_taking?faces-redirect=true" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show After Stock Taking Report')}" class="w-100 ui-button-warning" value="After Stock Taking Report" action="pharmacy_report_after_stock_taking?faces-redirect=true" ajax="false"/>
@@ -189,6 +206,15 @@
                                                              value="Stock Report by Batch for Export" 
                                                              action="#{reportsStock.navigateToStockReportByBatchForExport()}" 
                                                              ajax="false" />
+
+                                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                                <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Batch')}"
+                                                                 class="w-100 ui-button-danger"
+                                                                 icon="fa fa-cubes"
+                                                                 value="Stock Report by Batch for Developers to cross check"
+                                                                 action="#{reportsStock.navigateToStockReportByBatch()}"
+                                                                 ajax="false" />
+                                            </h:panelGroup>
 
                                         </div>
                                     </p:tab>
