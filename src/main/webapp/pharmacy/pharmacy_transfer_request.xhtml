@@ -124,6 +124,7 @@
                                         ajax="false"
                                         icon="pi pi-check"
                                         class="mx-1 ui-button-success"
+                                        onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
                                         />
                                 </div>
                             </div>
@@ -145,7 +146,7 @@
                                             forceSelection="true"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAmpAmppVmpVmppItemsForLoggedDepartment}"
+                                            completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
                                             itemValue="#{vt}"

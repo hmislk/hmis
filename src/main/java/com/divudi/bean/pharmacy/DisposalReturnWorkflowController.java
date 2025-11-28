@@ -328,7 +328,7 @@ public class DisposalReturnWorkflowController implements Serializable {
         issueReturnController.setPrintPreview(true);
 
         // Navigate to the return page in print preview mode
-        return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
+        return "/pharmacy/pharmacy_reprint_bill_unit_issue_return?faces-redirect=true";
     }
 
     /**

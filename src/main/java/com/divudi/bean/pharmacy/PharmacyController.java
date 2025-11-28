@@ -5147,7 +5147,7 @@ public class PharmacyController implements Serializable {
                 .append("b.department.name, ")
 //                .append("b.fromDepartment.name, ")
 //                .append("b.toDepartment.name, ")
-                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalRetailSaleValue ELSE 0 END) ")
+                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalCostValue ELSE 0 END) ")
                 .append("FROM Bill b ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billTypeAtomic IN :btAtomics ")
@@ -7016,6 +7016,7 @@ public class PharmacyController implements Serializable {
                 + "AND b.bill.department=:dept "
                 + "AND b.bill.billTypeAtomic IN :btas "
                 + "AND b.createdAt between :frm and :to "
+                + "AND b.bill.completed = true "
                 + "order by b.id desc";
 
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -7121,7 +7122,8 @@ public class PharmacyController implements Serializable {
                 + "AND (bi.retired IS NULL OR bi.retired = FALSE) "
                 + "AND bi.item IN :relatedItems "
                 + "AND bi.bill.billTypeAtomic IN :btas "
-                + "AND bi.createdAt BETWEEN :frm AND :to ";
+                + "AND bi.createdAt BETWEEN :frm AND :to "
+                + "AND bi.bill.completed = true ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -7208,7 +7210,8 @@ public class PharmacyController implements Serializable {
                 + "WHERE (b.retired IS NULL OR b.retired = FALSE) "
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic in :btas "
-                + "AND b.createdAt BETWEEN :frm AND :to ";
+                + "AND b.createdAt BETWEEN :frm AND :to "
+                + "AND b.bill.completed = true ";
 
         boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Direct Purchases", true);
 
@@ -7828,6 +7831,31 @@ public class PharmacyController implements Serializable {
         pendingGrns = new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
         fillDetails();
+    }
+
+    public void loadItemFromUrlParameter() {
+        try {
+            String itemIdParam = FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getRequestParameterMap()
+                    .get("itemId");
+
+            if (itemIdParam != null && !itemIdParam.trim().isEmpty()) {
+                Long itemId = Long.parseLong(itemIdParam);
+                Item item = itemFacade.find(itemId);
+
+                if (item != null) {
+                    setPharmacyItem(item);
+                    JsfUtil.addSuccessMessage("Item loaded: " + item.getName());
+                } else {
+                    JsfUtil.addErrorMessage("Item not found for ID: " + itemId);
+                }
+            }
+        } catch (NumberFormatException e) {
+            JsfUtil.addErrorMessage("Invalid item ID format");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading item: " + e.getMessage());
+        }
     }
 
     public void fillItemDetails(Item pharmacyItem) {

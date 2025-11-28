@@ -2034,10 +2034,10 @@ public class PharmacyReportController implements Serializable {
         retrieveBillItems(btas, getNonCreditPaymentMethods());
         totalCostValue = 0.0;
         totalCostValue = billItems.stream()
-                    .map(BillItem::getBillItemFinanceDetails)
-                    .distinct()
-                    .mapToDouble(details -> details.getTotalCost().doubleValue())
-                    .sum();
+                .map(BillItem::getBillItemFinanceDetails)
+                .distinct()
+                .mapToDouble(details -> details.getTotalCost().doubleValue())
+                .sum();
     }
 
     public void processGrnCredit() {
@@ -2046,15 +2046,15 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
         retrieveBillItems(btas, getCreditPaymentMethods());
-        
+
         totalCostValue = 0.0;
         totalCostValue = billItems.stream()
-                    .map(BillItem::getBillItemFinanceDetails)
-                    .distinct()
-                    .mapToDouble(details -> details.getTotalCost().doubleValue())
-                    .sum();
+                .map(BillItem::getBillItemFinanceDetails)
+                .distinct()
+                .mapToDouble(details -> details.getTotalCost().doubleValue())
+                .sum();
     }
-    
+
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
         retrieveBillItemsCompleted(billTypeValue, null);
     }
@@ -3872,7 +3872,7 @@ public class PharmacyReportController implements Serializable {
                 billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             } else if ("rateAdjustmentDoc".equals(documentType)) {
-                
+
 //                Rate adjustments should NOT be listed 
 //                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
 //                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
@@ -5190,6 +5190,10 @@ public class PharmacyReportController implements Serializable {
     }
 
     public Map<String, Double> retrievePurchaseAndCostValues(List<BillTypeAtomic> billTypeValue) {
+        return retrievePurchaseAndCostValuesWithComplete(billTypeValue, null);
+    }
+
+    public Map<String, Double> retrievePurchaseAndCostValuesWithComplete(List<BillTypeAtomic> billTypeValue, Boolean includeOnlyCompleted) {
         try {
             Map<String, Object> commonParams = new HashMap<>();
             StringBuilder baseQuery = new StringBuilder();
@@ -5206,6 +5210,10 @@ public class PharmacyReportController implements Serializable {
             commonParams.put("billTypes", billTypeValue);
             commonParams.put("fd", fromDate);
             commonParams.put("td", toDate);
+
+            if (includeOnlyCompleted != null) {
+                addFilter(baseQuery, commonParams, "bi.bill.completed", "completed", includeOnlyCompleted);
+            }
 
             addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
             addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
@@ -5337,7 +5345,7 @@ public class PharmacyReportController implements Serializable {
             btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
             btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
             btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
-            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(btas);
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValuesWithComplete(btas, true);
             cogsRows.put("Stock Consumption", stockConsumptions);
 
         } catch (Exception e) {
