@@ -959,24 +959,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             } else {
                 getBillItemFacade().edit(i);
             }
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
-            // Items are already correctly calculated with expenses when added to bill
-            // DO NOT recalculate here as it will overwrite the correct totalCostRate
 
-            // Save BillItem with already-calculated values
             getBillItemFacade().edit(i);
 
             saveBillFee(i);

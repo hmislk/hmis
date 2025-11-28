@@ -32,6 +32,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
@@ -149,6 +150,13 @@ public class TransferRequestController implements Serializable {
             }
         }
         return false;
+    }
+    
+    @Inject
+    ItemController itemController;
+    
+    public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
+        return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
     }
 
     public String fillHeaderDataOfTransferRequest(String s, Bill b) {
