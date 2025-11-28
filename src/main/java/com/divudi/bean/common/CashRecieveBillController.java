@@ -585,6 +585,24 @@ public class CashRecieveBillController implements Serializable {
 
         Bill referenceBill = getCurrentBillItem().getReferenceBill();
 
+        // Validate payment amount
+        if (getCurrentBillItem().getNetValue() == null || getCurrentBillItem().getNetValue() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid payment amount greater than zero");
+            return;
+        }
+
+        // Validate that payment amount does not exceed due amount
+        double paymentAmount = getCurrentBillItem().getNetValue();
+        double dueAmount = referenceBill.getBalance();
+
+        if (paymentAmount > dueAmount) {
+            String message = String.format("Payment amount (%.2f) cannot exceed the due amount (%.2f). " +
+                    "Maximum payable amount is %.2f",
+                    paymentAmount, dueAmount, dueAmount);
+            JsfUtil.addErrorMessage(message);
+            return;
+        }
+
         // Determine the bill type from the reference bill properties
         // First check BillTypeAtomic for OPD bills
         BillTypeAtomic billTypeAtomic = referenceBill.getBillTypeAtomic();
