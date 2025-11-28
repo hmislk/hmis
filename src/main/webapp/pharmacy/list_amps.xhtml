@@ -18,21 +18,34 @@
                         </f:facet>
 
                         <div class="row mb-2">
-                            <div class="col-md-5">
-                                <p:autoComplete 
-                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
-                                    var="dept" 
-                                    itemLabel="#{dept.name}" 
-                                    itemValue="#{dept}" 
+                            <div class="col-md-4">
+                                <p:autoComplete
+                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
+                                    var="dept"
+                                    itemLabel="#{dept.name}"
+                                    itemValue="#{dept}"
                                     placeholder="Select Category"
                                     class="w-100"
                                     inputStyleClass="form-control"
-                                    forceSelection="true" 
+                                    forceSelection="true"
                                     value="#{dataAdministrationController.itemCategory}" >
                                 </p:autoComplete>
                             </div>
+                            <div class="col-md-4">
+                                <p:autoComplete
+                                    completeMethod="#{dataAdministrationController.completeDepartmentType}"
+                                    var="depType"
+                                    itemLabel="#{depType.label}"
+                                    itemValue="#{depType}"
+                                    placeholder="Select Department Type"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    forceSelection="true"
+                                    value="#{dataAdministrationController.departmentType}" >
+                                </p:autoComplete>
+                            </div>
                             <div class="col-md-2">
-                                <p:commandButton 
+                                <p:commandButton
                                     ajax="false"
                                     value="Search"
                                     icon="fa fa-search"
@@ -40,16 +53,16 @@
                                     action="#{dataAdministrationController.createCodeSelectedCategory()}">
                                 </p:commandButton>
                             </div>
-                            <div class="col-md-5">
-                                <p:commandButton 
-                                        value="Excel" 
+                            <div class="col-md-2">
+                                <p:commandButton
+                                        value="Excel"
                                         icon="fa-solid fa-file-excel"
-                                        class="ui-button-success w-25"
+                                        class="ui-button-success w-100"
                                         ajax="false"
                                         action="#{dataAdministrationController.downloadAsExcel()}"
                                         />
                             </div>
-                            
+
                         </div>
 
                         <p:dataTable 
@@ -104,6 +117,16 @@
                                     <h:outputText value="Barcode" />
                                 </f:facet>
                                 <p:outputLabel value="#{i.barcode}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="Type" 
+                                sortBy="#{i.departmentType}"
+                                filterBy="#{i.departmentType}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="VMP" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.departmentType}"></p:outputLabel>
                             </p:column>
                             <p:column 
                                 headerText="VMP" 

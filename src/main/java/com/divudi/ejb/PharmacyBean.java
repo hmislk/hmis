@@ -1319,6 +1319,7 @@ public class PharmacyBean {
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
 
+
     public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
         if (billItem == null) {
             return;

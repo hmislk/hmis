@@ -2721,15 +2721,20 @@ public class DataAdministrationController implements Serializable {
     public void createCodeSelectedCategory() {
         Map m = new HashMap();
         String sql = "select c from Amp c "
-                + " where c.retired=false"
-                + " and (c.departmentType is null "
-                + " or c.departmentType=:dep) ";
+                + " where c.retired=false";
 
-        m.put("dep", DepartmentType.Pharmacy);
+        // Filter by department type only if selected
+        if (departmentType != null) {
+            sql += " and (c.departmentType is null or c.departmentType=:dep) ";
+            m.put("dep", departmentType);
+        }
+
+        // Filter by category if selected
         if (itemCategory != null) {
             sql += " and c.category=:cat ";
             m.put("cat", itemCategory);
         }
+
         sql += " order by c.name";
 
         items = itemFacade.findByJpql(sql, m);
@@ -3287,6 +3292,22 @@ public class DataAdministrationController implements Serializable {
 
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
+    }
+
+    public List<DepartmentType> completeDepartmentType(String qry) {
+        List<DepartmentType> filteredTypes = new ArrayList<>();
+        if (qry == null || qry.trim().isEmpty()) {
+            return Arrays.asList(DepartmentType.values());
+        }
+
+        String query = qry.toLowerCase().trim();
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.getLabel().toLowerCase().contains(query) ||
+                type.name().toLowerCase().contains(query)) {
+                filteredTypes.add(type);
+            }
+        }
+        return filteredTypes;
     }
 
     public Date getFromDate() {
