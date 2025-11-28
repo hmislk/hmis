@@ -12,194 +12,255 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <style type="text/css">
+            /* Minimal custom styles - use Bootstrap classes for most styling */
+            .item-code-display {
+                font-family: 'Courier New', monospace;
+                font-size: 0.85em;
+            }
+
+            .stock-quantity-badge {
+                min-width: 50px;
+                display: inline-block;
+            }
+        </style>
 
         <h:form>
-            <p:panel header="Staff Stock Report by Batch" >
-                <h:panelGrid columns="5" class="my-2" >
-                    <h:outputLabel value="Staff" >
-                    </h:outputLabel>
-                    <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{reportsStock.staff}"  >
-                    </p:autoComplete>
-                    <p:commandButton class="ui-button-warning " icon="fas fa-fill"  ajax="false" value="Fill" action="#{reportsStock.fillAllStaffStocks}" ></p:commandButton>
-                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
-                        <p:printer target="gpBillPreview" >
-                        </p:printer>
-                    </p:commandButton>
-                    <p:commandButton  class="ui-button-success " icon="fas fa-file-excel" value="Excel" ajax="false">
-                        <p:dataExporter type="xlsx" target="tbl" fileName="Staff_Stock_Report"
-                                        />
-                    </p:commandButton>
-                </h:panelGrid>
-                <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
-                    <p:dataTable id="tbl"
-                                 rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
-                                 value="#{reportsStock.stocks}" var="i"  
-                                 >
-                        <f:facet name="header">
-                            <h:outputLabel value="Stock"/>
+            <p:panel header="Staff Stock Report by Batch" styleClass="mb-3">
 
+                <!-- Filter Section -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <p:outputLabel for="staffAC" value="Staff (Optional)" styleClass="fw-bold"/>
+                        <p:autoComplete 
+                            id="staffAC"
+                            inputStyleClass="w-100"
+                            completeMethod="#{staffController.completeStaff}"
+                            var="staff"
+                            itemLabel="#{staff.person.name}"
+                            itemValue="#{staff}"
+                            forceSelection="true"
+                            value="#{reportsStock.staff}"
+                            placeholder="Select staff member..."
+                            styleClass="mt-1 w-100">
+                        </p:autoComplete>
+                    </div>
+                    <div class="col-md-4">
+                        <p:outputLabel for="itemAC" value="Item (Optional)" styleClass="fw-bold"/>
+                        <p:autoComplete 
+                            id="itemAC"
+                            inputStyleClass="w-100"
+                            completeMethod="#{itemController.completeItem}"
+                            var="item"
+                            itemLabel="#{item.name}"
+                            itemValue="#{item}"
+                            forceSelection="true"
+                            value="#{itemController.current}"
+                            placeholder="Select AMP..."
+                            styleClass="mt-1 w-100">
+                            <p:column styleClass="item-code-display">
+                                <h:outputText value="#{item.code}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{item.name}"/>
+                            </p:column>
+                        </p:autoComplete>
+                    </div>
+                    <div class="col-md-4">
+                        <p:outputLabel value="Actions" styleClass="fw-bold"/>
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            <p:commandButton styleClass="ui-button-warning"
+                                             icon="fas fa-fill"
+                                             ajax="false"
+                                             value="Process"
+                                             action="#{reportsStock.fillAllStaffStocks}"
+                                             title="Fill stock data">
+                            </p:commandButton>
+                            <p:commandButton styleClass="ui-button-info"
+                                             icon="fas fa-print"
+                                             value="Print"
+                                             ajax="false"
+                                             action="#"
+                                             title="Print report">
+                                <p:printer target="tbl"/>
+                            </p:commandButton>
+                            <p:commandButton styleClass="ui-button-success"
+                                             icon="fas fa-file-excel"
+                                             value="Excel"
+                                             ajax="false"
+                                             title="Export to Excel">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Staff_Stock_Report"/>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table Section -->
+                <h:panelGroup id="gpBillPreview">
+                    <p:dataTable id="tbl"
+                                 rowStyleClass="#{i.stock eq 0 ?'table-danger' : ''}"
+                                 value="#{reportsStock.stocks}"
+                                 var="i"
+                                 styleClass="table table-striped"
+                                 paginator="true"
+                                 rows="25"
+                                 paginatorPosition="both"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="10,25,50,100"
+                                 emptyMessage="No stock data available"
+                                 resizableColumns="true"
+                                 reflow="true">
+
+                        <f:facet name="header">
+                            <div class="text-center p-2">
+                                <h:outputText value="Staff Stock Inventory Report" styleClass="fw-bold fs-5"/>
+                            </div>
                         </f:facet>
 
-                        <p:column headerText="Staff" 
+                        <p:column headerText="Staff"
                                   sortBy="#{i.staff.person.name}"
                                   filterBy="#{i.staff.person.name}"
-                                  filterMatchMode="contains">
-                            <f:facet name="header">
-                                <h:outputLabel value="Staff"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.staff.person.name}"/> 
+                                  filterMatchMode="contains"
+                                  width="8em">
+                            <h:outputText value="#{i.staff.person.name}"/>
                         </p:column>
-                        <p:column headerText="Item" 
-                                  style="min-width: 25px;"
+
+                        <p:column headerText="Item Name"
                                   sortBy="#{i.itemBatch.item.name}"
                                   filterBy="#{i.itemBatch.item.name}"
                                   filterMatchMode="contains"
-                                  >
-                            <f:facet name="header">
-                                <h:outputLabel value="Item"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                  width="12em">
+                            <h:outputText value="#{i.itemBatch.item.name}"/>
                         </p:column>
 
                         <p:column headerText="Code"
                                   sortBy="#{i.itemBatch.item.code}"
                                   filterBy="#{i.itemBatch.item.code}"
-                                  filterMatchMode="contains">
-                            <f:facet name="header">
-                                <h:outputLabel value="Code"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                  filterMatchMode="contains"
+                                  styleClass="text-center"
+                                  width="6em">
+                            <h:outputText value="#{i.itemBatch.item.code}" styleClass="item-code-display"/>
                         </p:column>
 
-                        <p:column headerText="Stock Quantity"
+                        <p:column headerText="Stock Qty"
                                   sortBy="#{i.stock}"
                                   filterBy="#{i.stock}"
-                                  filterMatchMode="contains">
-                            <f:facet name="header">
-                                <h:outputLabel value="Stock Quantity"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.stock}"  >
-                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                            </h:outputLabel>                                 
+                                  filterMatchMode="contains"
+                                  styleClass="text-center"
+                                  width="6em">
+                            <span class="badge #{i.stock eq 0 ? 'bg-danger' : (i.stock lt 10 ? 'bg-warning text-dark' : 'bg-success')} stock-quantity-badge">
+                                <h:outputText value="#{i.stock}">
+                                    <f:convertNumber pattern="#,###"/>
+                                </h:outputText>
+                            </span>
                         </p:column>
 
                         <p:column headerText="Expiry"
-                                  sortBy="#{i.itemBatch.dateOfExpire}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Expiry"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                            </h:outputLabel>
+                                  sortBy="#{i.itemBatch.dateOfExpire}"
+                                  styleClass="text-center"
+                                  width="5em">
+                            <h:outputText value="#{i.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="MMM yyyy"/>
+                            </h:outputText>
                         </p:column>
 
                         <p:column headerText="Batch"
-                                  sortBy="#{i.itemBatch.batchNo}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Batch"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.batchNo}"  >
-                            </h:outputLabel>
+                                  sortBy="#{i.itemBatch.batchNo}"
+                                  styleClass="text-center"
+                                  width="5em">
+                            <h:outputText value="#{i.itemBatch.batchNo}" styleClass="item-code-display"/>
                         </p:column>
 
                         <p:column headerText="Purchase Rate"
-                                  styleClass="averageNumericColumn"
-                                  sortBy="#{i.itemBatch.purcahseRate}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Purchase Rate"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
+                                  styleClass="text-end"
+                                  sortBy="#{i.itemBatch.purcahseRate}"
+                                  width="7em">
+                            <h:outputText value="#{i.itemBatch.purcahseRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Purchase Value" 
-                                  styleClass="averageNumericColumn"
+                        <p:column headerText="Purchase Value"
+                                  styleClass="text-end"
                                   sortBy="#{i.itemBatch.purcahseRate * i.stock}"
-                                  >
-                            <f:facet name="header">
-                                <h:outputLabel value="Purchase Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                            <f:facet name="footer" >
-                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                    <f:convertNumber parent="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
+                                  width="8em">
+                            <h:outputText value="#{i.itemBatch.purcahseRate * i.stock}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <div class="fw-bold text-end">
+                                    <h:outputText value="Total: "/>
+                                    <h:outputText value="#{reportsStock.stockPurchaseValue}" styleClass="text-primary">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </div>
                             </f:facet>
                         </p:column>
 
-                        <p:column headerText="Retail Sale Rate" 
-                                  styleClass="averageNumericColumn"
-                                  sortBy="#{i.itemBatch.retailsaleRate}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Retail Sale Rate"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
+                        <p:column headerText="Retail Rate"
+                                  styleClass="text-end"
+                                  sortBy="#{i.itemBatch.retailsaleRate}"
+                                  width="7em">
+                            <h:outputText value="#{i.itemBatch.retailsaleRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
                         </p:column>
 
                         <p:column headerText="Cost Rate"
-                                  styleClass="averageNumericColumn"
-                                  sortBy="#{i.itemBatch.costRate}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Cost Rate"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.costRate}"  >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
+                                  styleClass="text-end"
+                                  sortBy="#{i.itemBatch.costRate}"
+                                  width="7em">
+                            <h:outputText value="#{i.itemBatch.costRate}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Retail Sale Value" 
-                                  styleClass="averageNumericColumn"
-                                  sortBy="#{i.itemBatch.retailsaleRate * i.stock}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Retail Sale Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                            <f:facet name="footer" >
-                                <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                    <f:convertNumber parent="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
+                        <p:column headerText="Retail Value"
+                                  styleClass="text-end"
+                                  sortBy="#{i.itemBatch.retailsaleRate * i.stock}"
+                                  width="8em">
+                            <h:outputText value="#{i.itemBatch.retailsaleRate * i.stock}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <div class="fw-bold text-end">
+                                    <h:outputText value="Total: "/>
+                                    <h:outputText value="#{reportsStock.stockSaleValue}" styleClass="text-success">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </div>
                             </f:facet>
                         </p:column>
 
                         <p:column headerText="Cost Value"
-                                  styleClass="averageNumericColumn"
-                                  sortBy="#{i.itemBatch.costRate * i.stock}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Cost Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{i.itemBatch.costRate * i.stock}"  >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
-                            <f:facet name="footer" >
-                                <h:outputLabel value="#{reportsStock.stockCostValue}" >
-                                    <f:convertNumber parent="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
+                                  styleClass="text-end"
+                                  sortBy="#{i.itemBatch.costRate * i.stock}"
+                                  width="8em">
+                            <h:outputText value="#{i.itemBatch.costRate * i.stock}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <div class="fw-bold text-end">
+                                    <h:outputText value="Total: "/>
+                                    <h:outputText value="#{reportsStock.stockCostValue}" styleClass="text-info">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </div>
                             </f:facet>
                         </p:column>
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column colspan="11">
-                                    <f:facet name="footer" >
-                                        <h:outputLabel value="Printed At " ></h:outputLabel>
-                                        <h:outputLabel value="#{sessionController.currentDate}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
 
-                        </p:columnGroup>
+                        <f:facet name="footer">
+                            <div class="text-center p-2 text-muted">
+                                <small>
+                                    <h:outputText value="Report generated on "/>
+                                    <h:outputText value="#{sessionController.currentDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy 'at' hh:mm a"/>
+                                    </h:outputText>
+                                </small>
+                            </div>
+                        </f:facet>
 
                     </p:dataTable>
-
-
                 </h:panelGroup>
             </p:panel>
         </h:form>

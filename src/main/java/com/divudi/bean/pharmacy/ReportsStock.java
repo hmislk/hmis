@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ControllerWithReportFilters;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
@@ -149,6 +150,8 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     DealerController dealerController;
     @Inject
     SessionController sessionController;
+    @Inject
+    ItemController itemController;
     /**
      * EJBs
      */
@@ -1094,19 +1097,46 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     }
 
     public void fillAllStaffStocks() {
-        Map m = new HashMap();
-        String sql;
-        sql = "select s from Stock s where s.stock!=:d "
-                + " order by s.staff.person.name, "
-                + " s.itemBatch.item.name ";
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder sql = new StringBuilder("select s from Stock s where s.stock!=:d");
+
+        // Add staff filter if staff is selected
+        if (staff != null) {
+            sql.append(" and s.staff=:staff");
+            m.put("staff", staff);
+        }
+
+        // Add item filter if item is selected
+        if (itemController.getCurrent() != null) {
+            sql.append(" and s.itemBatch.item=:item");
+            m.put("item", itemController.getCurrent());
+        }
+
+        sql.append(" order by s.staff.person.name, s.itemBatch.item.name");
+
         m.put("d", 0.0);
-        stocks = getStockFacade().findByJpql(sql, m);
+        stocks = getStockFacade().findByJpql(sql.toString(), m);
+
+        // Calculate totals
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
+
         for (Stock ts : stocks) {
-            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockPurchaseValue += (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue += (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue += ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
         }
+    }
+
+    public void clearFilters() {
+        staff = null;
+        itemController.setCurrent(null);
+        stocks = new ArrayList<>();
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockCostValue = 0.0;
+        JsfUtil.addSuccessMessage("Filters cleared successfully");
     }
 
     public void fillAllStaffStockItems() {
@@ -1832,6 +1862,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public SessionController getSessionController() {
         return sessionController;
+    }
+
+    public ItemController getItemController() {
+        return itemController;
+    }
+
+    public void setItemController(ItemController itemController) {
+        this.itemController = itemController;
     }
 
     public ItemFacade getItemFacade() {
