@@ -146,9 +146,32 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             return "";
         }
 
-        // Check for existing unapproved Direct Purchase returns
+        // Check for existing unapproved Direct Purchase returns with detailed error message
+        Bill pendingReturn = getPendingDirectPurchaseReturn();
+        if (pendingReturn != null) {
+            String billId = pendingReturn.getDeptId() != null ? pendingReturn.getDeptId() : "N/A";
+            String status = "";
+            String action = "";
+
+            if (pendingReturn.getCheckedBy() == null || !pendingReturn.isChecked()) {
+                status = "unchecked/unapproved";
+                action = "Please complete or cancel it first.";
+            } else if (!pendingReturn.isCompleted()) {
+                status = "checked but not completed";
+                action = "Please complete or cancel it first.";
+            }
+
+            String errorMessage = String.format(
+                "Cannot create new return. Direct Purchase Return %s is %s. %s",
+                billId, status, action
+            );
+            JsfUtil.addErrorMessage(errorMessage);
+            return "";
+        }
+
+        // Best-effort concurrent check - strict enforcement requires DB constraint or locking if needed
         if (hasUnapprovedDirectPurchaseReturns()) {
-            JsfUtil.addErrorMessage("Cannot create new return. Please approve pending Direct Purchase returns first.");
+            JsfUtil.addErrorMessage("Cannot create new return. Another user may have started a return process. Please refresh and try again.");
             return "";
         }
 
@@ -222,6 +245,73 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             JsfUtil.addErrorMessage("Error loading Direct Purchase Return: " + e.getMessage());
             return "";
         }
+    }
+
+    public String cancelCurrentReturn() {
+        // Validate bill exists and is persisted
+        if (currentBill == null || currentBill.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot cancel: No valid Direct Purchase Return found.");
+            return "";
+        }
+
+        // Validate bill is in a cancellable state
+        if (currentBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return is already cancelled.");
+            return "";
+        }
+
+        if (currentBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return has already been refunded.");
+            return "";
+        }
+
+        if (currentBill.isReactivated()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return has been reactivated and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isRetired()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return is retired and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return is completed and cannot be cancelled.");
+            return "";
+        }
+
+        if (currentBill.isPaymentCompleted()) {
+            JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return payment is completed and cannot be cancelled.");
+            return "";
+        }
+
+        try {
+            // Mark the bill as cancelled in the database
+            currentBill.setCancelled(true);
+
+            // Set cancellation metadata if bill has been saved to database
+            if (currentBill.getCreatedAt() != null) {
+                currentBill.setEditedAt(new Date());
+                currentBill.setEditor(sessionController.getLoggedUser());
+            }
+
+            // Save the cancelled bill to database
+            billFacade.edit(currentBill);
+
+            JsfUtil.addSuccessMessage("Direct Purchase Return cancelled successfully.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error cancelling Direct Purchase Return: " + e.getMessage());
+            return "";
+        }
+
+        // Reset UI state
+        resetBillValues();
+        makeListNull();
+        if (searchController != null) {
+            searchController.makeListNull();
+        }
+
+        return "/pharmacy/returns_and_cancellations_index?faces-redirect=true";
     }
 
     // Core workflow methods
@@ -493,6 +583,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         if (finalize) {
+            currentBill.setChecked(true);
             currentBill.setCheckedBy(sessionController.getLoggedUser());
             currentBill.setCheckeAt(new Date());
         }
@@ -2385,10 +2476,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 + "WHERE b.billType = :bt "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill = :refBill "
-                + "AND b.checkedBy IS NOT NULL "
-                + "AND (b.completed = false OR b.completed IS NULL) "
                 + "AND b.cancelled = false "
-                + "AND b.retired = false";
+                + "AND b.retired = false "
+                + "AND (b.checked IS NULL OR b.checked = false OR b.completed IS NULL OR b.completed = false)";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PurchaseReturn);
@@ -2397,6 +2487,29 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
         Long count = billFacade.findLongByJpql(jpql, params);
         return count != null && count > 0;
+    }
+
+    private Bill getPendingDirectPurchaseReturn() {
+        if (selectedDirectPurchase == null) {
+            return null;
+        }
+
+        String jpql = "SELECT b FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.referenceBill = :refBill "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "AND (b.checked IS NULL OR b.checked = false OR b.completed IS NULL OR b.completed = false) "
+                + "ORDER BY b.createdAt ASC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PurchaseReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        params.put("refBill", selectedDirectPurchase);
+
+        List<Bill> pendingReturns = billFacade.findByJpql(jpql, params);
+        return (pendingReturns != null && !pendingReturns.isEmpty()) ? pendingReturns.get(0) : null;
     }
 
     public void displayItemDetails(BillItem bi) {

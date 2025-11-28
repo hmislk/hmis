@@ -381,54 +381,40 @@
                             </p:column>
                             <p:column id="colClosingStock" styleClass="text-end" width="10em">
                                 <f:facet name="header">
-                                    <h:panelGroup>
-                                        <h:outputText value="Closing Stock " />
-                                        <p:badge value="Batch" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}"></p:badge>
-                                        <p:badge value="Item" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}"></p:badge>
-                                    </h:panelGroup>
+                                    <h:outputText value="Closing Stock " />
+                                    <p:badge value="Batch" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}"></p:badge>
+                                    <p:badge value="Item" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}"></p:badge>
                                 </f:facet>
 
-                                <!-- By Batch Report Type -->
-                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}">
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <h:outputText value="#{f.stockQty}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <h:outputText value="#{f.instituionBatchQty}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <h:outputText value="#{f.totalBatchQty}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                <!-- By Batch Report Type - Department Specific -->
+                                <h:outputText value="#{f.stockQty}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
 
-                                <!-- By Item Report Type -->
-                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}">
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <h:outputText value="#{f.itemStock}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <h:outputText value="#{f.institutionItemStock}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <h:outputText value="#{f.totalItemStock}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                <!-- By Batch Report Type - Institution Specific -->
+                                <h:outputText value="#{f.instituionBatchQty}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Total -->
+                                <h:outputText value="#{f.totalBatchQty}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Department Specific -->
+                                <h:outputText value="#{f.itemStock}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStock}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Total -->
+                                <h:outputText value="#{f.totalItemStock}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
 
                             </p:column>
                             <p:column headerText="Rate" styleClass="text-end" width="8em">
@@ -436,66 +422,57 @@
                             </p:column>
                             <p:column headerText="Cost Rate" styleClass="text-end" width="8em">
                                 <h:outputText value="#{f.itemBatch.costRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.000" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column id="colValueAtPurchaseRate" headerText="Closing Stock Value at Purchase Rate" styleClass="text-end" width="12em">
-                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                    <h:outputText value="#{f.itemStockValueAtPurchaseRate}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                        <h:outputText value="#{f.institutionItemStockValueAtPurchaseRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                        <h:outputText value="#{f.totalItemStockValueAtPurchaseRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                <!-- Department Specific -->
+                                <h:outputText value="#{f.itemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- Total -->
+                                <h:outputText value="#{f.totalItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
                             </p:column>
                             <p:column id="colValueAtCostRate" headerText="Closing Stock Value at Cost Rate" styleClass="text-end" width="12em">
-                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                    <h:outputText value="#{f.itemStockValueAtCostRate}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                        <h:outputText value="#{f.institutionItemStockValueAtCostRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                        <h:outputText value="#{f.totalItemStockValueAtCostRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                <!-- Department Specific -->
+                                <h:outputText value="#{f.itemStockValueAtCostRate}" rendered="#{pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStockValueAtCostRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- Total -->
+                                <h:outputText value="#{f.totalItemStockValueAtCostRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
                             </p:column>
                             <p:column  id="colValueAtRetailSaleRate"  headerText="Closing Stock Value at Retail Rate" styleClass="text-end" width="12em">
-                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                    <h:outputText value="#{f.itemStockValueAtSaleRate}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                        <h:outputText value="#{f.institutionItemStockValueAtSaleRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                        <h:outputText value="#{f.totalItemStockValueAtSaleRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                <!-- Department Specific -->
+                                <h:outputText value="#{f.itemStockValueAtSaleRate}" rendered="#{pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStockValueAtSaleRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- Total -->
+                                <h:outputText value="#{f.totalItemStockValueAtSaleRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
                             </p:column>
                             <!--                            <p:column headerText="Locator" width="8em">
                                                             <h:outputText value="" />

@@ -96,6 +96,7 @@
                                             icon="fas fa-check-circle"
                                             styleClass="ui-button-success"
                                             value="Finalize"
+                                            onclick="return confirm('Are you sure you want to finalize this disposal issue? This action cannot be undone.');"
                                             title="Finalize return bill"
                                             action="#{issueReturnController.finalizeDisposalIssueReturnBill()}"
                                             rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.originalBill.fullReturned}"
@@ -105,7 +106,8 @@
                                             icon="fas fa-money-bill"
                                             styleClass="ui-button-warning"
                                             value="Approve Return"
-                                            title="Authorize and process the return"
+                                            onclick="return confirm('Are you sure you want to approve this disposal issue? This action cannot be undone.');"
+                                            title="Approve and process the return"
                                             action="#{issueReturnController.settleDisposalIssueReturnBill}"
                                             rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and webUserController.hasPrivilege('ApproveDisposalReturn') and not issueReturnController.originalBill.fullReturned}"
                                             ajax="false">
