@@ -583,6 +583,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         if (finalize) {
+            currentBill.setChecked(true);
             currentBill.setCheckedBy(sessionController.getLoggedUser());
             currentBill.setCheckeAt(new Date());
         }
