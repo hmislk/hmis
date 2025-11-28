@@ -308,10 +308,10 @@
                                         class="ui-button-info"
                                         value="View"
                                         title="To View GRN Return"
-                                        action="#{grnReturnWorkflowController.navigateToViewGrnReturn}" 
+                                        action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true" 
                                         disabled="#{b.referenceBill eq null}"
                                         style="min-width: 60px;">
-                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.currentBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                     </p:commandButton>
                                 </div>
                             </p:column>
