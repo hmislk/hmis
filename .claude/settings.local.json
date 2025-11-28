@@ -22,7 +22,8 @@
       "WebFetch(domain:www.primefaces.org)",
       "WebFetch(domain:www.concretepage.com)",
       "WebFetch(domain:stackoverflow.com)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": [],
