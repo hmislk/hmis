@@ -612,7 +612,7 @@ public class CashRecieveBillController implements Serializable {
         Bill referenceBill = getCurrentBillItem().getReferenceBill();
 
         // Validate payment amount
-        if (getCurrentBillItem().getNetValue() == null || getCurrentBillItem().getNetValue() <= 0) {
+        if (getCurrentBillItem().getNetValue() <= 0) {
             JsfUtil.addErrorMessage("Please enter a valid payment amount greater than zero");
             return;
         }
