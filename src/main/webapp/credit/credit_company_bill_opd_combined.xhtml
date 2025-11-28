@@ -123,6 +123,16 @@
                                                 </h:outputLabel>
                                             </p:column>
 
+                                            <!-- Refund Amount Column -->
+                                            <p:column>
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Refund Amount"/>
+                                                </f:facet>
+                                                <h:outputLabel value="#{ix.refundAmount}" style="color: #ff8c00;">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+
                                             <!-- Full Amount Column -->
                                             <p:column>
                                                 <f:facet name="header">
@@ -172,6 +182,12 @@
                                                 <div class="d-flex justify-content-between mb-2">
                                                     <strong>Paid Amount:</strong>
                                                     <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.paidAmount}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Refund Amount:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.refundAmount}" style="color: #ff8c00;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </div>
@@ -363,6 +379,13 @@
                                     <!-- Total Paid Before -->
                                     <p:column headerText="Total Paid Before">
                                         <h:outputLabel value="#{b.referenceBill.paidAmount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <!-- Refund Amount -->
+                                    <p:column headerText="Refund Amount">
+                                        <h:outputLabel value="#{b.referenceBill.refundAmount}" style="color: #ff8c00;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
