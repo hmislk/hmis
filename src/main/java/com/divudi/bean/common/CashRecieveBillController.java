@@ -1925,6 +1925,23 @@ public class CashRecieveBillController implements Serializable {
     }
 
     /**
+     * Checks if the current bill is a cancellation bill (bill created during cancellation process).
+     * Cancellation bills have specific BillTypeAtomic values and should not be allowed to be cancelled again.
+     *
+     * @return true if the current bill is a cancellation bill, false otherwise
+     */
+    public boolean isCurrentBillACancellationBill() {
+        if (current == null || current.getBillTypeAtomic() == null) {
+            return false;
+        }
+
+        BillTypeAtomic billType = current.getBillTypeAtomic();
+        return billType == BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION;
+    }
+
+    /**
      * Legacy method - called when bill type dropdown changes to clear current selections
      * Kept for backward compatibility with pages that still use bill type selection
      */
