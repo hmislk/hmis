@@ -185,13 +185,13 @@
                             <h:outputLabel value="#{cc.attrs.cancellationBill.creater.person.nameWithTitle}" />
                         </div>
                     </div>
-                    <div class="d-flex" rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
+                    <h:panelGroup layout="block" styleClass="d-flex" rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
                         <div class="col-4"><h:outputLabel value="Reason" /></div>
                         <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
                         <div class="col-7">
                             <h:outputLabel value="#{cc.attrs.cancellationBill.comments}" style="font-style: italic;" />
                         </div>
-                    </div>
+                    </h:panelGroup>
                     <div class="d-flex">
                         <div class="col-4"><h:outputLabel value="Refund Method" /></div>
                         <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
