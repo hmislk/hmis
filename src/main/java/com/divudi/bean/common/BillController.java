@@ -892,7 +892,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " order by b.deptId ";
             hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
             hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
+            hash.put("val", 1.0);
             hash.put("q", "%" + qry.toUpperCase() + "%");
             hash.put("ins", getSessionController().getInstitution());
 //            hash.put("dep", getSessionController().getDepartment());
