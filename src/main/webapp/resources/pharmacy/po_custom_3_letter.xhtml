@@ -47,14 +47,14 @@
             <div class="headingBill">
                 <h:outputLabel value="Purchase Order" style="text-decoration: underline;"/>
                 <br />
-                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Duplicate***" rendered="#{cc.attrs.reprint eq true}" />
                 <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.Cancelled eq true}" style="font-size: 18px;"/>
             </div>
 
 
             <div>
                 <table class="table table-borderless">
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <!-- Left column -->
                         <td>Supplier Name</td>
                         <td>:</td>
@@ -67,7 +67,7 @@
 
                     </tr>
 
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <td>P.O. No</td>
                         <td>:</td>
                         <td><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
@@ -77,7 +77,7 @@
                         <td><h:outputLabel value="#{cc.attrs.bill.department.name}" /></td>
                     </tr>
 
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <td>Consignment</td>
                         <td>:</td>
                         <td><h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" /></td>
@@ -91,7 +91,7 @@
                         </td>
                     </tr>
 
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <td>Payment Method</td>
                         <td>:</td>
                         <td><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>
