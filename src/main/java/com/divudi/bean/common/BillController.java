@@ -771,6 +771,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
         if (qry != null) {
             sql = "select c from BilledBill c "
+                    + " LEFT JOIN c.patient p "
+                    + " LEFT JOIN p.person per "
+                    + " LEFT JOIN c.creditCompany cc "
                     + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
                     + " OR (c.balance IS NULL AND (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val)) "
                     + " and c.billTypeAtomic in :btas "
@@ -778,10 +781,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " and c.cancelledBill is null "
                     + " and c.refundedBill is null "
                     + " and c.retired=false "
-                    + " and ((c.deptId) like :q or"
-                    + " (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
+                    + " and ((c.deptId) like :q or "
+                    + " COALESCE(per.name, '') like :q "
+                    + " or COALESCE(cc.name, '') like :q "
+                    + " or COALESCE(c.toInstitution.name, '') like :q ) "
+                    + " order by COALESCE(cc.name, c.deptId)";
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
@@ -808,6 +812,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap params = new HashMap();
         if (qry != null) {
             jpql = "select c from BilledBill c "
+                    + " LEFT JOIN c.patient p "
+                    + " LEFT JOIN p.person per "
+                    + " LEFT JOIN c.creditCompany cc "
                     + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
                     + " OR (c.balance IS NULL AND (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val)) "
                     + " and c.billTypeAtomic in :btas "
@@ -815,10 +822,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " and c.cancelledBill is null "
                     + " and c.refundedBill is null "
                     + " and c.retired=false "
-                    + " and ((c.deptId) like :q or"
-                    + " (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
+                    + " and ((c.deptId) like :q or "
+                    + " COALESCE(per.name, '') like :q "
+                    + " or COALESCE(cc.name, '') like :q "
+                    + " or COALESCE(c.toInstitution.name, '') like :q ) "
+                    + " order by COALESCE(cc.name, c.deptId)";
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -878,25 +886,24 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
         if (qry != null) {
             sql = "select b from BilledBill b "
+                    + " LEFT JOIN b.toInstitution ti "
                     + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
                     + " OR (b.balance IS NULL AND (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val)) "
                     + " and b.billType in :btps "
                     + " and b.paymentMethod= :pm "
-                    + " and b.institution=:ins "
-                    //                    + " and b.department=:dep "
                     + " and b.retired=false "
                     + " and b.refunded=false "
                     + " and b.cancelled=false "
                     + " and b.toStaff is null "
-                    + " and ( (b.insId) like :q or "
-                    + " (b.deptId) like :q or "
-                    + " (b.toInstitution.name) like :q ) "
+                    + " and ( COALESCE(b.insId, '') like :q or "
+                    + " COALESCE(b.deptId, '') like :q or "
+                    + " COALESCE(ti.name, '') like :q ) "
                     + " order by b.deptId ";
             hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale, BillType.PharmacyPre}));
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 1.0);
             hash.put("q", "%" + qry.toUpperCase() + "%");
-            hash.put("ins", getSessionController().getInstitution());
+            // Removed institution restriction - hash.put("ins", getSessionController().getInstitution());
 //            hash.put("dep", getSessionController().getDepartment());
 //            //// // System.out.println("hash = " + hash);
 //            //// // System.out.println("sql = " + sql);
