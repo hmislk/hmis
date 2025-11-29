@@ -24,7 +24,8 @@
       "WebFetch(domain:stackoverflow.com)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(gh issue view:*)"
     ],
     "deny": [],
     "ask": [],
