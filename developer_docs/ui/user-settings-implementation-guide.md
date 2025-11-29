@@ -337,6 +337,111 @@ public void savePharmacySaleSortPreference(String field, String order) {
 </p:commandButton>
 ```
 
+## 🚨 Critical: Footer Handling with Column Visibility
+
+### The Problem: Misaligned Footer Totals
+
+When implementing column visibility, a common issue is that table footers remain in fixed positions while columns are hidden, causing footer totals to appear under the wrong columns. This creates user confusion.
+
+**Example Problem**:
+```xml
+<!-- WRONG: Static footer with fixed positions -->
+<p:columnGroup type="footer">
+    <p:row>
+        <p:column colspan="9">Total</p:column>
+        <p:column style="text-align: right;">
+            <!-- Purchase total always appears in 10th column position -->
+            <h:outputLabel value="#{controller.purchaseTotal}" />
+        </p:column>
+        <p:column /> <!-- Cost Rate - blank -->
+        <p:column style="text-align: right;">
+            <!-- Cost total always appears in 12th column position -->
+            <h:outputLabel value="#{controller.costTotal}" />
+        </p:column>
+    </p:row>
+</p:columnGroup>
+```
+
+When columns 1-5 are hidden, the purchase total appears under the wrong column!
+
+### ✅ Solution: Individual Column Footers
+
+Instead of using a complex `p:columnGroup`, add footer facets directly to each column that needs totals:
+
+**Correct Implementation**:
+```xml
+<!-- Stock column - always visible, shows "Total" label -->
+<p:column headerText="Stock" style="text-align: right;">
+    <f:facet name="header">
+        <h:outputLabel value="Stock" />
+    </f:facet>
+    <f:facet name="footer">
+        <h:outputLabel value="Total" style="font-weight: bold;" />
+    </f:facet>
+    <h:outputLabel value="#{item.stockQty}">
+        <f:convertNumber pattern="#,##0.00" />
+    </h:outputLabel>
+</p:column>
+
+<!-- Purchase Value - conditional column with conditional footer -->
+<p:column headerText="Purchase Value" style="text-align: right;"
+          rendered="#{userSettingsController.pagePurchaseValueVisible}">
+    <f:facet name="header">
+        <h:outputLabel value="Purchase Value" />
+    </f:facet>
+    <f:facet name="footer">
+        <h:outputLabel value="#{controller.purchaseTotal}" style="font-weight: bold;">
+            <f:convertNumber pattern="#,##0.00" />
+        </h:outputLabel>
+    </f:facet>
+    <h:outputLabel value="#{item.purchaseValue}">
+        <f:convertNumber pattern="#,##0.00" />
+    </h:outputLabel>
+</p:column>
+
+<!-- Cost Value - conditional column with conditional footer -->
+<p:column headerText="Cost Value" style="text-align: right;"
+          rendered="#{userSettingsController.pageCostValueVisible}">
+    <f:facet name="header">
+        <h:outputLabel value="Cost Value" />
+    </f:facet>
+    <f:facet name="footer">
+        <h:outputLabel value="#{controller.costTotal}" style="font-weight: bold;">
+            <f:convertNumber pattern="#,##0.00" />
+        </h:outputLabel>
+    </f:facet>
+    <h:outputLabel value="#{item.costValue}">
+        <f:convertNumber pattern="#,##0.00" />
+    </h:outputLabel>
+</p:column>
+```
+
+### Key Benefits
+
+✅ **Automatic alignment** - Totals always appear directly under their value columns
+✅ **Auto-hide behavior** - When column `rendered="false"`, footer disappears too
+✅ **Zero confusion** - Users never see totals under wrong columns
+✅ **Simple code** - Much cleaner than complex dynamic footers
+✅ **Consistent UX** - Footer behavior matches column behavior
+
+### Footer Implementation Checklist
+
+- [ ] Remove any existing `<p:columnGroup type="footer">` sections
+- [ ] Add individual `<f:facet name="footer">` to columns that need totals
+- [ ] Ensure footer `rendered` attribute matches column's `rendered` attribute
+- [ ] Place "Total" label in a core business column that's always visible (e.g., Stock, Amount)
+- [ ] Test footer alignment by toggling various column combinations
+- [ ] Verify footer totals disappear when their columns are hidden
+
+### Real-World Example
+
+**Successfully implemented in**:
+- `/pharmacy/pharmacy_report_department_stock_by_batch_dto.xhtml:159-242`
+- Pharmacy GRN Return Request page
+- Stock Ledger Report page
+
+**Result**: Footer totals always stay properly aligned under their respective columns regardless of which columns users choose to show/hide.
+
 ## Troubleshooting
 
 ### 🚨 Problem 1: "Illegal Syntax for Set Operation" (Most Common)

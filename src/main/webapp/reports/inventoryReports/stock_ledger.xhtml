@@ -215,6 +215,8 @@
                                 itemValue="#{item}"
                                 ></p:autoComplete>
 
+                            <p:spacer ></p:spacer>
+                            
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-file-alt mr-2" />
                                 <p:outputLabel value="Report Type" for="reportType" class="m-3">
@@ -529,78 +531,114 @@
                                     </span>
                                 </f:facet>
                                 <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerCategoryVisible}"
-                                                             itemLabel="Category">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerItemCodeVisible}"
-                                                             itemLabel="Item Code">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerUomVisible}"
-                                                             itemLabel="UOM">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerReferenceBillVisible}"
-                                                             itemLabel="Reference Bill">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerRefTransactionAtVisible}"
-                                                             itemLabel="Ref Transaction At">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerFromStoreVisible}"
-                                                             itemLabel="From Store">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerToStoreVisible}"
-                                                             itemLabel="To Store">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerConsumptionDeptVisible}"
-                                                             itemLabel="Consumption Dept">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerDocumentTypeVisible}"
-                                                             itemLabel="Document Type">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerRateVisible}"
-                                                             itemLabel="Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerCostRateVisible}"
-                                                             itemLabel="Cost Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerValueAtPurchaseRateVisible}"
-                                                             itemLabel="Value at Purchase Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerValueAtCostRateVisible}"
-                                                             itemLabel="Value at Cost Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerValueAtRetailRateVisible}"
-                                                             itemLabel="Value at Retail Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerBatchCodeVisible}"
-                                                             itemLabel="Batch Code">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerMrpVisible}"
-                                                             itemLabel="MRP">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerExpiryDateVisible}"
-                                                             itemLabel="Expiry Date">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerUserVisible}"
-                                                             itemLabel="User">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCategory" value="#{userSettingsController.stockLedgerCategoryVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCategory" value="Category" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkItemCode" value="#{userSettingsController.stockLedgerItemCodeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkItemCode" value="Item Code" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkUom" value="#{userSettingsController.stockLedgerUomVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkUom" value="UOM" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkReferenceBill" value="#{userSettingsController.stockLedgerReferenceBillVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkReferenceBill" value="Reference Bill" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRefTransactionAt" value="#{userSettingsController.stockLedgerRefTransactionAtVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRefTransactionAt" value="Ref Transaction At" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkFromStore" value="#{userSettingsController.stockLedgerFromStoreVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkFromStore" value="From Store" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkToStore" value="#{userSettingsController.stockLedgerToStoreVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkToStore" value="To Store" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkConsumptionDept" value="#{userSettingsController.stockLedgerConsumptionDeptVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkConsumptionDept" value="Consumption Dept" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkDocumentType" value="#{userSettingsController.stockLedgerDocumentTypeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkDocumentType" value="Document Type" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRate" value="#{userSettingsController.stockLedgerRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRate" value="Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCostRate" value="#{userSettingsController.stockLedgerCostRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCostRate" value="Cost Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkValueAtPurchaseRate" value="#{userSettingsController.stockLedgerValueAtPurchaseRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkValueAtPurchaseRate" value="Value at Purchase Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkValueAtCostRate" value="#{userSettingsController.stockLedgerValueAtCostRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkValueAtCostRate" value="Value at Cost Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkValueAtRetailRate" value="#{userSettingsController.stockLedgerValueAtRetailRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkValueAtRetailRate" value="Value at Retail Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkBatchCode" value="#{userSettingsController.stockLedgerBatchCodeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkBatchCode" value="Batch Code" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkMrp" value="#{userSettingsController.stockLedgerMrpVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkMrp" value="MRP" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkExpiryDate" value="#{userSettingsController.stockLedgerExpiryDateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkExpiryDate" value="Expiry Date" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkUser" value="#{userSettingsController.stockLedgerUserVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkUser" value="User" styleClass="ms-1" />
+                                    </div>
                                 </div>
                             </p:panel>
                         </div>
