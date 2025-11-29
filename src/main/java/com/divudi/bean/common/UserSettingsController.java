@@ -607,6 +607,189 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("pharmacy_grn_return_request", settings);
     }
 
+    // Stock Ledger Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the stock ledger report page
+
+    public boolean isStockLedgerCategoryVisible() {
+        return isColumnVisible("stock_ledger", "category");
+    }
+
+    public void setStockLedgerCategoryVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("category", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerItemCodeVisible() {
+        return isColumnVisible("stock_ledger", "itemCode");
+    }
+
+    public void setStockLedgerItemCodeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("itemCode", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerUomVisible() {
+        return isColumnVisible("stock_ledger", "uom");
+    }
+
+    public void setStockLedgerUomVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("uom", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerReferenceBillVisible() {
+        return isColumnVisible("stock_ledger", "referenceBill");
+    }
+
+    public void setStockLedgerReferenceBillVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("referenceBill", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerRefTransactionAtVisible() {
+        return isColumnVisible("stock_ledger", "refTransactionAt");
+    }
+
+    public void setStockLedgerRefTransactionAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("refTransactionAt", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerFromStoreVisible() {
+        return isColumnVisible("stock_ledger", "fromStore");
+    }
+
+    public void setStockLedgerFromStoreVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("fromStore", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerToStoreVisible() {
+        return isColumnVisible("stock_ledger", "toStore");
+    }
+
+    public void setStockLedgerToStoreVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("toStore", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerConsumptionDeptVisible() {
+        return isColumnVisible("stock_ledger", "consumptionDept");
+    }
+
+    public void setStockLedgerConsumptionDeptVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("consumptionDept", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerDocumentTypeVisible() {
+        return isColumnVisible("stock_ledger", "documentType");
+    }
+
+    public void setStockLedgerDocumentTypeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("documentType", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerRateVisible() {
+        return isColumnVisible("stock_ledger", "rate");
+    }
+
+    public void setStockLedgerRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("rate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerCostRateVisible() {
+        return isColumnVisible("stock_ledger", "costRate");
+    }
+
+    public void setStockLedgerCostRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("costRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerValueAtPurchaseRateVisible() {
+        return isColumnVisible("stock_ledger", "valueAtPurchaseRate");
+    }
+
+    public void setStockLedgerValueAtPurchaseRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("valueAtPurchaseRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerValueAtCostRateVisible() {
+        return isColumnVisible("stock_ledger", "valueAtCostRate");
+    }
+
+    public void setStockLedgerValueAtCostRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("valueAtCostRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerValueAtRetailRateVisible() {
+        return isColumnVisible("stock_ledger", "valueAtRetailRate");
+    }
+
+    public void setStockLedgerValueAtRetailRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("valueAtRetailRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerBatchCodeVisible() {
+        return isColumnVisible("stock_ledger", "batchCode");
+    }
+
+    public void setStockLedgerBatchCodeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("batchCode", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerMrpVisible() {
+        return isColumnVisible("stock_ledger", "mrp");
+    }
+
+    public void setStockLedgerMrpVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("mrp", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerExpiryDateVisible() {
+        return isColumnVisible("stock_ledger", "expiryDate");
+    }
+
+    public void setStockLedgerExpiryDateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("expiryDate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerUserVisible() {
+        return isColumnVisible("stock_ledger", "user");
+    }
+
+    public void setStockLedgerUserVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("user", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
     // Getters and Setters
 
     public ConfigOptionFacade getConfigOptionFacade() {
