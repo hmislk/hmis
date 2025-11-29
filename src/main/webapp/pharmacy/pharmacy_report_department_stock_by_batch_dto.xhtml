@@ -94,7 +94,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Item" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemName}" style="width: 100px!important;" />
+                                    <h:outputLabel value="#{i.itemName}"  />
                                 </p:column>
 
                                 <p:column headerText="Type"
@@ -105,7 +105,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Type" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.departmentType}" style="width: 100px!important;" />
+                                    <h:outputLabel value="#{i.departmentType}"  />
                                 </p:column>
 
                                 <p:column headerText="Code" styleClass="averageNumericColumn"
@@ -259,65 +259,89 @@
                                     </span>
                                 </f:facet>
                                 <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchCategoryVisible}"
-                                                             itemLabel="Category">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCategory" value="#{userSettingsController.pharmacyDepartmentStockByBatchCategoryVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCategory" value="Category" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchTypeVisible}"
-                                                             itemLabel="Type">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkType" value="#{userSettingsController.pharmacyDepartmentStockByBatchTypeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkType" value="Type" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchCodeVisible}"
-                                                             itemLabel="Code">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCode" value="#{userSettingsController.pharmacyDepartmentStockByBatchCodeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCode" value="Code" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}"
-                                                             itemLabel="Generic Name">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkGenericName" value="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkGenericName" value="Generic Name" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchExpiryVisible}"
-                                                             itemLabel="Expiry">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkExpiry" value="#{userSettingsController.pharmacyDepartmentStockByBatchExpiryVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkExpiry" value="Expiry" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchBatchNoVisible}"
-                                                             itemLabel="Batch No">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkBatchNo" value="#{userSettingsController.pharmacyDepartmentStockByBatchBatchNoVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkBatchNo" value="Batch No" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseRateVisible}"
-                                                             itemLabel="Purchase Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkPurchaseRate" value="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkPurchaseRate" value="Purchase Rate" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseValueVisible}"
-                                                             itemLabel="Purchase Value">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkPurchaseValue" value="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseValueVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkPurchaseValue" value="Purchase Value" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchCostRateVisible}"
-                                                             itemLabel="Cost Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCostRate" value="#{userSettingsController.pharmacyDepartmentStockByBatchCostRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCostRate" value="Cost Rate" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchCostValueVisible}"
-                                                             itemLabel="Cost Value">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCostValue" value="#{userSettingsController.pharmacyDepartmentStockByBatchCostValueVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCostValue" value="Cost Value" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchRetailRateVisible}"
-                                                             itemLabel="Retail Rate">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRetailRate" value="#{userSettingsController.pharmacyDepartmentStockByBatchRetailRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRetailRate" value="Retail Rate" styleClass="ms-1" />
+                                    </div>
 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDepartmentStockByBatchRetailValueVisible}"
-                                                             itemLabel="Retail Value">
-                                        <p:ajax update="tbl" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRetailValue" value="#{userSettingsController.pharmacyDepartmentStockByBatchRetailValueVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRetailValue" value="Retail Value" styleClass="ms-1" />
+                                    </div>
                                 </div>
                             </p:panel>
                         </div>
