@@ -783,6 +783,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " or (c.creditCompany.name) like :q ) "
                     + " order by c.creditCompany.name";
             List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             hash.put("btas", btas);
@@ -819,6 +820,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " or (c.creditCompany.name) like :q ) "
                     + " order by c.creditCompany.name";
             List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             params.put("btas", btas);
@@ -890,7 +892,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " (b.deptId) like :q or "
                     + " (b.toInstitution.name) like :q ) "
                     + " order by b.deptId ";
-            hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
+            hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale, BillType.PharmacyPre}));
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 1.0);
             hash.put("q", "%" + qry.toUpperCase() + "%");

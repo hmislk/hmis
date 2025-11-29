@@ -18,36 +18,49 @@
 
                         <common:institution_site_department_filter controller="#{reportsStock}"/>
 
-                        <h:panelGrid columns="8" styleClass="w-100 form-grid my-2" columnClasses="label-icon-column, input-column">
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Department Type" for="cmbDeptType" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmbDeptType" value="#{reportsStock.departmentType}" filter="true" filterMatchMode="contains" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="All Department Types" itemValue="#{null}" />
-                                <f:selectItems value="#{departmentTypeController.departmentTypes}" var="dt" itemLabel="#{dt.label}" itemValue="#{dt}" />
-                            </p:selectOneMenu>
-                            <p:spacer width="10" />
-                            <p:spacer width="10" />
-                        </h:panelGrid>
+                        <h:panelGroup id="panelDeptType" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Department Type Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                            <h:outputLabel value="Department Type" for="cmbDeptType" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu id="cmbDeptType" value="#{reportsStock.departmentType}" filter="true" filterMatchMode="contains" styleClass="w-100">
+                                            <f:selectItem itemLabel="All Department Types" itemValue="#{null}" />
+                                            <f:selectItems value="#{departmentTypeController.departmentTypes}" var="dt" itemLabel="#{dt.label}" itemValue="#{dt}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Action Buttons -->
+                                <h:panelGroup layout="block" styleClass="col-lg-8 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputLabel value="&nbsp;" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:commandButton 
+                                        ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
+                                        actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
 
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning"
-                                             actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
-                            <p:commandButton class="mx-2 ui-button-danger" icon="fas fa-file-pdf" value="PDF" ajax="false">
-                                <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
-                            </p:commandButton>
-                            <p:commandButton icon="fas fa-file-excel" class="ui-button-success" value="Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
-                            </p:commandButton>
-                            <p:commandButton value="Print" icon="fas fa-print" class="mx-2 ui-button-info"
-                                             actionListener="#{reportsStock.prepareForPrint()}"
-                                             oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
-                            <p:commandButton id="print" value="Actual print" style="display: none">
-                                <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
-                                <p:printer target=":frm:tbl" />
-                            </p:commandButton>
-                        </h:panelGrid>
+                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false">
+                                        <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
+                                    </p:commandButton>
+
+                                    <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Print" icon="fas fa-print" 
+                                        styleClass="ui-button-info mx-1"
+                                        actionListener="#{reportsStock.prepareForPrint()}"
+                                        oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
+                                    <p:commandButton id="print" value="Actual print" style="display: none;">
+                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
+                                        <p:printer target=":frm:tbl" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
@@ -162,95 +175,95 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                <p:column headerText="Cost Rate" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.costRate}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Cost Rate" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.costRate}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Cost Rate" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.costRate}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Rate" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:column headerText="Cost Value" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.costRate * i.stockQty}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Cost Value" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.costRate * i.stockQty}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Cost Value" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.costRate * i.stockQty}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costRate * i.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:column headerText="Retail Rate" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.retailRate}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Retail Rate" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.retailRate}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Retail Rate" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.retailRate}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Rate" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:column headerText="Retail Value" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.retailRate * i.stockQty}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Retail Value" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.retailRate * i.stockQty}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Retail Value" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.retailRate * i.stockQty}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.retailRate * i.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:columnGroup type="footer">
-                    <p:row>
-                        <p:column colspan="9">
-                            <f:facet name="footer">
-                                <h:outputLabel value="Total" />
-                            </f:facet>
-                        </p:column>
-                        <p:column style="text-align: right;">
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-        <!-- Blank column for Cost Rate -->
-                        <p:column />
-                        <p:column style="text-align: right;">
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsStock.stockCostValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-        <!-- Blank column for Retail Rate -->
-                        <p:column />
-                        <p:column style="text-align: right;">
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsStock.stockSaleValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-                    <p:row>
-                        <p:column colspan="14">
-                            <f:facet name="footer">
-                                <h:outputLabel value="Printed At " />
-                                <h:outputLabel value="#{sessionController.currentDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-                </p:columnGroup>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column colspan="9">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Total" />
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <!-- Blank column for Cost Rate -->
+                                        <p:column />
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsStock.stockCostValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <!-- Blank column for Retail Rate -->
+                                        <p:column />
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsStock.stockSaleValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column colspan="14">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Printed At " />
+                                                <h:outputLabel value="#{sessionController.currentDate}">
+                                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
 
-            </p:dataTable>
-        </h:panelGroup>
-    </p:panel>
-    </h:form>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
 
             </ui:define>
 
