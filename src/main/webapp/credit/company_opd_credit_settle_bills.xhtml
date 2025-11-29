@@ -241,22 +241,17 @@
                                         icon="fa fa-eye"
                                         class="m-1 ui-button-info"
                                         style="width: 100px;"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.id)}"
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
-
-
-
                                     <p:commandButton
                                         value="Admin"
                                         icon="fa fa-shield-alt"
                                         class="m-1 ui-button-danger"
                                         style="width: 100px;"
-                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillTypeByBillId(bill.id)}"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
                                 </p:column>
 

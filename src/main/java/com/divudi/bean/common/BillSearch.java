@@ -3864,6 +3864,48 @@ public class BillSearch implements Serializable {
         return "/credit/inpatient_credit_company_bill_reprint?faces-redirect=true";
     }
 
+    /**
+     * Navigate to OPD credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewOpdCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+        creditCompanyBillSearch.setBill((BilledBill) bill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/credit_company_bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to inpatient credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewInpatientCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+        creditCompanyBillSearch.setBill((BilledBill) bill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/inpatient_credit_company_bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to pharmacy credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewPharmacyCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+        creditCompanyBillSearch.setBill((BilledBill) bill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/credit_company_bill_pharmacy_cancel?faces-redirect=true";
+    }
+
     public String navigateToViewOpdProfessionalPaymentBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -4167,13 +4209,13 @@ public class BillSearch implements Serializable {
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewOpdCreditBatchBillSettle();
             case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
-                return navigateToViewOpdCreditBatchBillSettle();
+                return navigateToViewOpdCreditBatchBillCancellation();
             case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewInpatientCreditBatchBillSettle();
             case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
-                return navigateToViewInpatientCreditBatchBillSettle();
+                return navigateToViewInpatientCreditBatchBillCancellation();
             case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
-                return navigateToViewOpdCreditBatchBillSettle();
+                return navigateToViewPharmacyCreditBatchBillCancellation();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 
@@ -4445,13 +4487,13 @@ public class BillSearch implements Serializable {
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewOpdCreditBatchBillSettle();
             case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
-                return navigateToViewOpdCreditBatchBillSettle();
+                return navigateToViewOpdCreditBatchBillCancellation();
             case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewInpatientCreditBatchBillSettle();
             case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
-                return navigateToViewInpatientCreditBatchBillSettle();
+                return navigateToViewInpatientCreditBatchBillCancellation();
             case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
-                return navigateToViewOpdCreditBatchBillSettle();
+                return navigateToViewPharmacyCreditBatchBillCancellation();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 
