@@ -448,18 +448,34 @@
 
                             <p:column id="colValueAtPurchaseRate" headerText="Closing Stock Value at Purchase Rate" styleClass="text-end" width="12em"
                                       rendered="#{userSettingsController.stockLedgerValueAtPurchaseRateVisible}">
-                                <!-- Department Specific -->
-                                <h:outputText value="#{f.itemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.department ne null}">
+
+                                <!-- By Batch Report Type - Department Specific -->
+                                <h:outputText value="#{f.stockPurchaseValue}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department ne null}">
                                     <f:convertNumber pattern="#,##0.000" />
                                 </h:outputText>
 
-                                <!-- Institution Specific -->
-                                <h:outputText value="#{f.institutionItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                <!-- By Batch Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionBatchStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
                                     <f:convertNumber pattern="#,##0.000" />
                                 </h:outputText>
 
-                                <!-- Total -->
-                                <h:outputText value="#{f.totalItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                <!-- By Batch Report Type - Total -->
+                                <h:outputText value="#{f.totalBatchStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Department Specific -->
+                                <h:outputText value="#{f.itemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Total -->
+                                <h:outputText value="#{f.totalItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
                                     <f:convertNumber pattern="#,##0.000" />
                                 </h:outputText>
                             </p:column>
