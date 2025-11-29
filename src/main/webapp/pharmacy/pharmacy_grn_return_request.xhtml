@@ -65,9 +65,61 @@
                         </h:panelGrid>
                     </div>
                     <div class="col-10">
-                        <p:dataTable 
+                        <!-- Column Visibility Controls -->
+                        <p:panel styleClass="mb-2">
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-columns me-2"></i>
+                                    <span>Column Visibility</span>
+                                </div>
+                            </f:facet>
+                            <div class="d-flex flex-wrap gap-3">
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'supplier')}"
+                                                         itemLabel="Supplier">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'supplier')}" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poNo')}"
+                                                         itemLabel="PO No">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'poNo')}" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnNo')}"
+                                                         itemLabel="GRN No">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'grnNo')}" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'invoiceNo')}"
+                                                         itemLabel="Invoice No">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'invoiceNo')}" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poDetails')}"
+                                                         itemLabel="PO Details">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'poDetails')}" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnDetails')}"
+                                                         itemLabel="GRN Details">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'grnDetails')}" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poValue')}"
+                                                         itemLabel="PO Value">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'poValue')}" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnValue')}"
+                                                         itemLabel="GRN Value">
+                                    <p:ajax update="tblBills"
+                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'grnValue')}" />
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </p:panel>
+
+                        <p:dataTable
                             id="tblBills"
-                            value="#{searchController.bills}" 
+                            value="#{searchController.bills}"
                             var="p"
                             class="w-100 va-top"
                             paginator="true"
@@ -80,42 +132,47 @@
                             widgetVar="billTable"
                             >
 
-                            <p:column 
-                                headerText="Supplier" 
-                                sortBy="#{p.fromInstitution.name}" 
-                                filterBy="#{p.fromInstitution.name}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                headerText="Supplier"
+                                sortBy="#{p.fromInstitution.name}"
+                                filterBy="#{p.fromInstitution.name}"
+                                filterMatchMode="contains"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'supplier')}">
                                 <h:outputText value="#{p.fromInstitution.name}" />
                             </p:column>
 
-                            <p:column 
-                                headerText="PO No" 
-                                sortBy="#{p.referenceBill.deptId}" 
-                                filterBy="#{p.referenceBill.deptId}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                headerText="PO No"
+                                sortBy="#{p.referenceBill.deptId}"
+                                filterBy="#{p.referenceBill.deptId}"
+                                filterMatchMode="contains"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poNo')}">
                                 <h:outputText value="#{p.referenceBill.deptId}" />
                             </p:column>
 
-                            <p:column 
-                                headerText="GRN No" 
-                                sortBy="#{p.deptId}" 
-                                filterBy="#{p.deptId}" 
-                                filterMatchMode="contains">
+                            <p:column
+                                headerText="GRN No"
+                                sortBy="#{p.deptId}"
+                                filterBy="#{p.deptId}"
+                                filterMatchMode="contains"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnNo')}">
                                 <h:outputText value="#{p.deptId}" />
                             </p:column>
-                            
-                              <p:column 
-                                headerText="Invoice No" 
-                                sortBy="#{p.invoiceNumber}" 
-                                filterBy="#{p.invoiceNumber}" 
-                                filterMatchMode="contains">
-                                  <h:outputText value="#{p.invoiceNumber}" />
+
+                            <p:column
+                                headerText="Invoice No"
+                                sortBy="#{p.invoiceNumber}"
+                                filterBy="#{p.invoiceNumber}"
+                                filterMatchMode="contains"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'invoiceNo')}">
+                                <h:outputText value="#{p.invoiceNumber}" />
                             </p:column>
 
 
                             <p:column
                                 id="colPoDetails"
-                                headerText="PO Details">
+                                headerText="PO Details"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poDetails')}">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
                                         <h:outputText styleClass="fw-bold text-primary" value="#{p.referenceBill.createdAt}">
@@ -154,7 +211,8 @@
                             
                             <p:column
                                 headerText="GRN Details"
-                                id="colGrnDetails">
+                                id="colGrnDetails"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnDetails')}">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
                                         <h:outputText styleClass="fw-bold text-primary" value="#{p.createdAt}">
@@ -213,23 +271,25 @@
                                 </div>
                             </p:column>
 
-                            <p:column 
-                                headerText="PO Value" 
-                                sortBy="#{p.referenceBill.netTotal}" 
-                                filterBy="#{p.referenceBill.netTotal}" 
+                            <p:column
+                                headerText="PO Value"
+                                sortBy="#{p.referenceBill.netTotal}"
+                                filterBy="#{p.referenceBill.netTotal}"
                                 filterMatchMode="equals"
-                                styleClass="text-end">
+                                styleClass="text-end"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poValue')}">
                                 <h:outputText value="#{p.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column 
-                                headerText="GRN Value" 
-                                sortBy="#{p.netTotal}" 
-                                filterBy="#{p.netTotal}" 
-                                filterMatchMode="equals" 
-                                styleClass="text-end">
+                            <p:column
+                                headerText="GRN Value"
+                                sortBy="#{p.netTotal}"
+                                filterBy="#{p.netTotal}"
+                                filterMatchMode="equals"
+                                styleClass="text-end"
+                                rendered="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnValue')}">
                                 <h:outputText value="#{p.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
