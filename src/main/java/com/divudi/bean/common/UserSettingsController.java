@@ -790,6 +790,76 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("stock_ledger", settings);
     }
 
+    public boolean isStockLedgerDepartmentVisible() {
+        return isColumnVisible("stock_ledger", "department");
+    }
+
+    public void setStockLedgerDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("department", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerNameVisible() {
+        return isColumnVisible("stock_ledger", "name");
+    }
+
+    public void setStockLedgerNameVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("name", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerTransactionTypeVisible() {
+        return isColumnVisible("stock_ledger", "transactionType");
+    }
+
+    public void setStockLedgerTransactionTypeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("transactionType", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerBillNumberVisible() {
+        return isColumnVisible("stock_ledger", "billNumber");
+    }
+
+    public void setStockLedgerBillNumberVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("billNumber", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerTransactionAtVisible() {
+        return isColumnVisible("stock_ledger", "transactionAt");
+    }
+
+    public void setStockLedgerTransactionAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("transactionAt", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerStockInQtyVisible() {
+        return isColumnVisible("stock_ledger", "stockInQty");
+    }
+
+    public void setStockLedgerStockInQtyVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("stockInQty", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerStockOutQtyVisible() {
+        return isColumnVisible("stock_ledger", "stockOutQty");
+    }
+
+    public void setStockLedgerStockOutQtyVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("stockOutQty", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
     // Pharmacy Department Stock by Batch Page Column Visibility Properties
 
     public boolean isPharmacyDepartmentStockByBatchCategoryVisible() {

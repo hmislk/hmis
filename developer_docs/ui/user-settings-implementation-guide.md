@@ -430,8 +430,10 @@ Instead of using a complex `p:columnGroup`, add footer facets directly to each c
 - [ ] Add individual `<f:facet name="footer">` to columns that need totals
 - [ ] Ensure footer `rendered` attribute matches column's `rendered` attribute
 - [ ] Place "Total" label in a core business column that's always visible (e.g., Stock, Amount)
+- [ ] **Ensure ALL columns are customizable** - Add `rendered` attributes to every column except critical business columns
 - [ ] Test footer alignment by toggling various column combinations
 - [ ] Verify footer totals disappear when their columns are hidden
+- [ ] Verify checkbox initial state matches actual column visibility
 
 ### Real-World Example
 
@@ -443,6 +445,42 @@ Instead of using a complex `p:columnGroup`, add footer facets directly to each c
 **Result**: Footer totals always stay properly aligned under their respective columns regardless of which columns users choose to show/hide.
 
 ## Troubleshooting
+
+### 🚨 Problem 3: Checkboxes Show Wrong Initial State
+
+**Symptom**: When page loads, checkboxes appear unchecked but columns are actually visible. Clicking checkboxes works correctly for toggling.
+
+**Root Cause**: PrimeFaces `p:selectBooleanCheckbox` components sometimes fail to reflect initial state from session-scoped beans.
+
+**✅ Solution**: Use JSF's native `h:selectBooleanCheckbox` instead of PrimeFaces components:
+
+```xml
+<!-- ❌ WRONG: PrimeFaces component -->
+<p:selectBooleanCheckbox value="#{userSettingsController.stockLedgerCategoryVisible}"
+                         itemLabel="Category">
+    <p:ajax update="tbl" />
+</p:selectBooleanCheckbox>
+
+<!-- ✅ CORRECT: Native JSF component -->
+<div class="d-flex align-items-center me-3 mb-2">
+    <h:selectBooleanCheckbox id="chkCategory" value="#{userSettingsController.stockLedgerCategoryVisible}">
+        <f:ajax render="tbl" />
+    </h:selectBooleanCheckbox>
+    <h:outputLabel for="chkCategory" value="Category" styleClass="ms-1" />
+</div>
+```
+
+**Key Changes**:
+- **Component**: `h:selectBooleanCheckbox` (JSF native) instead of `p:selectBooleanCheckbox`
+- **AJAX**: `<f:ajax render="tbl" />` instead of `<p:ajax update="tbl" />`
+- **Layout**: Separate `h:outputLabel` with proper `for` attribute
+- **Styling**: Bootstrap classes for proper alignment and spacing
+
+**Benefits**:
+✅ Reliable initial state binding with session-scoped beans
+✅ Better performance (less overhead)
+✅ More predictable behavior
+✅ Proper checkbox-label association for accessibility
 
 ### 🚨 Problem 1: "Illegal Syntax for Set Operation" (Most Common)
 

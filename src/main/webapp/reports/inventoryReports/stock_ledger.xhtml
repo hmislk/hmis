@@ -291,7 +291,8 @@
                                      styleClass="table-sm">
 
 
-                            <p:column headerText="Department" width="12em">
+                            <p:column headerText="Department" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerDepartmentVisible}">
                                 <h:outputText value="#{f.department.name}" />
                             </p:column>
                             <p:column headerText="Category" width="12em"
@@ -302,19 +303,22 @@
                                       rendered="#{userSettingsController.stockLedgerItemCodeVisible}">
                                 <h:outputText value="#{empty f.pbItem.billItem.item.amp ? f.pbItem.billItem.item.code : f.pbItem.billItem.item.amp.code}" />
                             </p:column>
-                            <p:column headerText="Name" width="20em">
+                            <p:column headerText="Name" width="20em"
+                                      rendered="#{userSettingsController.stockLedgerNameVisible}">
                                 <h:outputText value="#{f.pbItem.billItem.item.name}" />
                             </p:column>
                             <p:column headerText="UOM" width="6em"
                                       rendered="#{userSettingsController.stockLedgerUomVisible}">
                                 <h:outputText value="#{f.pbItem.billItem.item.measurementUnit.name}" />
                             </p:column>
-                            <p:column headerText="Transaction Type" styleClass="text-center" width="10em">
+                            <p:column headerText="Transaction Type" styleClass="text-center" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerTransactionTypeVisible}">
                                 <h:outputText
                                     value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}"
                                     styleClass="#{f.pbItem.transThisIsStockIn ? 'stock-in-badge' : 'stock-out-badge'}" />
                             </p:column>
-                            <p:column headerText="Bill Number" width="10em">
+                            <p:column headerText="Bill Number" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerBillNumberVisible}">
                                 <p:commandLink
                                     value="#{f.pbItem.billItem.bill.deptId}"
                                     class="m-1 ui-button-info"
@@ -323,7 +327,8 @@
                                     <f:setPropertyActionListener value="#{not empty f.pbItem.billItem.bill ? f.pbItem.billItem.bill : (f.pbItem.billItem.bill.referenceBill or f.pbItem.billItem.bill.backwardReferenceBill or f.pbItem.billItem.bill.forwardReferenceBill)}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Transaction At" width="12em">
+                            <p:column headerText="Transaction At" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerTransactionAtVisible}">
                                 <h:outputText value="#{f.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputText>
@@ -380,12 +385,14 @@
                                              f.pbItem.billItem.bill.billTypeAtomic.label :
                                              f.pbItem.billItem.bill.billType.label}" />
                             </p:column>
-                            <p:column headerText="Stock In Qty in units" styleClass="text-end" width="9em">
+                            <p:column headerText="Stock In Qty in units" styleClass="text-end" width="9em"
+                                      rendered="#{userSettingsController.stockLedgerStockInQtyVisible}">
                                 <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Stock Out Qty in units" styleClass="text-end" width="9em">
+                            <p:column headerText="Stock Out Qty in units" styleClass="text-end" width="9em"
+                                      rendered="#{userSettingsController.stockLedgerStockOutQtyVisible}">
                                 <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -532,6 +539,12 @@
                                 </f:facet>
                                 <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
                                     <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkDepartment" value="#{userSettingsController.stockLedgerDepartmentVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkDepartment" value="Department" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
                                         <h:selectBooleanCheckbox id="chkCategory" value="#{userSettingsController.stockLedgerCategoryVisible}">
                                             <f:ajax render="tbl" />
                                         </h:selectBooleanCheckbox>
@@ -544,10 +557,34 @@
                                         <h:outputLabel for="chkItemCode" value="Item Code" styleClass="ms-1" />
                                     </div>
                                     <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkName" value="#{userSettingsController.stockLedgerNameVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkName" value="Name" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
                                         <h:selectBooleanCheckbox id="chkUom" value="#{userSettingsController.stockLedgerUomVisible}">
                                             <f:ajax render="tbl" />
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="chkUom" value="UOM" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkTransactionType" value="#{userSettingsController.stockLedgerTransactionTypeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkTransactionType" value="Transaction Type" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkBillNumber" value="#{userSettingsController.stockLedgerBillNumberVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkBillNumber" value="Bill Number" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkTransactionAt" value="#{userSettingsController.stockLedgerTransactionAtVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkTransactionAt" value="Transaction At" styleClass="ms-1" />
                                     </div>
                                     <div class="d-flex align-items-center me-3 mb-2">
                                         <h:selectBooleanCheckbox id="chkReferenceBill" value="#{userSettingsController.stockLedgerReferenceBillVisible}">
@@ -632,6 +669,18 @@
                                             <f:ajax render="tbl" />
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="chkExpiryDate" value="Expiry Date" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkStockInQty" value="#{userSettingsController.stockLedgerStockInQtyVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkStockInQty" value="Stock In Qty" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkStockOutQty" value="#{userSettingsController.stockLedgerStockOutQtyVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkStockOutQty" value="Stock Out Qty" styleClass="ms-1" />
                                     </div>
                                     <div class="d-flex align-items-center me-3 mb-2">
                                         <h:selectBooleanCheckbox id="chkUser" value="#{userSettingsController.stockLedgerUserVisible}">
