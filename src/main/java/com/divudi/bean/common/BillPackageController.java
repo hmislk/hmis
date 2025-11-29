@@ -329,7 +329,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         // Initialize balance field for credit bills
         if (paymentMethod == PaymentMethod.Credit) {
             double totalAmount = Math.abs(batchBill.getNetTotal());
-            if (batchBill.getVat() != null) {
+            if (batchBill.getVat() != 0.0) {
                 totalAmount += Math.abs(batchBill.getVat());
             }
             batchBill.setBalance(totalAmount);
@@ -1183,7 +1183,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             // Initialize balance field for credit bills before creating
             if (paymentMethod == PaymentMethod.Credit) {
                 double totalAmount = Math.abs(temp.getNetTotal());
-                if (temp.getVat() != null) {
+                if (temp.getVat() != 0.0) {
                     totalAmount += Math.abs(temp.getVat());
                 }
                 temp.setBalance(totalAmount);

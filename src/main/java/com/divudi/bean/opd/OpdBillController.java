@@ -2154,9 +2154,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         // Initialize balance field for credit bills
-        if (paymentMethod == PaymentMethod.Credit && newBatchBill.getBalance() == null) {
+        if (paymentMethod == PaymentMethod.Credit && newBatchBill.getBalance() <= 0.0) {
             double totalAmount = Math.abs(newBatchBill.getNetTotal());
-            if (newBatchBill.getVat() != null) {
+            if (newBatchBill.getVat() != 0.0) {
                 totalAmount += Math.abs(newBatchBill.getVat());
             }
             newBatchBill.setBalance(totalAmount);
@@ -2268,7 +2268,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             // Initialize balance field for credit bills before creating
             if (paymentMethod == PaymentMethod.Credit) {
                 double totalAmount = Math.abs(newBill.getNetTotal());
-                if (newBill.getVat() != null) {
+                if (newBill.getVat() != 0.0) {
                     totalAmount += Math.abs(newBill.getVat());
                 }
                 newBill.setBalance(totalAmount);
@@ -2353,7 +2353,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             // Initialize balance field for credit bills before creating
             if (paymentMethod == PaymentMethod.Credit) {
                 double totalAmount = Math.abs(newBill.getNetTotal());
-                if (newBill.getVat() != null) {
+                if (newBill.getVat() != 0.0) {
                     totalAmount += Math.abs(newBill.getVat());
                 }
                 newBill.setBalance(totalAmount);
