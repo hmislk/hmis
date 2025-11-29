@@ -787,7 +787,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             hash.put("btas", btas);
             hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
+            hash.put("val", 1.0);
             hash.put("q", "%" + qry.toUpperCase() + "%");
             System.out.println("qry = " + qry);
             System.out.println("hash = " + hash);
@@ -823,7 +823,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             params.put("btas", btas);
             params.put("pm", PaymentMethod.Credit);
-            params.put("val", 0.1);
+            params.put("val", 1.0);
             params.put("q", "%" + qry.toUpperCase() + "%");
             a = getFacade().findByJpql(jpql, params);
             System.out.println("jpql = " + jpql);
