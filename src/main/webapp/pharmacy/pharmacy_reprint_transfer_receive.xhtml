@@ -60,7 +60,7 @@
                             <h:panelGroup
                                 rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Receive Receipt is A4',true)}"
                                 styleClass="noBorder">
-                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}" />
+                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                             </h:panelGroup>
 
                             <h:panelGroup 
