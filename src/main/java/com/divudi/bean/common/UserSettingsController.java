@@ -790,6 +790,128 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("stock_ledger", settings);
     }
 
+    // Pharmacy Department Stock by Batch Page Column Visibility Properties
+
+    public boolean isPharmacyDepartmentStockByBatchCategoryVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "category");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCategoryVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("category", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchTypeVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "type");
+    }
+
+    public void setPharmacyDepartmentStockByBatchTypeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("type", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchCodeVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "code");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCodeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("code", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchGenericNameVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "genericName");
+    }
+
+    public void setPharmacyDepartmentStockByBatchGenericNameVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("genericName", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchExpiryVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "expiry");
+    }
+
+    public void setPharmacyDepartmentStockByBatchExpiryVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("expiry", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchBatchNoVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "batchNo");
+    }
+
+    public void setPharmacyDepartmentStockByBatchBatchNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("batchNo", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchPurchaseRateVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "purchaseRate");
+    }
+
+    public void setPharmacyDepartmentStockByBatchPurchaseRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("purchaseRate", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchPurchaseValueVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "purchaseValue");
+    }
+
+    public void setPharmacyDepartmentStockByBatchPurchaseValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("purchaseValue", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchCostRateVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "costRate");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCostRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("costRate", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchCostValueVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "costValue");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCostValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("costValue", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchRetailRateVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "retailRate");
+    }
+
+    public void setPharmacyDepartmentStockByBatchRetailRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("retailRate", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchRetailValueVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "retailValue");
+    }
+
+    public void setPharmacyDepartmentStockByBatchRetailValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("retailValue", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
     // Getters and Setters
 
     public ConfigOptionFacade getConfigOptionFacade() {
