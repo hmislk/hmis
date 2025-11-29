@@ -65,57 +65,6 @@
                         </h:panelGrid>
                     </div>
                     <div class="col-10">
-                        <!-- Column Visibility Controls -->
-                        <p:panel styleClass="mb-2">
-                            <f:facet name="header">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-columns me-2"></i>
-                                    <span>Column Visibility</span>
-                                </div>
-                            </f:facet>
-                            <div class="d-flex flex-wrap gap-3">
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'supplier')}"
-                                                         itemLabel="Supplier">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'supplier')}" />
-                                </p:selectBooleanCheckbox>
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poNo')}"
-                                                         itemLabel="PO No">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'poNo')}" />
-                                </p:selectBooleanCheckbox>
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnNo')}"
-                                                         itemLabel="GRN No">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'grnNo')}" />
-                                </p:selectBooleanCheckbox>
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'invoiceNo')}"
-                                                         itemLabel="Invoice No">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'invoiceNo')}" />
-                                </p:selectBooleanCheckbox>
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poDetails')}"
-                                                         itemLabel="PO Details">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'poDetails')}" />
-                                </p:selectBooleanCheckbox>
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnDetails')}"
-                                                         itemLabel="GRN Details">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'grnDetails')}" />
-                                </p:selectBooleanCheckbox>
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'poValue')}"
-                                                         itemLabel="PO Value">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'poValue')}" />
-                                </p:selectBooleanCheckbox>
-                                <p:selectBooleanCheckbox value="#{userSettingsController.isColumnVisible('pharmacy_grn_return_request', 'grnValue')}"
-                                                         itemLabel="GRN Value">
-                                    <p:ajax update="tblBills"
-                                            listener="#{userSettingsController.toggleColumnVisibility('pharmacy_grn_return_request', 'grnValue')}" />
-                                </p:selectBooleanCheckbox>
-                            </div>
-                        </p:panel>
 
                         <p:dataTable
                             id="tblBills"
@@ -348,6 +297,52 @@
 
                             </p:column>
                         </p:dataTable>
+
+                        <!-- Column Visibility Settings - Subtle placement -->
+                        <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                            <p:panel toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Customize Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestSupplierVisible}"
+                                                             itemLabel="Supplier">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoNoVisible}"
+                                                             itemLabel="PO No">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnNoVisible}"
+                                                             itemLabel="GRN No">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestInvoiceNoVisible}"
+                                                             itemLabel="Invoice No">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoDetailsVisible}"
+                                                             itemLabel="PO Details">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnDetailsVisible}"
+                                                             itemLabel="GRN Details">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoValueVisible}"
+                                                             itemLabel="PO Value">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnValueVisible}"
+                                                             itemLabel="GRN Value">
+                                        <p:ajax update="tblBills" />
+                                    </p:selectBooleanCheckbox>
+                                </div>
+                            </p:panel>
+                        </div>
 
                     </div>
                 </div>
