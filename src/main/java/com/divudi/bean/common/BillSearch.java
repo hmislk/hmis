@@ -3873,7 +3873,22 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to view");
             return "";
         }
-        creditCompanyBillSearch.setBill((BilledBill) bill);
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
         creditCompanyBillSearch.setPrintPreview(true);
         return "/credit/credit_company_bill_cancel?faces-redirect=true";
     }
@@ -3887,7 +3902,22 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to view");
             return "";
         }
-        creditCompanyBillSearch.setBill((BilledBill) bill);
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
         creditCompanyBillSearch.setPrintPreview(true);
         return "/credit/inpatient_credit_company_bill_cancel?faces-redirect=true";
     }
@@ -3901,7 +3931,22 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to view");
             return "";
         }
-        creditCompanyBillSearch.setBill((BilledBill) bill);
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
         creditCompanyBillSearch.setPrintPreview(true);
         return "/credit/credit_company_bill_pharmacy_cancel?faces-redirect=true";
     }
