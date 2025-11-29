@@ -524,6 +524,464 @@ public class UserSettingsController implements Serializable {
         return null;
     }
 
+    // Pharmacy GRN Return Request Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the specific page
+
+    public boolean isPharmacyGrnReturnRequestSupplierVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "supplier");
+    }
+
+    public void setPharmacyGrnReturnRequestSupplierVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("supplier", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    public boolean isPharmacyGrnReturnRequestPoNoVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "poNo");
+    }
+
+    public void setPharmacyGrnReturnRequestPoNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("poNo", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    public boolean isPharmacyGrnReturnRequestGrnNoVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "grnNo");
+    }
+
+    public void setPharmacyGrnReturnRequestGrnNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("grnNo", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    public boolean isPharmacyGrnReturnRequestInvoiceNoVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "invoiceNo");
+    }
+
+    public void setPharmacyGrnReturnRequestInvoiceNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("invoiceNo", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    public boolean isPharmacyGrnReturnRequestPoDetailsVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "poDetails");
+    }
+
+    public void setPharmacyGrnReturnRequestPoDetailsVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("poDetails", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    public boolean isPharmacyGrnReturnRequestGrnDetailsVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "grnDetails");
+    }
+
+    public void setPharmacyGrnReturnRequestGrnDetailsVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("grnDetails", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    public boolean isPharmacyGrnReturnRequestPoValueVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "poValue");
+    }
+
+    public void setPharmacyGrnReturnRequestPoValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("poValue", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    public boolean isPharmacyGrnReturnRequestGrnValueVisible() {
+        return isColumnVisible("pharmacy_grn_return_request", "grnValue");
+    }
+
+    public void setPharmacyGrnReturnRequestGrnValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
+        settings.setColumnVisible("grnValue", visible);
+        saveColumnVisibility("pharmacy_grn_return_request", settings);
+    }
+
+    // Stock Ledger Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the stock ledger report page
+
+    public boolean isStockLedgerCategoryVisible() {
+        return isColumnVisible("stock_ledger", "category");
+    }
+
+    public void setStockLedgerCategoryVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("category", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerItemCodeVisible() {
+        return isColumnVisible("stock_ledger", "itemCode");
+    }
+
+    public void setStockLedgerItemCodeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("itemCode", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerUomVisible() {
+        return isColumnVisible("stock_ledger", "uom");
+    }
+
+    public void setStockLedgerUomVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("uom", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerReferenceBillVisible() {
+        return isColumnVisible("stock_ledger", "referenceBill");
+    }
+
+    public void setStockLedgerReferenceBillVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("referenceBill", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerRefTransactionAtVisible() {
+        return isColumnVisible("stock_ledger", "refTransactionAt");
+    }
+
+    public void setStockLedgerRefTransactionAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("refTransactionAt", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerFromStoreVisible() {
+        return isColumnVisible("stock_ledger", "fromStore");
+    }
+
+    public void setStockLedgerFromStoreVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("fromStore", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerToStoreVisible() {
+        return isColumnVisible("stock_ledger", "toStore");
+    }
+
+    public void setStockLedgerToStoreVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("toStore", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerConsumptionDeptVisible() {
+        return isColumnVisible("stock_ledger", "consumptionDept");
+    }
+
+    public void setStockLedgerConsumptionDeptVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("consumptionDept", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerDocumentTypeVisible() {
+        return isColumnVisible("stock_ledger", "documentType");
+    }
+
+    public void setStockLedgerDocumentTypeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("documentType", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerRateVisible() {
+        return isColumnVisible("stock_ledger", "rate");
+    }
+
+    public void setStockLedgerRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("rate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerCostRateVisible() {
+        return isColumnVisible("stock_ledger", "costRate");
+    }
+
+    public void setStockLedgerCostRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("costRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerValueAtPurchaseRateVisible() {
+        return isColumnVisible("stock_ledger", "valueAtPurchaseRate");
+    }
+
+    public void setStockLedgerValueAtPurchaseRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("valueAtPurchaseRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerValueAtCostRateVisible() {
+        return isColumnVisible("stock_ledger", "valueAtCostRate");
+    }
+
+    public void setStockLedgerValueAtCostRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("valueAtCostRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerValueAtRetailRateVisible() {
+        return isColumnVisible("stock_ledger", "valueAtRetailRate");
+    }
+
+    public void setStockLedgerValueAtRetailRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("valueAtRetailRate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerBatchCodeVisible() {
+        return isColumnVisible("stock_ledger", "batchCode");
+    }
+
+    public void setStockLedgerBatchCodeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("batchCode", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerMrpVisible() {
+        return isColumnVisible("stock_ledger", "mrp");
+    }
+
+    public void setStockLedgerMrpVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("mrp", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerExpiryDateVisible() {
+        return isColumnVisible("stock_ledger", "expiryDate");
+    }
+
+    public void setStockLedgerExpiryDateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("expiryDate", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerUserVisible() {
+        return isColumnVisible("stock_ledger", "user");
+    }
+
+    public void setStockLedgerUserVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("user", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerDepartmentVisible() {
+        return isColumnVisible("stock_ledger", "department");
+    }
+
+    public void setStockLedgerDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("department", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerNameVisible() {
+        return isColumnVisible("stock_ledger", "name");
+    }
+
+    public void setStockLedgerNameVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("name", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerTransactionTypeVisible() {
+        return isColumnVisible("stock_ledger", "transactionType");
+    }
+
+    public void setStockLedgerTransactionTypeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("transactionType", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerBillNumberVisible() {
+        return isColumnVisible("stock_ledger", "billNumber");
+    }
+
+    public void setStockLedgerBillNumberVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("billNumber", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerTransactionAtVisible() {
+        return isColumnVisible("stock_ledger", "transactionAt");
+    }
+
+    public void setStockLedgerTransactionAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("transactionAt", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerStockInQtyVisible() {
+        return isColumnVisible("stock_ledger", "stockInQty");
+    }
+
+    public void setStockLedgerStockInQtyVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("stockInQty", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    public boolean isStockLedgerStockOutQtyVisible() {
+        return isColumnVisible("stock_ledger", "stockOutQty");
+    }
+
+    public void setStockLedgerStockOutQtyVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("stock_ledger");
+        settings.setColumnVisible("stockOutQty", visible);
+        saveColumnVisibility("stock_ledger", settings);
+    }
+
+    // Pharmacy Department Stock by Batch Page Column Visibility Properties
+
+    public boolean isPharmacyDepartmentStockByBatchCategoryVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "category");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCategoryVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("category", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchTypeVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "type");
+    }
+
+    public void setPharmacyDepartmentStockByBatchTypeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("type", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchCodeVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "code");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCodeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("code", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchGenericNameVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "genericName");
+    }
+
+    public void setPharmacyDepartmentStockByBatchGenericNameVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("genericName", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchExpiryVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "expiry");
+    }
+
+    public void setPharmacyDepartmentStockByBatchExpiryVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("expiry", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchBatchNoVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "batchNo");
+    }
+
+    public void setPharmacyDepartmentStockByBatchBatchNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("batchNo", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchPurchaseRateVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "purchaseRate");
+    }
+
+    public void setPharmacyDepartmentStockByBatchPurchaseRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("purchaseRate", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchPurchaseValueVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "purchaseValue");
+    }
+
+    public void setPharmacyDepartmentStockByBatchPurchaseValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("purchaseValue", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchCostRateVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "costRate");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCostRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("costRate", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchCostValueVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "costValue");
+    }
+
+    public void setPharmacyDepartmentStockByBatchCostValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("costValue", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchRetailRateVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "retailRate");
+    }
+
+    public void setPharmacyDepartmentStockByBatchRetailRateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("retailRate", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
+    public boolean isPharmacyDepartmentStockByBatchRetailValueVisible() {
+        return isColumnVisible("pharmacy_department_stock_by_batch", "retailValue");
+    }
+
+    public void setPharmacyDepartmentStockByBatchRetailValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_department_stock_by_batch");
+        settings.setColumnVisible("retailValue", visible);
+        saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
+    }
+
     // Getters and Setters
 
     public ConfigOptionFacade getConfigOptionFacade() {
