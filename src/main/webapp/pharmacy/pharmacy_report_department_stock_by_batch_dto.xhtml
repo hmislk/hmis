@@ -156,6 +156,9 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Stock" />
                                     </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total" style="font-weight: bold;" />
+                                    </f:facet>
                                     <h:outputLabel value="#{i.stockQty}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -177,6 +180,11 @@
                                           rendered="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.stockPurchaseValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{i.purchaseRate * i.stockQty}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -200,6 +208,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Cost Value" />
                                     </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.stockCostValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                     <h:outputLabel value="#{i.costRate * i.stockQty}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -222,55 +235,16 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Value" />
                                     </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.stockSaleValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                     <h:outputLabel value="#{i.retailRate * i.stockQty}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column colspan="9">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="Total" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <!-- Blank column for Cost Rate -->
-                                        <p:column />
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsStock.stockCostValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <!-- Blank column for Retail Rate -->
-                                        <p:column />
-                                        <p:column style="text-align: right;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsStock.stockSaleValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="14">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="Printed At " />
-                                                <h:outputLabel value="#{sessionController.currentDate}">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
 
                             </p:dataTable>
                         </h:panelGroup>
