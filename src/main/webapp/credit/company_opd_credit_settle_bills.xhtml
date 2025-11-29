@@ -149,47 +149,10 @@
 
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                filter="true"
-                                style="width: 400px;"
-                                filterMatchMode="contains"
-                                id="billTypeAtomic"
-                                value="#{searchController.billTypeAtomic}" >
-                                <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems
-                                    var="billTypeAtomic"
-                                    itemLabel="#{billTypeAtomic.label}"
-                                    itemValue="#{billTypeAtomic}"
-                                    value="#{enumController.billTypesAtomic}" ></f:selectItems>
-                            </p:selectOneMenu>
-
                             <p:spacer ></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billType}" >
-                                <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems
-                                    var="billType"
-                                    itemLabel="#{billType.label}"
-                                    itemValue="#{billType}"
-                                    value="#{enumController.billTypes}" ></f:selectItems>
-                            </p:selectOneMenu>
                             <p:spacer ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Class Type" for="billClass" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu id="billClass" class="w-100  "  value="#{searchController.billClassType}" >
-                                <f:selectItem itemLabel="All Class Types" ></f:selectItem>
-                                <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
-                            </p:selectOneMenu>
+
 
                         </h:panelGrid>
 
@@ -283,15 +246,7 @@
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
 
-                                    <p:commandButton
-                                        value="Manage"
-                                        icon="fa fa-tools"
-                                        class="m-1 ui-button-warning"
-                                        style="width: 100px;"
-                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}"
-                                        ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
-                                    </p:commandButton>
+
 
                                     <p:commandButton
                                         value="Admin"

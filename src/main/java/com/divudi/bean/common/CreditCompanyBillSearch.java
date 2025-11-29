@@ -302,6 +302,12 @@ public class CreditCompanyBillSearch implements Serializable {
             return true;
         }
 
+        // Check if this is a cancellation bill (bill created during cancellation process)
+        if (isBillACancellationBill(getBill())) {
+            JsfUtil.addErrorMessage("This is a Cancellation Bill and cannot be cancelled again.");
+            return true;
+        }
+
         if (checkPaid()) {
             JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
@@ -316,6 +322,34 @@ public class CreditCompanyBillSearch implements Serializable {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the given bill is a cancellation bill (bill created during cancellation process).
+     * Cancellation bills have specific BillTypeAtomic values and should not be allowed to be cancelled again.
+     *
+     * @param bill The bill to check
+     * @return true if the bill is a cancellation bill, false otherwise
+     */
+    private boolean isBillACancellationBill(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return false;
+        }
+
+        BillTypeAtomic billType = bill.getBillTypeAtomic();
+        return billType == BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION;
+    }
+
+    /**
+     * Public method to check if the current bill is a cancellation bill.
+     * Used by the UI to disable cancel button and show appropriate messages.
+     *
+     * @return true if the current bill is a cancellation bill, false otherwise
+     */
+    public boolean isBillACancellationBill() {
+        return isBillACancellationBill(getBill());
     }
 
 //    if (getTabId().equals("tabBht")) {
