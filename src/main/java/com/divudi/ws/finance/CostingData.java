@@ -1,7 +1,6 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.common.ApiKeyController;
-import com.divudi.bean.common.BillController;
 import com.divudi.core.data.dto.BillDetailsDTO;
 import com.divudi.core.data.dto.BillFinanceDetailsDTO;
 import com.divudi.core.data.dto.BillItemDetailsDTO;
@@ -54,9 +53,6 @@ public class CostingData {
 
     @Inject
     ApiKeyController apiKeyController;
-
-    @Inject
-    BillController billController;
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -269,6 +265,18 @@ public class CostingData {
         dto.setTotal(bill.getTotal());
         dto.setBillFinanceDetailsId(bill.getBillFinanceDetails() != null ? bill.getBillFinanceDetails().getId() : null);
 
+        // Set additional fields from completion queries
+        dto.setBalance(bill.getBalance());
+        dto.setVat(bill.getVat());
+        dto.setPaidAmount(bill.getPaidAmount());
+        dto.setPaymentMethod(bill.getPaymentMethod() != null ? bill.getPaymentMethod().toString() : null);
+        dto.setCancelledBillId(bill.getCancelledBill() != null ? bill.getCancelledBill().getId() : null);
+        dto.setRefundedBillId(bill.getRefundedBill() != null ? bill.getRefundedBill().getId() : null);
+        dto.setRetired(bill.isRetired());
+        dto.setPatientName(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : null);
+        dto.setCreditCompanyName(bill.getCreditCompany() != null ? bill.getCreditCompany().getName() : null);
+        dto.setDeptId(bill.getDeptId());
+
         // Convert Bill Finance Details
         if (bill.getBillFinanceDetails() != null) {
             dto.setBillFinanceDetails(convertBillFinanceDetailsToDTO(bill.getBillFinanceDetails()));
@@ -456,122 +464,5 @@ public class CostingData {
         response.put("code", 200);
         response.put("data", data);
         return Response.status(200).entity(gson.toJson(response)).build();
-    }
-
-    /**
-     * Get OPD Credit Package Batch Bills for completion (autocomplete functionality)
-     * Endpoint: /costing_data/complete_opd_credit_package_batch_bill?q={query}
-     * Returns bills with outstanding balances matching the search query
-     */
-    @GET
-    @Path("/complete_opd_credit_package_batch_bill")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response completeOpdCreditPackageBatchBill(@QueryParam("q") String query) {
-        try {
-            // Validate API key
-            String key = requestContext.getHeader("Finance");
-            if (!isValidKey(key)) {
-                return errorResponse("Not a valid key", 401);
-            }
-
-            if (query == null || query.trim().isEmpty()) {
-                return errorResponse("Query parameter 'q' is required", 400);
-            }
-
-            // Call the billController method
-            List<Bill> bills = billController.completeOpdCreditPackageBatchBill(query.trim());
-
-            if (bills == null || bills.isEmpty()) {
-                return errorResponse("No OPD credit package batch bills found matching: " + query, 404);
-            }
-
-            // Convert to DTOs
-            List<BillDetailsDTO> billDTOs = new ArrayList<>();
-            for (Bill bill : bills) {
-                billDTOs.add(convertBillToDTO(bill));
-            }
-
-            return successResponse(billDTOs);
-        } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
-        }
-    }
-
-    /**
-     * Get OPD Credit Batch Bills for completion (autocomplete functionality)
-     * Endpoint: /costing_data/complete_opd_credit_batch_bill?q={query}
-     * Returns bills with outstanding balances matching the search query
-     */
-    @GET
-    @Path("/complete_opd_credit_batch_bill")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response completeOpdCreditBatchBill(@QueryParam("q") String query) {
-        try {
-            // Validate API key
-            String key = requestContext.getHeader("Finance");
-            if (!isValidKey(key)) {
-                return errorResponse("Not a valid key", 401);
-            }
-
-            if (query == null || query.trim().isEmpty()) {
-                return errorResponse("Query parameter 'q' is required", 400);
-            }
-
-            // Call the billController method
-            List<Bill> bills = billController.completeOpdCreditBatchBill(query.trim());
-
-            if (bills == null || bills.isEmpty()) {
-                return errorResponse("No OPD credit batch bills found matching: " + query, 404);
-            }
-
-            // Convert to DTOs
-            List<BillDetailsDTO> billDTOs = new ArrayList<>();
-            for (Bill bill : bills) {
-                billDTOs.add(convertBillToDTO(bill));
-            }
-
-            return successResponse(billDTOs);
-        } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
-        }
-    }
-
-    /**
-     * Get Pharmacy Credit Bills for completion (autocomplete functionality)
-     * Endpoint: /costing_data/complete_pharmacy_credit_bill?q={query}
-     * Returns bills with outstanding balances matching the search query
-     */
-    @GET
-    @Path("/complete_pharmacy_credit_bill")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response completePharmacyCreditBill(@QueryParam("q") String query) {
-        try {
-            // Validate API key
-            String key = requestContext.getHeader("Finance");
-            if (!isValidKey(key)) {
-                return errorResponse("Not a valid key", 401);
-            }
-
-            if (query == null || query.trim().isEmpty()) {
-                return errorResponse("Query parameter 'q' is required", 400);
-            }
-
-            // Call the billController method
-            List<Bill> bills = billController.completePharmacyCreditBill(query.trim());
-
-            if (bills == null || bills.isEmpty()) {
-                return errorResponse("No pharmacy credit bills found matching: " + query, 404);
-            }
-
-            // Convert to DTOs
-            List<BillDetailsDTO> billDTOs = new ArrayList<>();
-            for (Bill bill : bills) {
-                billDTOs.add(convertBillToDTO(bill));
-            }
-
-            return successResponse(billDTOs);
-        } catch (Exception e) {
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
-        }
     }
 }
