@@ -4695,9 +4695,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             BillItemFinanceDetails itemFinanceDetails = billItem.getBillItemFinanceDetails();
 
             // Get quantity - default to 0 if null
+            // NOTE: Consistent with updateRetailSaleFinanceDetails - only billItem.getQty() is used for valuations
+            // Free quantities are tracked separately but NOT included in stock valuation calculations
+            // This is correct behavior - free quantities don't affect cost/purchase/retail valuations
             java.math.BigDecimal quantity = billItem.getQty() != null
                     ? java.math.BigDecimal.valueOf(billItem.getQty()) : java.math.BigDecimal.ZERO;
-            System.out.println("BillItem Quantity: " + quantity);
+            System.out.println("BillItem Quantity (excluding free qty - consistent with retail): " + quantity);
 
             // Calculate stock valuations for this item based on pharmaceutical bill item rates
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
@@ -4771,9 +4774,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     totalWholesaleValue = totalWholesaleValue.add(valueAtWholesaleRate);
                 }
 
-                // Set rates in the finance details
+                // Set rates in the finance details - use the SAME costRateValue used for calculations
+                if (costRateValue != null && costRateValue > 0) {
+                    // CRITICAL FIX: Store the actual cost rate used in calculations (not always purchaseRate)
+                    itemFinanceDetails.setCostRate(java.math.BigDecimal.valueOf(costRateValue));
+                    itemFinanceDetails.setTotalCostRate(java.math.BigDecimal.valueOf(costRateValue));
+                    itemFinanceDetails.setLineCostRate(java.math.BigDecimal.valueOf(costRateValue));
+                }
                 if (pharmaItem.getPurchaseRate() > 0) {
-                    itemFinanceDetails.setCostRate(java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate()));
                     itemFinanceDetails.setPurchaseRate(java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate()));
                 }
                 if (pharmaItem.getRetailRate() > 0) {
