@@ -18945,13 +18945,9 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> ccCollection = new ArrayList<>();
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        
+
         ccCollection.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
-        
-        ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        
-        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        
+
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
 
