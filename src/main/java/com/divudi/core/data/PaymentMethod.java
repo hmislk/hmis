@@ -76,6 +76,14 @@ public enum PaymentMethod {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Returns all non-credit payment methods (excludes Credit and Staff payment methods)
+     * @return List of PaymentMethod with PaymentType.NON_CREDIT
+     */
+    public static List<PaymentMethod> getNonCreditPaymentMethods() {
+        return getMethodsByType(PaymentType.NON_CREDIT);
+    }
+
     public String getInHandLabel() {
         switch (this) {
             case Agent:
