@@ -2474,10 +2474,10 @@ public class PharmacyReportController implements Serializable {
                     .append("b.discount, ")
                     .append("b.id) ")
                     .append("FROM Bill b ")
+                    .append("LEFT JOIN b.referenceBill rb ")
                     .append("WHERE b.retired = false ")
                     .append("AND ").append(billTypeField).append(" IN :billTypes ")
-                    .append("AND (b.referenceBill IS NULL ")
-                    .append("OR b.referenceBill.createdAt > :toDate) ")
+                    .append("AND (rb IS NULL OR rb.createdAt > :toDate) ")
                     .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
             Map<String, Object> billParams = new HashMap<>();
@@ -5341,10 +5341,10 @@ public class PharmacyReportController implements Serializable {
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
+                    .append("LEFT JOIN bi.bill.referenceBill rb ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billTypeAtomic IN :billTypes ")
-                    .append("AND (bi.bill.referenceBill IS NULL ")
-                    .append("OR bi.bill.referenceBill.createdAt > :td) ")
+                    .append("AND (rb IS NULL OR rb.createdAt > :td) ")
                     .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
