@@ -220,26 +220,6 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:columnGroup type="header" >
-                                <p:row >
-                                    <p:column headerText="Date" width="6em"/>
-                                    <p:column headerText="Doc. No" width="6em"/>
-                                    <p:column headerText="NAME" width="12em"/>
-                                    <p:column headerText="CODE" width="6em"/>
-                                    <p:column headerText="BATCH NO" width="6em"/>
-                                    <p:column headerText="QTY" width="4em"/>
-                                    <p:column headerText="COST RATE" width="6em"/>
-                                    <p:column headerText="COST VALUE" width="6em"/>
-                                    <p:column headerText="PURCHASE RATE" width="6em"/>
-                                    <p:column headerText="PURCHASE VALUE" width="6em"/>
-                                    <p:column headerText="MRP" width="6em"/>
-                                    <p:column headerText="MRP Value" width="6em"/>
-                                    <p:column headerText="Net Total" width="6em"/>
-                                    <p:column headerText="Payment Mode/Modes" width="12em"/>
-                                    <p:column headerText="Discount" width="6em"/>
-                                </p:row>
-                            </p:columnGroup>
-
                             <p:column headerText="NAME" width="50em">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
                                     <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
