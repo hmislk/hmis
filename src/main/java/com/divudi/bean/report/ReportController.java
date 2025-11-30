@@ -2850,7 +2850,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     
     public String navigateToAdmissionCountConsultationWise(){
        
-        return "/reports/managementReports/admission_count(consultant_wise)?faces-redirect=true";
+        return "/reports/managementReports/admission_count_consultant_wise?faces-redirect=true";
     }
     
     
