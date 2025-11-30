@@ -18851,16 +18851,11 @@ public class SearchController implements Serializable {
 
         pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
 
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Cancellation of Accept Payments at cashier
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Cancellation of Accept Payments at cashier
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Cancellation of Accept Payments at cashier
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Return Item Payments
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Return Items and Payments
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Retail Sale Refund
 
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Retail Sale Cancellations
-
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Cancellation of Accept Payments at cashier
-
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Return Items and Payment
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Refund for Returns
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Sale Without Stock Refund
 
         List<PaymentMethod> nonCreditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT); // All Payment methods except credit payment method should be here . ie credit, staff
 
