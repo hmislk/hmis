@@ -97,6 +97,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -2421,6 +2423,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+
+        // Calculate and record costing values for stock valuation after persistence
+        // This ensures we have managed entities with valid IDs for proper cascade operations
+        Bill managedBill = getBillFacade().find(getPreBill().getId());
+        calculateAndRecordCostingValues(managedBill);
+        setPreBill((PreBill) managedBill);  // Update reference with calculated finance details
+
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -4502,6 +4511,127 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             }
             return "";
         }
+    }
+
+    /**
+     * Calculate and record costing values for stock valuation.
+     * Creates BillFinanceDetails and BillItemFinanceDetails with proper financial calculations.
+     *
+     * @param bill The bill for which to calculate costing values
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    private void calculateAndRecordCostingValues(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Initialize bill finance details if not present
+        if (bill.getBillFinanceDetails() == null) {
+            BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
+            billFinanceDetails.setBill(bill);
+            bill.setBillFinanceDetails(billFinanceDetails);
+        }
+
+        // Initialize aggregated values
+        java.math.BigDecimal totalCostValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalPurchaseValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalRetailSaleValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalWholesaleValue = java.math.BigDecimal.ZERO;
+
+        // Iterate through bill items and calculate stock valuations
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem == null || !billItem.isConsideredForCosting()) {
+                continue;
+            }
+
+            // Get or initialize bill item finance details
+            BillItemFinanceDetails itemFinanceDetails = billItem.getBillItemFinanceDetails();
+            if (itemFinanceDetails == null) {
+                itemFinanceDetails = new BillItemFinanceDetails();
+                itemFinanceDetails.setBillItem(billItem);
+                billItem.setBillItemFinanceDetails(itemFinanceDetails);
+            }
+
+            // Get quantity - default to 0 if null
+            java.math.BigDecimal quantity = billItem.getQty() != null
+                    ? java.math.BigDecimal.valueOf(billItem.getQty()) : java.math.BigDecimal.ZERO;
+
+            // Calculate stock valuations for this item based on pharmaceutical bill item rates
+            PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            if (pharmaItem != null) {
+                // Calculate value at cost rate - use actual cost rate from ItemBatch
+                Double costRateValue = null;
+                if (pharmaItem.getItemBatch() != null) {
+                    costRateValue = pharmaItem.getItemBatch().getCostRate();
+                }
+                if (costRateValue == null || costRateValue <= 0) {
+                    costRateValue = pharmaItem.getPurchaseRate(); // fallback
+                }
+                if (costRateValue > 0) {
+                    java.math.BigDecimal costRate = java.math.BigDecimal.valueOf(costRateValue);
+                    java.math.BigDecimal valueAtCostRate = quantity.multiply(costRate).negate();
+                    itemFinanceDetails.setValueAtCostRate(valueAtCostRate);
+                    totalCostValue = totalCostValue.add(valueAtCostRate);
+                }
+
+                // Calculate value at purchase rate (same as cost rate for now)
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    java.math.BigDecimal purchaseRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                    java.math.BigDecimal valueAtPurchaseRate = quantity.multiply(purchaseRate).negate();
+                    itemFinanceDetails.setValueAtPurchaseRate(valueAtPurchaseRate);
+                    totalPurchaseValue = totalPurchaseValue.add(valueAtPurchaseRate);
+                }
+
+                // Calculate value at retail rate (based on retail rate)
+                if (pharmaItem.getRetailRate() > 0) {
+                    java.math.BigDecimal retailRate = java.math.BigDecimal.valueOf(pharmaItem.getRetailRate());
+                    java.math.BigDecimal valueAtRetailRate = quantity.multiply(retailRate).negate();
+                    itemFinanceDetails.setValueAtRetailRate(valueAtRetailRate);
+                    totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetailRate);
+                }
+
+                // Calculate value at wholesale rate (use retail rate if wholesale rate not available)
+                double wholesaleRate = pharmaItem.getWholesaleRate() > 0
+                        ? pharmaItem.getWholesaleRate()
+                        : (pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
+
+                if (wholesaleRate > 0) {
+                    java.math.BigDecimal wholsaleRateBd = java.math.BigDecimal.valueOf(wholesaleRate);
+                    java.math.BigDecimal valueAtWholesaleRate = quantity.multiply(wholsaleRateBd).negate();
+                    itemFinanceDetails.setValueAtWholesaleRate(valueAtWholesaleRate);
+                    totalWholesaleValue = totalWholesaleValue.add(valueAtWholesaleRate);
+                }
+
+                // Set rates in the finance details
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    itemFinanceDetails.setCostRate(java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate()));
+                    itemFinanceDetails.setPurchaseRate(java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate()));
+                }
+                if (pharmaItem.getRetailRate() > 0) {
+                    itemFinanceDetails.setRetailSaleRate(java.math.BigDecimal.valueOf(pharmaItem.getRetailRate()));
+                }
+                if (wholesaleRate > 0) {
+                    itemFinanceDetails.setWholesaleRate(java.math.BigDecimal.valueOf(wholesaleRate));
+                }
+            }
+
+            // Set quantity in finance details
+            itemFinanceDetails.setQuantity(quantity);
+            itemFinanceDetails.setTotalQuantity(quantity);
+
+            // Save or update the bill item (which will cascade to finance details)
+            billItemFacade.edit(billItem);
+        }
+
+        // Update bill level aggregated values
+        BillFinanceDetails billFinanceDetails = bill.getBillFinanceDetails();
+        billFinanceDetails.setTotalCostValue(totalCostValue);
+        billFinanceDetails.setTotalPurchaseValue(totalPurchaseValue);
+        billFinanceDetails.setTotalRetailSaleValue(totalRetailSaleValue);
+        billFinanceDetails.setTotalWholesaleValue(totalWholesaleValue);
+
+        // Save or update the bill (which will cascade to finance details)
+        billFacade.edit(bill);
     }
 
 }
