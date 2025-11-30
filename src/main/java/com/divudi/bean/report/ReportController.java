@@ -3138,6 +3138,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
             case "Sale ":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
+            case "Add to Stock Bills":
+                return "/reports/inventoryReports/add_to_stock_bills?faces-redirect=true";
             case "Closing Stock":
             case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
