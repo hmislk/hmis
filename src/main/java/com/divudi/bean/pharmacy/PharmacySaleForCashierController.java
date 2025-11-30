@@ -2447,6 +2447,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             if (managedBill != null) {
                 calculateAndRecordCostingValues(managedBill);
                 setPreBill((PreBill) managedBill);
+            } else {
+                // CRITICAL: Log when bill reload fails - possible concurrent delete or data corruption
+                System.out.println("CRITICAL WARNING: Failed to reload Bill with ID: " + getPreBill().getId());
+                System.out.println("Skipping costing calculations - bill may have been deleted or data corrupted");
+                System.out.println("PreBill settlement will complete but without financial details");
             }
         }
 
@@ -4581,9 +4586,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             System.out.println("JPQL ERROR: " + e.getMessage());
             e.printStackTrace();
 
+            // Check if original bill exists before attempting fallback
+            if (bill == null) {
+                System.out.println("CRITICAL: Original bill is null, cannot use fallback loading");
+                System.out.println("Bill ID " + billId + " may have been deleted or does not exist");
+                return null;
+            }
+
             // Fallback: Force load collections manually
             System.out.println("Using fallback manual loading...");
-            if (bill != null && bill.getBillItems() != null) {
+            if (bill.getBillItems() != null) {
                 System.out.println("Forcing bill items load - count: " + bill.getBillItems().size());
                 for (BillItem bi : bill.getBillItems()) {
                     // Force lazy loading
@@ -4595,6 +4607,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                         }
                     }
                 }
+            } else {
+                System.out.println("WARNING: Fallback bill has no items to load");
             }
             return bill;
         }
