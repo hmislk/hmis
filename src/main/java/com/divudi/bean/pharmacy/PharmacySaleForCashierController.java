@@ -2426,7 +2426,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         // Calculate and record costing values for stock valuation after persistence
         // This ensures we have managed entities with valid IDs for proper cascade operations
-        Bill managedBill = getBillFacade().find(getPreBill().getId());
+        Bill managedBill = loadBillWithPharmaceuticalItems(getPreBill().getId());
         calculateAndRecordCostingValues(managedBill);
         setPreBill((PreBill) managedBill);  // Update reference with calculated finance details
 
@@ -4514,6 +4514,26 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     /**
+     * Load bill with all pharmaceutical item associations to avoid lazy loading issues.
+     * This is essential for financial calculations that require pharmaceutical item data.
+     *
+     * @param billId The ID of the bill to load
+     * @return Bill with all pharmaceutical associations loaded
+     */
+    private Bill loadBillWithPharmaceuticalItems(Long billId) {
+        String jpql = "SELECT b FROM Bill b "
+                + "JOIN FETCH b.billItems bi "
+                + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN FETCH pbi.itemBatch "
+                + "WHERE b.id = :billId";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+
+        return getBillFacade().findFirstByJpql(jpql, params);
+    }
+
+    /**
      * Calculate and record costing values for stock valuation.
      * Creates BillFinanceDetails and BillItemFinanceDetails with proper financial calculations.
      *
@@ -4548,6 +4568,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             BillItemFinanceDetails itemFinanceDetails = billItem.getBillItemFinanceDetails();
             if (itemFinanceDetails == null) {
                 itemFinanceDetails = new BillItemFinanceDetails();
+                itemFinanceDetails.setCreatedAt(new Date());
                 itemFinanceDetails.setBillItem(billItem);
                 billItem.setBillItemFinanceDetails(itemFinanceDetails);
             }
@@ -4619,8 +4640,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             itemFinanceDetails.setQuantity(quantity);
             itemFinanceDetails.setTotalQuantity(quantity);
 
-            // Save or update the bill item (which will cascade to finance details)
-            billItemFacade.edit(billItem);
+        }
+
+        // Save all bill items with their finance details after calculations
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem != null && billItem.getBillItemFinanceDetails() != null) {
+                billItemFacade.edit(billItem);
+            }
         }
 
         // Update bill level aggregated values
