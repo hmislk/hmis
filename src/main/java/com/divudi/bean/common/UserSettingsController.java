@@ -982,6 +982,96 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("pharmacy_department_stock_by_batch", settings);
     }
 
+    // Page: creditCompanyOpdCreditSettleBills
+
+    // Column: billNo
+    public boolean isCreditCompanyOpdCreditSettleBillsBillNoVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "billNo");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsBillNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("billNo", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
+    // Column: billType
+    public boolean isCreditCompanyOpdCreditSettleBillsBillTypeVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "billType");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsBillTypeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("billType", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
+    // Column: paymentMethod
+    public boolean isCreditCompanyOpdCreditSettleBillsPaymentMethodVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "paymentMethod");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsPaymentMethodVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("paymentMethod", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
+    // Column: dateTime
+    public boolean isCreditCompanyOpdCreditSettleBillsDateTimeVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "dateTime");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsDateTimeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("dateTime", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
+    // Column: user
+    public boolean isCreditCompanyOpdCreditSettleBillsUserVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "user");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsUserVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("user", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
+    // Column: status
+    public boolean isCreditCompanyOpdCreditSettleBillsStatusVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "status");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsStatusVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("status", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
+    // Column: netValue
+    public boolean isCreditCompanyOpdCreditSettleBillsNetValueVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "netValue");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsNetValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("netValue", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
+    // Column: action
+    public boolean isCreditCompanyOpdCreditSettleBillsActionVisible() {
+        return isColumnVisible("creditCompanyOpdCreditSettleBills", "action");
+    }
+
+    public void setCreditCompanyOpdCreditSettleBillsActionVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("creditCompanyOpdCreditSettleBills");
+        settings.setColumnVisible("action", visible);
+        saveColumnVisibility("creditCompanyOpdCreditSettleBills", settings);
+    }
+
     // Getters and Setters
 
     public ConfigOptionFacade getConfigOptionFacade() {

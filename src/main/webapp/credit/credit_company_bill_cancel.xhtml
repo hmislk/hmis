@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -17,12 +17,13 @@
                                     <h:outputText value="Cancellation" class="mt-2"/>
                                     <div class="d-flex gap-4">
                                         <p:inputText value="#{creditCompanyBillSearch.comment}" style="width: 500px;" placeholder="Enter a comment"/>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
                                             value="Cancel"
                                             icon="fa fa-cancel"
                                             class="ui-button-danger"
                                             style="width: 150px;"
+                                            disabled="#{creditCompanyBillSearch.bill.cancelled eq true or creditCompanyBillSearch.bill.refunded eq true or creditCompanyBillSearch.billACancellationBill}"
                                             action="#{creditCompanyBillSearch.cancelBill()}" >
                                         </p:commandButton>
                                     </div>
@@ -63,6 +64,24 @@
                                 </div>
                             </div>
 
+                            <!-- Status Warning Messages -->
+                            <div class="row mt-2" style="margin-bottom: 15px;">
+                                <div class="col-12">
+                                    <p:outputLabel class="w-100 text-center bg-danger text-white p-2"
+                                                   value="This Bill is Already Cancelled - Cannot Cancel Again"
+                                                   rendered="#{creditCompanyBillSearch.bill.cancelled eq true}"
+                                                   style="display: block; border-radius: 4px;" />
+                                    <p:outputLabel class="w-100 text-center bg-danger text-white p-2"
+                                                   value="This Bill is Already Refunded - Cannot Cancel"
+                                                   rendered="#{creditCompanyBillSearch.bill.refunded eq true}"
+                                                   style="display: block; border-radius: 4px;" />
+                                    <p:outputLabel class="w-100 text-center bg-warning text-dark p-2"
+                                                   value="This is a Cancellation Bill - Cannot be Cancelled Again"
+                                                   rendered="#{creditCompanyBillSearch.billACancellationBill}"
+                                                   style="display: block; border-radius: 4px;" />
+                                </div>
+                            </div>
+
                             <p:panel header="Bill Item Detail" class="mt-3">
                                 <p:dataTable rowIndexVar="rowIndex" value="#{creditCompanyBillSearch.billItems}" var="b" >
                                     <p:column>
@@ -99,7 +118,11 @@
 
 
                     <h:panelGroup rendered="#{creditCompanyBillSearch.printPreview}" >
-                        <bi:CreditReceiveBill controller="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="false"/> 
+                        <bi:credit_settlement_cancellation_print
+                            controller="#{creditCompanyBillSearch}"
+                            originalBill="#{creditCompanyBillSearch.bill}"
+                            cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                            duplicate="false"/>
                     </h:panelGroup>
 
 
