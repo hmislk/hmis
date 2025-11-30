@@ -439,27 +439,27 @@ public class PharmacyBean {
                     BigDecimal costRate = BigDecimal.valueOf(pharmaItem.getItemBatch().getCostRate());
                     newFinanceDetails.setCostRate(costRate);
                     newFinanceDetails.setValueAtCostRate(quantity.multiply(costRate));
-                } else if (pharmaItem.getPurchaseRate() != null && pharmaItem.getPurchaseRate() > 0) {
+                } else if (pharmaItem.getPurchaseRate() > 0) {
                     BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
                     newFinanceDetails.setCostRate(purchaseRate);
                     newFinanceDetails.setValueAtCostRate(quantity.multiply(purchaseRate));
                 }
 
-                if (pharmaItem.getPurchaseRate() != null && pharmaItem.getPurchaseRate() > 0) {
+                if (pharmaItem.getPurchaseRate() > 0) {
                     BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
                     newFinanceDetails.setPurchaseRate(purchaseRate);
                     newFinanceDetails.setValueAtPurchaseRate(quantity.multiply(purchaseRate));
                 }
 
-                if (pharmaItem.getRetailRate() != null && pharmaItem.getRetailRate() > 0) {
+                if (pharmaItem.getRetailRate() > 0) {
                     BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
                     newFinanceDetails.setRetailSaleRate(retailRate);
                     newFinanceDetails.setValueAtRetailRate(quantity.multiply(retailRate));
                 }
 
-                double wholesaleRate = pharmaItem.getWholesaleRate() != null && pharmaItem.getWholesaleRate() > 0
+                double wholesaleRate = pharmaItem.getWholesaleRate() > 0
                         ? pharmaItem.getWholesaleRate()
-                        : (pharmaItem.getRetailRate() != null && pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
+                        : (pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
 
                 if (wholesaleRate > 0) {
                     BigDecimal wholesaleRateBd = BigDecimal.valueOf(wholesaleRate);
