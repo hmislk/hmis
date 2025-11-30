@@ -127,11 +127,10 @@
                                     <div>
                                         <p:commandButton
                                             value="Print"
-                                            ajax="false"
-                                            action="#"
+                                            icon="fas fa-print"
                                             class="ui-button-info mx-2"
-                                            icon="fas fa-print">
-                                            <p:printer target="printTarget" />
+                                            ajax="false">
+                                            <p:printer target="gpCreditCancellationPreview" />
                                         </p:commandButton>
                                         <p:commandButton
                                             rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
@@ -143,13 +142,79 @@
                                     </div>
                                 </div>
                             </f:facet>
-                            <div id="printTarget">
-                                <bi:credit_settlement_cancellation_print
-                                    controller="#{creditCompanyBillSearch}"
-                                    originalBill="#{creditCompanyBillSearch.bill}"
-                                    cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
-                                    duplicate="false"/>
-                            </div>
+                            <h:panelGroup id="gpCreditCancellationPreview">
+                                <!-- A4 Paper Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is A4 Paper', true)}">
+                                    <bi:credit_settlement_cancellation_print_a4
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- POS Paper Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is POS Paper', false)}">
+                                    <bi:credit_settlement_cancellation_print_pos
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Five Five Paper Format (Default - existing component) -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is FiveFive Paper', true)}">
+                                    <bi:credit_settlement_cancellation_print
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Custom Format 1 -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is Custom 1', false)}">
+                                    <bi:credit_settlement_cancellation_print_custom1
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Custom Format 2 -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is Custom 2', false)}">
+                                    <bi:credit_settlement_cancellation_print_custom2
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Custom Format 3 -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is Custom 3', false)}">
+                                    <bi:credit_settlement_cancellation_print_custom3
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- POS with Header Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is POS Header Paper', false)}">
+                                    <bi:credit_settlement_cancellation_print_pos_header
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- POS Custom 1 Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is POS Custom 1', false)}">
+                                    <bi:credit_settlement_cancellation_print_pos_custom1
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
                         </p:panel>
                     </h:panelGroup>
 
