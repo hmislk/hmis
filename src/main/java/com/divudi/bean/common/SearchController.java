@@ -264,6 +264,7 @@ public class SearchController implements Serializable {
     private double allCashierSummaryExcludedTotal;
     private List<PaymentMethod> allCashierCollectionIncludedMethods = new ArrayList<>();
     private List<PaymentMethod> allCashierCollectionExcludedMethods = new ArrayList<>();
+    private List<PaymentMethod> nonCreditPaymentMethods;
     private List<Bill> bills;
     private List<Bill> filteredBills;
     // DTO list for all bill list report optimization
@@ -2313,6 +2314,13 @@ public class SearchController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public List<PaymentMethod> getNonCreditPaymentMethods() {
+        if (nonCreditPaymentMethods == null) {
+            nonCreditPaymentMethods = PaymentMethod.getNonCreditPaymentMethods();
+        }
+        return nonCreditPaymentMethods;
     }
 
     public List<PaymentMethod> getAllCashierCollectionIncludedMethods() {
@@ -16231,8 +16239,22 @@ public class SearchController implements Serializable {
             collectionForTheDay += getSafeTotal(opdServiceCollection);
 
             // Generate pharmacy collection and add to the main bundle
-            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
+            List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS);
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+            List<PaymentMethod> pharmacyPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollectionWithPaymentBreakdown(pharmacyBillTypes, pharmacyPaymentMethods);
+            pharmacyCollection.setBundleType("pharmacyCollection");
+            pharmacyCollection.setName("Pharmacy Sale");
+            System.out.println("pharmacyCollection = " + pharmacyCollection);
+            System.out.println("pharmacyCollection.getName() = " + pharmacyCollection.getName());
+            System.out.println("pharmacyCollection.getBundleType() = " + pharmacyCollection.getBundleType());
+            System.out.println("pharmacyCollection.getTotal() = " + pharmacyCollection.getTotal());
+            System.out.println("pharmacyCollection.getReportTemplateRows().size() = " + pharmacyCollection.getReportTemplateRows().size());
             bundle.getBundles().add(pharmacyCollection);
+            System.out.println("Added pharmacy collection to main bundle. Total bundles: " + bundle.getBundles().size());
             collectionForTheDay += getSafeTotal(pharmacyCollection);
 
             // Generate collecting centre collection and add to the main bundle
@@ -18820,13 +18842,35 @@ public class SearchController implements Serializable {
     public ReportTemplateRowBundle generatePharmacyCollection() {
         ReportTemplateRowBundle pb;
         //TODO: Use a List of Bill Type Atomics instead of calling the findByServiceTypeAndPaymentCategory
-        List<BillTypeAtomic> pharmacyBillTypesAtomics = BillTypeAtomic.findByServiceTypeAndPaymentCategory(ServiceType.PHARMACY,
-                PaymentCategory.NON_CREDIT_COLLECTION);
-        List<PaymentMethod> ppms = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+        List<BillTypeAtomic> pharmacyBillTypesAtomics = new ArrayList<>();
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Retail Sale
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS); // Retail Sale
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK); // Retail Sale
+        
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED); // Retail Sale Cancellations
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED); // Retail Sale Cancellations
+        
+        
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
+        
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Cancellation of Accept Payments at cashier
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Cancellation of Accept Payments at cashier
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Cancellation of Accept Payments at cashier
+
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Retail Sale Cancellations
+        
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Cancellation of Accept Payments at cashier
+        
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Return Items and Payment
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Refund for Returns
+        
+        
+        
+        List<PaymentMethod> nonCreditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT); // All Payment methods except credit payment method should be here . ie credit, staff
 
         pb = reportTemplateController.generateValueByDepartmentReport(
                 pharmacyBillTypesAtomics,
-                ppms,
+                nonCreditPaymentMethods,
                 fromDate,
                 toDate,
                 institution,
@@ -18836,7 +18880,9 @@ public class SearchController implements Serializable {
         pb.setBundleType("pharmacyCollection");
         double pharmacyCollectionTotal = 0.0;
         for (ReportTemplateRow row : pb.getReportTemplateRows()) {
-            pharmacyCollectionTotal += row.getRowValue();
+            System.out.println("row = " + row);
+            pharmacyCollectionTotal += row.getTotal();
+            System.out.println("row.getTotal() = " + row.getTotal());
         }
         pb.setTotal(pharmacyCollectionTotal);
         return pb;
