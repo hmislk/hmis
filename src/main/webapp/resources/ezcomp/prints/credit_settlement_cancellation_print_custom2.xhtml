@@ -177,12 +177,14 @@
                     <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt;">Refund Method:</td>
                     <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt;"><h:outputLabel value="#{cc.attrs.cancellationBill.paymentMethod}"/></td>
                 </tr>
-                <tr rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
-                    <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt; vertical-align: top;">Reason:</td>
-                    <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt; font-style: italic;">
-                        <h:outputLabel value="#{cc.attrs.cancellationBill.comments}" />
-                    </td>
-                </tr>
+                <ui:fragment rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt; vertical-align: top;">Reason:</td>
+                        <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt; font-style: italic;">
+                            <h:outputLabel value="#{cc.attrs.cancellationBill.comments}" />
+                        </td>
+                    </tr>
+                </ui:fragment>
             </table>
 
             <!-- Financial Summary -->

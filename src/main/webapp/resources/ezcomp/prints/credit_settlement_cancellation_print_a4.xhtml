@@ -170,12 +170,16 @@
                     </tr>
                     <tr>
                         <td style="padding: 8px; font-weight: bold;">Refund Method:</td>
-                        <td style="padding: 8px;"><h:outputLabel value="#{cc.attrs.cancellationBill.paymentMethod}"/></td>
-                        <td style="padding: 8px; font-weight: bold;" rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">Reason:</td>
-                        <td style="padding: 8px; font-style: italic;" rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
-                            <h:outputLabel value="#{cc.attrs.cancellationBill.comments}" />
-                        </td>
+                        <td style="padding: 8px;" colspan="3"><h:outputLabel value="#{cc.attrs.cancellationBill.paymentMethod}"/></td>
                     </tr>
+                    <ui:fragment rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
+                        <tr>
+                            <td style="padding: 8px; font-weight: bold;">Reason:</td>
+                            <td style="padding: 8px; font-style: italic;" colspan="3">
+                                <h:outputLabel value="#{cc.attrs.cancellationBill.comments}" />
+                            </td>
+                        </tr>
+                    </ui:fragment>
                 </table>
 
                 <!-- Refund Breakdown -->
