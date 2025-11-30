@@ -765,39 +765,91 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 //    }
 //
     public List<Bill> completeOpdCreditPackageBatchBill(String qry) {
-        System.out.println("completeOpdCreditPackageBatchBill");
+        System.out.println("=================== completeOpdCreditPackageBatchBill START ===================");
+        System.out.println("Input query: " + qry);
         List<Bill> a = null;
         String sql;
         HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from BilledBill c "
-                    + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                    + " OR (c.balance IS NULL AND (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val)) "
-                    + " and c.billTypeAtomic in :btas "
-                    + " and c.paymentMethod= :pm "
-                    + " and c.cancelledBill is null "
-                    + " and c.refundedBill is null "
-                    + " and c.retired=false "
-                    + " and ((c.deptId) like :q or"
-                    + " (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
-            List<BillTypeAtomic> btas = new ArrayList<>();
-            btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            hash.put("btas", btas);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 1.0);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            System.out.println("qry = " + qry);
-            System.out.println("hash = " + hash);
-            a = getFacade().findByJpql(sql, hash);
-            System.out.println("a = " + a);
+
+        try {
+            if (qry != null) {
+                // Try simple version first without COALESCE
+                System.out.println("Trying simple query without COALESCE...");
+                sql = "select c from BilledBill c "
+                        + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
+                        + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                        + " and c.billTypeAtomic in :btas "
+                        + " and c.paymentMethod= :pm "
+                        + " and c.cancelledBill is null "
+                        + " and c.refundedBill is null "
+                        + " and c.retired=false "
+                        + " and ((c.deptId) like :q or "
+                        + " (c.patient.person.name) like :q "
+                        + " or (c.creditCompany.name) like :q ) "
+                        + " order by c.deptId";
+
+                List<BillTypeAtomic> btas = new ArrayList<>();
+                btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                hash.put("btas", btas);
+                hash.put("pm", PaymentMethod.Credit);
+                hash.put("val", 1.0);
+                hash.put("q", "%" + qry.toUpperCase() + "%");
+
+                System.out.println("JPQL Query: " + sql);
+                System.out.println("Parameters: " + hash);
+                System.out.println("About to execute query...");
+
+                a = getFacade().findByJpql(sql, hash);
+
+                System.out.println("Query executed successfully");
+                System.out.println("Result count: " + (a != null ? a.size() : "NULL"));
+                if (a != null && !a.isEmpty()) {
+                    for (Bill bill : a) {
+                        Double balance = bill.getBalance();
+                        double dueAmount = (balance != null) ? balance.doubleValue() :
+                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                        System.out.println("Found bill ID: " + bill.getId() + ", deptId: " + bill.getDeptId() + ", due amount: " + dueAmount);
+                    }
+                } else {
+                    System.out.println("No results found - trying fallback query...");
+                    // Try even simpler query but with balance condition
+                    String simpleSql = "select c from BilledBill c "
+                            + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
+                            + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                            + " and c.billTypeAtomic in :btas "
+                            + " and c.paymentMethod= :pm "
+                            + " and c.retired=false "
+                            + " and c.deptId like :q "
+                            + " order by c.deptId ";
+
+                    // Create new parameter map including 'val' parameter for balance condition
+                    HashMap fallbackHash = new HashMap();
+                    fallbackHash.put("btas", hash.get("btas"));
+                    fallbackHash.put("pm", hash.get("pm"));
+                    fallbackHash.put("val", hash.get("val"));
+                    fallbackHash.put("q", hash.get("q"));
+
+                    System.out.println("Fallback JPQL: " + simpleSql);
+                    System.out.println("Fallback parameters: " + fallbackHash);
+                    a = getFacade().findByJpql(simpleSql, fallbackHash);
+                    System.out.println("Fallback result count: " + (a != null ? a.size() : "NULL"));
+                }
+            } else {
+                System.out.println("Query parameter is NULL - skipping query execution");
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR in completeOpdCreditPackageBatchBill: " + e.getMessage());
+            e.printStackTrace();
         }
+
         if (a == null) {
             a = new ArrayList<>();
+            System.out.println("Result was null, returning empty list");
         }
+
+        System.out.println("=================== completeOpdCreditPackageBatchBill END ===================");
         return a;
     }
 
@@ -809,16 +861,16 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (qry != null) {
             jpql = "select c from BilledBill c "
                     + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                    + " OR (c.balance IS NULL AND (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val)) "
+                    + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
                     + " and c.refundedBill is null "
                     + " and c.retired=false "
-                    + " and ((c.deptId) like :q or"
+                    + " and ((c.deptId) like :q or "
                     + " (c.patient.person.name) like :q "
                     + " or (c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
+                    + " order by c.deptId";
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -873,40 +925,91 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public List<Bill> completePharmacyCreditBill(String qry) {
+        System.out.println("=================== completePharmacyCreditBill START ===================");
+        System.out.println("Input query: " + qry);
         List<Bill> a = null;
         String sql;
         HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select b from BilledBill b "
-                    + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                    + " OR (b.balance IS NULL AND (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val)) "
-                    + " and b.billType in :btps "
-                    + " and b.paymentMethod= :pm "
-                    + " and b.institution=:ins "
-                    //                    + " and b.department=:dep "
-                    + " and b.retired=false "
-                    + " and b.refunded=false "
-                    + " and b.cancelled=false "
-                    + " and b.toStaff is null "
-                    + " and ( (b.insId) like :q or "
-                    + " (b.deptId) like :q or "
-                    + " (b.toInstitution.name) like :q ) "
-                    + " order by b.deptId ";
-            hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale, BillType.PharmacyPre}));
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 1.0);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            hash.put("ins", getSessionController().getInstitution());
-//            hash.put("dep", getSessionController().getDepartment());
-//            //// // System.out.println("hash = " + hash);
-//            //// // System.out.println("sql = " + sql);
-//            //// // System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
-//            //// // System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
-            a = getFacade().findByJpql(sql, hash);
+
+        try {
+            if (qry != null) {
+                // Try simple version first without COALESCE
+                System.out.println("Trying simple query without COALESCE...");
+                sql = "select b from BilledBill b "
+                        + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
+                        + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val) "
+                        + " and b.billType in :btps "
+                        + " and b.paymentMethod= :pm "
+                        + " and b.retired=false "
+                        + " and b.refunded=false "
+                        + " and b.cancelled=false "
+                        + " and b.toStaff is null "
+                        + " and ( (b.insId like :q) or "
+                        + " (b.deptId like :q) or "
+                        + " (b.toInstitution.name like :q) ) "
+                        + " order by b.deptId ";
+
+                hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale, BillType.PharmacyPre}));
+                hash.put("pm", PaymentMethod.Credit);
+                hash.put("val", 1.0);
+                hash.put("q", "%" + qry.toUpperCase() + "%");
+
+                System.out.println("JPQL Query: " + sql);
+                System.out.println("Parameters: " + hash);
+                System.out.println("About to execute query...");
+
+                a = getFacade().findByJpql(sql, hash);
+
+                System.out.println("Query executed successfully");
+                System.out.println("Result count: " + (a != null ? a.size() : "NULL"));
+                if (a != null && !a.isEmpty()) {
+                    for (Bill bill : a) {
+                        Double balance = bill.getBalance();
+                        double dueAmount = (balance != null) ? balance.doubleValue() :
+                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                        System.out.println("Found bill ID: " + bill.getId() + ", deptId: " + bill.getDeptId() + ", due amount: " + dueAmount);
+                    }
+                } else {
+                    System.out.println("No results found - trying fallback query...");
+                    // Try even simpler query but with balance condition
+                    String simpleSql = "select b from BilledBill b "
+                            + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
+                            + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val) "
+                            + " and b.billType in :btps "
+                            + " and b.paymentMethod= :pm "
+                            + " and b.retired=false "
+                            + " and b.refunded=false "
+                            + " and b.cancelled=false "
+                            + " and b.toStaff is null "
+                            + " and b.deptId like :q "
+                            + " order by b.deptId ";
+
+                    // Create new parameter map including 'val' parameter for balance condition
+                    HashMap fallbackHash = new HashMap();
+                    fallbackHash.put("btps", hash.get("btps"));
+                    fallbackHash.put("pm", hash.get("pm"));
+                    fallbackHash.put("val", hash.get("val"));
+                    fallbackHash.put("q", hash.get("q"));
+
+                    System.out.println("Fallback JPQL: " + simpleSql);
+                    System.out.println("Fallback parameters: " + fallbackHash);
+                    a = getFacade().findByJpql(simpleSql, fallbackHash);
+                    System.out.println("Fallback result count: " + (a != null ? a.size() : "NULL"));
+                }
+            } else {
+                System.out.println("Query parameter is NULL - skipping query execution");
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR in completePharmacyCreditBill: " + e.getMessage());
+            e.printStackTrace();
         }
+
         if (a == null) {
             a = new ArrayList<>();
+            System.out.println("Result was null, returning empty list");
         }
+
+        System.out.println("=================== completePharmacyCreditBill END ===================");
         return a;
     }
 

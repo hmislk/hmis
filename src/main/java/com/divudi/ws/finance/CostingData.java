@@ -265,6 +265,18 @@ public class CostingData {
         dto.setTotal(bill.getTotal());
         dto.setBillFinanceDetailsId(bill.getBillFinanceDetails() != null ? bill.getBillFinanceDetails().getId() : null);
 
+        // Set additional fields from completion queries
+        dto.setBalance(bill.getBalance());
+        dto.setVat(bill.getVat());
+        dto.setPaidAmount(bill.getPaidAmount());
+        dto.setPaymentMethod(bill.getPaymentMethod() != null ? bill.getPaymentMethod().toString() : null);
+        dto.setCancelledBillId(bill.getCancelledBill() != null ? bill.getCancelledBill().getId() : null);
+        dto.setRefundedBillId(bill.getRefundedBill() != null ? bill.getRefundedBill().getId() : null);
+        dto.setRetired(bill.isRetired());
+        dto.setPatientName(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : null);
+        dto.setCreditCompanyName(bill.getCreditCompany() != null ? bill.getCreditCompany().getName() : null);
+        dto.setDeptId(bill.getDeptId());
+
         // Convert Bill Finance Details
         if (bill.getBillFinanceDetails() != null) {
             dto.setBillFinanceDetails(convertBillFinanceDetailsToDTO(bill.getBillFinanceDetails()));
