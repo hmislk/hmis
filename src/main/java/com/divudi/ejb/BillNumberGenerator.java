@@ -3567,7 +3567,7 @@ public class BillNumberGenerator {
         }
 
         // Use institution-wide numbering for InsId (different counter from DeptId)
-        BillNumber billNumber = fetchLastBillNumberForYearInstitutionWide(dep.getInstitution(), billType);
+        BillNumber billNumber = fetchLastBillNumberForYearInstitutionOnly(dep.getInstitution(), billType);
 
         // Get and increment the bill number
         Long dd = billNumber.getLastBillNumber() + 1;
