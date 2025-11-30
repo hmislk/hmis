@@ -716,8 +716,63 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         getSaleBill().setReferenceBill(getPreBill());
 
-        getSaleBill().setInsId(getPreBill().getInsId());
-        getSaleBill().setDeptId(getPreBill().getDeptId());
+        // Check configuration for separate bill number generation
+        boolean generateSeparateBillNumbers = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Separate Bill Numbers for Cashier Settlement - Pharmacy", false);
+
+        if (generateSeparateBillNumbers) {
+            try {
+                // Generate new bill numbers for cashier settlement
+                String newDeptId = billNumberBean.cashierSettlementBillNumberGenerator(getSaleBill());
+                String newInsId = billNumberBean.cashierSettlementInsIdGenerator(getSaleBill());
+
+                // Validate generated bill numbers
+                if (newDeptId == null || newDeptId.trim().isEmpty()) {
+                    System.err.println("WARNING: Failed to generate DeptId for cashier settlement. Using original bill number: " + getPreBill().getDeptId());
+                    newDeptId = getPreBill().getDeptId();
+                }
+                if (newInsId == null || newInsId.trim().isEmpty()) {
+                    System.err.println("WARNING: Failed to generate InsId for cashier settlement. Using original bill number: " + getPreBill().getInsId());
+                    newInsId = getPreBill().getInsId();
+                }
+
+                getSaleBill().setDeptId(newDeptId);
+                getSaleBill().setInsId(newInsId);
+
+                // Comprehensive audit logging
+                System.out.println("CASHIER_SETTLEMENT_BILL_NUMBER_GENERATION: " +
+                    "User=" + (getSessionController().getLoggedUser() != null ? getSessionController().getLoggedUser().getWebUserPerson() : "Unknown") +
+                    ", Department=" + (getSaleBill().getDepartment() != null ? getSaleBill().getDepartment().getName() : "Unknown") +
+                    ", Institution=" + (getSaleBill().getInstitution() != null ? getSaleBill().getInstitution().getName() : "Unknown") +
+                    ", OriginalBillNumber=" + getPreBill().getDeptId() +
+                    ", NewDeptId=" + newDeptId +
+                    ", NewInsId=" + newInsId +
+                    ", PaymentMethod=" + getSaleBill().getPaymentMethod() +
+                    ", NetTotal=" + getSaleBill().getNetTotal() +
+                    ", Timestamp=" + new Date());
+            } catch (Exception e) {
+                // Error handling: fallback to original behavior
+                System.err.println("ERROR: Exception occurred during cashier settlement bill number generation. " +
+                    "Falling back to original bill numbers. Error: " + e.getMessage());
+                e.printStackTrace();
+
+                getSaleBill().setInsId(getPreBill().getInsId());
+                getSaleBill().setDeptId(getPreBill().getDeptId());
+
+                JsfUtil.addErrorMessage("Warning: Bill number generation failed. Using original bill numbers.");
+            }
+        } else {
+            // Current behavior: copy from PreBill
+            getSaleBill().setInsId(getPreBill().getInsId());
+            getSaleBill().setDeptId(getPreBill().getDeptId());
+
+            // Log for audit trail
+            System.out.println("CASHIER_SETTLEMENT_BILL_NUMBER_COPY: " +
+                "OriginalBillNumber=" + getPreBill().getDeptId() +
+                ", CopiedDeptId=" + getSaleBill().getDeptId() +
+                ", CopiedInsId=" + getSaleBill().getInsId() +
+                ", Timestamp=" + new Date());
+        }
 
         updateBalanceInBill(preBill, getSaleBill(), preBill.getPaymentMethod(), paymentMethodData);
 

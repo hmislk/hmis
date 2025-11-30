@@ -3346,4 +3346,246 @@ public class BillNumberGenerator {
         return getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
     }
 
+    // ***** CASHIER SETTLEMENT BILL NUMBER GENERATION METHODS *****
+
+    /**
+     * Main method for generating cashier settlement bill numbers based on configuration
+     * @param bill The BilledBill being created by cashier settlement
+     * @return Generated bill number string
+     */
+    public String cashierSettlementBillNumberGenerator(Bill bill) {
+        if (bill == null || bill.getDepartment() == null) {
+            // Fallback: copy from reference bill
+            return bill.getReferenceBill() != null ? bill.getReferenceBill().getDeptId() : "";
+        }
+
+        // Check configuration for which strategy to use
+        if (configOptionApplicationController.getBooleanValueByKey(
+            "Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            return cashierSettlementBillNumberGeneratorWithPrefixDeptInsYear(bill);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            return cashierSettlementBillNumberGeneratorWithPrefixInsDeptYear(bill);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number", false)) {
+            return cashierSettlementBillNumberGeneratorWithPrefixInsYear(bill);
+        }
+
+        // Default: copy from reference bill (current behavior)
+        return bill.getReferenceBill() != null ? bill.getReferenceBill().getDeptId() : "";
+    }
+
+    /**
+     * Generate cashier settlement institution ID based on configuration
+     * @param bill The BilledBill being created by cashier settlement
+     * @return Generated institution ID string
+     */
+    public String cashierSettlementInsIdGenerator(Bill bill) {
+        if (bill == null || bill.getDepartment() == null) {
+            // Fallback: copy from reference bill
+            return bill.getReferenceBill() != null ? bill.getReferenceBill().getInsId() : "";
+        }
+
+        // Check if using institution-wide numbering strategy
+        if (configOptionApplicationController.getBooleanValueByKey(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number", false)) {
+            return cashierSettlementInsIdGeneratorInstitutionWide(bill);
+        } else if (configOptionApplicationController.getBooleanValueByKey(
+            "Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                   configOptionApplicationController.getBooleanValueByKey(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            // Use same number as department to avoid consuming counter twice
+            return cashierSettlementBillNumberGenerator(bill);
+        }
+
+        // Default: copy from reference bill (current behavior)
+        return bill.getReferenceBill() != null ? bill.getReferenceBill().getInsId() : "";
+    }
+
+    /**
+     * Strategy 1: Prefix + Department Code + Institution Code + Year + Yearly Number
+     */
+    private String cashierSettlementBillNumberGeneratorWithPrefixDeptInsYear(Bill bill) {
+        Department dep = bill.getDepartment();
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        // Get custom prefix from configuration
+        String customPrefix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+        if (customPrefix == null || customPrefix.trim().isEmpty()) {
+            customPrefix = "CS";
+        }
+
+        // Use atomic bill type for settled bills
+        BillTypeAtomic billType = BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+
+        // Get bill suffix for this atomic type
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = customPrefix;
+        }
+
+        BillNumber billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string - Format: PREFIX/DEPT_CODE/INS_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getDepartmentCode());
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
+    }
+
+    /**
+     * Strategy 2: Prefix + Institution Code + Department Code + Year + Yearly Number
+     */
+    private String cashierSettlementBillNumberGeneratorWithPrefixInsDeptYear(Bill bill) {
+        Department dep = bill.getDepartment();
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        // Get custom prefix from configuration
+        String customPrefix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+        if (customPrefix == null || customPrefix.trim().isEmpty()) {
+            customPrefix = "CS";
+        }
+
+        // Use atomic bill type for settled bills
+        BillTypeAtomic billType = BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+
+        // Get bill suffix for this atomic type
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = customPrefix;
+        }
+
+        BillNumber billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string - Format: PREFIX/INS_CODE/DEPT_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getDepartmentCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
+    }
+
+    /**
+     * Strategy 3: Prefix + Institution Code + Year + Yearly Number (Institution-wide)
+     */
+    private String cashierSettlementBillNumberGeneratorWithPrefixInsYear(Bill bill) {
+        Department dep = bill.getDepartment();
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        // Get custom prefix from configuration
+        String customPrefix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+        if (customPrefix == null || customPrefix.trim().isEmpty()) {
+            customPrefix = "CS";
+        }
+
+        // Use atomic bill type for settled bills
+        BillTypeAtomic billType = BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+
+        // Get bill suffix for this atomic type
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = customPrefix;
+        }
+
+        // Use institution-wide numbering (department = null)
+        BillNumber billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string - Format: PREFIX/INS_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
+    }
+
+    /**
+     * Institution-wide InsId generator for cashier settlement bills
+     */
+    private String cashierSettlementInsIdGeneratorInstitutionWide(Bill bill) {
+        Department dep = bill.getDepartment();
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        // Get custom prefix from configuration
+        String customPrefix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+        if (customPrefix == null || customPrefix.trim().isEmpty()) {
+            customPrefix = "CS";
+        }
+
+        // Use atomic bill type for settled bills
+        BillTypeAtomic billType = BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+
+        // Get bill suffix for this atomic type
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = customPrefix;
+        }
+
+        // Use institution-wide numbering for InsId (different counter from DeptId)
+        BillNumber billNumber = fetchLastBillNumberForYearInstitutionWide(dep.getInstitution(), billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the institution ID string - Format: PREFIX/INS_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
+    }
+
 }
