@@ -404,9 +404,12 @@ public class PharmacyConfigController implements Serializable {
             // Credit Settlement Cancellation Settings
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is A4 Paper", creditSettlementCancellationA4);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Paper", creditSettlementCancellationPos);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is FiveFive Paper", creditSettlementCancellationFiveFive);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 1", creditSettlementCancellationCustom1);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 2", creditSettlementCancellationCustom2);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", creditSettlementCancellationCustom3);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", creditSettlementCancellationPosHeader);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", creditSettlementCancellationPosCustom1);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
