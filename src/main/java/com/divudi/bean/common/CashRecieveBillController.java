@@ -1957,6 +1957,7 @@ public class CashRecieveBillController implements Serializable {
      * @return List of bills matching the query from all bill types
      */
     public List<Bill> completeCombinedCreditBills(String query) {
+
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
@@ -1964,22 +1965,27 @@ public class CashRecieveBillController implements Serializable {
         // Create combined list to hold results from all bill types
         List<Bill> combinedResults = new ArrayList<>();
 
-        // Get results from OPD Batch bills
-        List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
-        if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
-            combinedResults.addAll(opdBatchBills);
-        }
+        try {
+            // Get results from OPD Batch bills
+            List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
+            if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
+                combinedResults.addAll(opdBatchBills);
+            }
 
-        // Get results from OPD Package bills
-        List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
-        if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
-            combinedResults.addAll(opdPackageBills);
-        }
+            // Get results from OPD Package bills
+            List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
+            if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
+                combinedResults.addAll(opdPackageBills);
+            }
 
-        // Get results from Pharmacy bills
-        List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
-        if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
-            combinedResults.addAll(pharmacyBills);
+            // Get results from Pharmacy bills
+            List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
+            if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
+                combinedResults.addAll(pharmacyBills);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return combinedResults;
