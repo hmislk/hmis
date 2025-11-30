@@ -16262,12 +16262,11 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(ccCollection);
             collectionForTheDay += getSafeTotal(ccCollection);
 
-            // COMMENTED OUT: Duplicate processing of OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
-            // This section was causing duplicate counting - now handled in unified Outpatient Credit Settling section
             // Generate OPD Credit Company Payment Collection and add to the main bundle
-//            ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
-//            bundle.getBundles().add(opdCreditCompanyCollection);
-//            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
+            ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
+            bundle.getBundles().add(opdCreditCompanyCollection);
+            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
+
             // Generate Inward Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
             bundle.getBundles().add(inwardCreditCompanyCollection);
@@ -18846,26 +18845,18 @@ public class SearchController implements Serializable {
         pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Retail Sale
         pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS); // Retail Sale
         pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK); // Retail Sale
-        
+
         pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED); // Retail Sale Cancellations
         pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED); // Retail Sale Cancellations
-        
-        
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
-        
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Cancellation of Accept Payments at cashier
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Cancellation of Accept Payments at cashier
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Cancellation of Accept Payments at cashier
 
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Retail Sale Cancellations
-        
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Cancellation of Accept Payments at cashier
-        
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Return Items and Payment
-        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Refund for Returns
-        
-        
-        
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
+
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Return Item Payments
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Return Items and Payments
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Retail Sale Refund
+
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Sale Without Stock Refund
+
         List<PaymentMethod> nonCreditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT); // All Payment methods except credit payment method should be here . ie credit, staff
 
         pb = reportTemplateController.generateValueByDepartmentReport(
@@ -18949,6 +18940,9 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> ccCollection = new ArrayList<>();
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+
+        ccCollection.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
 
