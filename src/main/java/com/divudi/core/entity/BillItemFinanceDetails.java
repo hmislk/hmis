@@ -27,7 +27,7 @@ public class BillItemFinanceDetails implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToOne(mappedBy = "billItemFinanceDetails", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "billItemFinanceDetails")
     private BillItem billItem;
 
     @Temporal(TemporalType.TIMESTAMP)
