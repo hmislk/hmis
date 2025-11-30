@@ -1,0 +1,300 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:panelGroup rendered="#{(!webUserController.hasPrivilege('DashBoardMenu') and !webUserController.hasPrivilege('DashBoardWorksheet'))}">
+            <na:not_authorize />
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardWorksheet'))}">
+            <h3><h:outputText value="WORK SHEETS" class="d-flex justify-content-center mt-4"/> </h3>
+            <h:panelGrid columns="6" class="w-100 mt-2" style="font-weight: bolder">
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="From Date"/>
+                    <p:datePicker 
+                        inputStyleClass="w-100" 
+                        id="fromDate" 
+                        showTime="true" 
+                        value="#{laboratoryManagementController.fromDate}" 
+                        class="w-100" 
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                    </p:datePicker>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="To Date"/>
+                    <p:datePicker 
+                        id="toDate" 
+                        inputStyleClass="w-100" 
+                        showTime="true" 
+                        value="#{laboratoryManagementController.toDate}" 
+                        class="w-100" 
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                    </p:datePicker>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Bill No"/>
+                    <p:inputText class="w-100" value="#{laboratoryManagementController.billNo}"/>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="BHT No"/>
+                    <p:inputText class="w-100" value="#{laboratoryManagementController.bhtNo}"/>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Patient Name"/>
+                    <p:inputText class="w-100" value="#{laboratoryManagementController.patientName}"/>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Type"/>
+                    <p:selectOneMenu class="w-100" value="#{laboratoryManagementController.type}">
+                        <f:selectItem itemLabel="Any"/>
+                        <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                        <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                        <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
+                    </p:selectOneMenu>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Referring Doctor"/>
+                    <p:autoComplete 
+                        inputStyleClass="w-100" 
+                        class="w-100"
+                        id="acReferringDoctor"
+                        value="#{laboratoryManagementController.referringDoctor}"
+                        completeMethod="#{doctorController.completeDoctor}" 
+                        var="rd" 
+                        itemLabel="#{rd.person.nameWithTitle}" 
+                        itemValue="#{rd}"/>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Status"/>
+                    <p:selectOneMenu 
+                        filter="true" 
+                        filterMatchMode="contains" 
+                        class="w-100" 
+                        style="max-width:100%;" 
+                        value="#{laboratoryManagementController.patientInvestigationStatus}">
+                        <f:selectItem itemLabel="Any" />
+                        <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                    </p:selectOneMenu>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="By Route"/>
+                    <p:selectOneMenu 
+                        filter="true" 
+                        filterMatchMode="contains" 
+                        class="w-100" 
+                        value="#{laboratoryManagementController.route}">
+                        <f:selectItem itemLabel="Any" />
+                        <f:selectItems value="#{routeController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
+                    </p:selectOneMenu>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="By Collection Center"/>
+                    <p:autoComplete 
+                        converter="deal" 
+                        value="#{laboratoryManagementController.collectionCenter}"
+                        id="acCollectionCenter"
+                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                        var="vt" 
+                        itemLabel="#{vt.name}" 
+                        itemValue="#{vt}" 
+                        maxResults="15" 
+                        class="w-100"
+                        forceSelection="true"
+                        inputStyleClass="form-control">
+                        <p:column style="padding: 6px;">#{vt.code}</p:column>
+                        <p:column style="padding: 6px;">#{vt.name}</p:column>
+                    </p:autoComplete>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Ordered Institution"/>
+                    <p:autoComplete 
+                        class="w-100" 
+                        id="acOins" 
+                        value="#{laboratoryManagementController.orderedInstitution}" 
+                        inputStyleClass="w-100"
+                        completeMethod="#{institutionController.completeIns}" 
+                        var="oi" 
+                        itemLabel="#{oi.name}" 
+                        itemValue="#{oi}">
+                        <p:ajax process="acOins" update="gpOdept" ></p:ajax>
+                    </p:autoComplete>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Ordered Department"/>
+                    <h:panelGroup id="gpOdept">
+                        <p:selectOneMenu 
+                            value="#{laboratoryManagementController.orderedDepartment}" 
+                            class="w-100" 
+                            style="max-width: 100%">
+                            <f:selectItem itemLabel="Any"></f:selectItem>
+                            <f:selectItems value="#{departmentController.getInstitutionDepartments(laboratoryManagementController.orderedInstitution)}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"></f:selectItems>
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Performing Institution"/>
+                    <p:autoComplete 
+                        class="w-100" 
+                        id="acPIns" 
+                        value="#{laboratoryManagementController.performingInstitution}" 
+                        inputStyleClass="w-100"
+                        completeMethod="#{institutionController.completeIns}" 
+                        var="pi" 
+                        itemLabel="#{pi.name}" 
+                        itemValue="#{pi}">
+                        <p:ajax process="acPIns" update="gpPDept"></p:ajax>
+                    </p:autoComplete>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Performing Department"/>
+                    <h:panelGroup id="gpPDept">
+                        <p:selectOneMenu 
+                            value="#{laboratoryManagementController.performingDepartment}" 
+                            class="w-100" 
+                            style="max-width: 100%">
+                            <f:selectItem itemLabel="Any"></f:selectItem>
+                            <f:selectItems 
+                                value="#{departmentController.getInstitutionDepartments(laboratoryManagementController.performingInstitution)}" 
+                                var="pdpt"
+                                itemLabel="#{pdpt.name}" 
+                                itemValue="#{pdpt}">
+                            </f:selectItems>
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGrid>
+                <h:panelGrid columns="1" class="w-100"/>
+                <h:panelGrid columns="1" class="w-100"/>
+                <h:panelGrid columns="1" class="w-100"/>
+                <h:panelGrid columns="1" class="w-100">
+                    <p:commandButton 
+                        ajax="false" 
+                        action="#{laboratoryManagementController.searchLabBillsForWorkSheet}"  
+                        value="Search Bills" 
+                        icon="fas fa-file-invoice-dollar" 
+                        styleClass="m-1 ui-button-success w-100">
+                    </p:commandButton>
+                </h:panelGrid>
+
+            </h:panelGrid>
+            <p:dataTable  
+                class="w-100 mt-2"
+                value="#{laboratoryManagementController.bills}" 
+                var="b" 
+                paginator="true"
+                rowKey="#{b.id}"
+                paginatorPosition="bottom"
+                rows="15"
+                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                rowsPerPageTemplate="15,25,50"
+                style="table-layout: fixed; width: 100%;">
+
+                <!-- Bill Number and Date Column -->
+                <p:column headerText="Bill No." width="16em;" style="vertical-align: top;">
+                    <p:commandLink 
+                        ajax="false"
+                        value="#{b.deptId}" 
+                        action="#{billSearch.navigateToViewOpdBill()}">
+                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                    </p:commandLink>
+                    <br/>
+                    <h:outputLabel value="#{b.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                    </h:outputLabel>
+                    <br/>
+                    <h:panelGroup rendered="#{b.patientEncounter ne null}">
+                        <h:outputLabel style="color: #0d6efd;" value="#{b.patientEncounter.bhtNo}"/>
+                    </h:panelGroup>
+                </p:column>
+
+                <!-- Patient Details Column with Icons -->
+                <p:column headerText="Patient"  style="vertical-align: top;">
+                    <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
+                    <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
+                    <br/>
+                    <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
+                    <h:outputLabel value="#{b.patient.person.ageAsString}" />
+                    <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
+                    <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
+                    <h:outputLabel value="#{b.patient.person.sex.label}" />
+                    <br/>
+                    <h:panelGroup rendered="#{!b.patient.person.mobile.blank}">
+                        <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                        <h:outputLabel value="#{b.patient.person.mobile}" />
+                    </h:panelGroup>
+
+                </p:column>
+
+
+                <!-- Ordered Institution and Department Column -->
+                <p:column headerText="Ordering From"  style="vertical-align: top;">
+                    <h:panelGroup rendered="#{b.collectingCentre == null}">
+                        <i class="fas fa-hospital text-info" style="width: 27px;"></i> <!-- Institution Icon -->
+                        <h:outputLabel value="#{b.institution.name}" />
+                        <br/>
+                        <i class="fas fa-building text-primary" style="width: 27px;"></i> <!-- Department Icon -->
+                        <h:outputLabel value="#{b.department.name}" />
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{b.collectingCentre != null}">
+                        <i class="fas fa-box text-secondary" style="width: 27px;"></i> <!-- Collecting Centre Icon -->
+                        <h:outputLabel value="#{b.collectingCentre.name}" />
+                    </h:panelGroup>
+                </p:column>
+
+                <p:column headerText="Type" width="12em;" style=" vertical-align: top;">
+                    <h:panelGroup rendered="#{b.ipOpOrCc == 'CC'}">
+                        <h:outputLabel value="Collecting Centre (CC)" class="text-warning"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{b.ipOpOrCc == 'IP'}">
+                        <h:outputLabel value="Inpatient (IP)" class="text-info"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{b.ipOpOrCc == 'OP'}">
+                        <h:outputLabel value="Outpatient (OP)" class="text-primary"/>
+                    </h:panelGroup>
+                </p:column>
+
+                <p:column headerText="Status" width="10em;" style="vertical-align: top;">
+                    <h:panelGroup rendered="#{b.cancelled}">
+                        <div class="d-flex justify-content-center mt-1">
+                            <p:badge 
+                                value="Bill Cancel" 
+                                severity="info"
+                                size="smail"
+                                styleClass="ui-badge-danger" 
+                                rendered="#{b.cancelled}" >
+                            </p:badge>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{!b.cancelled}">
+                        <h:outputLabel value="#{b.status.label}" />
+                    </h:panelGroup>
+
+                </p:column>
+
+                <p:column headerText="Actions" width="12em;">
+                    <p:commandButton 
+                            icon="fa-regular fa-rectangle-list"
+                            value="To WorkSheet" 
+                            class="ui-button-warning"
+                            disabled="#{b.cancelled}"
+                            action="#{laboratoryManagementController.navigateToPrintWorkSheetFromSelectedBill(b)}"
+                            ajax="false" >
+                        </p:commandButton>
+                </p:column>
+            </p:dataTable>
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>

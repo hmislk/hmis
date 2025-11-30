@@ -4,6 +4,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BillValidation;
 import com.divudi.core.data.PaymentMethod;
+import static com.divudi.core.data.PaymentMethod.Staff;
 import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -19,6 +20,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.StaffFacade;
@@ -31,6 +33,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -44,6 +48,8 @@ import javax.persistence.TemporalType;
 @Stateless
 public class PaymentService {
 
+    private static final Logger LOGGER = Logger.getLogger(PaymentService.class.getName());
+
     @EJB
     PatientFacade patientFacade;
     @EJB
@@ -52,6 +58,8 @@ public class PaymentService {
     StaffFacade staffFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
     @EJB
     StaffService staffService;
     @EJB
@@ -158,7 +166,11 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-            populatePaymentDetails(payment, pm, paymentMethodData);
+            if (!populatePaymentDetails(payment, pm, paymentMethodData)) {
+                LOGGER.log(Level.WARNING, "Skipping payment creation for bill {0} due to missing payment data for method {1}.",
+                        new Object[]{bill != null ? bill.getId() : null, pm});
+                return payments;
+            }
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
@@ -176,46 +188,68 @@ public class PaymentService {
         payment.setCreatedAt(currentDate);
         payment.setCreater(webUser);
         payment.setPaymentMethod(cd.getPaymentMethod());
-        populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData());
+        if (!populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+            LOGGER.log(Level.WARNING,
+                    "Skipping payment component due to missing payment data. Bill={0}, PaymentMethod={1}.",
+                    new Object[]{bill != null ? bill.getId() : null, cd.getPaymentMethod()});
+            return null;
+        }
         return payment;
     }
 
-    private void populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+    private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+        if (paymentMethodData == null) {
+            return false;
+        }
+
         switch (paymentMethod) {
             case Card:
-                payment.setBank(paymentMethodData.getCreditCard().getInstitution());
-                payment.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                payment.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
-                payment.setComments(paymentMethodData.getCreditCard().getComment());
+                if (paymentMethodData.getCreditCard() != null) {
+                    payment.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    payment.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    payment.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    payment.setComments(paymentMethodData.getCreditCard().getComment());
+                }
                 break;
             case Cheque:
-                payment.setBank(paymentMethodData.getCheque().getInstitution());
-                payment.setChequeDate(paymentMethodData.getCheque().getDate());
-                payment.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                payment.setPaidValue(paymentMethodData.getCheque().getTotalValue());
-                payment.setComments(paymentMethodData.getCheque().getComment());
+                if (paymentMethodData.getCheque() != null) {
+                    payment.setBank(paymentMethodData.getCheque().getInstitution());
+                    payment.setChequeDate(paymentMethodData.getCheque().getDate());
+                    payment.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    payment.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    payment.setComments(paymentMethodData.getCheque().getComment());
+                }
                 break;
             case Cash:
 //                payment.getBill().getNetTotal();
-                payment.setPaidValue(payment.getBill().getNetTotal());
-                payment.setComments(payment.getBill().getComments());
+                if (paymentMethodData.getCash() != null) {
+                    payment.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                }
+                if (payment.getBill() != null) {
+                    payment.setComments(payment.getBill().getComments());
+                }
                 break;
             case ewallet:
-                payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
-                payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
-                payment.setComments(paymentMethodData.getEwallet().getComment());
-                payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
-                payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                if (paymentMethodData.getEwallet() != null) {
+                    payment.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    payment.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                    payment.setComments(paymentMethodData.getEwallet().getComment());
+                    payment.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    payment.setCreditCompany(paymentMethodData.getEwallet().getInstitution()); // Keeping for backword compatibility
+                    payment.setBank(paymentMethodData.getEwallet().getInstitution());
+                }
                 break;
             case Agent:
                 break;
             case Credit:
-                payment.setPaidValue(paymentMethodData.getCredit().getTotalValue());
-                payment.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
-                payment.setComments(paymentMethodData.getCredit().getComment());
-                payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
-                payment.setCreditCompany(paymentMethodData.getCredit().getInstitution());
-                if (payment.getBill().getCreditCompany() == null) {
+                if (paymentMethodData.getCredit() != null) {
+                    payment.setPaidValue(paymentMethodData.getCredit().getTotalValue());
+                    payment.setPolicyNo(paymentMethodData.getCredit().getReferralNo());
+                    payment.setComments(paymentMethodData.getCredit().getComment());
+                    payment.setReferenceNo(paymentMethodData.getCredit().getReferenceNo());
+                    payment.setCreditCompany(paymentMethodData.getCredit().getInstitution());
+                }
+                if (payment.getBill() != null && payment.getBill().getCreditCompany() == null && payment.getCreditCompany() != null) {
                     payment.getBill().setCreditCompany(payment.getCreditCompany());
                     if (payment.getBill().getId() == null) {
                         billFacade.create(payment.getBill());
@@ -225,36 +259,60 @@ public class PaymentService {
                 }
                 break;
             case PatientDeposit:
-                payment.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
+                if (paymentMethodData.getPatient_deposit() != null) {
+                    payment.setPaidValue(paymentMethodData.getPatient_deposit().getTotalValue());
+                    payment.setComments(paymentMethodData.getPatient_deposit().getComment());
+                }
                 break;
             case Slip:
-                payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
-                payment.setComments(paymentMethodData.getSlip().getComment());
-                payment.setBank(paymentMethodData.getSlip().getInstitution());
-                payment.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
-                payment.setRealizedAt(paymentMethodData.getSlip().getDate());
-                payment.setPaymentDate(paymentMethodData.getSlip().getDate());
-                payment.setChequeDate(paymentMethodData.getSlip().getDate());
-                payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                if (paymentMethodData.getSlip() != null) {
+                    payment.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    payment.setComments(paymentMethodData.getSlip().getComment());
+                    payment.setBank(paymentMethodData.getSlip().getInstitution());
+                    payment.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
+                    payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    payment.setPaymentDate(paymentMethodData.getSlip().getDate());
+                    payment.setChequeDate(paymentMethodData.getSlip().getDate());
+                    payment.setRealizedAt(paymentMethodData.getSlip().getDate());
+                }
                 break;
             case OnCall:
             case Staff:
-                payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
-                payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                if (paymentMethodData.getStaffCredit() != null) {
+                    payment.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
+                    payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
+                    payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                }
+                break;
+            case Staff_Welfare:
+                if (paymentMethodData.getStaffWelfare() != null) {
+                    payment.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
+                    payment.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
+                    payment.setComments(paymentMethodData.getStaffWelfare().getComment());
+                }
                 break;
             case OnlineSettlement:
-                payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
-                payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                if (paymentMethodData.getOnlineSettlement() != null) {
+                    payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    payment.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    payment.setRealizedAt(paymentMethodData.getOnlineSettlement().getDate());
+                    payment.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    payment.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
+                    payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                }
                 break;
             case IOU:
-                payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
-                payment.setChequeDate(paymentMethodData.getIou().getDate());
-                payment.setToStaff(paymentMethodData.getIou().getToStaff());
-                payment.setComments(paymentMethodData.getIou().getComment());
+                if (paymentMethodData.getIou() != null) {
+                    payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
+                    payment.setChequeDate(paymentMethodData.getIou().getDate());
+                    payment.setToStaff(paymentMethodData.getIou().getToStaff());
+                    payment.setComments(paymentMethodData.getIou().getComment());
+                }
                 break;
             default:
                 break;
         }
+        return true;
     }
 
     public void updateBalances(List<Payment> payments) {
@@ -297,7 +355,33 @@ public class PaymentService {
     }
 
     private void updateCompanyCredit(Payment p) {
-        //TODO: Add Logic Here
+        if (p == null) {
+            return;
+        }
+
+        // Get credit company directly from the payment
+        Institution creditCompany = p.getCreditCompany();
+        if (creditCompany == null) {
+            return;
+        }
+
+        // Refresh the institution from database to get current balance
+        Institution institution = institutionFacade.find(creditCompany.getId());
+        if (institution == null) {
+            return;
+        }
+
+        // Update the credit balance
+        // For sales, we add to the balance (company owes more)
+        // For refunds, we subtract from the balance (company owes less)
+        double currentBalance = institution.getAllowedCredit();
+        double newBalance = currentBalance + p.getPaidValue();
+
+        institution.setAllowedCredit(newBalance);
+        institutionFacade.edit(institution);
+
+        LOGGER.log(Level.INFO, "Updated credit company balance. Company: {0}, Previous Balance: {1}, Payment Amount: {2}, New Balance: {3}",
+                new Object[]{institution.getName(), currentBalance, p.getPaidValue(), newBalance});
     }
 
     private void updateStaffCredit(Payment p) {
@@ -321,10 +405,18 @@ public class PaymentService {
         if (p.getBill() == null) {
             return;
         }
-        if (p.getBill().getToStaff() == null) {
+
+        // Get staff from payment first (for multiple payment scenarios)
+        // If not available, get from bill (for single payment scenarios)
+        Staff toStaff = p.getToStaff();
+        if (toStaff == null) {
+            toStaff = p.getBill().getToStaff();
+        }
+
+        if (toStaff == null) {
             return;
         }
-        Staff toStaff = p.getBill().getToStaff();
+
         staffService.updateStaffWelfare(toStaff, p.getPaidValue());
     }
 
@@ -381,19 +473,19 @@ public class PaymentService {
 
         return new ArrayList<>(uniqueMethods);
     }
-    
+
     public List<Payment> fetchPayments(Date fromDate,
-                                 Date toDate,
-                                 Institution institution,
-                                 Institution site,
-                                 Department department,
-                                 WebUser webUser,
-                                 List<BillTypeAtomic> billTypeAtomics,
-                                 AdmissionType admissionType,
-                                 PaymentScheme paymentScheme,
-                                 Institution toInstitution,
-                                 Department toDepartment,
-                                 String visitType
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Department toDepartment,
+            String visitType
     ) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -469,6 +561,8 @@ public class PaymentService {
             List<PaymentMethod> usedPaymentMethods = new ArrayList<>();
 
             // Iterate over each payment component in the multiple payment method
+            double multiplePaymentMethodTotalValue = 0.0;
+
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 PaymentMethod pm = cd.getPaymentMethod();
                 PaymentMethodData pmd = cd.getPaymentMethodData();
@@ -495,6 +589,65 @@ public class PaymentService {
                 if (componentValidation.isErrorPresent()) {
                     return componentValidation; // If any component has an error, return immediately with that error
                 }
+
+                switch (pm) {
+                    case Cash:
+                        if (pmd.getCash() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getCash().getTotalValue();
+                        }
+                        break;
+                    case Card:
+                        if (pmd.getCreditCard() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getCreditCard().getTotalValue();
+                        }
+                        break;
+                    case Cheque:
+                        if (pmd.getCheque() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getCheque().getTotalValue();
+                        }
+                        break;
+                    case ewallet:
+                        if (pmd.getEwallet() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getEwallet().getTotalValue();
+                        }
+                        break;
+                    case PatientDeposit:
+                        if (pmd.getPatient_deposit() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getPatient_deposit().getTotalValue();
+                        }
+                        break;
+                    case Slip:
+                        if (pmd.getSlip() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getSlip().getTotalValue();
+                        }
+                        break;
+                    case Staff:
+                        if (pmd.getStaffCredit() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getStaffCredit().getTotalValue();
+                        }
+                        break;
+                    case Staff_Welfare:
+                        if (pmd.getStaffWelfare() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getStaffWelfare().getTotalValue();
+                        }
+                        break;
+                    case OnlineSettlement:
+                        if (pmd.getOnlineSettlement() != null) {
+                            multiplePaymentMethodTotalValue += pmd.getOnlineSettlement().getTotalValue();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
+            double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
+            differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
+            if (differenceOfBillTotalAndPaymentValue >= 1.0) {
+                bv.setErrorMessage("Mismatch in differences of multiple payment method total and bill total.");
+                bv.setErrorPresent(true);
+                return bv;
             }
         } else {
             switch (paymentMethod) {
@@ -559,7 +712,8 @@ public class PaymentService {
                         return bv;
                     }
                     if (paymentMethodData.getEwallet().getInstitution() == null
-                            || paymentMethodData.getEwallet().getNo() == null) {
+                            || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
+                            && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                         bv.setErrorMessage("Please Fill eWallet Reference Number and Bank.");
                         bv.setErrorPresent(true);
                         return bv;
@@ -653,7 +807,8 @@ public class PaymentService {
         }
         if (paymentMethod == PaymentMethod.ewallet) {
             if (paymentMethodData.getEwallet().getInstitution() == null
-                    || paymentMethodData.getEwallet().getNo() == null) {
+                    || ((paymentMethodData.getEwallet().getReferenceNo() == null || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty())
+                    && (paymentMethodData.getEwallet().getNo() == null || paymentMethodData.getEwallet().getNo().trim().isEmpty()))) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
             }
@@ -681,19 +836,36 @@ public class PaymentService {
                 JsfUtil.addErrorMessage("Patient information is required for Patient Deposit payments");
                 return true;
             }
-            if (!patient.getHasAnAccount()) {
-                JsfUtil.addErrorMessage("Patient has no account. Can't proceed with Patient Deposits");
-                return true;
-            }
-            double creditLimitAbsolute = Math.abs(patient.getCreditLimit());
-            double runningBalance = patient.getRunningBalance() != null ? patient.getRunningBalance() : 0.0;
-            double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-            double effectiveTotal = netTotal != null ? netTotal : 0.0;
+            // Check if patient deposit data is available in paymentMethodData
+            if (paymentMethodData != null && paymentMethodData.getPatient_deposit() != null) {
+                ComponentDetail patientDepositDetail = paymentMethodData.getPatient_deposit();
 
-            if (effectiveTotal > availableForPurchase) {
-                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
-                return true;
+                // Use the actual PatientDeposit entity from paymentMethodData if available
+                if (patientDepositDetail.getPatientDepost() != null) {
+                    double availableBalance = patientDepositDetail.getPatientDepost().getBalance();
+                    double effectiveTotal = netTotal != null ? netTotal : 0.0;
+
+                    if (effectiveTotal > availableBalance) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit. Available: " + availableBalance + ", Required: " + effectiveTotal);
+                        return true;
+                    }
+                } else {
+                    // Fallback: PatientDeposit not initialized in paymentMethodData
+                    // This can happen if checkAndUpdateBalance() wasn't called before validation
+                    if (!patient.getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has no account. Can't proceed with Patient Deposits");
+                        return true;
+                    }
+                    // Skip validation if PatientDeposit entity is not available
+                    // The specific controller validation will handle it
+                }
+            } else {
+                // Fallback for cases where paymentMethodData is not populated
+                if (!patient.getHasAnAccount()) {
+                    JsfUtil.addErrorMessage("Patient has no account. Can't proceed with Patient Deposits");
+                    return true;
+                }
             }
         }
 
@@ -740,19 +912,81 @@ public class PaymentService {
             }
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                if (cd == null || cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
+                    continue;
+                }
+                // Only add the value from the selected payment method for this ComponentDetail
+                switch (cd.getPaymentMethod()) {
+                    case Cash:
+                        if (cd.getPaymentMethodData().getCash() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                        }
+                        break;
+                    case Card:
+                        if (cd.getPaymentMethodData().getCreditCard() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                        }
+                        break;
+                    case Cheque:
+                        if (cd.getPaymentMethodData().getCheque() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                        }
+                        break;
+                    case ewallet:
+                        if (cd.getPaymentMethodData().getEwallet() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                        }
+                        break;
+                    case PatientDeposit:
+                        if (cd.getPaymentMethodData().getPatient_deposit() != null) {
+                            // Only include if patient is selected
+                            if (cd.getPaymentMethodData().getPatient_deposit().getPatient() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            }
+                        }
+                        break;
+                    case Slip:
+                        if (cd.getPaymentMethodData().getSlip() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                        }
+                        break;
+                    case Staff:
+                        if (cd.getPaymentMethodData().getStaffCredit() != null) {
+                            // Only include if staff is selected
+                            if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            }
+                        }
+                        break;
+                    case Staff_Welfare:
+                        if (cd.getPaymentMethodData().getStaffWelfare() != null) {
+                            // Only include if staff is selected
+                            if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            }
+                        }
+                        break;
+                    case Credit:
+                        if (cd.getPaymentMethodData().getCredit() != null) {
+                            // Only include if credit company is selected
+                            if (cd.getPaymentMethodData().getCredit().getInstitution() != null) {
+                                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            }
+                        }
+                        break;
+                    case OnlineSettlement:
+                        if (cd.getPaymentMethodData().getOnlineSettlement() != null) {
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
-                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total [PaymentService]");
                 return true;
             }
         }

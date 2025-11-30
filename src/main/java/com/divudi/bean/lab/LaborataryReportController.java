@@ -1,5 +1,6 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillClassType;
@@ -34,13 +35,24 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ReportTimerController;
+import com.divudi.bean.inward.AdmissionTypeController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.FeeType;
+import static com.divudi.core.data.PaymentMethod.Card;
+import static com.divudi.core.data.PaymentMethod.Cash;
+import static com.divudi.core.data.PaymentMethod.Credit;
+import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.core.data.PaymentMethod.OnlineSettlement;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.PatientInvestigationDTO;
 import com.divudi.core.data.reports.LaboratoryReport;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.InvestigationFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
@@ -51,9 +63,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -84,6 +98,7 @@ public class LaborataryReportController implements Serializable {
     ReportTimerController reportTimerController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
@@ -96,11 +111,12 @@ public class LaborataryReportController implements Serializable {
     @EJB
     PatientFacade patientFacade;
     @EJB
-    InvestigationFacade investigationFacade; 
+    InvestigationFacade investigationFacade;
     @EJB
     BillFeeFacade billFeeFacade;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -199,7 +215,29 @@ public class LaborataryReportController implements Serializable {
     private Investigation investigation;
     private List<PatientInvestigationDTO> itemList;
 
+    //for 9B
+    private double totalAdditionCashValue;
+    private double totalAdditionCardValue;
+    private double totalAdditionOnlineSettlementValue;
+    private double totalAdditionCreditValue;
+    private double totalAdditionInwardCreditValue;
+    private double totalAdditionOtherValue;
+    private double totalAdditionTotalValue;
+    private double totalAdditionDiscountValue;
+    private double totalAdditionServiceChargeValue;
+
+    private double totalDeductionCashValue;
+    private double totalDeductionCardValue;
+    private double totalDeductionOnlineSettlementValue;
+    private double totalDeductionCreditValue;
+    private double totalDeductionInwardCreditValue;
+    private double totalDeductionOtherValue;
+    private double totalDeductionTotalValue;
+    private double totalDeductionDiscountValue;
+    private double totalDeductionServiceChargeValue;
+
 // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -230,7 +268,7 @@ public class LaborataryReportController implements Serializable {
         resetAllFiltersExceptDateRange();
         return "/reportLab/test_wise_count?faces-redirect=true";
     }
-    
+
     public String navigateToLaborataryTestWiseRegentCostReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/test_wise_regent_cost_report?faces-redirect=true";
@@ -250,11 +288,22 @@ public class LaborataryReportController implements Serializable {
         setToDepartment(sessionController.getDepartment());
         return "/reportLab/test_wise_count_dto?faces-redirect=true";
     }
+    
+    private List<BillLight> billLights ;
+    
+    public String navigateToBillItemListForCreditCompany(){
+        toDate = null;
+        fromDate = null;
+        creditCompany = null;
+        billLights = new ArrayList<>();
+        return "/reportLab/credit_company_bill_item_list?faces-redirect=true";
+    }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    // Simple tab persistence - no complex event handling needed
-    // The activeIndex binding handles persistence automatically
+    
+
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
         setInstitution(null);
@@ -295,7 +344,7 @@ public class LaborataryReportController implements Serializable {
         totalDiscount = 0.0;
         totalServiceCharge = 0.0;
 
-        testWiseCounts = new ArrayList<>();;
+        testWiseCounts = new ArrayList<>();
         totalNetHosFee = 0.0;
         totalAdditionalFee = 0.0;
         totalCCFee = 0.0;
@@ -303,8 +352,140 @@ public class LaborataryReportController implements Serializable {
         totalHosFee = 0.0;
         totalCount = 0.0;
         investigation = null;
-
+        billLights = new ArrayList<>();
     }
+    
+    public void processBillItemListForCreditCompany(){
+        
+        if (creditCompany == null) {
+            JsfUtil.addErrorMessage("Select the Credit Company");
+            return;
+        }
+        
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+
+        //Add All OPD BillTypes
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        
+        //Add All Package BillTypes
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select new com.divudi.core.light.common.BillLight("
+                + " bill.id,"
+                + " bill.deptId, "
+                + " bill.createdAt,"
+                + " bill.patient.id ) "
+                
+                + " from Bill bill"
+                + " where bill.retired=:ret "
+                + " and bill.creditCompany=:creditc "
+                + " and bill.billTypeAtomic IN :bType "
+                + " and bill.cancelled =:can";
+
+        jpql += " and bill.createdAt between :fromDate and :toDate ";
+
+        if (institution != null) {
+            jpql += " and bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bill.department=:dep ";
+            params.put("dep", department);
+        }
+        
+        if (webUser != null) {
+            jpql += " and bill.creater=:user ";
+            params.put("user", webUser);
+        }
+        
+        if (toInstitution != null) {
+            jpql += " and bill.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bill.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+        
+        jpql += " order by bill.createdAt asc  ";
+        
+        params.put("creditc", creditCompany);
+        params.put("ret", false);
+        params.put("can", false);
+        params.put("bType", billTypeAtomics);
+        params.put("toDate", toDate);
+        params.put("fromDate", fromDate);
+        
+        List<BillLight> bls = billFacade.findDTOsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        billLights = new ArrayList<>();
+        
+        if(bls != null || !bls.isEmpty()) {
+            for(BillLight billLight : bls){
+                
+                List<BillItemDTO> lst = getBillItemNames(billLight.getId());
+                
+                String testStr = "";
+                String nameWithTitle = "";
+                String ageAndSex = "";
+                
+                if(lst != null || !lst.isEmpty()){
+                    testStr = lst.stream()
+                        .map(BillItemDTO::getItemName)
+                        .collect(Collectors.joining(" / "));
+                }else{
+                    testStr = "N/A";
+                }
+                
+                Patient pt = patientFacade.find(billLight.getPatientId());
+
+                if (pt == null || pt.getPerson() == null) {
+                    nameWithTitle = "N/A";
+                    ageAndSex = "N/A";
+                }else{
+                    nameWithTitle = pt.getPerson().getNameWithTitle();
+                    ageAndSex = pt.getShortageOnBilledDate(billLight.getBillDate()) + " / " + pt.getPerson().getSex().getLabel();
+                }
+                
+                BillLight newLight = new BillLight();
+                newLight.setBillNo(billLight.getBillNo());
+                newLight.setBillDate(billLight.getBillDate());
+                newLight.setPatientName(nameWithTitle);
+                newLight.setPatientAge(ageAndSex);
+                newLight.setBillItemNames(testStr);
+                
+                billLights.add(newLight);
+            }
+        }
+    }
+    
+    public List<BillItemDTO> getBillItemNames(Long billId){
+        List<BillItemDTO> list  = new ArrayList<>();
+        
+        String j = "Select new com.divudi.core.data.dto.BillItemDTO( bi.id, bi.item.name ) "
+                + " from BillItem bi "
+                + " where bi.bill.id=:billId "
+                + " and bi.retired=:ret "
+                + " and bi.refunded =:ref";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("ref", false);
+        m.put("billId", billId);
+        
+        list = billItemFacade.findDTOsByJpql(j, m);
+        
+        return list;
+    }
+    
+  
+    @EJB
+    BillFacade billFacade;
+    
 
     public void processLaboratoryCardIncomeReport() {
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -502,10 +683,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     public void processLaboratorySummary() {
-        System.out.println("processLaboratorySummary");
-
         bundle = new IncomeBundle(bills);
-
     }
 
     public void processLabTestWiseCountReport() {
@@ -741,7 +919,7 @@ public class LaborataryReportController implements Serializable {
             }
         }
     }
-    
+
     public void processLabTestWiseReagentCostReportDto() {
         Map<String, Object> params = new HashMap<>();
 
@@ -858,7 +1036,6 @@ public class LaborataryReportController implements Serializable {
         return reportList;
     }
 
-    
     public void processLaborataryBillItemReportDto() {
         reportTimerController.trackReportExecution(() -> {
             if (investigation == null) {
@@ -1192,7 +1369,466 @@ public class LaborataryReportController implements Serializable {
         return incomeBills;
     }
 
+    // <editor-fold defaultstate="collapsed" desc="9B Report">
+    @Inject
+    BillBeanController billBean;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+    @Inject
+    AdmissionTypeController admissionTypeController;
+    
+    //9B Process Method
+    public void generateDailyLabSummaryByDepartment() {
+
+        if (getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select the Department");
+            return;
+        }
+        
+        if (getDepartment().getDepartmentType() != DepartmentType.Lab) {
+            JsfUtil.addErrorMessage("This feature is available for only Laboratory type departments.");
+            return;
+        }
+
+        bundleReport = new ReportTemplateRowBundle();
+
+        //Normal Income
+        ReportTemplateRow normalIncomeRow = new ReportTemplateRow();
+        normalIncomeRow.setItemName("Normal Income");
+        initializeRows(normalIncomeRow);
+        List<BillLight> normalIncomeList = billService.fetchBillDtos(fromDate, toDate, null, null, department, getOpdAndPackageBillTypeAtomics(), null, null);
+        normalIncomeRow = genarateRowBundle(normalIncomeList, normalIncomeRow);
+        bundleReport.getReportTemplateRows().add(normalIncomeRow);
+
+        //Member Schemes
+        List<PaymentScheme> pss = paymentSchemeController.getPaymentSchemesForOPD();
+        for (PaymentScheme ps : pss) {
+            ReportTemplateRow paymentSchemeIncomeRow = new ReportTemplateRow();
+            paymentSchemeIncomeRow.setItemName(ps.getName() + " Income");
+            initializeRows(paymentSchemeIncomeRow);
+            List<BillLight> paymentSchemeIncome = billService.fetchBillDtos(fromDate, toDate, null, null, department, getOpdAndPackageBillTypeAtomics(), null, ps);
+            paymentSchemeIncomeRow = genarateRowBundle(paymentSchemeIncome, paymentSchemeIncomeRow);
+            bundleReport.getReportTemplateRows().add(paymentSchemeIncomeRow);
+        }
+
+        //Inward Income
+        List<AdmissionType> ats = admissionTypeController.getItems();
+
+        for (AdmissionType at : ats) {
+            ReportTemplateRow inwardIncomeRow = new ReportTemplateRow();
+            inwardIncomeRow.setItemName(at + " Income");
+            initializeRows(inwardIncomeRow);
+            List<BillLight> inpatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getInwardBillTypeAtomics(), at,null);
+            inwardIncomeRow = genarateRowBundleInward(inpatientIncome, inwardIncomeRow);
+            bundleReport.getReportTemplateRows().add(inwardIncomeRow);
+        }
+
+        //outpatientIncome (CC)
+        ReportTemplateRow outPatientIncomeRow = new ReportTemplateRow();
+        outPatientIncomeRow.setItemName("Outpatient Income");
+        initializeRows(outPatientIncomeRow);
+        List<BillLight> outPatientIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getOutPatientBillTypeAtomics(), null,null);
+        outPatientIncomeRow = genarateRowBundle(outPatientIncome, outPatientIncomeRow);
+        bundleReport.getReportTemplateRows().add(outPatientIncomeRow);
+        
+        //Float Income
+        ReportTemplateRow floatIncomeRow = new ReportTemplateRow();
+        floatIncomeRow.setItemName("Float Income");
+        initializeRows(floatIncomeRow);
+        List<BillLight> floatIncome = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatInconeBillTypeAtomics(), null,null);
+        floatIncomeRow = genarateRowBundleOther(floatIncome, floatIncomeRow);
+        bundleReport.getReportTemplateRows().add(floatIncomeRow);
+        
+        //Outher Income
+        ReportTemplateRow otherIncomeRow = new ReportTemplateRow();
+        otherIncomeRow.setItemName("Other Income");
+        initializeRows(otherIncomeRow);
+        bundleReport.getReportTemplateRows().add(otherIncomeRow);
+        
+        //calculate Addition Totals
+        calculateTotalsFromRows(bundleReport.getReportTemplateRows(), true);
+
+//        //Deductions
+        bundle = new IncomeBundle();
+
+        //Deducations Voucher
+        IncomeRow floatTransferDeductionRow = new IncomeRow();
+        floatTransferDeductionRow.setItemName("Float Transfer");
+        initializeDeductionRows(floatTransferDeductionRow);
+        List<BillLight> floatTransfer = billService.fetchBillDtos(fromDate, toDate, institution, site, department, null, getFloatTransferBillTypeAtomics(), null,null);
+        floatTransferDeductionRow = genarateDeductionRowBundleOther(floatTransfer, floatTransferDeductionRow);
+        bundle.getRows().add(floatTransferDeductionRow);
+
+        //Deducations Voucher
+        IncomeRow voucherDeductionRow = new IncomeRow();
+        voucherDeductionRow.setItemName("Voucher");
+        initializeDeductionRows(voucherDeductionRow);
+        //otherDeductionRow = genarateDeductionRowBundleOther(fetchedBills,otherDeductionRow);
+        bundle.getRows().add(voucherDeductionRow);
+
+        //Deducations Other
+        IncomeRow otherDeductionRow = new IncomeRow();
+        otherDeductionRow.setItemName("Other");
+        initializeDeductionRows(otherDeductionRow);
+        //otherDeductionRow = genarateDeductionRowBundleOther(fetchedBills,otherDeductionRow);
+        bundle.getRows().add(otherDeductionRow);
+
+        //calculate Deducations Totals
+        calculateTotalsFromRows(bundle.getRows(), false);
+    }
+
+    public void initializeRows(ReportTemplateRow row) {
+        row.setCashValue(0.0);
+        row.setCardValue(0.0);
+        row.setOnlineSettlementValue(0.0);
+        row.setCreditValue(0.0);
+        row.setInpatientTotal(0.0);
+        row.setOtherIncomeValue(0.0);
+        row.setTotal(0.0);
+        row.setDiscount(0.0);
+        row.setServiceCharge(0.0);
+    }
+
+    public ReportTemplateRow genarateRowBundle(List<BillLight> billLights, ReportTemplateRow row) {
+        List<BillItemDTO> billItems = new ArrayList<>();
+        Set<Bill> processedMultipleBills = new HashSet<>();
+        for (BillLight bl : billLights) {
+            List<BillItemDTO> bidtos = billBean.fillBillItemDTOs(bl.getId());
+            billItems.addAll(bidtos);
+        }
+
+        for (BillItemDTO bi : billItems) {
+            if (!(bi.getItemClass().equals("Investigation"))) {
+                continue;
+            }
+            if (null == bi.getPaymentMethod()) {
+                continue;
+            } else {
+                switch (bi.getPaymentMethod()) {
+                    case Cash:
+                        row.setCashValue(row.getCashValue() + bi.getBillNetTotal());
+                        row.setTotal(row.getTotal() + bi.getBillNetTotal());
+                        row.setDiscount(row.getDiscount() + bi.getDiscount());
+                        row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+                        break;
+                    case Card:
+                        row.setCardValue(row.getCardValue() + bi.getBillNetTotal());
+                        row.setTotal(row.getTotal() + bi.getBillNetTotal());
+                        row.setDiscount(row.getDiscount() + bi.getDiscount());
+                        row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+                        break;
+                    case Credit:
+                        row.setCreditValue(row.getCreditValue() + bi.getBillNetTotal());
+                        row.setTotal(row.getTotal() + bi.getBillNetTotal());
+                        row.setDiscount(row.getDiscount() + bi.getDiscount());
+                        row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+                        break;
+                    case OnlineSettlement:
+                        row.setOnlineSettlementValue(row.getOnlineSettlementValue() + bi.getBillNetTotal());
+                        row.setTotal(row.getTotal() + bi.getBillNetTotal());
+                        row.setDiscount(row.getDiscount() + bi.getDiscount());
+                        row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+                        break;
+                    case MultiplePaymentMethods:
+                        Bill b = billBean.fetchBill(bi.getBillId());
+                        if (!processedMultipleBills.contains(b)) {
+                            processMultiplePaymentBill(b, row);
+                            processedMultipleBills.add(b);
+                        }
+                        break;
+                    default:
+                        row.setOtherIncomeValue(row.getOtherIncomeValue() + bi.getBillNetTotal());
+                        row.setTotal(row.getTotal() + bi.getBillNetTotal());
+                        row.setDiscount(row.getDiscount() + bi.getDiscount());
+                        row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+                        break;
+                }
+            }
+        }
+        return row;
+    }
+
+    private void processMultiplePaymentBill(Bill bill, ReportTemplateRow row) {
+        List<Payment> payments = new ArrayList<>();
+        if (getOpdAndPackageBillTypeAtomics().contains(bill.getBillTypeAtomic())) {
+            bill = bill.getBackwardReferenceBill();
+        }
+        payments = billService.fetchBillPayments(bill);
+
+        if (!payments.isEmpty()) {
+            for (Payment p : payments) {
+                if (null == p.getPaymentMethod()) {
+                    continue;
+                } else {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            row.setCashValue(row.getCashValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            row.setCardValue(row.getCardValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Credit:
+                            row.setCreditValue(row.getCreditValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case OnlineSettlement:
+                            row.setOnlineSettlementValue(row.getOnlineSettlementValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            row.setOtherIncomeValue(row.getOtherIncomeValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    public ReportTemplateRow genarateRowBundleInward(List<BillLight> bills, ReportTemplateRow row) {
+        List<BillItemDTO> billItems = new ArrayList<>();
+        for (BillLight bl : bills) {
+            List<BillItemDTO> inpatientBiDtos = billBean.fillBillItemDTOs(bl.getId());
+            billItems.addAll(inpatientBiDtos);
+        }
+        for (BillItemDTO bi : billItems) {
+            if (!(bi.getItemClass().equals("Investigation"))) {
+                continue;
+            }
+            row.setInpatientTotal(row.getInpatientTotal() + bi.getBillNetTotal());
+            row.setTotal(row.getTotal() + bi.getBillNetTotal());
+            row.setDiscount(row.getDiscount() + bi.getDiscount());
+            row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+        }
+        return row;
+    }
+
+    public ReportTemplateRow genarateRowBundleOther(List<BillLight> bills, ReportTemplateRow row) {
+        
+        for (BillLight bl : bills) {
+            List<Payment> payments = billService.fetchBillPaymentsFromBillId(bl.getId());
+            for (Payment p : payments) {
+                if (null == p.getPaymentMethod()) {
+                    continue;
+                } else {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            row.setCashValue(row.getCashValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            row.setCardValue(row.getCardValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Credit:
+                            row.setCreditValue(row.getCreditValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case OnlineSettlement:
+                            row.setOnlineSettlementValue(row.getOnlineSettlementValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            row.setOtherIncomeValue(row.getOtherIncomeValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                    }
+                }
+            }
+        }
+        return row;
+    }
+
+    public List<BillTypeAtomic> getOpdAndPackageBillTypeAtomics() {
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+
+        return billTypeAtomics;
+    }
+
+    public List<BillTypeAtomic> getOutPatientBillTypeAtomics() {
+        List<BillTypeAtomic> ccBillTypeAtomics = new ArrayList<>();
+        ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL);
+        ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
+
+        return ccBillTypeAtomics;
+    }
+
+    public List<BillTypeAtomic> getInwardBillTypeAtomics() {
+        List<BillTypeAtomic> inwardBillTypeAtomics = new ArrayList<>();
+        inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        return inwardBillTypeAtomics;
+    }
+    
+    public List<BillTypeAtomic> getFloatInconeBillTypeAtomics() {
+        List<BillTypeAtomic> otherbillTypeAtomics = new ArrayList<>();
+        otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+        otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED);
+
+        return otherbillTypeAtomics;
+    }
+    
+    public List<BillTypeAtomic> getFloatTransferBillTypeAtomics() {
+        List<BillTypeAtomic> otherbillTypeAtomics = new ArrayList<>();
+        otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+        otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+
+        return otherbillTypeAtomics;
+    }
+
+    private void calculateTotalsFromRows(List<? extends Object> rows, boolean isAddition) {
+        double cashValue = 0.0;
+        double cardValue = 0.0;
+        double onlineSettlementValue = 0.0;
+        double creditValue = 0.0;
+        double inwardCreditValue = 0.0;
+        double otherValue = 0.0;
+        double totalValue = 0.0;
+        double discountValue = 0.0;
+        double serviceChargeValue = 0.0;
+
+        for (Object row : rows) {
+            if (row instanceof ReportTemplateRow) {
+                ReportTemplateRow rtr = (ReportTemplateRow) row;
+                cashValue += rtr.getCashValue();
+                cardValue += rtr.getCardValue();
+                onlineSettlementValue += rtr.getOnlineSettlementValue();
+                creditValue += rtr.getCreditValue();
+                inwardCreditValue += rtr.getInpatientTotal();
+                otherValue += rtr.getOtherIncomeValue();
+                totalValue += rtr.getTotal();
+                discountValue += rtr.getDiscount();
+                serviceChargeValue += rtr.getServiceCharge();
+            } else if (row instanceof IncomeRow) {
+                IncomeRow ir = (IncomeRow) row;
+                cashValue += ir.getCashValue();
+                cardValue += ir.getCardValue();
+                onlineSettlementValue += ir.getOnlineSettlementValue();
+                creditValue += ir.getCreditValue();
+                inwardCreditValue += ir.getInpatientCreditValue();
+                otherValue += ir.getOtherValue();
+                totalValue += ir.getNetTotal();
+                discountValue += ir.getDiscount();
+                serviceChargeValue += ir.getServiceCharge();
+            }
+        }
+
+        if (isAddition) {
+            totalAdditionCashValue = cashValue;
+            totalAdditionCardValue = cardValue;
+            totalAdditionOnlineSettlementValue = onlineSettlementValue;
+            totalAdditionCreditValue = creditValue;
+            totalAdditionInwardCreditValue = inwardCreditValue;
+            totalAdditionOtherValue = otherValue;
+            totalAdditionTotalValue = totalValue;
+            totalAdditionDiscountValue = discountValue;
+            totalAdditionServiceChargeValue = serviceChargeValue;
+        } else {
+            totalDeductionCashValue = cashValue;
+            totalDeductionCardValue = cardValue;
+            totalDeductionOnlineSettlementValue = onlineSettlementValue;
+            totalDeductionCreditValue = creditValue;
+            totalDeductionInwardCreditValue = inwardCreditValue;
+            totalDeductionOtherValue = otherValue;
+            totalDeductionTotalValue = totalValue;
+            totalDeductionDiscountValue = discountValue;
+            totalDeductionServiceChargeValue = serviceChargeValue;
+        }
+    }
+
+    public void initializeDeductionRows(IncomeRow row) {
+        row.setCashValue(0.0);
+        row.setCardValue(0.0);
+        row.setOnlineSettlementValue(0.0);
+        row.setCreditValue(0.0);
+        row.setInpatientCreditValue(0.0);
+        row.setOtherValue(0.0);
+        row.setNetTotal(0.0);
+        row.setDiscount(0.0);
+        row.setServiceCharge(0.0);
+    }
+    
+    public IncomeRow genarateDeductionRowBundleOther(List<BillLight> bills, IncomeRow row) {
+        for (BillLight bl : bills) {
+            List<Payment> payments = billService.fetchBillPaymentsFromBillId(bl.getId());
+            for (Payment p : payments) {
+                if (null == p.getPaymentMethod()) {
+                    continue;
+                } else {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            row.setCashValue(row.getCashValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            row.setCardValue(row.getCardValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case Credit:
+                            row.setCreditValue(row.getCreditValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case OnlineSettlement:
+                            row.setOnlineSettlementValue(row.getOnlineSettlementValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            row.setOtherValue(row.getOtherValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                    }
+                }
+            }
+        }
+        return row;
+    }
+
+    public void reset9BData() {
+        totalAdditionCashValue = 0.0;
+        totalAdditionCardValue = 0.0;
+        totalAdditionOnlineSettlementValue = 0.0;
+        totalAdditionCreditValue = 0.0;
+        totalAdditionInwardCreditValue = 0.0;
+        totalAdditionOtherValue = 0.0;
+        totalAdditionTotalValue = 0.0;
+        totalAdditionDiscountValue = 0.0;
+        totalAdditionServiceChargeValue = 0.0;
+
+        totalDeductionCashValue = 0.0;
+        totalDeductionCardValue = 0.0;
+        totalDeductionOnlineSettlementValue = 0.0;
+        totalDeductionCreditValue = 0.0;
+        totalDeductionInwardCreditValue = 0.0;
+        totalDeductionOtherValue = 0.0;
+        totalDeductionTotalValue = 0.0;
+        totalDeductionDiscountValue = 0.0;
+        totalDeductionServiceChargeValue = 0.0;
+        
+        bundleReport = new ReportTemplateRowBundle();
+        bundle = new IncomeBundle();
+    }
+
     // </editor-fold>
+    // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
@@ -1727,7 +2363,6 @@ public class LaborataryReportController implements Serializable {
     public void setStrActiveIndex(String strActiveIndex) {
         this.strActiveIndex = strActiveIndex;
     }
-    // </editor-fold>
 
     public Investigation getInvestigation() {
         return investigation;
@@ -1743,5 +2378,159 @@ public class LaborataryReportController implements Serializable {
 
     public void setItemList(List<PatientInvestigationDTO> itemList) {
         this.itemList = itemList;
+    }
+
+    public double getTotalAdditionCashValue() {
+        return totalAdditionCashValue;
+    }
+
+    public void setTotalAdditionCashValue(double totalAdditionCashValue) {
+        this.totalAdditionCashValue = totalAdditionCashValue;
+    }
+
+    public double getTotalAdditionCardValue() {
+        return totalAdditionCardValue;
+    }
+
+    public void setTotalAdditionCardValue(double totalAdditionCardValue) {
+        this.totalAdditionCardValue = totalAdditionCardValue;
+    }
+
+    public double getTotalAdditionCreditValue() {
+        return totalAdditionCreditValue;
+    }
+
+    public void setTotalAdditionCreditValue(double totalAdditionCreditValue) {
+        this.totalAdditionCreditValue = totalAdditionCreditValue;
+    }
+
+    public double getTotalAdditionInwardCreditValue() {
+        return totalAdditionInwardCreditValue;
+    }
+
+    public void setTotalAdditionInwardCreditValue(double totalAdditionInwardCreditValue) {
+        this.totalAdditionInwardCreditValue = totalAdditionInwardCreditValue;
+    }
+
+    public double getTotalAdditionOtherValue() {
+        return totalAdditionOtherValue;
+    }
+
+    public void setTotalAdditionOtherValue(double totalAdditionOtherValue) {
+        this.totalAdditionOtherValue = totalAdditionOtherValue;
+    }
+
+    public double getTotalAdditionTotalValue() {
+        return totalAdditionTotalValue;
+    }
+
+    public void setTotalAdditionTotalValue(double totalAdditionTotalValue) {
+        this.totalAdditionTotalValue = totalAdditionTotalValue;
+    }
+
+    public double getTotalAdditionDiscountValue() {
+        return totalAdditionDiscountValue;
+    }
+
+    public void setTotalAdditionDiscountValue(double totalAdditionDiscountValue) {
+        this.totalAdditionDiscountValue = totalAdditionDiscountValue;
+    }
+
+    public double getTotalAdditionServiceChargeValue() {
+        return totalAdditionServiceChargeValue;
+    }
+
+    public void setTotalAdditionServiceChargeValue(double totalAdditionServiceChargeValue) {
+        this.totalAdditionServiceChargeValue = totalAdditionServiceChargeValue;
+    }
+
+    public double getTotalDeductionCashValue() {
+        return totalDeductionCashValue;
+    }
+
+    public void setTotalDeductionCashValue(double totalDeductionCashValue) {
+        this.totalDeductionCashValue = totalDeductionCashValue;
+    }
+
+    public double getTotalDeductionCardValue() {
+        return totalDeductionCardValue;
+    }
+
+    public void setTotalDeductionCardValue(double totalDeductionCardValue) {
+        this.totalDeductionCardValue = totalDeductionCardValue;
+    }
+
+    public double getTotalDeductionCreditValue() {
+        return totalDeductionCreditValue;
+    }
+
+    public void setTotalDeductionCreditValue(double totalDeductionCreditValue) {
+        this.totalDeductionCreditValue = totalDeductionCreditValue;
+    }
+
+    public double getTotalDeductionInwardCreditValue() {
+        return totalDeductionInwardCreditValue;
+    }
+
+    public void setTotalDeductionInwardCreditValue(double totalDeductionInwardCreditValue) {
+        this.totalDeductionInwardCreditValue = totalDeductionInwardCreditValue;
+    }
+
+    public double getTotalDeductionOtherValue() {
+        return totalDeductionOtherValue;
+    }
+
+    public void setTotalDeductionOtherValue(double totalDeductionOtherValue) {
+        this.totalDeductionOtherValue = totalDeductionOtherValue;
+    }
+
+    public double getTotalDeductionTotalValue() {
+        return totalDeductionTotalValue;
+    }
+
+    public void setTotalDeductionTotalValue(double totalDeductionTotalValue) {
+        this.totalDeductionTotalValue = totalDeductionTotalValue;
+    }
+
+    public double getTotalDeductionDiscountValue() {
+        return totalDeductionDiscountValue;
+    }
+
+    public void setTotalDeductionDiscountValue(double totalDeductionDiscountValue) {
+        this.totalDeductionDiscountValue = totalDeductionDiscountValue;
+    }
+
+    public double getTotalDeductionServiceChargeValue() {
+        return totalDeductionServiceChargeValue;
+    }
+
+    public void setTotalDeductionServiceChargeValue(double totalDeductionServiceChargeValue) {
+        this.totalDeductionServiceChargeValue = totalDeductionServiceChargeValue;
+    }
+
+    public double getTotalAdditionOnlineSettlementValue() {
+        return totalAdditionOnlineSettlementValue;
+    }
+
+    public void setTotalAdditionOnlineSettlementValue(double totalAdditionOnlineSettlementValue) {
+        this.totalAdditionOnlineSettlementValue = totalAdditionOnlineSettlementValue;
+    }
+
+    public double getTotalDeductionOnlineSettlementValue() {
+        return totalDeductionOnlineSettlementValue;
+    }
+
+    public void setTotalDeductionOnlineSettlementValue(double totalDeductionOnlineSettlementValue) {
+        this.totalDeductionOnlineSettlementValue = totalDeductionOnlineSettlementValue;
+    }
+    
+    // </editor-fold>
+
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
+
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
     }
 }

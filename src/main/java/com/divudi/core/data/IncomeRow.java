@@ -160,6 +160,7 @@ public class IncomeRow implements Serializable {
     private double noneValue;
     private double opdCreditValue;
     private double inpatientCreditValue;
+    private double otherValue;
 
     private double grossTotal;
     private double discount;
@@ -186,6 +187,7 @@ public class IncomeRow implements Serializable {
 
     private double totalRetailSaleValue;
     private double totalPurchaseValue;
+    private double totalCostValue;
 
     private long duration;
 
@@ -299,7 +301,21 @@ public class IncomeRow implements Serializable {
         BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
         billFinanceDetails.setTotalRetailSaleValue(dto.getTotalRetailSaleValue());
         billFinanceDetails.setTotalPurchaseValue(dto.getTotalPurchaseValue());
+        billFinanceDetails.setTotalCostValue(dto.getTotalCostValue());
         bill.setBillFinanceDetails(billFinanceDetails);
+
+        // Set direct properties on the IncomeRow
+        if (dto.getTotalCostValue() != null) {
+            System.out.println("=== PRECISION LOSS DETECTED IN REPORT GENERATION ===");
+            System.out.println("Original BigDecimal from BFD: " + dto.getTotalCostValue());
+            System.out.println("Original BigDecimal scale: " + dto.getTotalCostValue().scale());
+            System.out.println("Original BigDecimal toString: " + dto.getTotalCostValue().toString());
+
+            this.totalCostValue = dto.getTotalCostValue().doubleValue();
+
+            System.out.println("Converted to double: " + this.totalCostValue);
+            System.out.println("=== END PRECISION LOSS DETECTION ===");
+        }
 
         this.bill = bill;
     }
@@ -1638,11 +1654,27 @@ public class IncomeRow implements Serializable {
         this.totalPurchaseValue = totalPurchaseValue;
     }
 
+    public double getTotalCostValue() {
+        return totalCostValue;
+    }
+
+    public void setTotalCostValue(double totalCostValue) {
+        this.totalCostValue = totalCostValue;
+    }
+
     public Double getItemValue() {
         return itemValue;
     }
 
     public void setItemValue(Double itemValue) {
         this.itemValue = itemValue;
+    }
+
+    public double getOtherValue() {
+        return otherValue;
+    }
+
+    public void setOtherValue(double otherValue) {
+        this.otherValue = otherValue;
     }
 }

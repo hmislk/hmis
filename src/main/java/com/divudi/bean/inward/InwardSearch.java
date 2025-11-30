@@ -44,6 +44,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.RequestService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -162,6 +163,66 @@ public class InwardSearch implements Serializable {
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
+        }
+    }
+    
+    public void editBillDetails() {
+        Bill editedBill = bill;
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill Error !");
+            return;
+        }
+        if (referredBy == null) {
+            JsfUtil.addErrorMessage("Please Select Referring Doctor !");
+            return;
+        }
+        editedBill.setReferredBy(referredBy);
+        if (bill.getId() == null) {
+            billFacade.create(editedBill);
+        }
+        billFacade.edit(editedBill);
+        JsfUtil.addSuccessMessage("Saved");
+        referredBy = null;
+    }
+    
+    @Inject
+    RequestController requestController;
+    @Inject
+    RequestService requestService;
+    
+    private Doctor referredBy;
+
+    private Request currentRequest;
+    
+    public String navigateToCancelInpatientBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            currentRequest = requestService.findRequest(bill);
+
+            if (currentRequest == null) {
+                return requestController.navigateToCreateRequest(bill);
+            } else {
+                switch (currentRequest.getStatus()) {
+                    case PENDING:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case UNDER_REVIEW:
+                        requestController.setCurrentRequest(currentRequest);
+                        return "/common/request/request_status?faces-redirect=true";
+                    case APPROVED:
+                        requestController.getBills().add(currentRequest.getBill());
+                        setComment(currentRequest.getRequestReason());
+                        return "/inward/inward_cancel_bill_service?faces-redirect=true";
+                    default:
+                        return "";
+                }
+            }
+        } else {
+            return "/inward/inward_cancel_bill_service?faces-redirect=true";
         }
     }
 
@@ -627,6 +688,10 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
             return true;
         }
+        if (getBill().getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("You can't cancel. Because this BHT is Already Discharged.");
+            return true;
+        }
 
         if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment Method.");
@@ -769,8 +834,19 @@ public class InwardSearch implements Serializable {
             JsfUtil.addSuccessMessage("Cancelled");
 
             getBillBean().updateBatchBill(getBill().getForwardReferenceBill());
-
-            printPreview = true;
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
+            Request billRequest = requestService.findRequest(getBill());
+            if (billRequest != null) {
+                
+                requestController.getBills().add(getBill());
+                requestController.complteRequest(billRequest);
+            } else {
+                JsfUtil.addErrorMessage("Related approval request not found to complete.");
+            }
+        }
+            
+        printPreview = true;
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -2016,6 +2092,22 @@ public class InwardSearch implements Serializable {
 
     public void setChanged(boolean changed) {
         this.changed = changed;
+    }
+
+    public Doctor getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(Doctor referredBy) {
+        this.referredBy = referredBy;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
     }
 
 }

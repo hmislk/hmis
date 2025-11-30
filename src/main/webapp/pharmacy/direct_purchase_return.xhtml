@@ -113,8 +113,10 @@
                                         class="w-100 text-end"
                                         onfocus="this.select()"
                                         value="#{ph.billItemFinanceDetails.quantity}">
-                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <f:validator validatorId="positiveNumberValidator" />
+                                    </p:inputText>
+                                    <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                         <p:ajax 
                                             event="keyup" 
                                             process="@this"
@@ -138,7 +140,10 @@
                                         onfocus="this.select()"
                                         class="w-100 text-end"
                                         value="#{ph.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <f:validator validatorId="nonNegativeNumberValidator" />
+                                    </p:inputText>
+                                    <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                         <p:ajax 
                                             process="@this"
                                             event="keyup" 
@@ -160,6 +165,7 @@
                                         class="w-100 text-end"
                                         id="txtReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <f:validator validatorId="nonNegativeNumberValidator" />
                                         <p:ajax
                                             event="blur" 
@@ -167,6 +173,7 @@
                                             update="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{directPurchaseReturnController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
+                                    <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column headerText="Return Value" width="5em" >

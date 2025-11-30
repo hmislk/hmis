@@ -68,6 +68,9 @@
                                             <p:commandButton class="w-100" value="Channel Income"
                                                              action="/channel/channel_income?faces-redirect=true"
                                                              ajax="false"/>
+                                            <p:commandButton class="w-100" value="Channel Income Daily Summery"
+                                                             action="#{channelReportController.navigateToFutureIncomeForChanneling()}"
+                                                             ajax="false"/>
                                             <p:commandButton class="w-100" value="Income With Agent Bookings"
                                                              action="#{channelReportController.navigateToIncomeForAgentBookings()}"
                                                              ajax="false"/>
@@ -283,6 +286,20 @@
                                                              value="Chanel Staff Booking Summary Report"
                                                              action="/channel/channel_report_staff_booking_summery?faces-redirect=true"
                                                              actionListener="#{channelReportTemplateController.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="New Channel Analytic Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false"
+                                                             value="Doctor Arrival Report"
+                                                             />
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false" 
+                                                             value="All Doctor View"
+                                                             />
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false"
+                                                             value="Doctor Leave"
+                                                             />
+
                                         </div>
                                     </p:tab>
 

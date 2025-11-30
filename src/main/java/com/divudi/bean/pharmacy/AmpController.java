@@ -413,10 +413,9 @@ public class AmpController implements Serializable {
         List<Amp> a = null;
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
-        m.put("dep", DepartmentType.Store);
         if (qry != null) {
             a = getFacade().findByJpql("select c from Amp c where "
-                    + " c.retired=false and (c.departmentType!=:dep or c.departmentType is null) "
+                    + " c.retired=false "
                     + " and ((c.name) like :n or (c.code)  "
                     + "like :n or (c.barcode) like :n) order by c.name", m, 30);
         }
@@ -800,15 +799,28 @@ public class AmpController implements Serializable {
     public void generateCode() {
         int length = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
         String code = "";
+
         if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_NUMERIC_ONLY")) {
             code = generateNumericCode(length);
         } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_CHARACTERS_ONLY")) {
             code = generateCharacterCode(length);
         } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_ALPHANUMERIC")) {
             code = generateAlphaNumericCode(length);
+        } else {
+            // Default fallback if no generation mode is configured - use numeric
+            code = generateNumericCode(length);
+            JsfUtil.addSuccessMessage("Generated numeric code (default mode). Configure AMP_CODE_* options for other formats.");
         }
-        current.setCode(code);
-        checkCodeDuplicate();
+
+        if (code != null && !code.trim().isEmpty()) {
+            current.setCode(code);
+            checkCodeDuplicate();
+            if (!duplicateCode) {
+                JsfUtil.addSuccessMessage("Unique code generated successfully: " + code);
+            }
+        } else {
+            JsfUtil.addErrorMessage("Failed to generate code. Please check configuration.");
+        }
     }
 
     private String generateNumericCode(int length) {
@@ -1134,6 +1146,200 @@ public class AmpController implements Serializable {
 
     public void setEditable(boolean editable) {
         this.editable = editable;
+    }
+
+    // ========== BULK CODE GENERATION METHODS ==========
+
+    /**
+     * Finds all AMPs that need code generation or code improvement.
+     * This includes AMPs with:
+     * 1. Missing codes (null or empty)
+     * 2. Codes shorter than the minimum length (default: 4 characters)
+     */
+    public List<Amp> findAmpsNeedingCodeGeneration() {
+        int minCodeLength = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
+
+        String jpql = "select a from Amp a "
+                + " where a.retired = false "
+                + " and (a.code is null or a.code = '' or length(a.code) < :minLength)"
+                + " order by a.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("minLength", minCodeLength);
+
+        return getFacade().findByJpql(jpql, params);
+    }
+
+    /**
+     * Gets count of AMPs that need code generation
+     */
+    public int getAmpsNeedingCodeGenerationCount() {
+        int minCodeLength = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
+
+        String jpql = "select count(a) from Amp a "
+                + " where a.retired = false "
+                + " and (a.code is null or a.code = '' or length(a.code) < :minLength)";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("minLength", minCodeLength);
+
+        Long count = getFacade().findLongByJpql(jpql, params);
+        return count != null ? count.intValue() : 0;
+    }
+
+    /**
+     * Prepares the bulk code generation by showing preview
+     */
+    public void prepareBulkCodeGeneration() {
+        List<Amp> ampsToUpdate = findAmpsNeedingCodeGeneration();
+        if (ampsToUpdate.isEmpty()) {
+            JsfUtil.addSuccessMessage("All AMPs already have proper codes. No action needed.");
+            return;
+        }
+
+        String message = String.format("Found %d AMPs that need code generation/improvement:%n%n", ampsToUpdate.size());
+        StringBuilder details = new StringBuilder();
+        int displayLimit = 10; // Show first 10 items
+
+        for (int i = 0; i < Math.min(ampsToUpdate.size(), displayLimit); i++) {
+            Amp amp = ampsToUpdate.get(i);
+            String currentCode = amp.getCode();
+            details.append(String.format("- %s (Current code: %s)%n",
+                amp.getName(),
+                (currentCode == null || currentCode.trim().isEmpty()) ? "MISSING" : "'" + currentCode + "'"));
+        }
+
+        if (ampsToUpdate.size() > displayLimit) {
+            details.append(String.format("... and %d more items%n", ampsToUpdate.size() - displayLimit));
+        }
+
+        JsfUtil.addInfoMessage(message + details.toString());
+    }
+
+    /**
+     * Performs bulk code generation for all AMPs that need it
+     */
+    public void performBulkCodeGeneration() {
+        List<Amp> ampsToUpdate = findAmpsNeedingCodeGeneration();
+        if (ampsToUpdate.isEmpty()) {
+            JsfUtil.addSuccessMessage("All AMPs already have proper codes. No action needed.");
+            return;
+        }
+
+        int successCount = 0;
+        int errorCount = 0;
+        int minCodeLength = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
+
+        StringBuilder errors = new StringBuilder();
+
+        for (Amp amp : ampsToUpdate) {
+            try {
+                String existingCode = amp.getCode();
+                String newCode = null;
+
+                if (existingCode == null || existingCode.trim().isEmpty()) {
+                    // Generate new code
+                    newCode = generateCodeForAmp(amp);
+                } else if (existingCode.length() < minCodeLength) {
+                    // Pad existing short code with leading zeros
+                    newCode = padCodeWithZeros(existingCode, minCodeLength);
+                }
+
+                if (newCode != null && !newCode.trim().isEmpty()) {
+                    // Verify uniqueness
+                    if (!checkItemCode(newCode, amp)) {
+                        amp.setCode(newCode);
+                        amp.setEditedAt(new Date());
+                        amp.setEditer(getSessionController().getLoggedUser());
+                        getFacade().edit(amp);
+                        successCount++;
+                    } else {
+                        errorCount++;
+                        errors.append(String.format("Failed to generate unique code for %s%n", amp.getName()));
+                    }
+                } else {
+                    errorCount++;
+                    errors.append(String.format("Failed to generate code for %s%n", amp.getName()));
+                }
+
+            } catch (Exception e) {
+                errorCount++;
+                errors.append(String.format("Error processing %s: %s%n", amp.getName(), e.getMessage()));
+            }
+        }
+
+        // Clear cache and refresh
+        recreateModel();
+
+        // Report results
+        if (successCount > 0) {
+            JsfUtil.addSuccessMessage(String.format("Successfully generated codes for %d AMPs.", successCount));
+        }
+
+        if (errorCount > 0) {
+            JsfUtil.addErrorMessage(String.format("%d AMPs had errors:%n%s", errorCount, errors.toString()));
+        }
+    }
+
+    /**
+     * Generates a code for a specific AMP using current configuration
+     */
+    private String generateCodeForAmp(Amp amp) {
+        int length = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
+
+        // Temporarily set the amp as current to use existing generation methods
+        Amp originalCurrent = this.current;
+        this.current = amp;
+
+        String code = "";
+        try {
+            if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_NUMERIC_ONLY")) {
+                code = generateNumericCode(length);
+            } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_CHARACTERS_ONLY")) {
+                code = generateCharacterCode(length);
+            } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_ALPHANUMERIC")) {
+                code = generateAlphaNumericCode(length);
+            } else {
+                // Default to numeric
+                code = generateNumericCode(length);
+            }
+        } finally {
+            // Restore original current
+            this.current = originalCurrent;
+        }
+
+        return code;
+    }
+
+    /**
+     * Pads a short code with leading zeros to reach minimum length
+     */
+    private String padCodeWithZeros(String existingCode, int minLength) {
+        if (existingCode == null) {
+            return null;
+        }
+
+        String trimmedCode = existingCode.trim();
+        if (trimmedCode.length() >= minLength) {
+            return trimmedCode;
+        }
+
+        // Check if the code is numeric - if so, pad with zeros
+        try {
+            Long.parseLong(trimmedCode);
+            // It's numeric, pad with leading zeros
+            String format = "%0" + minLength + "d";
+            return String.format(format, Long.parseLong(trimmedCode));
+        } catch (NumberFormatException e) {
+            // It's not numeric, pad with zeros at the beginning
+            StringBuilder padded = new StringBuilder();
+            int zerosNeeded = minLength - trimmedCode.length();
+            for (int i = 0; i < zerosNeeded; i++) {
+                padded.append("0");
+            }
+            padded.append(trimmedCode);
+            return padded.toString();
+        }
     }
 
     /**

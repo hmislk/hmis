@@ -48,6 +48,16 @@
 
                                     <p:commandButton 
                                         ajax="false" 
+                                        value="Reverse Bill" 
+                                        class="ui-button-warning"
+                                        icon="fa fa-exchange-alt"
+                                        action="#{pharmacyBillSearch.navigateToReversePharmacyDirectIssueToInpatients}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                        title="Create a reverse bill with negative quantities"  >                           
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
                                         value="Excel" 
                                         styleClass="noPrintButton" 
                                         icon="fa-solid fa-file-excel" 

@@ -35,7 +35,9 @@
                             class="w-100"
                             inputStyleClass="form-control"
                             value="#{searchController.toDate}" 
-                            showTime="true"                                            showButtonBar="true"                                            timeInput="true" 
+                            showTime="true"                                            
+                            showButtonBar="true"                                            
+                            timeInput="true" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                         </p:datePicker>
                         <p:commandButton 
@@ -137,7 +139,7 @@
                                     action="ward_pharmacy_reprint_bht_issue_request?faces-redirect=true">
                                     <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                                 </p:commandButton>
-
+                                
                                 <p:commandButton 
                                     id="btnNavigtateToIssueMedicine"
                                     title="Issue Medicines"
@@ -192,10 +194,6 @@
                         </p:dataTable>
                     </div>
                 </div>
-
-
-
-
 
             </p:panel>
         </h:form>

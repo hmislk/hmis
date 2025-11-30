@@ -6,6 +6,8 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -91,7 +93,11 @@ public class PurchaseOrderController implements Serializable {
     private double totalBillItemsCount;
     @Inject
     NotificationController notificationController;
-    
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
+
     private String emailRecipient;
 
     public void removeSelected() {
@@ -109,6 +115,10 @@ public class PurchaseOrderController implements Serializable {
         }
 
         selectedItems = null;
+    }
+
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
     }
 
     public void removeItem(BillItem billItem) {
@@ -143,6 +153,13 @@ public class PurchaseOrderController implements Serializable {
 
     public String navigateToPurchaseOrderApproval() {
         Bill temRequestedBill = requestedBill;
+
+        // Check if the requested bill is already approved
+        if (temRequestedBill != null && temRequestedBill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This purchase order is already approved");
+            return "";
+        }
+
         clearList();
         requestedBill = temRequestedBill;
         getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
@@ -154,6 +171,12 @@ public class PurchaseOrderController implements Serializable {
     }
 
     public String approve() {
+        // Check if the requested bill is already approved to prevent double approving
+        if (getRequestedBill() != null && getRequestedBill().getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This purchase order is already approved");
+            return "";
+        }
+
         if (getAprovedBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return "";
@@ -187,15 +210,57 @@ public class PurchaseOrderController implements Serializable {
         saveBill();
         saveBillComponent();
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(
-                getSessionController().getDepartment(),
-                BillTypeAtomic.PHARMACY_ORDER_APPROVAL
-        );
+        // Check if bill number suffix is configured, if not set default "POA" for Purchase Order Approvals
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Set default suffix for Purchase Order Approvals if not configured
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL, "POA");
+        }
+
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Approvals - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        // Handle Department ID generation
+        String deptId;
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+        } else {
+            // Default behavior - use the original method
+            deptId = billNumberBean.departmentBillNumberGeneratorYearly(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+        }
+
+        // Handle Institution ID generation separately
+        String insId;
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(),
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+            );
+        } else {
+            // Default behavior - use the department ID for institution ID
+            insId = deptId;
+        }
 
         getAprovedBill().setDeptId(deptId);
-        getAprovedBill().setInsId(deptId);
+        getAprovedBill().setInsId(insId);
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
-
+        //        Approve Date and Time 
+        getAprovedBill().setApproveAt(new Date());
+        getAprovedBill().setApproveUser(getSessionController().getLoggedUser());
+        
+        
         billFacade.edit(getAprovedBill());
         notificationController.createNotification(getAprovedBill());
 
@@ -215,12 +280,36 @@ public class PurchaseOrderController implements Serializable {
     private PharmacyController pharmacyController;
 
     public void onEdit(BillItem bi) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+
+            // Check quantity for decimal values
+            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+                calculateLineValues(bi);
+                calculateBillTotals();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+
+            // Check free quantity for decimal values
+            if (freeQty != null && freeQty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setFreeQuantity(BigDecimal.ZERO);
+                calculateLineValues(bi);
+                calculateBillTotals();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         // During approving, only recalculate if BillItemFinanceDetails is missing or incomplete
         // This prevents unnecessary recalculations when data is already correct from request phase
-        if (bi.getBillItemFinanceDetails() == null || 
-            bi.getBillItemFinanceDetails().getLineNetTotal() == null ||
-            bi.getBillItemFinanceDetails().getQuantity() == null ||
-            bi.getBillItemFinanceDetails().getLineGrossRate() == null) {
+        if (bi.getBillItemFinanceDetails() == null
+                || bi.getBillItemFinanceDetails().getLineNetTotal() == null
+                || bi.getBillItemFinanceDetails().getQuantity() == null
+                || bi.getBillItemFinanceDetails().getLineGrossRate() == null) {
             calculateLineValues(bi);
         } else {
             // Just ensure the values are synchronized for user changes
@@ -235,14 +324,20 @@ public class PurchaseOrderController implements Serializable {
         BigDecimal bdFreeQty = lineBillItem.getBillItemFinanceDetails().getFreeQuantity();
         BigDecimal bdPurchaseRate = lineBillItem.getBillItemFinanceDetails().getLineGrossRate();
 
-        if (bdQty == null) bdQty = BigDecimal.ZERO;
-        if (bdFreeQty == null) bdFreeQty = BigDecimal.ZERO;
-        if (bdPurchaseRate == null) bdPurchaseRate = BigDecimal.ZERO;
+        if (bdQty == null) {
+            bdQty = BigDecimal.ZERO;
+        }
+        if (bdFreeQty == null) {
+            bdFreeQty = BigDecimal.ZERO;
+        }
+        if (bdPurchaseRate == null) {
+            bdPurchaseRate = BigDecimal.ZERO;
+        }
 
         // Recalculate only the essential values that depend on user input
         BigDecimal bdGrossValue = bdPurchaseRate.multiply(bdQty);
         BigDecimal bdNetValue = bdGrossValue;
-        
+
         lineBillItem.getBillItemFinanceDetails().setLineNetTotal(bdNetValue);
         lineBillItem.getBillItemFinanceDetails().setLineGrossTotal(bdGrossValue);
         lineBillItem.setNetValue(bdNetValue.doubleValue());
@@ -310,7 +405,7 @@ public class PurchaseOrderController implements Serializable {
 
         lineBillItem.getBillItemFinanceDetails().setQuantity(bdQty);
         lineBillItem.getBillItemFinanceDetails().setFreeQuantity(bdFreeQty);
-        
+
         // Calculate quantity by units (for AMPP items)
         BigDecimal quantityByUnits;
         if (lineBillItem.getItem() instanceof Ampp) {
@@ -322,12 +417,12 @@ public class PurchaseOrderController implements Serializable {
 
         lineBillItem.getBillItemFinanceDetails().setValueAtPurchaseRate(bdPurchaseValue);
         lineBillItem.getBillItemFinanceDetails().setValueAtRetailRate(bdRetailValue);
-        
+
         // Set costing values to zero (not relevant for purchase orders)
         lineBillItem.getBillItemFinanceDetails().setLineCost(BigDecimal.ZERO);
         lineBillItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.ZERO);
         lineBillItem.getBillItemFinanceDetails().setValueAtCostRate(BigDecimal.ZERO);
-        
+
         // Set audit fields for BillItemFinanceDetails
         if (lineBillItem.getBillItemFinanceDetails().getId() == null) {
             lineBillItem.getBillItemFinanceDetails().setCreatedAt(new Date());
@@ -405,7 +500,9 @@ public class PurchaseOrderController implements Serializable {
 
         getAprovedBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAprovedBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        
 
+        
         getAprovedBill().setCreater(getSessionController().getLoggedUser());
         getAprovedBill().setCreatedAt(Calendar.getInstance().getTime());
 
@@ -430,43 +527,23 @@ public class PurchaseOrderController implements Serializable {
             i.setNetValue(i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate());
 
             double qty;
-            qty = i.getQty() + i.getPharmaceuticalBillItem().getFreeQty();
+            qty = i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
+
+            i.getPharmaceuticalBillItem().setRemainingQty(i.getPharmaceuticalBillItem().getQty());
+            i.getPharmaceuticalBillItem().setRemainingFreeQty(i.getPharmaceuticalBillItem().getFreeQty());
+
             if (qty <= 0.0) {
                 i.setRetired(true);
                 i.setRetirer(sessionController.getLoggedUser());
                 i.setRetiredAt(new Date());
                 i.setRetireComments("Retired at Approving PO");
-
             }
-//            totalBillItemsCount = totalBillItemsCount + qty;
-            PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
-            try {
-                if (i.getId() == null) {
-                    getBillItemFacade().create(i);
-                } else {
-                    getBillItemFacade().edit(i);
-                }
-            } catch (Exception e) {
-            }
-
-            phItem.setBillItem(i);
-
-            try {
-                if (phItem.getId() == null) {
-                    getPharmaceuticalBillItemFacade().create(phItem);
-                } else {
-                    getPharmaceuticalBillItemFacade().edit(phItem);
-                }
-            } catch (Exception e) {
-            }
-
-            i.setPharmaceuticalBillItem(phItem);
-            try {
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            } else {
                 getBillItemFacade().edit(i);
-            } catch (Exception e) {
-
             }
+
             getAprovedBill().getBillItems().add(i);
         }
 
@@ -475,13 +552,13 @@ public class PurchaseOrderController implements Serializable {
 
     public void generateBillComponent() {
 
-        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getRequestedBill())) {
+        for (PharmaceuticalBillItem i : pharmaceuticalBillItemFacade.getPharmaceuticalBillItems(getRequestedBill())) {
             BillItem bi = new BillItem();
             bi.copy(i.getBillItem());
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
-            
+
             // Set audit fields for the new PharmaceuticalBillItem
             ph.setCreatedAt(new Date());
             ph.setCreater(sessionController.getLoggedUser());
@@ -498,7 +575,7 @@ public class PurchaseOrderController implements Serializable {
             if (i.getBillItem().getBillItemFinanceDetails() != null) {
                 BillItemFinanceDetails originalBifd = i.getBillItem().getBillItemFinanceDetails();
                 BillItemFinanceDetails newBifd = bi.getBillItemFinanceDetails();
-                
+
                 // Copy all values from original to new instance
                 newBifd.setUnitsPerPack(originalBifd.getUnitsPerPack());
                 newBifd.setLineGrossRate(originalBifd.getLineGrossRate());
@@ -535,7 +612,7 @@ public class PurchaseOrderController implements Serializable {
                 newBifd.setValueAtRetailRate(originalBifd.getValueAtRetailRate());
                 newBifd.setRetailSaleRate(originalBifd.getRetailSaleRate());
                 newBifd.setWholesaleRate(originalBifd.getWholesaleRate());
-                
+
                 // Set the new instance (this will automatically set the bidirectional relationship)
                 bi.setBillItemFinanceDetails(newBifd);
             }
@@ -588,14 +665,6 @@ public class PurchaseOrderController implements Serializable {
 
     public void setAprovedBill(Bill aprovedBill) {
         this.aprovedBill = aprovedBill;
-    }
-
-    public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
-        return pharmaceuticalBillItemFacade;
-    }
-
-    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
-        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
     public SessionController getSessionController() {
@@ -669,8 +738,8 @@ public class PurchaseOrderController implements Serializable {
             }
 
             // Set the netValue for display compatibility
-            if (handlingBillItem.getBillItemFinanceDetails() != null && 
-                handlingBillItem.getBillItemFinanceDetails().getLineNetTotal() != null) {
+            if (handlingBillItem.getBillItemFinanceDetails() != null
+                    && handlingBillItem.getBillItemFinanceDetails().getLineNetTotal() != null) {
                 handlingBillItem.setNetValue(handlingBillItem.getBillItemFinanceDetails().getLineNetTotal().doubleValue());
             }
         }
@@ -822,7 +891,7 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        
+
         // Set default email if available
         if (aprovedBill.getToInstitution() != null && aprovedBill.getToInstitution().getEmail() != null) {
             emailRecipient = aprovedBill.getToInstitution().getEmail();
@@ -836,7 +905,7 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        
+
         if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter recipient email");
             return;
@@ -894,11 +963,11 @@ public class PurchaseOrderController implements Serializable {
             if (aprovedBill == null) {
                 return null;
             }
-            
+
             StringBuilder html = new StringBuilder();
             html.append("<html><head><title>Purchase Order</title></head><body>");
             html.append("<div style='font-family: Arial, sans-serif; padding: 20px;'>");
-            
+
             // Institution header
             if (aprovedBill.getCreater() != null && aprovedBill.getCreater().getInstitution() != null) {
                 html.append("<div style='text-align: center; margin-bottom: 20px;'>");
@@ -911,9 +980,9 @@ public class PurchaseOrderController implements Serializable {
                 }
                 html.append("</div>");
             }
-            
+
             html.append("<h3 style='text-align: center; text-decoration: underline;'>Purchase Order</h3>");
-            
+
             // Order details
             html.append("<table style='width: 100%; margin-bottom: 20px;'>");
             html.append("<tr><td><strong>Order No:</strong></td><td>").append(aprovedBill.getDeptId() != null ? aprovedBill.getDeptId() : "").append("</td></tr>");
@@ -933,7 +1002,7 @@ public class PurchaseOrderController implements Serializable {
             html.append("<tr><td><strong>Payment Method:</strong></td><td>").append(aprovedBill.getPaymentMethod() != null ? aprovedBill.getPaymentMethod().toString() : "").append("</td></tr>");
             html.append("<tr><td><strong>Consignment:</strong></td><td>").append(aprovedBill.isConsignment() ? "Yes" : "No").append("</td></tr>");
             html.append("</table>");
-            
+
             // Items table
             html.append("<table border='1' style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>");
             html.append("<thead style='background-color: #f0f0f0;'>");
@@ -945,7 +1014,7 @@ public class PurchaseOrderController implements Serializable {
             html.append("<th style='padding: 8px;'>Purchase Rate</th>");
             html.append("<th style='padding: 8px;'>Purchase Value</th>");
             html.append("</tr></thead><tbody>");
-            
+
             if (billItems != null) {
                 for (BillItem bi : billItems) {
                     if (bi != null && !bi.isRetired() && bi.getItem() != null) {
@@ -972,14 +1041,14 @@ public class PurchaseOrderController implements Serializable {
                     }
                 }
             }
-            
+
             html.append("</tbody>");
             html.append("<tfoot style='font-weight: bold;'>");
             html.append("<tr>");
             html.append("<td colspan='5' style='padding: 8px; text-align: right;'>Net Total:</td>");
             html.append("<td style='padding: 8px; text-align: right;'>").append(String.format("%,.2f", aprovedBill.getNetTotal())).append("</td>");
             html.append("</tr></tfoot></table>");
-            
+
             // Footer details
             html.append("<div style='margin-top: 20px;'>");
             if (aprovedBill.getCreater() != null && aprovedBill.getCreater().getWebUserPerson() != null) {
@@ -994,7 +1063,7 @@ public class PurchaseOrderController implements Serializable {
             html.append("<p><strong>Generated At:</strong> ").append(CommonFunctions.formatDate(new Date(), "dd/MM/yyyy HH:mm:ss")).append("</p>");
             html.append("<p><strong>Total:</strong> ").append(String.format("%,.2f", aprovedBill.getNetTotal())).append("</p>");
             html.append("</div>");
-            
+
             html.append("</div></body></html>");
             return html.toString();
         } catch (Exception e) {

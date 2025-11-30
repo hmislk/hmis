@@ -13,7 +13,7 @@
             <ui:define name="subContent">
                 <h:form>
                     <p:panel header="Income By Institution with Agent Bookings" >
-                        <h:panelGrid columns="19" class="my-2" >
+                        <h:panelGrid columns="20" class="my-2" styleClass="w-100">
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2" value="From " />
@@ -44,7 +44,7 @@
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2"  value="Institution"  />
                             <h:outputLabel value=":" />
-                            <p:selectOneMenu class="w-100" value="#{channelReportController.institution}" filter="true" >
+                            <p:selectOneMenu class="w-100 mx-4" value="#{channelReportController.institution}" filter="true" >
                                 <f:selectItem itemLabel="Select Institution" />
                                 <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax event="change" process="@this"/>
@@ -52,7 +52,7 @@
 
                             <p:spacer width="50"/>
                             <i class="fa-solid fa-circle-check"/>
-                            <h:outputLabel class="mx-2"  value="Report Status"  />
+                            <h:outputLabel class="mx-2"  value="Status"  />
                             <h:outputLabel value=":" />
                             <p:selectOneMenu
                                 id="cmbDept"
@@ -60,10 +60,13 @@
                                 class="w-100 mx-4"
                                 value="#{channelReportController.reportStatus}"
                                 >
-                                <f:selectItem itemLabel="Summery View" itemValue="Summery" />
                                 <f:selectItem itemLabel="Details View" itemValue="Details"/>
+                                <f:selectItem itemLabel="Summery View" itemValue="Summery" />
+                                
 
                             </p:selectOneMenu>
+                            
+                            <p:spacer width="50"/>
 
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">

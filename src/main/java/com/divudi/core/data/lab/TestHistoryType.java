@@ -14,6 +14,8 @@ public enum TestHistoryType {
     ORDERED,
     CANCELED,
     REFUNDED,
+    SAMPLE_SEPARATE,
+    SEPARATE_AND_BARCODE_GENERATED,
     BARCODE_GENERATED,
     BARCODE_REGENERATED,
     BARCODE_PRINTED,
@@ -24,6 +26,8 @@ public enum TestHistoryType {
     SAMPLE_ACCEPTED,
     SAMPLE_SENT,
     SAMPLE_SENT_OUT_LAB,
+    SAMPLE_SENT_INTERNAL_LAB,
+    SAMPLE_RETRIEVING,
     SAMPLE_REJECTED,
     SAMPLE_RECEIVED,
     SAMPLE_TRANSFERRED,
@@ -52,6 +56,10 @@ public enum TestHistoryType {
                 return "Refunded";
             case BARCODE_GENERATED:
                 return "Barcode Generated";
+            case SEPARATE_AND_BARCODE_GENERATED:
+                return "Separate and Barcode Generated";
+            case SAMPLE_SEPARATE:
+                return "Sample Separate";
             case BARCODE_REGENERATED:
                 return "Barcode Regenerated";
             case BARCODE_PRINTED:
@@ -68,8 +76,12 @@ public enum TestHistoryType {
                 return "Sample Accepted";
             case SAMPLE_SENT:
                 return "Sample Sent";
+            case SAMPLE_RETRIEVING:
+                return "Receiving the sent sample";
             case SAMPLE_SENT_OUT_LAB:
                 return "Sample Sent to External Lab";
+            case SAMPLE_SENT_INTERNAL_LAB:
+                return "Sample Sent to Internal Lab";
             case SAMPLE_REJECTED:
                 return "Sample Rejected";
             case SAMPLE_RECEIVED:

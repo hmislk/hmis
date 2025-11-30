@@ -35,11 +35,38 @@ public abstract class AbstractFacade<T> {
 
     private Class<T> entityClass;
 
+    /**
+     * Executes native SQL query.
+     *
+     * WARNING: This method does not provide SQL injection protection.
+     * Use executeNativeSql(String sql, List<Object> parameters) for dynamic queries.
+     * This method should ONLY be used for:
+     * - Static SQL from trusted sources (migration files, hardcoded statements)
+     * - Admin operations with proper access control and input validation
+     *
+     * @param sql The SQL statement to execute (must be from trusted source)
+     * @throws Exception if query fails
+     */
     public void executeNativeSql(String sql) throws Exception {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+
         try {
             // Execute the native SQL query
             Query query = getEntityManager().createNativeQuery(sql);
-            query.executeUpdate();
+
+            // Check if this is a SELECT query
+            String trimmedSql = sql.trim().toUpperCase();
+            if (trimmedSql.startsWith("SELECT") || trimmedSql.startsWith("SHOW") ||
+                trimmedSql.startsWith("DESCRIBE") || trimmedSql.startsWith("EXPLAIN")) {
+                // For SELECT queries, execute and get results but don't return them
+                // This allows SELECT statements to run without throwing "executeUpdate with result sets" error
+                query.getResultList();
+            } else {
+                // For DML statements (INSERT, UPDATE, DELETE, ALTER, etc.)
+                query.executeUpdate();
+            }
         } catch (Exception e) {
             throw e; // Rethrow exception to be handled in calling method
         }
@@ -48,18 +75,45 @@ public abstract class AbstractFacade<T> {
     /**
      * Executes native SQL using positional parameters, suitable for MySQL.
      *
+     * Automatically detects query type:
+     * - Read-only queries (SELECT, SHOW, DESCRIBE, EXPLAIN): Uses getResultList()
+     * - DML/DDL statements (INSERT, UPDATE, DELETE, ALTER, etc.): Uses executeUpdate()
+     *
+     * Healthcare Usage:
+     * - Database migrations and schema updates
+     * - Bulk data corrections under admin supervision
+     * - System maintenance operations
+     *
+     * IMPORTANT: Use this method for dynamic queries requiring parameterization.
+     * Never concatenate user input into SQL strings.
+     *
      * @param sql The SQL with positional placeholders (e.g., "UPDATE table SET
      * col = ? WHERE id = ?")
      * @param parameters List of parameter values in exact order.
      * @throws Exception if query fails.
      */
     public void executeNativeSql(String sql, List<Object> parameters) throws Exception {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+
         try {
             Query query = getEntityManager().createNativeQuery(sql);
             for (int i = 0; i < parameters.size(); i++) {
                 query.setParameter(i + 1, parameters.get(i));
             }
-            query.executeUpdate();
+
+            // Check if this is a SELECT query
+            String trimmedSql = sql.trim().toUpperCase();
+            if (trimmedSql.startsWith("SELECT") || trimmedSql.startsWith("SHOW") ||
+                trimmedSql.startsWith("DESCRIBE") || trimmedSql.startsWith("EXPLAIN")) {
+                // For SELECT queries, execute and get results but don't return them
+                // This allows SELECT statements to run without throwing "executeUpdate with result sets" error
+                query.getResultList();
+            } else {
+                // For DML statements (INSERT, UPDATE, DELETE, ALTER, etc.)
+                query.executeUpdate();
+            }
         } catch (Exception e) {
             throw e;
         }
@@ -112,12 +166,11 @@ public abstract class AbstractFacade<T> {
     public T findFirstByJpql(String jpql) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(1);
-        try {
-            T result = qry.getSingleResult();
-            return result;
-        } catch (Exception e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
     }
 
     public List<T> findByJpql(String jpql, Map<String, Object> parameters, Map<String, TemporalType> temporalTypes) {
@@ -246,11 +299,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        try {
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
     }
 
     public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
@@ -274,11 +327,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        try {
-            return qry.getSingleResult();
-        } catch (NoResultException e) {
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
 
     }
 
@@ -373,7 +426,33 @@ public abstract class AbstractFacade<T> {
     }
 
     public T find(Object id) {
-        return getEntityManager().find(entityClass, id);
+        if (id == null) {
+            return null;
+        }
+        try {
+            return getEntityManager().find(entityClass, id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get a reference (proxy) to an entity without loading it from database.
+     * Use this when you only need the entity reference for relationships,
+     * not the entity's data. Much faster than find() as it doesn't query the database.
+     *
+     * @param id The entity ID
+     * @return Proxy reference to the entity
+     */
+    public T getReference(Object id) {
+        if (id == null) {
+            return null;
+        }
+        try {
+            return getEntityManager().getReference(entityClass, id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public T findWithoutCache(Object id) {
@@ -638,6 +717,39 @@ public abstract class AbstractFacade<T> {
 
     public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
         Query qry = getEntityManager().createQuery(jpql);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<?> resultList;
+        qry.setMaxResults(maxRecords);
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    // Overloaded method to support maxRecords with optional cache bypass
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords, boolean noCache) {
+        Query qry = getEntityManager().createQuery(jpql);
+
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
 
         for (Map.Entry<String, Object> entry : entries) {
@@ -1193,13 +1305,11 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
-        T t;
-        try {
-            t = qry.getSingleResult();
-        } catch (Exception e) {
-            t = null;
+        List<T> results = qry.getResultList();
+        if (results.isEmpty()) {
+            return null;
         }
-        return t;
+        return results.get(0);
     }
 
     public <U> List<T> testMethod(U[] a, Collection<U> all) {

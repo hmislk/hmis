@@ -33,12 +33,27 @@
                                              style="float: right; margin-right: 0.5em;"
                                              onclick="if (!confirm('Are you sure you want to delete the selected options?'))
                                                          return false;" />
+                            <!-- Reload Config button -->
+                            <p:commandButton value="Reload Config"
+                                             icon="pi pi-refresh"
+                                             styleClass="ui-button-warning"
+                                             action="#{configOptionApplicationController.loadApplicationOptions}"
+                                             update="optionsTable"
+                                             style="float: right; margin-right: 0.5em;"
+                                             title="Reload configuration options to reflect changes" />
                             <!-- Button to List Application Options, with an icon and aligned to the right -->
                             <p:commandButton value="List Application Options" icon="pi pi-list" action="#{configOptionController.listApplicationOptions}"
                                              update="optionsTable" style="float: right; margin-right: 0.5em;" />
                             <!-- Excel export button -->
                             <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel" style="float: right; margin-right: 0.5em;">
                                 <p:dataExporter type="xlsx" target="optionsTable" fileName="application_options" />
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                action="#{configOptionController.navigateToDuplicateOptions()}"
+                                icon="pi pi-copy"
+                                title="Navigate to Duplicates"
+                                style="float: right; margin-right: 0.5em;">
                             </p:commandButton>
                         </f:facet>
                         <!-- Data Table for Options -->
@@ -275,7 +290,7 @@
                                     sizeLimit="1000000"
                                     label="Choose CSV File" />
                             </div>
-                            
+
                             <div class="mb-3">
                                 <p:commandButton 
                                     value="Import CSV" 

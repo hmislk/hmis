@@ -33,6 +33,8 @@ public class StockDTO implements Serializable {
     private Double beforeCostAdjustmentValue;
     // Field for total stock quantity across all departments (used in retail sale autocomplete)
     private Double totalStockQty;
+    // Whether the underlying Item allows fractional quantities
+    private Boolean allowFractions = false;
 
     public StockDTO() {
     }
@@ -48,8 +50,16 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
     }
 
+    // Same as above, with allowFractions
+    public StockDTO(Long id, String itemName, String code, String genericName,
+                    Double retailRate, Double stockQty, Date dateOfExpire,
+                    Boolean allowFractions) {
+        this(id, itemName, code, genericName, retailRate, stockQty, dateOfExpire);
+        this.allowFractions = allowFractions;
+    }
+
     // Constructor for pharmacy adjustment with all fields
-    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty, 
+    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty,
                     Date dateOfExpire, String batchNo, Double purchaseRate, Double wholesaleRate) {
         this.id = id;
         this.itemName = itemName;
@@ -60,6 +70,14 @@ public class StockDTO implements Serializable {
         this.batchNo = batchNo;
         this.purchaseRate = purchaseRate;
         this.wholesaleRate = wholesaleRate;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty,
+                    Date dateOfExpire, String batchNo, Double purchaseRate, Double wholesaleRate,
+                    Boolean allowFractions) {
+        this(id, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
+        this.allowFractions = allowFractions;
     }
 
     // Constructor for pharmacy adjustment with Stock ID and ItemBatch ID
@@ -77,6 +95,41 @@ public class StockDTO implements Serializable {
         this.batchNo = batchNo;
         this.purchaseRate = purchaseRate;
         this.wholesaleRate = wholesaleRate;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Boolean allowFractions) {
+        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
+        this.allowFractions = allowFractions;
+    }
+
+    // Constructor for pharmacy adjustment with Stock ID, ItemBatch ID and Cost Rate
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Double costRate) {
+        this.id = id;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemName = itemName;
+        this.code = code;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.wholesaleRate = wholesaleRate;
+        this.costRate = costRate;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Double costRate,
+                    Boolean allowFractions) {
+        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate, costRate);
+        this.allowFractions = allowFractions;
     }
 
     // Constructor for department stock report by batch using DTO
@@ -107,12 +160,19 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
     }
 
-    // Constructor including field for retail rate adjustments
-    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
-                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
-                    Double purchaseRate, Double wholesaleRate, Double beforeRetailAdjustmentValue) {
-        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
-        this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
+    // Constructor for stock count bill generation (optimized for performance)
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId,
+                    String categoryName, String itemName, String batchNo,
+                    Date dateOfExpire, Double stockQty, Double costRate) {
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.id = itemId;
+        this.categoryName = categoryName;
+        this.itemName = itemName;
+        this.batchNo = batchNo;
+        this.dateOfExpire = dateOfExpire;
+        this.stockQty = stockQty;
+        this.costRate = costRate;
     }
 
 
@@ -127,6 +187,14 @@ public class StockDTO implements Serializable {
         this.stockQty = stockQty;
         this.dateOfExpire = dateOfExpire;
         this.totalStockQty = totalStockQty;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, String itemName, String code, String genericName,
+                    Double retailRate, Double stockQty, Date dateOfExpire, Double totalStockQty,
+                    Boolean allowFractions) {
+        this(id, itemName, code, genericName, retailRate, stockQty, dateOfExpire, totalStockQty);
+        this.allowFractions = allowFractions;
     }
 
     public Long getId() {
@@ -239,6 +307,15 @@ public class StockDTO implements Serializable {
 
     public void setCostRate(Double costRate) {
         this.costRate = costRate;
+    }
+
+    // Prefer boolean accessor for EL friendliness
+    public boolean isAllowFractions() {
+        return allowFractions != null && allowFractions;
+    }
+
+    public void setAllowFractions(Boolean allowFractions) {
+        this.allowFractions = allowFractions;
     }
 
     public Double getWholesaleRate() {

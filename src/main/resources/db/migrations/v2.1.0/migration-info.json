@@ -1,0 +1,49 @@
+{
+  "version": "v2.1.0",
+  "description": "Add consumption_allowed field to Item table with backfill and constraints",
+  "author": "Claude Code",
+  "date": "2025-11-09",
+  "githubIssue": "https://github.com/hmislk/hmis/issues/16415",
+  "branch": "16413-consumption-allowed-or-not-to-be-marked-and-marked-available-selectively",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["item"],
+  "affectedModules": ["Pharmacy"],
+  "dependencies": [],
+  "preRequisites": [
+    "Database backup recommended",
+    "Test on staging environment first"
+  ],
+  "postMigrationVerification": [
+    "Verify all items have consumption_allowed = TRUE",
+    "Confirm column is NOT NULL with DEFAULT TRUE",
+    "Test pharmacy issue autocomplete functionality",
+    "Verify AMP management form displays consumption_allowed field"
+  ],
+  "rollbackNotes": [
+    "Rollback will permanently delete consumption_allowed data",
+    "Requires corresponding application code rollback",
+    "Test rollback on staging environment first"
+  ],
+  "migrationSteps": [
+    {
+      "step": 1,
+      "description": "Add consumption_allowed column (nullable)",
+      "sql": "ALTER TABLE item ADD COLUMN consumption_allowed BOOLEAN;"
+    },
+    {
+      "step": 2,
+      "description": "Backfill existing records with TRUE",
+      "sql": "UPDATE item SET consumption_allowed = TRUE WHERE consumption_allowed IS NULL;"
+    },
+    {
+      "step": 3,
+      "description": "Add NOT NULL constraint with default",
+      "sql": "ALTER TABLE item MODIFY COLUMN consumption_allowed BOOLEAN NOT NULL DEFAULT TRUE;"
+    }
+  ],
+  "verificationQueries": [
+    "SELECT COUNT(*) as total_items, SUM(CASE WHEN consumption_allowed IS NULL THEN 1 ELSE 0 END) as null_count FROM item;",
+    "SHOW COLUMNS FROM item LIKE 'consumption_allowed';"
+  ]
+}

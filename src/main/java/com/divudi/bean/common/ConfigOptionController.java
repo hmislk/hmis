@@ -1,12 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.bean.common.EnumController;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
@@ -34,7 +32,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import javax.faces.application.FacesMessage;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -56,6 +53,9 @@ public class ConfigOptionController implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+
+    @Inject
+    EnumController enumController;
 
     @EJB
     AuditService auditService;
@@ -80,6 +80,85 @@ public class ConfigOptionController implements Serializable {
      * Creates a new instance of OptionController
      */
     public ConfigOptionController() {
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
+        boolean allDepartmentsUseSame = configOptionApplicationController.getBooleanValueByKey(
+                "All Departments Use Same Payment Methods for OPD Billing", true);
+        List<PaymentMethod> pms = new ArrayList<>();
+
+        if (allDepartmentsUseSame || sessionController == null || sessionController.getDepartment() == null) {
+            if (enumController.getPaymentMethodsForOpdBilling() != null) {
+                pms.addAll(enumController.getPaymentMethodsForOpdBilling());
+            }
+        } else {
+            for (PaymentMethod pm : PaymentMethod.values()) {
+                boolean include = getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+                if (include) {
+                    pms.add(pm);
+                }
+            }
+        }
+        // Remove disallowed entries from the visible OPD list are only restricted under Multiple Payment Methods
+        return pms;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsUnderMultipleForOpdBilling() {
+        // Build from the same configuration as OPD Billing but exclude Multiple/Credit/Staff
+        boolean allDepartmentsUseSame = configOptionApplicationController.getBooleanValueByKey(
+                "All Departments Use Same Payment Methods for OPD Billing", true);
+        List<PaymentMethod> pms = new ArrayList<>();
+
+        if (allDepartmentsUseSame || sessionController == null || sessionController.getDepartment() == null) {
+            for (PaymentMethod pm : PaymentMethod.values()) {
+                boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+                if (include) {
+                    pms.add(pm);
+                }
+            }
+        } else {
+            for (PaymentMethod pm : PaymentMethod.values()) {
+                boolean include = getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
+                if (include) {
+                    pms.add(pm);
+                }
+            }
+        }
+
+        // Remove methods not valid inside Multiple Payments
+        pms.remove(PaymentMethod.MultiplePaymentMethods);
+        pms.remove(PaymentMethod.Credit);
+        pms.remove(PaymentMethod.Staff);
+        return pms;
+    }
+
+    public boolean getBooleanValueByKey(String key) {
+        return getBooleanValueByKey(key, true);
+    }
+
+    public boolean getBooleanValueByKey(String key, boolean defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.BOOLEAN) {
+            defaultValue=configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
+        }
+        return configOptionApplicationController.getBooleanValueByKey(deptKey, defaultValue);
+    }
+
+    public void setBooleanValueByKey(String key, boolean value) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+            configOptionApplicationController.setBooleanValueByKey(departmentName + " - " + key, value);
+        } else {
+            configOptionApplicationController.setBooleanValueByKey(key, value);
+        }
     }
 
     public String navigateToDepartmentOptions() {
@@ -210,7 +289,7 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Please select a CSV file to import");
             return null;
         }
-        
+
         try (InputStream in = uploadedFile.getInputStream()) {
             importOptionsFromFile(in);
             return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
@@ -555,6 +634,55 @@ public class ConfigOptionController implements Serializable {
 
     public ConfigOption getOptionValueByKeyForWebUser(String key, WebUser webUser) {
         return getOptionValueByKey(key, OptionScope.USER, null, null, webUser);
+    }
+
+    /**
+     * Prepare an option for department editing, creating it if it doesn't exist
+     * @param key The option key
+     * @param department The department
+     */
+    public void prepareOptionForDepartmentEdit(String key, Department department) {
+        if (key == null || department == null) {
+            option = null;
+            return;
+        }
+
+        option = getOptionValueByKey(key, OptionScope.DEPARTMENT, null, department, null);
+        if (option == null) {
+            // Create a new department option if it doesn't exist
+            option = new ConfigOption();
+            option.setOptionKey(key);
+            option.setScope(OptionScope.DEPARTMENT);
+            option.setDepartment(department);
+            option.setValueType(OptionValueType.BOOLEAN); // Default type
+            option.setOptionValue("false"); // Default value
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
+        }
+    }
+
+    /**
+     * Prepare an APPLICATION-scoped option for editing, creating it if it doesn't exist.
+     * This is used for department-specific configs that are APPLICATION-scoped with department names in keys.
+     * @param key The option key (with actual department name, not placeholder)
+     */
+    public void prepareOptionForApplicationEdit(String key) {
+        if (key == null) {
+            option = null;
+            return;
+        }
+
+        option = configOptionApplicationController.getApplicationOption(key);
+        if (option == null) {
+            // Create a new APPLICATION option if it doesn't exist
+            option = new ConfigOption();
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setValueType(OptionValueType.BOOLEAN); // Default type
+            option.setOptionValue("false"); // Default value
+            option.setCreatedAt(new Date());
+            option.setCreater(sessionController.getLoggedUser());
+        }
     }
 
     public List<ConfigOption> searchOptions(String searchText) {

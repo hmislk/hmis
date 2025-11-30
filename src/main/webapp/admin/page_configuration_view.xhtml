@@ -1,0 +1,242 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <!-- Privilege Guard: Only administrators can access this page -->
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                    <h:form id="adminForm">
+                        <!-- Null Safety: Check if metadata is loaded -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata ne null}">
+                            <p:panel header="Page Configuration Management" styleClass="mb-3">
+
+                        <!-- Page Information Section -->
+                        <h:panelGroup class="card mb-4 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                            <h:outputText value="Page Information" styleClass="h5 d-block mb-3 text-primary"/>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Page Name:</strong>
+                                        <h:outputText value="#{pageAdminController.currentMetadata.pageName}" styleClass="ms-2"/>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Page Path:</strong>
+                                        <h:outputText value="#{pageAdminController.currentMetadata.pagePath}" styleClass="ms-2 text-muted"/>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Controller:</strong>
+                                        <h:outputText value="#{pageAdminController.currentMetadata.controllerClass}" styleClass="ms-2"/>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Description:</strong>
+                                        <h:outputText value="#{pageAdminController.currentMetadata.description}" styleClass="ms-2"/>
+                                    </p>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Configuration Options Section -->
+                        <p:panel header="Configuration Options Used" styleClass="my-3">
+                            <p:dataTable
+                                value="#{pageAdminController.currentMetadata.configOptions}"
+                                var="config"
+                                emptyMessage="No configuration options found for this page"
+                                styleClass="table table-striped"
+                                paginator="true"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25,50"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} configurations">
+
+                                <p:column headerText="Configuration Key" style="width: 35%">
+                                    <!-- Clean display for department-specific configs -->
+                                    <h:outputText value="#{config.key.replace(' for [Department Name]', '')} (per department)"
+                                                  styleClass="fw-bold"
+                                                  rendered="#{config.key.contains('[Department Name]')}"/>
+                                    <!-- Normal display for regular configs -->
+                                    <h:outputText value="#{config.key}"
+                                                  styleClass="fw-bold"
+                                                  rendered="#{!config.key.contains('[Department Name]')}"/>
+                                </p:column>
+
+                                <p:column headerText="Current Value" style="width: 15%; text-align: center;">
+                                    <h:panelGroup styleClass="badge #{configOptionApplicationController.getBooleanValueByKey(config.key, true) ? 'badge-success' : 'badge-danger'}">
+                                        <h:outputText
+                                            value="#{configOptionApplicationController.getBooleanValueByKey(config.key, true) ? 'Enabled' : 'Disabled'}"/>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Scope" style="width: 15%; text-align: center;">
+                                    <!-- Department-Specific scope display -->
+                                    <h:panelGroup styleClass="badge badge-warning px-2 py-1"
+                                                  rendered="#{config.key.contains('[Department Name]')}">
+                                        <i class="fas fa-building me-1"></i>
+                                        <h:outputText value="Department-Specific"/>
+                                    </h:panelGroup>
+                                    <!-- Regular scope display -->
+                                    <h:panelGroup styleClass="badge badge-primary px-2 py-1"
+                                                  rendered="#{!config.key.contains('[Department Name]')}">
+                                        <i class="fas fa-globe me-1"></i>
+                                        <h:outputText value="#{config.scope}"/>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Description" style="width: 35%">
+                                    <h:outputText value="#{config.description}"/>
+                                </p:column>
+                            </p:dataTable>
+
+                            <div class="mt-3 text-end">
+                                <p:commandButton
+                                    value="Manage Application Configuration"
+                                    icon="fa fa-cog"
+                                    action="#{pageAdminController.navigateToPageSpecificConfigManagement()}"
+                                    ajax="false"
+                                    styleClass="ui-button-info me-2"
+                                    title="Manage application-wide configuration options"/>
+
+                                <p:commandButton
+                                    value="Manage Department Configuration"
+                                    icon="fas fa-building"
+                                    action="#{pageAdminController.navigateToDepartmentConfigManagement()}"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    title="Manage department-specific configuration options"
+                                    rendered="#{pageAdminController.hasDepartmentConfigOptions()}"/>
+                            </div>
+                        </p:panel>
+
+                        <!-- Privileges Section -->
+                        <p:panel header="Privileges Required" styleClass="my-3">
+                            <p:dataTable
+                                value="#{pageAdminController.currentMetadata.privileges}"
+                                var="priv"
+                                emptyMessage="No privileges found for this page"
+                                styleClass="table table-striped"
+                                paginator="true"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25,50"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} privileges">
+
+                                <p:column headerText="Privilege Name" style="width: 30%">
+                                    <h:outputText value="#{priv.privilegeName}" styleClass="fw-bold"/>
+                                </p:column>
+
+                                <p:column headerText="Description" style="width: 70%">
+                                    <h:outputText value="#{priv.description}"/>
+                                </p:column>
+                            </p:dataTable>
+
+                            <div class="mt-3 text-end">
+                                <p:commandButton
+                                    value="Manage User Privileges"
+                                    icon="fa fa-users"
+                                    action="#{pageAdminController.navigateToPageSpecificPrivilegeManagement()}"
+                                    ajax="false"
+                                    styleClass="ui-button-info"
+                                    title="Manage user privileges specific to this page"/>
+                            </div>
+                        </p:panel>
+
+                            <!-- Action Buttons -->
+                            <div class="text-center mt-4">
+                                <p:commandButton
+                                    value="Back to Page"
+                                    icon="fa fa-arrow-left"
+                                    action="#{pageAdminController.navigateBackToPage()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary"/>
+                            </div>
+
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Error message when metadata is not found -->
+                        <h:panelGroup rendered="#{pageAdminController.currentMetadata eq null}">
+                            <p:panel header="Page Not Found" styleClass="mb-3">
+                                <p:messages id="messages" closable="true"/>
+                                <div class="alert alert-warning" role="alert">
+                                    <h:outputText styleClass="fa fa-exclamation-triangle fa-2x" style="vertical-align: middle;"/>
+                                    <strong class="ms-3">Page Configuration Not Available</strong>
+                                    <p class="mt-2 ms-2">
+                                        The page you're trying to view has not been registered in the admin system yet.
+                                        This page may not have configuration metadata available.
+                                    </p>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Access denied message for non-admin users -->
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('Admin')}">
+                    <p:panel header="Access Denied" styleClass="mb-3">
+                        <div class="alert alert-danger" role="alert">
+                            <h:outputText styleClass="fa fa-ban fa-2x" style="vertical-align: middle;"/>
+                            <strong class="ms-3">Insufficient Privileges</strong>
+                            <p class="mt-2 ms-2">
+                                You do not have permission to access this page.
+                                Only administrators can view page configuration management.
+                            </p>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+                <style>
+                    .badge-success {
+                        background-color: #28a745;
+                        color: white;
+                        padding: 4px 12px;
+                        border-radius: 12px;
+                        font-size: 0.85em;
+                        font-weight: bold;
+                    }
+
+                    .badge-danger {
+                        background-color: #dc3545;
+                        color: white;
+                        padding: 4px 12px;
+                        border-radius: 12px;
+                        font-size: 0.85em;
+                        font-weight: bold;
+                    }
+
+                    .badge-warning {
+                        background-color: #ffc107;
+                        color: #212529;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+
+                    .badge-primary {
+                        background-color: #007bff;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+
+                    .card {
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+
+                    .text-primary {
+                        color: #007bff !important;
+                    }
+                </style>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

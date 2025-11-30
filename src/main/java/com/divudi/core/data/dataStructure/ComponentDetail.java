@@ -19,6 +19,7 @@ import java.util.List;
  * @author safrin
  */
 public class ComponentDetail {
+
     private String no;
     private String comment;
     private Institution institution;
@@ -46,6 +47,7 @@ public class ComponentDetail {
 
     public void addAnotherPaymentDetail() {
         ComponentDetail cd = new ComponentDetail();
+        cd.setPaymentMethodData(new PaymentMethodData());
         getMultiplePaymentMethodComponentDetails().add(cd);
     }
 
@@ -65,8 +67,12 @@ public class ComponentDetail {
         this.institution = institution;
     }
 
+    /**
+     * Returns the number, falling back to referenceNo if no is null or blank.
+     * This getter is side-effect-free and computes the fallback on-the-fly.
+     */
     public String getNo() {
-        return no;
+        return (no == null || no.isBlank()) ? referenceNo : no;
     }
 
     public void setNo(String no) {
@@ -151,8 +157,12 @@ public class ComponentDetail {
         this.referralNo = referralNo;
     }
 
+    /**
+     * Returns the reference number, falling back to no if referenceNo is null or blank.
+     * This getter is side-effect-free and computes the fallback on-the-fly.
+     */
     public String getReferenceNo() {
-        return referenceNo;
+        return (referenceNo == null || referenceNo.isBlank()) ? no : referenceNo;
     }
 
     public void setReferenceNo(String referenceNo) {

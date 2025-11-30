@@ -4,8 +4,13 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import java.util.HashMap;
@@ -47,6 +52,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -64,6 +70,7 @@ public class TransferReceiveController implements Serializable {
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
+    @Deprecated
     private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
@@ -97,6 +104,11 @@ public class TransferReceiveController implements Serializable {
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    private com.divudi.bean.common.SearchController searchController;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
@@ -162,6 +174,11 @@ public class TransferReceiveController implements Serializable {
         fromDate = null;
         toDate = null;
         selectedBillItem = null;
+
+//        // Refresh the issued list data to show updated fullyIssued status
+//        if (searchController != null) {
+//            searchController.createIssueTable();
+//        }
     }
 
     public TransferReceiveController() {
@@ -318,14 +335,20 @@ public class TransferReceiveController implements Serializable {
         if (bill == null) {
             return false;
         }
-        
+
         // Get fresh data from the database to avoid caching issues
         Bill freshIssueBill = billFacade.find(bill.getId());
         if (freshIssueBill == null) {
             return false;
         }
-        
+
         List<BillItem> issueItems = billService.fetchBillItems(freshIssueBill);
+
+        // If there are no items in the issue, it cannot be "already received"
+        if (issueItems == null || issueItems.isEmpty()) {
+            return false;
+        }
+
         for (BillItem bi : issueItems) {
             double remainingQty = calculateRemainingQtyWithFreshData(bi);
             if (remainingQty > 0.001) { // Add small tolerance for floating point precision
@@ -429,9 +452,31 @@ public class TransferReceiveController implements Serializable {
 
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
+            // Get quantity from user input (BillItemFinanceDetails) and convert to units
+            double qtyInPacks = 0.0;
+            if (i.getBillItemFinanceDetails() != null && i.getBillItemFinanceDetails().getQuantity() != null) {
+                qtyInPacks = i.getBillItemFinanceDetails().getQuantity().doubleValue();
+            }
+
+            // Convert packs to units for stock operations
+            double unitsPerPack = 1.0;
+            Item item = i.getItem();
+            if (item instanceof Ampp || item instanceof Vmpp) {
+                unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+            }
+            double qtyInUnits = qtyInPacks * unitsPerPack;
+
+            if (qtyInUnits == 0.0) {
                 continue;
             }
+
+            // Update the PharmaceuticalBillItem with the correct user-entered quantity
+            i.getPharmaceuticalBillItem().setQty(qtyInUnits);
+            i.getPharmaceuticalBillItem().setQtyPacks(qtyInPacks);
+
+            // Update the BillItem with the correct user-entered quantity (in packs)
+            i.setQty(qtyInPacks);
+
             if (errorCheck(i)) {
                 continue;
             }
@@ -442,21 +487,63 @@ public class TransferReceiveController implements Serializable {
             } else {
                 getBillItemFacade().edit(i);
             }
-            double qty = Math.abs(i.getPharmaceuticalBillItem().getQty());
+            double qty = Math.abs(qtyInUnits);
 
             boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getIssuedBill().getToStaff());
 
             if (returnFlag) {
                 Stock addedStock = getPharmacyBean().addToStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getSessionController().getDepartment());
                 i.getPharmaceuticalBillItem().setStock(addedStock);
+                // Save the BillItem to ensure all changes (including quantity updates) are persisted
+                getBillItemFacade().edit(i);
             } else {
+                // If stock operation fails, set all quantities to 0 for consistency
                 i.getPharmaceuticalBillItem().setQty(0);
+                i.setQty(0.0); // Also update BillItem quantity to maintain consistency
+
+                // Reset BillItemFinanceDetails quantity if it exists
+                if (i.getBillItemFinanceDetails() != null) {
+                    i.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+                }
+
                 getBillItemFacade().edit(i);
             }
         }
 
-        getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
-        getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else {
+            // Use existing method for backward compatibility
+            deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+                insId = deptId;
+            }
+        }
+
+        getReceivedBill().setDeptId(deptId);
+        getReceivedBill().setInsId(insId);
 
         getReceivedBill().setInstitution(getSessionController().getInstitution());
         getReceivedBill().setDepartment(getSessionController().getDepartment());
@@ -625,9 +712,15 @@ public class TransferReceiveController implements Serializable {
 
         inputBill.setSaleValue(retailFree + retailNonFree);
         inputBill.setFreeValue(retailFree);
+
+        // Transfer receive represents money going out, so bill totals should be negative
         inputBill.setNetTotal(netTotal);
         inputBill.setGrantTotal(netTotal);
         inputBill.setTotal(netTotal);
+
+        // Also negate BillFinanceDetails totals to match
+        inputBill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(netTotal));
+        inputBill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(netTotal));
 
 
     }
@@ -759,9 +852,30 @@ public class TransferReceiveController implements Serializable {
         List<BillItem> itemsToAdd = new ArrayList<>();
 
         for (BillItem i : getReceivedBill().getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+            // Get quantity from user input (BillItemFinanceDetails) and convert to units
+            double qtyInPacks = 0.0;
+            if (i.getBillItemFinanceDetails() != null && i.getBillItemFinanceDetails().getQuantity() != null) {
+                qtyInPacks = i.getBillItemFinanceDetails().getQuantity().doubleValue();
+            }
+
+            // Convert packs to units for stock operations
+            double unitsPerPack = 1.0;
+            Item item = i.getItem();
+            if (item instanceof Ampp || item instanceof Vmpp) {
+                unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+            }
+            double qtyInUnits = qtyInPacks * unitsPerPack;
+
+            if (qtyInUnits == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
+
+            // Update the PharmaceuticalBillItem with the correct user-entered quantity
+            i.getPharmaceuticalBillItem().setQty(qtyInUnits);
+            i.getPharmaceuticalBillItem().setQtyPacks(qtyInPacks);
+
+            // Update the BillItem with the correct user-entered quantity (in packs)
+            i.setQty(qtyInPacks);
 
             if (errorCheck(i)) {
                 continue;
@@ -787,7 +901,7 @@ public class TransferReceiveController implements Serializable {
 
             tmpPh.setItemBatch(tmpPh.getStaffStock().getItemBatch());
 
-            double qty = Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit());
+            double qty = Math.abs(qtyInUnits);
 
             // Deduct Staff Stock
             boolean returnFlag = getPharmacyBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
@@ -909,9 +1023,10 @@ public class TransferReceiveController implements Serializable {
         }
         
         fd.setLineGrossRate(grossRate);
-        
 
-        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+
+        // Transfer receive represents money going out, so totals should be negative
+        BigDecimal lineGrossTotal = grossRate.multiply(qty).negate();
         fd.setLineGrossTotal(lineGrossTotal);
         fd.setGrossTotal(lineGrossTotal);
 
@@ -994,7 +1109,8 @@ public class TransferReceiveController implements Serializable {
         BigDecimal grossRate = Optional.ofNullable(fd.getLineGrossRate()).orElse(determineTransferRate(ph.getItemBatch()).multiply(unitsPerPack));
         fd.setLineGrossRate(grossRate);
 
-        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+        // Transfer receive represents money going out, so totals should be negative
+        BigDecimal lineGrossTotal = grossRate.multiply(qty).negate();
         fd.setLineGrossTotal(lineGrossTotal);
         fd.setGrossTotal(lineGrossTotal);
 
@@ -1333,17 +1449,112 @@ public class TransferReceiveController implements Serializable {
         this.selectedBillItem = selectedBillItem;
     }
 
+    @Deprecated
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
     }
 
+    @Deprecated
     public void setShowAllBillFormats(boolean showAllBillFormats) {
         this.showAllBillFormats = showAllBillFormats;
     }
 
+    @Deprecated
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        // Register pharmacy_transfer_receive.xhtml
+        PageMetadata receiveMetadata = new PageMetadata();
+        receiveMetadata.setPagePath("pharmacy/pharmacy_transfer_receive");
+        receiveMetadata.setPageName("Pharmacy Transfer Receive");
+        receiveMetadata.setDescription("Receive and confirm pharmacy items from transfer issues");
+        receiveMetadata.setControllerClass("TransferReceiveController");
+
+        // Configuration Options
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Report Font Size of Item List in Pharmacy Disbursement Reports",
+            "Sets the font size for item lists in pharmacy disbursement reports",
+            "Line 41 (XHTML): DataTable font size styling",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4",
+            "Uses A4 paper format for transfer receive receipts",
+            "Line 232 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Bill is Template",
+            "Uses template format for transfer receive bills",
+            "Line 240 (XHTML): Bill format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is Letter Paper Custom 1",
+            "Uses custom letter paper format for transfer receive receipts",
+            "Line 246 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4 Detailed",
+            "Uses detailed A4 paper format for transfer receive receipts",
+            "Line 252 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4 Custom 1",
+            "Uses A4 Custom Format 1 for transfer receive receipts",
+            "Line 258 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        receiveMetadata.addConfigOption(new com.divudi.core.data.admin.ConfigOptionInfo(
+            "Pharmacy Transfer Receive Receipt is A4 Custom 2",
+            "Uses A4 Custom Format 2 for transfer receive receipts",
+            "Line 264 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        receiveMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to configuration interface",
+            "Config button visibility"
+        ));
+
+        receiveMetadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyTransferViewRates",
+            "View rate and value information in pharmacy transfers",
+            "Lines 75, 81, 105, 124-125, 129-130, 181-182, 186-187, 191-192 (XHTML): Rate and value visibility"
+        ));
+
+        receiveMetadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Access to receipt printing configuration settings",
+            "Line 212 (XHTML): Settings button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(receiveMetadata);
     }
 
 }

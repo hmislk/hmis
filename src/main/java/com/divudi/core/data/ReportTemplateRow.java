@@ -128,6 +128,11 @@ public class ReportTemplateRow implements Serializable {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
+    private double otherIncomeValue;
+
+    private double cashierGrandTotal;
+    private double cashierCollectionTotal;
+    private double cashierExcludedTotal;
 
     private Double grossTotal;
     private Double discount;
@@ -143,20 +148,14 @@ public class ReportTemplateRow implements Serializable {
     private Institution collectingCentre;
     private Double totalHospitalFee;
     private Double qty;
-
     private PatientInvestigation patientInvestigation;
-
     private long duration;
-
     private String rowType;
-
     private UUID id;
-
     private List<DenominationTransaction> denominationTransactions;
-
     private PaymentHandover paymentHandover;
-
     private AgentReferenceBook agentReferenceBook;
+    private Double inpatientTotal;
 
     // Constructor to generate a new UUID when an object is created
     public ReportTemplateRow() {
@@ -1019,6 +1018,30 @@ public class ReportTemplateRow implements Serializable {
         this.onlineSettlementValue = onlineSettlementValue;
     }
 
+    public double getCashierGrandTotal() {
+        return cashierGrandTotal;
+    }
+
+    public void setCashierGrandTotal(double cashierGrandTotal) {
+        this.cashierGrandTotal = cashierGrandTotal;
+    }
+
+    public double getCashierCollectionTotal() {
+        return cashierCollectionTotal;
+    }
+
+    public void setCashierCollectionTotal(double cashierCollectionTotal) {
+        this.cashierCollectionTotal = cashierCollectionTotal;
+    }
+
+    public double getCashierExcludedTotal() {
+        return cashierExcludedTotal;
+    }
+
+    public void setCashierExcludedTotal(double cashierExcludedTotal) {
+        this.cashierExcludedTotal = cashierExcludedTotal;
+    }
+
     public List<Bill> getCashHnadovers() {
         if (cashHnadovers == null) {
             cashHnadovers = new ArrayList<>();
@@ -1440,6 +1463,22 @@ public class ReportTemplateRow implements Serializable {
 
     public void setServiceCharge(Double serviceCharge) {
         this.serviceCharge = serviceCharge;
+    }
+
+    public Double getInpatientTotal() {
+        return inpatientTotal;
+    }
+
+    public void setInpatientTotal(Double inpatientTotal) {
+        this.inpatientTotal = inpatientTotal;
+    }
+
+    public double getOtherIncomeValue() {
+        return otherIncomeValue;
+    }
+
+    public void setOtherIncomeValue(double otherIncomeValue) {
+        this.otherIncomeValue = otherIncomeValue;
     }
     
     

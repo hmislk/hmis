@@ -5,7 +5,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="content">
         <h:form>
@@ -13,6 +14,7 @@
                 You are NOT authorized
             </h:panelGroup>
             <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateGrnReturn') and !grnReturnWorkflowController.printPreview}" >
+
                 <p:panel 
                     header="GRN Return - Workflow Process" 
                     class="w-100">
@@ -60,7 +62,8 @@
                             <p:dataTable 
                                 var="ph" 
                                 value="#{grnReturnWorkflowController.billItems}"
-                                id="itemList" >
+                                id="itemList" 
+                                rowKey="#{ph.id != null ? ph.id : ph.hashCode()}" >
 
                                 <f:facet name="header">
                                     <h:outputText value="Returning Items" ></h:outputText>
@@ -68,6 +71,14 @@
 
                                 <p:column headerText="Item Name"  >
                                     <h:outputLabel value="#{ph.item.name}"/>
+                                    <p:commandButton
+                                        icon="pi pi-search"
+                                        id="btnViewSelectedItemDetails"
+                                        title="View Item Details"
+                                        action="#{grnReturnWorkflowController.displayItemDetails(ph)}"
+                                        update=":#{p:resolveFirstComponentWithId('historyPanel',view).clientId}"
+                                        process="@this"
+                                        class="ui-button-icon-only mx-3"/>
                                 </p:column>
                                 <p:column 
                                     headerText="Date of Expiry" 
@@ -84,10 +95,17 @@
                                 </p:column>
                                 <p:column 
                                     headerText="Current Stock" 
-                                    width="5em" >
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
-                                        <f:convertNumber pattern="#.#" ></f:convertNumber>
-                                    </h:outputText>
+                                    width="5em" 
+                                    styleClass="text-center">
+                                    <div class="badge #{ph.pharmaceuticalBillItem.stock.stock lt 10 ? 'bg-warning text-dark' : 'bg-info text-white'}">
+                                        <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
+                                            <f:convertNumber pattern="#.#" ></f:convertNumber>
+                                        </h:outputText>
+                                    </div>
+                                    <div class="small text-muted mt-1" 
+                                         rendered="#{ph.pharmaceuticalBillItem.stock.stock lt 5}">
+                                        Low Stock!
+                                    </div>
                                 </p:column>
 
                                 <p:column
@@ -151,6 +169,7 @@
                                     headerText="Return rate (#{grnReturnWorkflowController.returnRateLabel})" >
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
+                                            id="lblReturnRate"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />
@@ -177,11 +196,11 @@
                                         class="w-100 text-end"
                                         onfocus="this.select()"
                                         value="#{ph.billItemFinanceDetails.quantity}">
-                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <p:ajax 
                                             event="blur" 
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal" 
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -197,13 +216,15 @@
                                         onfocus="this.select()"
                                         class="w-100 text-end"
                                         value="#{ph.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <p:ajax 
                                             process="@this"
                                             event="blur" 
-                                            update="txtLineReturnValue returnTotal" 
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />
                                     </p:inputText>
+                                    <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column
@@ -214,12 +235,14 @@
                                         class="w-100 text-end"
                                         id="txtReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                        <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <p:ajax
                                             event="blur" 
                                             process="@this" 
-                                            update="txtLineReturnValue returnTotal"
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>
+                                    <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column headerText="Return Value" width="5em" >
@@ -230,13 +253,14 @@
 
                                 <p:column headerText="Action" width="3em" styleClass="text-center" exportable="false">
                                     <p:commandButton
+                                        id="btnRemoveReturnItem"
                                         icon="fas fa-trash-alt"
                                         class="ui-button-danger ui-button-outlined"
                                         title="Remove this item from return"
                                         action="#{grnReturnWorkflowController.deleteReturnItem(ph)}"
                                         ajax="true"
                                         process="@this"
-                                        update="itemList returnTotal @form"
+                                        update="itemList returnTotal messages"
                                         style="padding: 0.2rem 0.4rem;">
                                         <p:confirm header="Confirm Delete" 
                                                    message="Are you sure you want to remove this item from the return?" 
@@ -246,9 +270,9 @@
 
                             </p:dataTable>
 
-                            <div >
+                            <h:panelGroup id="historyPanel">
                                 <ph:history/>
-                            </div>
+                            </h:panelGroup>
 
                         </div>
                         <div class="col-3" >
@@ -268,31 +292,42 @@
                                                 value="Save" 
                                                 action="#{grnReturnWorkflowController.saveRequest}"
                                                 ajax="false"
-                                                icon="pi pi-save" 
+                                                icon="#{grnReturnWorkflowController.currentBill.id != null ? 'pi pi-refresh' : 'pi pi-save'}" 
                                                 class="ui-button-success mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                value="Finalize" 
+                                            <p:commandButton
+                                                value="Finalize"
                                                 action="#{grnReturnWorkflowController.finalizeRequest}"
                                                 ajax="false"
-                                                icon="pi pi-check" 
+                                                icon="pi pi-check"
+                                                onclick="return confirm('Are you sure you want to finalize this GRN return? Once finalized, it will require approval to complete.')"
                                                 class="ui-button-warning mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy eq null}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                value="Approve" 
+                                            <p:commandButton
+                                                value="Approve"
                                                 action="#{grnReturnWorkflowController.approve}"
                                                 ajax="false"
-                                                icon="fas fa-check-circle" 
+                                                icon="fas fa-check-circle"
+                                                onclick="return confirm('Are you sure you want to approve this GRN return? This will complete the return process.')"
                                                 class="ui-button-success mx-1"
                                                 rendered="#{grnReturnWorkflowController.currentBill.checkedBy ne null and (grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveGrnReturn')}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Cancel"
+                                                action="#{grnReturnWorkflowController.cancelCurrentReturn}"
+                                                ajax="false"
+                                                icon="fas fa-times"
+                                                onclick="return confirm('Are you sure you want to cancel this GRN return? All unsaved changes will be lost.')"
+                                                class="ui-button-danger mx-1"
+                                                rendered="#{grnReturnWorkflowController.currentBill.completed eq false or grnReturnWorkflowController.currentBill.completed eq null}">
                                             </p:commandButton>
                                         </div>
                                     </div>
                                     <div class="row" >
                                         <div class="col-12 text-center" >
-                                            <p:messages id="messages" showDetail="true" closable="true" />
+                                            <p:messages id="messages" showDetail="true" closable="true" globalOnly="false" />
                                         </div>
                                     </div>
                                 </f:facet>
@@ -308,18 +343,87 @@
                                 </p:outputLabel>
 
                                 <p:outputLabel
+                                    for="txtActualNetValue"
+                                    value="Actual Net Value : " />
+                                <h:panelGroup>
+                                    <p:inputText
+                                        id="txtActualNetValue"
+                                        class="w-100 text-end"
+                                        value="#{grnReturnWorkflowController.currentBill.billFinanceDetails.actualNetValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                        <p:ajax
+                                            event="change"
+                                            process="@this"
+                                            update="lblNetValueAdjustment"
+                                            listener="#{grnReturnWorkflowController.calculateNetValueAdjustment()}" />
+                                    </p:inputText>
+                                    <p:message for="txtActualNetValue" />
+                                </h:panelGroup>
+
+                                <p:outputLabel value="Net Value Adjustment : " />
+                                <h:panelGroup>
+                                    <h:outputText
+                                        id="lblNetValueAdjustment"
+                                        class="h5 #{grnReturnWorkflowController.currentBill.billFinanceDetails.netValueAdjustment lt 0 ? 'text-danger' : 'text-success'}"
+                                        value="#{grnReturnWorkflowController.currentBill.billFinanceDetails.netValueAdjustment}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </h:panelGroup>
+
+                                <p:outputLabel
                                     for="txtReturnComments"
                                     value="Return Comments: " />
                                 <h:panelGroup>
-                                    <p:inputTextarea 
+                                    <p:inputTextarea
                                         id="txtReturnComments"
                                         class="w-100"
-                                        value="#{grnReturnWorkflowController.currentBill.comments}" 
+                                        value="#{grnReturnWorkflowController.currentBill.comments}"
                                         placeholder="Enter reason for returning these items..."
                                         ></p:inputTextarea>
                                     <p:message for="txtReturnComments" />
                                 </h:panelGroup>
+
+                                <p:outputLabel value="Payment Method:" />
+                                <h:panelGroup >
+                                    <p:selectOneMenu   
+                                        id="cmbPaymentMethod" 
+                                        value="#{grnReturnWorkflowController.currentBill.paymentMethod}"
+                                        required="true"
+                                        requiredMessage="Please select a payment method">
+                                        <f:selectItem itemLabel="Select payment method"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsForGrn}"/>
+                                        <p:ajax process="cmbPaymentMethod" update="paymentDetails" />
+                                    </p:selectOneMenu>
+                                    <p:message for="cmbPaymentMethod" />
+                                </h:panelGroup>
                             </p:panelGrid>
+
+                            <h:panelGroup id="paymentDetails" >
+                                <h:panelGroup
+                                    class="my-1"
+                                    layout="block"  
+                                    id="creditCard" rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'Card'}" >
+                                    <pa:creditCard paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup
+                                    class="my-1"
+                                    layout="block" 
+                                    id="cheque"  rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'Cheque'}" >
+                                    <pa:cheque paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup 
+                                    class="my-1"
+                                    layout="block" 
+                                    id="slip"  rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'Slip'}" >
+                                    <pa:slip paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup 
+                                    class="my-1"
+                                    layout="block" 
+                                    id="ewallet"  rendered="#{grnReturnWorkflowController.currentBill.paymentMethod eq 'ewallet'}" >
+                                    <pa:ewallet paymentMethodData="#{grnReturnWorkflowController.paymentMethodData}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
 
 
                             <p:panelGrid 
@@ -369,6 +473,14 @@
                             <h:outputLabel value="GRN Return - Print Preview" ></h:outputLabel>
                         </div>
                         <div class="text-end col-9" >
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="ui-button-secondary"
+                                type="button"
+                                onclick="PF('grnReturnConfigDialog').show();" >
+                            </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" icon="fas fa-print" class="ui-button-success mx-1">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -409,10 +521,91 @@
                     </div>
                 </f:facet>
 
-                <p:panel id="gpBillPreview">
-                    <ph:grn_return_receipt_with_costing bill="#{grnReturnWorkflowController.currentBill}"/>
-                </p:panel>
+                <h:panelGroup id="gpBillPreview">
+
+                    <h:panelGroup class="d-flex justify-content-center"
+                                  rendered="#{configOptionController.getBooleanValueByKey('GRN Return Receipt Paper is Custom 1',false)}">
+                        <ph:grn_return_receipt_with_costing_custom_1 bill="#{grnReturnWorkflowController.currentBill}"/>
+                    </h:panelGroup>  
+
+                    <h:panelGroup class="d-flex justify-content-center"
+                                  rendered="#{configOptionController.getBooleanValueByKey('GRN Return Receipt Paper is Custom 2',true)}">
+                        <ph:grn_return_receipt_with_costing bill="#{grnReturnWorkflowController.currentBill}"/>
+                    </h:panelGroup>
+
+                </h:panelGroup>
             </p:panel>
+
+            <!-- Configuration Dialog -->
+            <p:dialog id="grnReturnConfigDialog"
+                      header="GRN Return Receipt Printer Configuration"
+                      widgetVar="grnReturnConfigDialog"
+                      modal="true"
+                      width="600"
+                      height="400"
+                      resizable="true"
+                      maximizable="true"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="grnReturnConfigForm" />
+
+                <h:form id="grnReturnConfigForm">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-file-alt"></i> GRN Return Receipt Paper Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="grnReturnCustom1Paper"
+                                            value="#{pharmacyConfigController.grnReturnReceiptCustom1}" />
+                                        <p:outputLabel for="grnReturnCustom1Paper" value="Custom Format 1" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom GRN Return receipt template design 1</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="grnReturnCustom2Paper"
+                                            value="#{pharmacyConfigController.grnReturnReceiptCustom2}" />
+                                        <p:outputLabel for="grnReturnCustom2Paper" value="Custom Format 2" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Custom GRN Return receipt template design 2</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p:messages id="grnConfigMessages" showDetail="true" closable="true" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Apply &amp; Close"
+                                                icon="fas fa-save"
+                                                class="ui-button-success"
+                                                ajax="false"
+                                                action="#{pharmacyConfigController.saveConfig}" />
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                class="ui-button-secondary"
+                                                onclick="PF('grnReturnConfigDialog').hide(); return false;"
+                                                type="button" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </p:dialog>
 
         </h:form>
 

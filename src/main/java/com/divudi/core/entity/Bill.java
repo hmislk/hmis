@@ -185,6 +185,7 @@ public class Bill implements Serializable, RetirableEntity {
     private double performInstitutionFee;
     private double staffFee;
     private double billerFee;
+    // This is a known typo, can not correct it because of backword compatibility. Its grandTotal
     private double grantTotal;
     private double expenseTotal;
     private double expensesTotalConsideredForCosting;
@@ -203,6 +204,8 @@ public class Bill implements Serializable, RetirableEntity {
     private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution site;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution fromInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -266,10 +269,13 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
-    //Checking Property
+    //Checking Property == Finalized
+    private boolean checked = false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    // Legacy field name: intentionally named "checkeAt" (not "checkedAt") for backward compatibility
+    // This field is widely used across billing system - DO NOT rename to maintain database compatibility
     private Date checkeAt;
     //Retairing properties
     private boolean retired;
@@ -467,6 +473,9 @@ public class Bill implements Serializable, RetirableEntity {
 
     @Transient
     private Institution transientSupplier;
+    
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Request currentRequest;
 
     public Bill() {
         if (status == null) {
@@ -826,10 +835,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.checkedBy = checkedBy;
     }
 
+    // Legacy method name: intentionally named "getCheckeAt" for backward compatibility
+    // DO NOT rename to "getCheckedAt" - widely used across billing system
     public Date getCheckeAt() {
         return checkeAt;
     }
 
+    // Legacy method name: intentionally named "setCheckeAt" for backward compatibility
+    // DO NOT rename to "setCheckedAt" - widely used across billing system
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }
@@ -990,8 +1003,9 @@ public class Bill implements Serializable, RetirableEntity {
             pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
             pharmacyBill.setBill(this);
         }
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -1015,8 +1029,9 @@ public class Bill implements Serializable, RetirableEntity {
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
             this.getPharmacyBill().copyValue(bill.getPharmacyBill());
         }
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -1084,8 +1099,9 @@ public class Bill implements Serializable, RetirableEntity {
         netTotal = bill.getNetTotal();
         paidAmount = bill.getPaidAmount();
 
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -3029,4 +3045,31 @@ public class Bill implements Serializable, RetirableEntity {
         }
         return transientSupplier;
     }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
+    }
+    
+    
+    
 }

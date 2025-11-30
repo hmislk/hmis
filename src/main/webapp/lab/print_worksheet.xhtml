@@ -1,0 +1,225 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:worksheet="http://xmlns.jcp.org/jsf/composite/ezcomp/lab/worksheet"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="css" name="maincss.css" />
+        <h:form  >
+            <h:panelGroup rendered="#{(!webUserController.hasPrivilege('DashBoardMenu') and !webUserController.hasPrivilege('DashBoardWorksheet'))}">
+                <na:not_authorize />
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardWorksheet'))}">
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <p:outputLabel value="Print WorkSheet" class="mt-2"/>
+
+                            <p:commandButton 
+                                value="Back to DashBoard" 
+                                action="#{laboratoryManagementController.navigateToBackDashBoardFromWorkSheet()}" 
+                                ajax="false"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left">
+                            </p:commandButton>
+                        </div>
+                    </f:facet>
+
+                    <div class="row">
+                        <div class="col-md-7">
+
+                            <div class="d-flex justify-content-end mb-3">
+                                <div>
+                                    <p:commandButton 
+                                        value="Process WorkSheet"
+                                        ajax="false"
+                                        action="#{laboratoryManagementController.processWorkSheet()}"
+                                        class="ui-button-emr"
+                                        icon="fa fa-refresh">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                            
+                            <p:dataTable  
+                                id="investigationTable"
+                                class="w-100 mt-2"
+                                value="#{laboratoryManagementController.investigationDTO}" 
+                                selection="#{laboratoryManagementController.tempSelectedDTOItems}"
+                                selectionDisabled="#{pi.status eq 'ORDERED' or pi.status eq 'SAMPLE_GENERATED' or pi.status eq 'SAMPLE_COLLECTED' or pi.status eq 'SAMPLE_SENT' or pi.status eq 'SAMPLE_REJECTED'}"
+                                var="pi" 
+                                paginator="true"
+                                rowKey="#{pi.investigationId}"
+                                reflow="true"
+                                selectionMode="multiple"
+                                paginatorPosition="bottom"
+                                rows="15"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="15,25,50"
+                                style="table-layout: fixed; width: 100%;">
+
+                                <p:column headerText="Bill Number" style="width: 13em; vertical-align: top;">
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        class="text-primary"
+                                        value="#{pi.billNumber}">
+                                    </p:commandLink>
+                                    <br/>
+                                    <h:outputLabel value="#{pi.billDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:panelGroup rendered="#{pi.billType eq 'IP'}">
+                                        <br/>
+                                        <h:outputLabel class="text-primary" value="#{laboratoryCommonController.getBHTNumberFromPatientInvestigationId(pi.investigationId)}"/>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <!-- Patient Details Column with Icons -->
+                                <p:column headerText="Patient" style="vertical-align: top;">
+                                    <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
+                                    <h:outputLabel value="#{pi.patientNameWithTitle}" />
+                                    <br/>
+                                    <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
+                                    <h:outputLabel value="#{pi.patientAge}" />
+                                    <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
+                                    <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
+                                    <h:outputLabel value="#{pi.patientGender}" />
+                                    <br/>
+                                    <h:panelGroup rendered="#{!pi.patientMobile.blank}">
+                                        <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                                        <h:outputLabel value="#{pi.patientMobile}" />
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <!-- Investigation Name Column -->
+                                <p:column headerText="Investigation" style="width: 400px; vertical-align: top;">
+                                    <i class="fas fa-vial text-danger" style="width: 27px;"></i> <!-- Investigation Icon -->
+                                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{pi.itemName}"/>
+                                    <p:commandLink 
+                                        value="#{pi.itemName}"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('Developers')}" 
+                                        action="#{patientInvestigationController.navigateToManageInvestigation(pi.investigationId)}">
+                                    </p:commandLink>
+                                </p:column>
+
+                                <p:column headerText="Sample IDs" style="width:10em; vertical-align: top;">
+                                    <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(pi.investigationId)}" var="sample">
+                                        <div class="ui-g d-grid" style="margin-bottom: 10px;">
+                                            <div class="ui-g-6 d-flex">
+                                                <i class="fa fa-vial"></i>
+                                                <h:outputText value="#{sample}" class="mx-2 text-primary" />
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </p:column>
+
+                                <p:column headerText="Status" style="width:12em; vertical-align: top;">
+                                    <h:panelGroup rendered="#{!pi.itemRefunded and !pi.billCanceled}">
+                                        <h:outputLabel value="#{pi.status.label}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{pi.itemRefunded or pi.billCanceled}">
+                                        <br/>
+                                        <p:badge 
+                                            value="Item Refunded" 
+                                            severity="info"
+                                            style="width: 200px;"
+                                            rendered="#{pi.itemRefunded}"
+                                            styleClass="ui-badge-warning" >
+                                        </p:badge>
+
+                                        <p:badge 
+                                            value="Bill Cancel" 
+                                            severity="info"
+                                            rendered="#{pi.billCanceled}"
+                                            style="width: 200px;"
+                                            styleClass="ui-badge-danger" >
+                                        </p:badge>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column selectionBox="true" style=" width:1.5em; vertical-align: top;"></p:column>
+
+                            </p:dataTable>
+
+
+                        </div>
+                        <div class="col-md-5">
+
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <p:outputLabel value="Worksheet Preview" class="mt-2"/>
+                                        </div>
+                                        <div>
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton 
+                                                    value="Print" 
+                                                    ajax="false"
+                                                    class="ui-button-info"
+                                                    icon="fa fa-print">
+                                                    <p:printer target="printView" ></p:printer>
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                                <h:panelGroup rendered="#{laboratoryManagementController.selectedItems.size() eq 0}">
+                                    <div class="d-flex justify-content-center justify-center shadow" 
+                                         style="
+                                         height: 6em;
+                                         background-color: #90CAF9;
+                                         border: 2px solid #90CAF9;
+                                         border-radius: 25px;
+                                         display: flex;
+                                         font-size: 28px;
+                                         font-weight: 700;
+                                         justify-content: center;
+                                         align-items: center;">
+
+                                        <h:outputText 
+                                            value="No Investigation Selected." 
+                                            class="d-grid justify-content-center text-danger" >
+                                        </h:outputText>
+
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="printView">
+
+                                    <h:panelGroup rendered="#{laboratoryManagementController.selectedItems.size() ne 0}">
+
+                                        <ui:repeat value="#{laboratoryManagementController.selectedItems}" var="ins" >
+
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet - Defult Template of Investigation',true)}">
+                                                <worksheet:five_five_defult patientInvestigation="#{ins}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet - 5x5 inch Template of Investigation')}">
+                                                <worksheet:five_five_worksheet patientInvestigation="#{ins}"/>
+                                            </h:panelGroup>
+
+                                        </ui:repeat>
+
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </p:panel>
+
+                        </div>
+                    </div>
+
+                </p:panel>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+</ui:composition>

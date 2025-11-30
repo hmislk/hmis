@@ -325,6 +325,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill.setNetTotal(dbl);
         batchBill.setTotal(dblTot);
         batchBill.setDiscount(dblTot - dbl);
+
+        // Initialize balance field for credit bills
+        if (paymentMethod == PaymentMethod.Credit) {
+            double totalAmount = Math.abs(batchBill.getNetTotal());
+            if (batchBill.getVat() != 0.0) {
+                totalAmount += Math.abs(batchBill.getVat());
+            }
+            batchBill.setBalance(totalAmount);
+        }
+
         getBillFacade().edit(batchBill);
 
     }
@@ -1170,6 +1180,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         temp.setComments(comment);
 
         if (temp.getId() == null) {
+            // Initialize balance field for credit bills before creating
+            if (paymentMethod == PaymentMethod.Credit) {
+                double totalAmount = Math.abs(temp.getNetTotal());
+                if (temp.getVat() != 0.0) {
+                    totalAmount += Math.abs(temp.getVat());
+                }
+                temp.setBalance(totalAmount);
+            }
             getFacade().create(temp);
         }
         return temp;
@@ -1387,6 +1405,22 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         System.out.println("this = " + this);
         listnerForPaymentMethodChange();
 
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     @Deprecated //Instead use checkPaymentDetails

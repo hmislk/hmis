@@ -11,8 +11,20 @@
                 <h:form >
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="ALL BILL LIST"/>                          
+                            <h:outputLabel value="ALL BILL LIST - LEGACY METHOD"/>
                         </f:facet>
+
+                        <!-- Navigation Toggle Buttons -->
+                        <p:panel styleClass="mb-3 text-center">
+                            <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
+                            <p:commandButton value="Legacy Method"
+                                             styleClass="ui-button-success"
+                                             disabled="true"/>
+                            <p:commandButton value="Optimized Method"
+                                             styleClass="ui-button-secondary ml-2"
+                                             action="#{searchController.navigateToOptimizedBillListReport()}"
+                                             immediate="true"/>
+                        </p:panel>
 
                         <h:panelGrid columns="8" styleClass="w-100" >
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -126,7 +138,7 @@
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
                                 <f:selectItems 
                                     var="billTypeAtomic"
-                                    itemLabel="#{billTypeAtomic.label}"           
+                                    itemLabel="#{billTypeAtomic}"           
                                     itemValue="#{billTypeAtomic}" 
                                     value="#{enumController.billTypesAtomic}" ></f:selectItems>
                             </p:selectOneMenu>
@@ -154,21 +166,6 @@
                                 <f:selectItem itemLabel="All Class Types" ></f:selectItem>
                                 <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
                             </p:selectOneMenu>
-                            <p:toggleSwitch 
-                                value="#{searchController.cancelled}" 
-                                onIcon="pi pi-check" 
-                                offIcon="pi pi-times" 
-                                class="mt-2">
-                            </p:toggleSwitch>
-                            <h:outputLabel value="Select Cancelled Bills Only"/>
-                            <p:spacer ></p:spacer>
-                            <p:toggleSwitch 
-                                value="#{searchController.refunded}" 
-                                onIcon="pi pi-check" 
-                                offIcon="pi pi-times" 
-                                class="mt-2">
-                            </p:toggleSwitch>
-                            <h:outputLabel value="Select Refunded Bills Only"/>
 
                         </h:panelGrid>
 
@@ -200,41 +197,42 @@
                                          rowsPerPageTemplate="5,10,15,50"
                                          >
 
-                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
-                                    <h:outputLabel value="#{bill.id}"/>
-                                </p:column>
-<!--                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Ins ID" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains" >                                
-                                    <h:outputLabel value="#{bill.insId}"/>
-                                </p:column>-->
                                 <p:column
+                                    width="5em"
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    headerText="Bill ID" 
+                                    sortBy="#{bill.id}" 
+                                    filterBy="#{bill.id}" 
+                                    filterMatchMode="contains" >                                
+                                    <p:inputText readonly="true"  value="#{bill.id}" class="w-100" />
+                                </p:column>
+                                <p:column
+                                    width="5em"
                                     headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" 
                                     filterMatchMode="contains" >                                
-                                    <h:outputLabel value="#{bill.deptId}"/>
+                                    <p:inputText readonly="true"  value="#{bill.deptId}" class="w-100" />
                                 </p:column>
                                 <p:column width="5em" headerText="Bill Class" >                                
-                                    <p:inputText readonly="true" value="#{bill.billClass}"/>
+                                    <p:inputText readonly="true" value="#{bill.billClass}" class="w-100" />
                                 </p:column>
                                 <p:column width="10em" headerText="Bill Type" >                                
-                                    <p:inputText readonly="true"  value="#{bill.billTypeAtomic.label}"/>
+                                    <p:inputText readonly="true"  value="#{bill.billTypeAtomic}" class="w-100" />
                                 </p:column>
                                 <p:column width="5em" headerText="Payment Method" >                                
-                                    <p:inputText readonly="true"  value="#{bill.paymentMethod}"/>
+                                    <p:inputText readonly="true"  value="#{bill.paymentMethod}" class="w-100" />
                                 </p:column>
                                 <p:column width="5em" headerText="Name" sortBy="#{bill.patient.person.nameWithTitle}" filterBy="#{bill.patient.person.nameWithTitle}" filterMatchMode="contains">                                
-                                    <p:inputText readonly="true"  value="#{bill.patient.person.nameWithTitle}"/>
+                                    <p:inputText readonly="true"  value="#{bill.patient.person.nameWithTitle}" class="w-100" />
                                 </p:column>
-                                <p:column width="5em" headerText="BHT No" >                                
-                                    <p:inputText readonly="true"  value="#{bill.patientEncounter != null ? bill.patientEncounter.bhtNo : 'N/A'}"/>
-                                </p:column>
-                                <p:column headerText="Date/Time" width="5em">
-                                    <p:inputText readonly="true"  value="#{bill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                <p:column headerText="Date/Time" width="9em">
+                                    <p:inputText readonly="true"  value="#{bill.createdAt}" class="w-100">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"   ></f:convertDateTime>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="User" width="5em">
-                                    <p:inputText readonly="true"  value="#{bill.creater.name}" ></p:inputText>
+                                    <p:inputText readonly="true"  value="#{bill.creater.name}"  class="w-100" ></p:inputText>
                                 </p:column>
-                                <p:column headerText="Status" width="5em" exportable="false" sortBy="#{bill.cancelled}" filterBy="#{bill.cancelled}" filterMatchMode="contains">
+                                <p:column headerText="Status" width="5em" exportable="false">
                                     <h:panelGroup>
                                         <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{bill.retired}" />
                                         <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />

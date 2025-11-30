@@ -1150,6 +1150,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
     }
 
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
+    }
+
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
 
         if (sessionInstance == null) {
@@ -3577,7 +3593,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void addItemToBooking() {
-        System.out.println("addItemToBooking");
+       
         if (itemToAddToBooking == null) {
             JsfUtil.addErrorMessage("Item to add to booking");
             return;
@@ -4048,6 +4064,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (selectedSessionInstance != null && selectedSessionInstance.isDoctorHoliday()) {
             JsfUtil.addErrorMessage("Doctor is in Holiday.");
+            billingStarted = false;
             return;
         }
 

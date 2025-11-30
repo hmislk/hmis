@@ -1515,6 +1515,30 @@ public class BhtSummeryController implements Serializable {
 
     }
 
+    public boolean chackPharmacyTransaction() {
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.billTypeAtomic =:atomic "
+                + " and b.retired=false  "
+                + " and b.patientEncounter =:encounter "
+                + " and b.patientEncounter.discharged =:discharged "
+                + " and b.completed =:completed"
+                + " and b.cancelled =:cancel";
+        Map m = new HashMap();
+        m.put("completed", false);
+        m.put("cancel", false);
+        m.put("atomic", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
+        m.put("encounter", getPatientEncounter());
+        m.put("discharged", false);
+        Bill bill = billFacade.findFirstByJpql(jpql, m);
+
+        if (bill == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     public void discharge() {
         if (getPatientEncounter() == null) {
             return;
@@ -1528,6 +1552,20 @@ public class BhtSummeryController implements Serializable {
         if (date == null) {
             JsfUtil.addErrorMessage("Please Enter the Date");
             return;
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Do not discharge until all medication has been dispensed.", false)) {
+            if (chackPharmacyTransaction()) {
+                JsfUtil.addErrorMessage("A request has been made for a medication request.");
+                return;
+            }
+        }
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Payment can be released without completing it.", true)) {
+            if (getGrantTotal() > getPaid()) {
+                JsfUtil.addErrorMessage("Payment for " + getPatientEncounter().getBhtNo() + " has not been completed.");
+                return;
+            }
         }
 
         if (checkDischargeTime()) {
@@ -1899,14 +1937,14 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProBillFee(temBi);
-                temProfFee += cit.getTotal();
+                temProfFee += cit.getAdjustedTotal();
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProBillFeeForDocAndNeurses(temBi);;
                     }
                 }
-                temHosFee += cit.getTotal();
+                temHosFee += cit.getAdjustedTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
@@ -1940,14 +1978,14 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProTempBillFee(temBi);
-                temProfFee += cit.getTotal();
+                temProfFee += cit.getAdjustedTotal();
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProTempBillFeeForDocAndNeurses(temBi);;
                     }
                 }
-                temHosFee += cit.getTotal();
+                temHosFee += cit.getAdjustedTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
@@ -1983,9 +2021,9 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProBillFee(temBi);
-                temProfFee += cit.getTotal();
+                temProfFee += cit.getAdjustedTotal();
             } else {
-                temHosFee += cit.getTotal();
+                temHosFee += cit.getAdjustedTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {

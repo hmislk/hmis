@@ -71,29 +71,24 @@ import java.math.BigDecimal;
 
 /**
  * ⚠️⚠️⚠️ CRITICAL FINANCIAL & INVENTORY MANAGEMENT BEAN ⚠️⚠️⚠️
- * 
- * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
- * This EJB contains the CORE stock management methods for the entire pharmacy system.
- * These methods handle REAL MONEY and REGULATORY compliance operations.
- * 
- * 🛑 PROTECTED CRITICAL METHODS - DO NOT MODIFY UNDER ANY CIRCUMSTANCE: 🛑
- * - addToStock() - Increases stock levels (GRNs, transfers)
- * - deductFromStock() - Decreases stock levels (sales, returns, issues)
- * - addToStockHistory() - Maintains audit trails for regulatory compliance
- * - Stock validation and error handling methods
- * 
- * 💰 FINANCIAL IMPACT: Changes can cause:
- * - Inventory discrepancies costing thousands of dollars
- * - Regulatory audit failures
- * - Patient safety issues (wrong stock levels)
- * - Financial report corruption
- * 
- * 🏥 REGULATORY COMPLIANCE: Required for:
- * - Ministry of Health audits
- * - Financial audits  
- * - Drug regulatory compliance
- * - Hospital accreditation
- * 
+ *
+ * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨 This EJB contains the CORE
+ * stock management methods for the entire pharmacy system. These methods handle
+ * REAL MONEY and REGULATORY compliance operations.
+ *
+ * 🛑 PROTECTED CRITICAL METHODS - DO NOT MODIFY UNDER ANY CIRCUMSTANCE: 🛑 -
+ * addToStock() - Increases stock levels (GRNs, transfers) - deductFromStock() -
+ * Decreases stock levels (sales, returns, issues) - addToStockHistory() -
+ * Maintains audit trails for regulatory compliance - Stock validation and error
+ * handling methods
+ *
+ * 💰 FINANCIAL IMPACT: Changes can cause: - Inventory discrepancies costing
+ * thousands of dollars - Regulatory audit failures - Patient safety issues
+ * (wrong stock levels) - Financial report corruption
+ *
+ * 🏥 REGULATORY COMPLIANCE: Required for: - Ministry of Health audits -
+ * Financial audits - Drug regulatory compliance - Hospital accreditation
+ *
  * ANY modifications require senior management approval and extensive testing.
  *
  * @author Buddhika
@@ -181,7 +176,7 @@ public class PharmacyBean {
 
 // ChatGPT Contribution
     public boolean isReturnQuantityExceedingAvailableStock(PharmaceuticalBillItem item, Department department) {
-        double availableStock = getStockQty(item.getItemBatch(), department);
+        double availableStock = PharmacyBean.this.getBatchStockQty(item.getItemBatch(), department);
         double returnQty = item.getQty() + item.getFreeQty();
         return returnQty > availableStock;
     }
@@ -492,7 +487,7 @@ public class PharmacyBean {
         this.stockFacade = stockFacade;
     }
 
-    public double getStockQty(ItemBatch batch, Department department) {
+    public double getBatchStockQty(ItemBatch batch, Department department) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select sum(s.stock) from Stock s where s.itemBatch=:batch "
@@ -502,7 +497,7 @@ public class PharmacyBean {
         return getStockFacade().findDoubleByJpql(sql, hm, true);
     }
 
-    public double getStockQty(ItemBatch batch, Staff staff) {
+    public double getBatchStockQty(ItemBatch batch, Staff staff) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select sum(s.stock) from Stock s where s.itemBatch=:batch "
@@ -512,7 +507,7 @@ public class PharmacyBean {
         return getStockFacade().findAggregateDbl(sql);
     }
 
-    public double getStockQty(ItemBatch batch, Institution institution) {
+    public double getBatchStockQty(ItemBatch batch, Institution institution) {
         String sql;
         Map<String, Object> params = new HashMap<>();
         sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId and s.department.institution.id = :institutionId";
@@ -521,7 +516,7 @@ public class PharmacyBean {
         return getStockFacade().findDoubleByJpql(sql, params);
     }
 
-    public double getStockQty(ItemBatch batch) {
+    public double getBatchStockQty(ItemBatch batch) {
         String sql;
         Map<String, Object> params = new HashMap<>();
         sql = "select sum(s.stock) from Stock s where s.itemBatch.id = :batchId";
@@ -529,7 +524,7 @@ public class PharmacyBean {
         return getStockFacade().findDoubleByJpql(sql, params);
     }
 
-    public double getStockQty(Item item, Department department) {
+    public double getItemStockQty(Item item, Department department) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -542,7 +537,7 @@ public class PharmacyBean {
 
     }
 
-    public double getStockQty(Item item, Institution institution) {
+    public double getItemStockQty(Item item, Institution institution) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -554,7 +549,7 @@ public class PharmacyBean {
         return getStockFacade().findAggregateDbl(sql, m, true);
     }
 
-    public double getStockQty(Item item) {
+    public double getItemStockQty(Item item) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -569,24 +564,30 @@ public class PharmacyBean {
         Map m = new HashMap<>();
         String sql;
         m.put("i", batch);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch=:i";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch=:i";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
     public double getStockByPurchaseValue(Item item) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
         Map m = new HashMap<>();
         String sql;
         m.put("i", item);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch.item=:i";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
     public double getStockByPurchaseValue(Item item, Department dept) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
         Map m = new HashMap<>();
         String sql;
         m.put("i", item);
         m.put("d", dept);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
@@ -600,11 +601,86 @@ public class PharmacyBean {
     }
 
     public double getStockByPurchaseValue(Item item, Institution ins) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
         Map m = new HashMap<>();
         String sql;
         m.put("i", item);
         m.put("ins", ins);
-        sql = "Select sum(s.itemBatch.purcahseRate * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        sql = "Select sum(COALESCE(s.itemBatch.purcahseRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    // Cost Rate Valuation Methods
+    public double getStockByCostValue(Item item, Department dept) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("d", dept);
+        sql = "Select sum(COALESCE(s.itemBatch.costRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByCostValue(Item item, Institution ins) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("ins", ins);
+        sql = "Select sum(COALESCE(s.itemBatch.costRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByCostValue(Item item) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(COALESCE(s.itemBatch.costRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    // Retail Sale Rate Valuation Methods
+    public double getStockByRetailSaleValue(Item item, Department dept) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("d", dept);
+        sql = "Select sum(COALESCE(s.itemBatch.retailsaleRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByRetailSaleValue(Item item, Institution ins) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        m.put("ins", ins);
+        sql = "Select sum(COALESCE(s.itemBatch.retailsaleRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i and s.department.institution=:ins";
+        return getItemBatchFacade().findDoubleByJpql(sql, m, true);
+    }
+
+    public double getStockByRetailSaleValue(Item item) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        Map m = new HashMap<>();
+        String sql;
+        m.put("i", item);
+        sql = "Select sum(COALESCE(s.itemBatch.retailsaleRate, 0) * s.stock) from Stock s where s.itemBatch.item=:i";
         return getItemBatchFacade().findDoubleByJpql(sql, m, true);
     }
 
@@ -893,6 +969,11 @@ public class PharmacyBean {
             params.put("doe", new Date());
         } else if (item instanceof Vmp) {
             List<Amp> amps = findAmpsForVmp((Vmp) item);
+
+            if (amps == null || amps.isEmpty()) {
+                return new ArrayList<>();
+            }
+
             jpql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item in :amps "
@@ -1045,25 +1126,30 @@ public class PharmacyBean {
 
     /**
      * ⚠️⚠️⚠️ CRITICAL INVENTORY MANAGEMENT METHOD - DO NOT MODIFY ⚠️⚠️⚠️
-     * 
-     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
-     * This method handles CRITICAL stock deduction operations that directly affect:
-     * - Real money and financial reports
-     * - Regulatory compliance and audit trails  
-     * - Inventory accuracy across the entire system
-     * - Patient safety (stock availability)
-     * 
-     * 🛑 NEVER MODIFY THIS METHOD WITHOUT:
-     * 1. Senior developer + Financial controller approval
-     * 2. Full backup and rollback plan
-     * 3. Extensive testing with audit verification
-     * 4. Regulatory compliance review
-     * 
-     * 📋 This method correctly handles:
-     * - Stock level validation (prevents negative stock)
-     * - Database consistency with editAndCommit  
-     * - Audit trail creation via addToStockHistory
-     * - Proper error handling with boolean return
+     *
+     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨 This method handles
+     * CRITICAL stock deduction operations that directly affect: - Real money
+     * and financial reports - Regulatory compliance and audit trails -
+     * Inventory accuracy across the entire system - Patient safety (stock
+     * availability)
+     *
+     * 🛑 NEVER MODIFY THIS METHOD WITHOUT: 1. Senior developer + Financial
+     * controller approval 2. Full backup and rollback plan 3. Extensive testing
+     * with audit verification 4. Regulatory compliance review
+     *
+     * 📋 This method correctly handles: - Stock level validation (prevents
+     * negative stock) - Database consistency with editAndCommit - Audit trail
+     * creation via addToStockHistory - Proper error handling with boolean
+     * return
+     *
+     * 🚨 CRITICAL RULE FOR AMP/AMPP HANDLING: 🚨 ❌ DO NOT modify input
+     * parameters (pbi.getBillItem().setItem()) in this method ❌ DO NOT add
+     * AMP/AMPP conversion logic here ✅ Handle AMP/AMPP conversions in
+     * CONTROLLERS before calling this method ✅ Ensure Stock objects passed to
+     * this method are already associated with correct AMP items
+     *
+     * This method is FULLY TESTED and PRODUCTION STABLE. Any AMP/AMPP issues
+     * should be resolved at the controller level, NOT here.
      */
     public boolean deductFromStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
@@ -1077,6 +1163,17 @@ public class PharmacyBean {
         if (stock.getStock() < qty) {
             return false;
         }
+
+        // This is wrong. We can not alter the item referance of the bill item. It is something entered by the user.
+//        if (pbi != null && pbi.getBillItem() != null && pbi.getBillItem().getItem() != null) {
+//            Item originalItem = pbi.getBillItem().getItem();
+//            if (originalItem instanceof Ampp) {
+//                Item amp = ((Ampp) originalItem).getAmp();
+//                if (amp != null) {
+//                    pbi.getBillItem().setItem(amp);
+//                }
+//            }
+//        }
         stock = getStockFacade().findWithoutCache(stock.getId());
         stock.setStock(stock.getStock() - qty);
         getStockFacade().editAndCommit(stock);
@@ -1102,6 +1199,29 @@ public class PharmacyBean {
         return true;
     }
 
+    /**
+     * 🏥 CRITICAL AUDIT TRAIL METHOD - HANDLE WITH EXTREME CARE 🏥
+     *
+     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨 This method creates
+     * REGULATORY COMPLIANCE audit trails that are: - Required for government
+     * health inspections - Used in financial audits and regulatory reporting -
+     * Critical for pharmaceutical inventory compliance - Essential for bin card
+     * accuracy and stock tracking
+     *
+     * ✅ THIS METHOD CORRECTLY HANDLES AMP/AMPP CONVERSION: - Converts AMPP
+     * items to AMP for consistent audit trails - Maintains proper
+     * pharmaceutical inventory standards - Ensures bin cards show unified
+     * AMP-based tracking - Does NOT modify original billItem references
+     *
+     * 🛑 DO NOT MODIFY UNLESS: 1. You have senior developer + regulatory
+     * compliance approval 2. You understand pharmaceutical AMP/AMPP inventory
+     * standards 3. You have tested extensively with audit trail verification 4.
+     * You can ensure continued regulatory compliance
+     *
+     * 📋 Current Implementation Status: ✅ FULLY TESTED & PRODUCTION STABLE This
+     * AMP conversion logic was added June 1, 2025 to fix Issue #12641 and has
+     * been thoroughly tested in production environments.
+     */
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
         if (phItem == null || phItem.getBillItem() == null || phItem.getBillItem().getItem() == null) {
             return;
@@ -1133,9 +1253,61 @@ public class PharmacyBean {
         // Ensure AMP is used for item tracking
         sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
-        sh.setItemStock(getStockQty(amp, d));
-        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
-        sh.setTotalItemStock(getStockQty(amp));
+
+        double departmentItemStock = PharmacyBean.this.getItemStockQty(amp, d);
+        double institutionItemStock = PharmacyBean.this.getItemStockQty(amp, d.getInstitution());
+        double totalItemStock = getItemStockQty(amp);
+
+        double departmentBatchStock = PharmacyBean.this.getBatchStockQty(fetchedStock.getItemBatch(), d);
+        double institutionBatchStock = PharmacyBean.this.getBatchStockQty(fetchedStock.getItemBatch(), d.getInstitution());
+        double totalBatchStock = getBatchStockQty(fetchedStock.getItemBatch());
+
+        sh.setItemStock(departmentItemStock);
+        sh.setInstitutionItemStock(institutionItemStock);
+        sh.setTotalItemStock(totalItemStock);
+
+        sh.setInstituionBatchQty(institutionBatchStock);
+        sh.setTotalBatchQty(totalBatchStock);
+
+        // Record itemBatch rates
+        if (fetchedStock.getItemBatch() != null) {
+            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
+            double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
+
+            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
+            sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
+            sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
+
+            // Batch Stock Values
+            sh.setStockSaleValue(sh.getStockQty() * sh.getRetailRate());
+            sh.setStockCostValue(sh.getStockQty() * sh.getCostRate());
+            sh.setStockPurchaseValue(sh.getStockQty() * sh.getPurchaseRate());
+
+            // This is the Item Batch Stock value at retail rate of the department
+            sh.setInstitutionBatchStockValueAtPurchaseRate(institutionBatchStock * purchaseRate);
+            sh.setTotalBatchStockValueAtPurchaseRate(totalBatchStock * purchaseRate);
+
+            sh.setInstitutionBatchStockValueAtSaleRate(institutionBatchStock * retailSaleRate);
+            sh.setTotalBatchStockValueAtSaleRate(totalBatchStock * retailSaleRate);
+
+            sh.setInstitutionBatchStockValueAtCostRate(institutionBatchStock * costRate);
+            sh.setTotalBatchStockValueAtCostRate(totalBatchStock * costRate);
+
+            // Item Stock Values - CORRECTED: Use weighted calculations across all batches
+            sh.setItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d));
+            sh.setInstitutionItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp));
+
+            sh.setItemStockValueAtCostRate(getStockByCostValue(amp, d));
+            sh.setInstitutionItemStockValueAtCostRate(getStockByCostValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtCostRate(getStockByCostValue(amp));
+
+            sh.setItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d));
+            sh.setInstitutionItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtSaleRate(getStockByRetailSaleValue(amp));
+        }
 
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
@@ -1146,6 +1318,7 @@ public class PharmacyBean {
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
+
 
     public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
         if (billItem == null) {
@@ -1184,9 +1357,61 @@ public class PharmacyBean {
         // Ensure AMP is used for item tracking
         sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
-        sh.setItemStock(getStockQty(amp, d));
-        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
-        sh.setTotalItemStock(getStockQty(amp));
+
+        double departmentItemStock = PharmacyBean.this.getItemStockQty(amp, d);
+        double institutionItemStock = PharmacyBean.this.getItemStockQty(amp, d.getInstitution());
+        double totalItemStock = getItemStockQty(amp);
+
+        double departmentBatchStock = PharmacyBean.this.getBatchStockQty(fetchedStock.getItemBatch(), d);
+        double institutionBatchStock = PharmacyBean.this.getBatchStockQty(fetchedStock.getItemBatch(), d.getInstitution());
+        double totalBatchStock = getBatchStockQty(fetchedStock.getItemBatch());
+
+        sh.setItemStock(departmentItemStock);
+        sh.setInstitutionItemStock(institutionItemStock);
+        sh.setTotalItemStock(totalItemStock);
+
+        sh.setInstituionBatchQty(institutionBatchStock);
+        sh.setTotalBatchQty(totalBatchStock);
+
+        // Record itemBatch rates
+        if (fetchedStock.getItemBatch() != null) {
+            Double costRate = fetchedStock.getItemBatch().getCostRate();
+            double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
+            double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
+
+            sh.setCostRate(costRate != null ? costRate : 0.0);
+            sh.setPurchaseRate(fetchedStock.getItemBatch().getPurcahseRate());
+            sh.setRetailRate(fetchedStock.getItemBatch().getRetailsaleRate());
+            sh.setWholesaleRate(fetchedStock.getItemBatch().getWholesaleRate());
+
+            // Batch Stock Values
+            sh.setStockSaleValue(sh.getStockQty() * sh.getRetailRate());
+            sh.setStockCostValue(sh.getStockQty() * sh.getCostRate());
+            sh.setStockPurchaseValue(sh.getStockQty() * sh.getPurchaseRate());
+
+            // This is the Item Batch Stock value at retail rate of the department
+            sh.setInstitutionBatchStockValueAtPurchaseRate(institutionBatchStock * purchaseRate);
+            sh.setTotalBatchStockValueAtPurchaseRate(totalBatchStock * purchaseRate);
+
+            sh.setInstitutionBatchStockValueAtSaleRate(institutionBatchStock * retailSaleRate);
+            sh.setTotalBatchStockValueAtSaleRate(totalBatchStock * retailSaleRate);
+
+            sh.setInstitutionBatchStockValueAtCostRate(institutionBatchStock * costRate);
+            sh.setTotalBatchStockValueAtCostRate(totalBatchStock * costRate);
+
+            // Item Stock Values - CORRECTED: Use weighted calculations across all batches
+            sh.setItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d));
+            sh.setInstitutionItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtPurchaseRate(getStockByPurchaseValue(amp));
+
+            sh.setItemStockValueAtCostRate(getStockByCostValue(amp, d));
+            sh.setInstitutionItemStockValueAtCostRate(getStockByCostValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtCostRate(getStockByCostValue(amp));
+
+            sh.setItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d));
+            sh.setInstitutionItemStockValueAtSaleRate(getStockByRetailSaleValue(amp, d.getInstitution()));
+            sh.setTotalItemStockValueAtSaleRate(getStockByRetailSaleValue(amp));
+        }
 
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
@@ -1211,6 +1436,13 @@ public class PharmacyBean {
             return;
         }
 
+        // Extract AMP (Actual Medicinal Product) even if input is AMPP (Pack) for stock calculations
+        Item originalItem = phItem.getBillItem().getItem();
+        Item amp = originalItem;
+        if (amp instanceof Ampp) {
+            amp = ((Ampp) amp).getAmp();
+        }
+
         StockHistory sh = new StockHistory();
         sh.setFromDate(Calendar.getInstance().getTime());
         sh.setPbItem(phItem);
@@ -1218,19 +1450,64 @@ public class PharmacyBean {
         sh.setHxMonth(Calendar.getInstance().get(Calendar.MONTH));
         sh.setHxWeek(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
         sh.setHxYear(Calendar.getInstance().get(Calendar.YEAR));
-
         sh.setStockAt(Calendar.getInstance().getTime());
-
         sh.setStaff(staff);
+
         Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
 
         sh.setStockQty(fetchedStock.getStock());
-        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getDepartment()));
-        sh.setItem(phItem.getBillItem().getItem());
+
+        // Use AMP for stock calculations since stocks are stored for AMPs only
+        // Defensive null checks for Bill and related references
+        Bill bill = phItem.getBillItem().getBill();
+        Department billDepartment = null;
+        Institution billInstitution = null;
+        if (bill != null) {
+            billDepartment = bill.getDepartment();
+            Department fromDepartment = bill.getFromDepartment();
+            if (fromDepartment != null) {
+                billInstitution = fromDepartment.getInstitution();
+            }
+        }
+
+        double departmentItemStock = 0.0;
+        double institutionItemStock = 0.0;
+        double totalItemStock = getItemStockQty(amp);
+
+        if (billDepartment != null) {
+            departmentItemStock = getItemStockQty(amp, billDepartment);
+        }
+        if (billInstitution != null) {
+            institutionItemStock = getItemStockQty(amp, billInstitution);
+        }
+
+        sh.setItemStock(departmentItemStock);
+        // Store AMP for consistency with department-based history methods
+        sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
         sh.setCreatedAt(new Date());
-        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), phItem.getBillItem().getBill().getFromDepartment().getInstitution()));
-        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
+        sh.setInstitutionItemStock(institutionItemStock);
+        sh.setTotalItemStock(totalItemStock);
+
+        // Calculate stock values at different rates
+        if (fetchedStock.getItemBatch() != null) {
+            double purchaseRate = fetchedStock.getItemBatch().getPurcahseRate();
+            Double costRateObj = fetchedStock.getItemBatch().getCostRate();
+            double costRate = costRateObj != null ? costRateObj : 0.0;
+            double retailSaleRate = fetchedStock.getItemBatch().getRetailsaleRate();
+
+            sh.setItemStockValueAtPurchaseRate(departmentItemStock * purchaseRate);
+            sh.setInstitutionItemStockValueAtPurchaseRate(institutionItemStock * purchaseRate);
+            sh.setTotalItemStockValueAtPurchaseRate(totalItemStock * purchaseRate);
+
+            sh.setItemStockValueAtCostRate(departmentItemStock * costRate);
+            sh.setInstitutionItemStockValueAtCostRate(institutionItemStock * costRate);
+            sh.setTotalItemStockValueAtCostRate(totalItemStock * costRate);
+
+            sh.setItemStockValueAtSaleRate(departmentItemStock * retailSaleRate);
+            sh.setInstitutionItemStockValueAtSaleRate(institutionItemStock * retailSaleRate);
+            sh.setTotalItemStockValueAtSaleRate(totalItemStock * retailSaleRate);
+        }
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
         } else {
@@ -1244,25 +1521,29 @@ public class PharmacyBean {
     //
     /**
      * ⚠️⚠️⚠️ CRITICAL INVENTORY MANAGEMENT METHOD - DO NOT MODIFY ⚠️⚠️⚠️
-     * 
-     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨
-     * This method handles CRITICAL stock addition operations that directly affect:
-     * - Real money and financial reports
-     * - Regulatory compliance and audit trails  
-     * - Inventory accuracy across the entire system
-     * - Purchase order and GRN processing
-     * 
-     * 🛑 NEVER MODIFY THIS METHOD WITHOUT:
-     * 1. Senior developer + Financial controller approval
-     * 2. Full backup and rollback plan
-     * 3. Extensive testing with audit verification
-     * 4. Regulatory compliance review
-     * 
-     * 📋 This method correctly handles:
-     * - Stock level addition with proper validation
-     * - Database consistency with editAndFlush
-     * - Audit trail creation via addToStockHistory  
-     * - Proper error handling with boolean return
+     *
+     * 🚨 WARNING TO ALL DEVELOPERS AND AI AGENTS: 🚨 This method handles
+     * CRITICAL stock addition operations that directly affect: - Real money and
+     * financial reports - Regulatory compliance and audit trails - Inventory
+     * accuracy across the entire system - Purchase order and GRN processing
+     *
+     * 🛑 NEVER MODIFY THIS METHOD WITHOUT: 1. Senior developer + Financial
+     * controller approval 2. Full backup and rollback plan 3. Extensive testing
+     * with audit verification 4. Regulatory compliance review
+     *
+     * 📋 This method correctly handles: - Stock level addition with proper
+     * validation - Database consistency with editAndFlush - Audit trail
+     * creation via addToStockHistory - Proper error handling with boolean
+     * return
+     *
+     * 🚨 CRITICAL RULE FOR AMP/AMPP HANDLING: 🚨 ❌ DO NOT modify input
+     * parameters (pbi.getBillItem().setItem()) in this method ❌ DO NOT add
+     * AMP/AMPP conversion logic here ✅ Handle AMP/AMPP conversions in
+     * CONTROLLERS before calling this method ✅ Ensure Stock objects passed to
+     * this method are already associated with correct AMP items
+     *
+     * This method is FULLY TESTED and PRODUCTION STABLE. Any AMP/AMPP issues
+     * should be resolved at the controller level, NOT here.
      */
     public boolean addToStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
@@ -2169,88 +2450,89 @@ public class PharmacyBean {
     }
 
     /**
-     * Bulk stock availability method to replace individual N+1 queries for stock lookups.
-     * Retrieves available stocks for all items in a single query.
-     * 
+     * Bulk stock availability method to replace individual N+1 queries for
+     * stock lookups. Retrieves available stocks for all items in a single
+     * query.
+     *
      * @param items List of items to get stock availability for
      * @param department The department to check stock availability in
-     * @return Map with item ID as key and list of stock availability DTOs as value
+     * @return Map with item ID as key and list of stock availability DTOs as
+     * value
      */
     public java.util.Map<Long, java.util.List<com.divudi.core.data.dto.StockAvailabilityDTO>> getBulkStockAvailability(
             java.util.List<com.divudi.core.entity.Item> items, com.divudi.core.entity.Department department) {
-        
+
         if (items == null || items.isEmpty() || department == null) {
             return new java.util.HashMap<>();
         }
-        
+
         // Resolve items to AMPs and get unique IDs
         java.util.List<Long> itemIds = items.stream()
-            .map(item -> {
-                if (item instanceof com.divudi.core.entity.pharmacy.Ampp) {
-                    com.divudi.core.entity.pharmacy.Ampp ampp = (com.divudi.core.entity.pharmacy.Ampp) item;
-                    return ampp.getAmp() != null ? ampp.getAmp().getId() : item.getId();
-                } else {
-                    return item.getId();
-                }
-            })
-            .filter(id -> id != null)
-            .distinct()
-            .collect(java.util.stream.Collectors.toList());
-        
+                .map(item -> {
+                    if (item instanceof com.divudi.core.entity.pharmacy.Ampp) {
+                        com.divudi.core.entity.pharmacy.Ampp ampp = (com.divudi.core.entity.pharmacy.Ampp) item;
+                        return ampp.getAmp() != null ? ampp.getAmp().getId() : item.getId();
+                    } else {
+                        return item.getId();
+                    }
+                })
+                .filter(id -> id != null)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
         if (itemIds.isEmpty()) {
             return new java.util.HashMap<>();
         }
-        
-        String sql = "SELECT " +
-            "  i.id as itemId, " +
-            "  s.id as stockId, " +
-            "  ib.id as itemBatchId, " +
-            "  ib.batchNo, " +
-            "  ib.dateOfExpire, " +
-            "  s.stock as availableStock, " +
-            "  ib.purcahseRate as purchaseRate, " +
-            "  ib.retailsaleRate as retailRate, " +
-            "  ib.costRate, " +
-            "  i.name as itemName, " +
-            "  i.code as itemCode " +
-            "FROM Stock s " +
-            "JOIN s.itemBatch ib " +
-            "JOIN ib.item i " +
-            "WHERE i.id IN :itemIds " +
-            "  AND s.department = :department " +
-            "  AND s.stock >= 1.0 " +
-            "  AND s.retired = false " +
-            "  AND ib.retired = false " +
-            "  AND i.retired = false " +
-            "ORDER BY i.id, ib.dateOfExpire";
-        
+
+        String sql = "SELECT "
+                + "  i.id as itemId, "
+                + "  s.id as stockId, "
+                + "  ib.id as itemBatchId, "
+                + "  ib.batchNo, "
+                + "  ib.dateOfExpire, "
+                + "  s.stock as availableStock, "
+                + "  ib.purcahseRate as purchaseRate, "
+                + "  ib.retailsaleRate as retailRate, "
+                + "  ib.costRate, "
+                + "  i.name as itemName, "
+                + "  i.code as itemCode "
+                + "FROM Stock s "
+                + "JOIN s.itemBatch ib "
+                + "JOIN ib.item i "
+                + "WHERE i.id IN :itemIds "
+                + "  AND s.department = :department "
+                + "  AND s.stock >= 1.0 "
+                + "  AND s.retired = false "
+                + "  AND ib.retired = false "
+                + "  AND i.retired = false "
+                + "ORDER BY i.id, ib.dateOfExpire";
+
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         params.put("itemIds", itemIds);
         params.put("department", department);
-        
+
         try {
             java.util.List<Object[]> results = getStockFacade().findObjectArrayByJpql(sql, params, TemporalType.TIMESTAMP);
-            
+
             return results.stream()
-                .map(row -> new com.divudi.core.data.dto.StockAvailabilityDTO(
-                    (Long) row[0],    // itemId
-                    (Long) row[1],    // stockId
-                    (Long) row[2],    // itemBatchId
-                    (String) row[3],  // batchNo
+                    .map(row -> new com.divudi.core.data.dto.StockAvailabilityDTO(
+                    (Long) row[0], // itemId
+                    (Long) row[1], // stockId
+                    (Long) row[2], // itemBatchId
+                    (String) row[3], // batchNo
                     (java.util.Date) row[4], // dateOfExpire
-                    (Double) row[5],  // availableStock
-                    (Double) row[6],  // purchaseRate
-                    (Double) row[7],  // retailRate
-                    (Double) row[8],  // costRate
-                    (String) row[9],  // itemName
-                    (String) row[10]  // itemCode
-                ))
-                .collect(java.util.stream.Collectors.groupingBy(
-                    com.divudi.core.data.dto.StockAvailabilityDTO::getItemId
-                ));
+                    (Double) row[5], // availableStock
+                    (Double) row[6], // purchaseRate
+                    (Double) row[7], // retailRate
+                    (Double) row[8], // costRate
+                    (String) row[9], // itemName
+                    (String) row[10] // itemCode
+            ))
+                    .collect(java.util.stream.Collectors.groupingBy(
+                            com.divudi.core.data.dto.StockAvailabilityDTO::getItemId
+                    ));
         } catch (Exception e) {
-            // Log error and return empty map as fallback
-            System.err.println("Error in getBulkStockAvailability: " + e.getMessage());
+// Log error and return empty map as fallback
             e.printStackTrace();
             return new java.util.HashMap<>();
         }

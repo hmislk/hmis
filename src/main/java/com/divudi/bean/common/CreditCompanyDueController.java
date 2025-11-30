@@ -63,6 +63,8 @@ public class CreditCompanyDueController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private CreditBean creditBean;
     @EJB
@@ -109,6 +111,7 @@ public class CreditCompanyDueController implements Serializable {
     private Institution site;
 
     private String billType;
+    private String visitType;
 
     Map<PatientEncounter, List<Bill>> billPatientEncounterMap = new HashMap<>();
     private Map<String, Map<String, EncounterCreditCompany>> encounterCreditCompanyMap;
@@ -231,7 +234,13 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void setInstitutionOfDepartment(Institution institutionOfDepartment) {
-        this.institutionOfDepartment = institutionOfDepartment;
+        if (!Objects.equals(this.institutionOfDepartment, institutionOfDepartment)) {
+            this.institutionOfDepartment = institutionOfDepartment;
+            setSite(null);
+            setDepartment(null);
+        } else {
+            this.institutionOfDepartment = institutionOfDepartment;
+        }
     }
 
     public Department getDepartment() {
@@ -248,6 +257,15 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public void resetLocationFilters() {
+        setSite(null);
+        setDepartment(null);
+    }
+
+    public void resetDepartment() {
+        setDepartment(null);
     }
 
     public int nextRowCounter() {
@@ -309,6 +327,11 @@ public class CreditCompanyDueController implements Serializable {
         institutionEncounters = null;
         creditCompanyAge = null;
         filteredList = null;
+        visitType = null;
+        institutionOfDepartment = null;
+        site = null;
+        department = null;
+        institution = null;
     }
 
     public void createAgeTable() {
@@ -336,6 +359,15 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit bills are now managed through the OPD credit due age methods,
+     * which handle both OPD and Pharmacy credit bills.
+     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
+     * the unified OPD Credit Settle bill type.
+     * Please use the OPD Due Age functionality instead.
+     */
+    @Deprecated
     public void createAgeTablePharmacy() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1335,13 +1367,43 @@ public class CreditCompanyDueController implements Serializable {
         }, CreditReport.OPD_CREDIT_DUE, sessionController.getLoggedUser());
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit bills are now managed through the OPD credit due methods,
+     * which handle both OPD and Pharmacy credit bills.
+     * The separate Pharmacy Credit Settle bill type is being deprecated in favor of
+     * the unified OPD Credit Settle bill type.
+     * Please use the OPD Due Search functionality instead.
+     */
+    @Deprecated
     public void createPharmacyCreditDue() {
-        Date startTime = new Date();
+        List<BillType> billTypes = Arrays.asList(BillType.PharmacyWholeSale, BillType.PharmacySale);
 
-        List<Institution> setIns = getCreditBean().getCreditInstitutionPharmacy(Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
+        List<Institution> creditCompanies = getCreditBean().getCreditInstitutionPharmacy(
+                billTypes,
+                getFromDate(),
+                getToDate(),
+                true,
+                getInstitution(),
+                getSite(),
+                getDepartment(),
+                getVisitType(),
+                getCreditCompany());
+
         items = new ArrayList<>();
-        for (Institution ins : setIns) {
-            List<Bill> bills = getCreditBean().getCreditBillsPharmacy(ins, Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
+
+        for (Institution ins : creditCompanies) {
+            List<Bill> bills = getCreditBean().getCreditBillsPharmacy(
+                    ins,
+                    billTypes,
+                    getFromDate(),
+                    getToDate(),
+                    true,
+                    getInstitution(),
+                    getSite(),
+                    getDepartment(),
+                    getVisitType());
+
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setBills(bills);
@@ -1353,7 +1415,6 @@ public class CreditCompanyDueController implements Serializable {
 
             items.add(newIns);
         }
-
     }
 
     public void createOpdCreditDueBillItem() {
@@ -3145,73 +3206,205 @@ public class CreditCompanyDueController implements Serializable {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
 
-        try (Workbook workbook = new XSSFWorkbook()) {
-            // Create a sheet
+        boolean hideStaffFee = configOptionApplicationController != null
+                && configOptionApplicationController.getBooleanValueByKey("OPD Due Search - Hide Staff Fee", false);
+
+        List<InstitutionBills> data = getItems() == null ? Collections.emptyList() : getItems();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            CreationHelper helper = workbook.getCreationHelper();
             Sheet sheet = workbook.createSheet("Due Report");
+
+            XSSFFont boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+
+            CellStyle sectionHeaderStyle = workbook.createCellStyle();
+            sectionHeaderStyle.setFont(boldFont);
+
+            CellStyle dateStyle = workbook.createCellStyle();
+            dateStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy MM dd"));
+
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+
             int rowIndex = 0;
 
-            // Create Header Row
-            Row headerRow = sheet.createRow(rowIndex++);
-            String[] headers = {"Institution Name", "Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Net Amount"};
-            int colIndex = 0;
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("DUE SEARCH");
+            titleCell.setCellStyle(sectionHeaderStyle);
 
-            double total = 0;
-            double paidTotal = 0;
-            double DueTotal = 0;
-
-            for (String header : headers) {
-                Cell cell = headerRow.createCell(colIndex++);
-                cell.setCellValue(header);
+            Row periodRow = sheet.createRow(rowIndex++);
+            periodRow.createCell(0).setCellValue("From :");
+            if (getFromDate() != null) {
+                Cell fromCell = periodRow.createCell(1);
+                fromCell.setCellValue(getFromDate());
+                fromCell.setCellStyle(dateStyle);
+            }
+            periodRow.createCell(3).setCellValue("To :");
+            if (getToDate() != null) {
+                Cell toCell = periodRow.createCell(4);
+                toCell.setCellValue(getToDate());
+                toCell.setCellStyle(dateStyle);
             }
 
-            // Populate Data Rows
-            for (InstitutionBills institution : items) {
-                for (Bill bill : institution.getBills()) {
-                    Row dataRow = sheet.createRow(rowIndex++);
-                    colIndex = 0;
+            rowIndex++;
 
-                    dataRow.createCell(colIndex++).setCellValue(institution.getInstitution().getName());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getDeptId());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments() != null && !bill.getPayments().isEmpty() ? bill.getPayments().get(0).getPolicyNo() : "N/A");
-                    dataRow.createCell(colIndex++).setCellValue(bill.getPayments() != null && !bill.getPayments().isEmpty() ? bill.getPayments().get(0).getReferenceNo() : "N/A");
-                    dataRow.createCell(colIndex++).setCellValue(bill.getPatient().getPerson().getNameWithTitle());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getCreatedAt().toString());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getStaffFee());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getPaidAmount());
-                    dataRow.createCell(colIndex++).setCellValue(bill.getNetTotal() - bill.getPaidAmount());
+            Row headerRow = sheet.createRow(rowIndex++);
+            int headerIndex = 0;
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Bill No", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Policy No", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Ref No", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Client Name", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Bill Date", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Billed Amount", headerStyle);
+            if (!hideStaffFee) {
+                headerIndex = createHeaderCell(headerRow, headerIndex, "Staff Fee", headerStyle);
+            }
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Paid Amount", headerStyle);
+            createHeaderCell(headerRow, headerIndex, "Due Amount", headerStyle);
+
+            int headerCount = hideStaffFee ? 8 : 9;
+
+            for (InstitutionBills institutionBills : data) {
+                if (institutionBills == null) {
+                    continue;
                 }
 
-                total += institution.getTotal();
-                paidTotal += institution.getPaidTotal();
-                DueTotal += (institution.getTotal() - institution.getPaidTotal());
+                Row institutionRow = sheet.createRow(rowIndex++);
+                Cell institutionCell = institutionRow.createCell(0);
+                institutionCell.setCellValue(institutionBills.getInstitution() != null
+                        ? institutionBills.getInstitution().getName()
+                        : "");
+                institutionCell.setCellStyle(sectionHeaderStyle);
+                sheet.addMergedRegion(new CellRangeAddress(institutionRow.getRowNum(), institutionRow.getRowNum(), 0, headerCount - 1));
+
+                List<Payment> payments = institutionBills.getPayments();
+                if (payments == null) {
+                    payments = Collections.emptyList();
+                }
+
+                for (Payment payment : payments) {
+                    if (payment == null) {
+                        continue;
+                    }
+
+                    Bill bill = payment.getBill();
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    int dataIndex = 0;
+
+                    dataRow.createCell(dataIndex++).setCellValue(bill != null && bill.getDeptId() != null ? bill.getDeptId() : "");
+                    dataRow.createCell(dataIndex++)
+                            .setCellValue(payment.getPolicyNo() != null && !payment.getPolicyNo().isEmpty() ? payment.getPolicyNo() : "N/A");
+                    dataRow.createCell(dataIndex++)
+                            .setCellValue(payment.getReferenceNo() != null && !payment.getReferenceNo().isEmpty() ? payment.getReferenceNo() : "N/A");
+                    dataRow.createCell(dataIndex++)
+                            .setCellValue(bill != null && bill.getPatient() != null && bill.getPatient().getPerson() != null
+                                    ? bill.getPatient().getPerson().getNameWithTitle()
+                                    : "");
+
+                    Cell billDateCell = dataRow.createCell(dataIndex++);
+                    if (bill != null && bill.getCreatedAt() != null) {
+                        billDateCell.setCellValue(bill.getCreatedAt());
+                        billDateCell.setCellStyle(dateStyle);
+                    } else {
+                        billDateCell.setCellValue("");
+                    }
+
+                    Cell billedAmountCell = dataRow.createCell(dataIndex++);
+                    if (bill != null) {
+                        billedAmountCell.setCellValue(bill.getNetTotal());
+                        billedAmountCell.setCellStyle(numberStyle);
+                    } else {
+                        billedAmountCell.setCellValue(0d);
+                        billedAmountCell.setCellStyle(numberStyle);
+                    }
+
+                    if (!hideStaffFee) {
+                        Cell staffFeeCell = dataRow.createCell(dataIndex++);
+                        double staffFee = bill != null ? bill.getStaffFee() : 0d;
+                        staffFeeCell.setCellValue(staffFee);
+                        staffFeeCell.setCellStyle(numberStyle);
+                    }
+
+                    Cell paidAmountCell = dataRow.createCell(dataIndex++);
+                    if (bill != null) {
+                        paidAmountCell.setCellValue(bill.getPaidAmount());
+                        paidAmountCell.setCellStyle(numberStyle);
+                    } else {
+                        paidAmountCell.setCellValue(0d);
+                        paidAmountCell.setCellStyle(numberStyle);
+                    }
+
+                    Cell dueAmountCell = dataRow.createCell(dataIndex);
+                    if (bill != null) {
+                        dueAmountCell.setCellValue(bill.getNetTotal() - bill.getPaidAmount());
+                        dueAmountCell.setCellStyle(numberStyle);
+                    } else {
+                        dueAmountCell.setCellValue(0d);
+                        dueAmountCell.setCellStyle(numberStyle);
+                    }
+                }
+
+                Row totalRow = sheet.createRow(rowIndex++);
+                Cell totalLabelCell = totalRow.createCell(0);
+                totalLabelCell.setCellValue("Total");
+                totalLabelCell.setCellStyle(sectionHeaderStyle);
+
+                for (int i = 1; i < 5; i++) {
+                    totalRow.createCell(i);
+                }
+
+                Cell billedTotalCell = totalRow.createCell(5);
+                billedTotalCell.setCellValue(institutionBills.getTotal());
+                billedTotalCell.setCellStyle(numberStyle);
+
+                int paidIndex = hideStaffFee ? 6 : 7;
+                if (!hideStaffFee) {
+                    totalRow.createCell(6);
+                }
+
+                Cell paidTotalCell = totalRow.createCell(paidIndex);
+                paidTotalCell.setCellValue(institutionBills.getPaidTotal());
+                paidTotalCell.setCellStyle(numberStyle);
+
+                Cell dueTotalCell = totalRow.createCell(paidIndex + 1);
+                dueTotalCell.setCellValue(institutionBills.getTotal() - institutionBills.getPaidTotal());
+                dueTotalCell.setCellStyle(numberStyle);
             }
 
-            // Add totals row below all data
-            Row totalRow = sheet.createRow(rowIndex++);
+            if (sessionController != null && sessionController.getLoggedUser() != null
+                    && sessionController.getLoggedUser().getWebUserPerson() != null) {
+                Row printedByRow = sheet.createRow(rowIndex++);
+                printedByRow.createCell(0).setCellValue(
+                        "Printed By : " + sessionController.getLoggedUser().getWebUserPerson().getName());
+            }
 
-            // Optional: Add label in first column
-            totalRow.createCell(0).setCellValue("Total");
-            totalRow.createCell(6).setCellValue(total);
-            totalRow.createCell(8).setCellValue(paidTotal);
-            totalRow.createCell(9).setCellValue(DueTotal);
-
-            // Auto-size Columns
-            for (int i = 0; i < headers.length; i++) {
+            for (int i = 0; i < headerCount; i++) {
                 sheet.autoSizeColumn(i);
             }
 
-            // Set Response Headers
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=Credit Company Due_Report.xlsx");
-            OutputStream outputStream = response.getOutputStream();
-            workbook.write(outputStream);
-
-            // Complete Response
-            facesContext.responseComplete();
+            try (OutputStream outputStream = response.getOutputStream()) {
+                workbook.write(outputStream);
+                facesContext.responseComplete();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private int createHeaderCell(Row row, int columnIndex, String value, CellStyle style) {
+        Cell cell = row.createCell(columnIndex);
+        cell.setCellValue(value);
+        if (style != null) {
+            cell.setCellStyle(style);
+        }
+        return columnIndex + 1;
     }
 
     //    public List<Admission> completePatientDishcargedNotFinalized(String query) {
@@ -3378,6 +3571,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setManagePharmacyDueAndAccessIndex(int managePharmacyDueAndAccessIndex) {
         this.managePharmacyDueAndAccessIndex = managePharmacyDueAndAccessIndex;
+    }
+
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
     }
 
     public String getBillType() {

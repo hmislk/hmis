@@ -201,17 +201,17 @@
                                                         <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.item.code}" style="width: 100px!important;" />
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}"  >
+                                                        <h:outputLabel value="#{empty i.pharmaceuticalBillItem.qty ? null : commonFunctionsProxy.abs(i.pharmaceuticalBillItem.qty)}"  >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
+                                                        <h:outputLabel value="#{empty i.pharmaceuticalBillItem.itemBatch.purcahseRate ? null : commonFunctionsProxy.abs(i.pharmaceuticalBillItem.itemBatch.purcahseRate)}"  >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}" >
+                                                        <h:outputLabel value="#{commonFunctionsProxy.abs(i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty)}" >
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputLabel>
                                                     </td>
@@ -228,7 +228,7 @@
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: left;"></td>
                                                 <td style="width: 17mm; text-align: right;">
-                                                    <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
+                                                    <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" >
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
                                                 </td>

@@ -966,14 +966,14 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (getPreBill().getId() == null) {
             getPreBill().setCreatedAt(new Date());
             getPreBill().setCreater(sessionController.getLoggedUser());
-            getPreBill().setCompleted(true);
-            getPreBill().setCompletedAt(new Date());
-            getPreBill().setCompletedBy(sessionController.getLoggedUser());
+//            getPreBill().setCompleted(true);
+//            getPreBill().setCompletedAt(new Date());
+//            getPreBill().setCompletedBy(sessionController.getLoggedUser());
             billFacade.create(getPreBill());
         } else {
-            getPreBill().setCompleted(true);
-            getPreBill().setCompletedAt(new Date());
-            getPreBill().setCompletedBy(sessionController.getLoggedUser());
+//            getPreBill().setCompleted(true);
+//            getPreBill().setCompletedAt(new Date());
+//            getPreBill().setCompletedBy(sessionController.getLoggedUser());
             billFacade.edit(getPreBill());
         }
         for (BillItem savingBillItem : getPreBill().getBillItems()) {
@@ -1247,6 +1247,28 @@ public class PharmacyRequestForBhtController implements Serializable {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Quantity?");
             return;
+        }
+
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No patient Select.");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+
+            List<ClinicalFindingValue> allergyListOfPatient = pharmacyService.getAllergyListForPatient(patientEncounter.getPatient());
+            List<BillItem> billItems = new ArrayList<>();
+            billItems.add(billItem);
+
+            if (allergyListOfPatient != null && !allergyListOfPatient.isEmpty()) {
+                String allergyMsg = pharmacyService.isAllergyForPatient(patientEncounter.getPatient(), billItems, allergyListOfPatient);
+
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+
         }
 
         // Create a new billItem for the collection to avoid entity state issues

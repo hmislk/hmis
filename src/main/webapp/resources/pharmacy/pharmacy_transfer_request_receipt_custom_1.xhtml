@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="reprint"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
+        <div style="width: 212mm; height: 275mm; padding-left: 0px">
+            <div >
+<!--                <div class="institutionName">
+                    <h:outputLabel value="#{cc.attrs.bill.department.name}" />
+                </div>-->
+
+                <div class="headingBill">
+                    <h:outputLabel value="Pharmacy Transfer Request" />
+                    <br/>
+                    <h:outputLabel value="***Duplicate***" rendered="#{cc.attrs.reprint eq true}" />
+                </div>
+            </div>
+
+            <div >
+                <table class="table table-borderless">
+                    <tr style="line-height: 10px">
+                        <td>Request From</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputText value="#{cc.attrs.bill.fromDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.fromDepartment.institution.name}" />)
+                        </td>
+                    </tr>
+                    <tr style="line-height: 10px">
+                        <td>Request To</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputText value="#{cc.attrs.bill.toDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.toDepartment.institution.name}" />)
+                        </td>
+                    </tr>
+                    <tr style="line-height: 10px">
+                        <td>Req No</td>
+                        <td>:</td>
+                        <td><h:outputText value="#{cc.attrs.bill.deptId}" /></td>
+                    </tr>
+                    <tr style="line-height: 10px">
+                        <td>Req By</td>
+                        <td>:</td>
+                        <td><h:outputText value="#{cc.attrs.bill.creater.name}" /></td>
+                    </tr>
+                    <tr style="line-height: 10px">
+                        <td>Req Date/Time</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputText value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div >
+                <table class="items-table">
+                    <thead>
+                        <tr >
+                            <th>No</th>
+                            <th >Item Name</th>
+                            <th width="75px">Item Code</th>
+                            <th width="75px" style="text-align: center">Pack Size</th>
+                            <th width="75px" style="text-align: center">Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" varStatus="status">
+                            <tr>
+                                <td>
+                                    <h:outputText value="#{status.index + 1}" />
+                                </td>
+                                <td>
+                                    <h:outputText value="#{bip.item.name}" />
+                                </td>
+                                <td width="120px">
+                                    <h:outputText value="#{bip.item.code}" />
+                                </td>
+                                <td width="100px" style="text-align: right">
+                                    <h:outputText value="#{bip.item.dblValue}" rendered="#{bip.item.class.simpleName eq 'Ampp'}">
+                                        <f:convertNumber pattern="0.#" />
+                                    </h:outputText>
+                                    <h:outputText value="1" rendered="#{bip.item.class.simpleName eq 'Amp'}" />
+                                </td>
+                                <td width="100px" style="text-align: right">
+                                    <h:outputText value="#{bip.qty}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-5">
+                    <h:outputLabel value="Approved By : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.approveUser.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;" >
+                    <h:outputLabel style="text-align: right" value="Approved At : &nbsp;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.approveAt}" >
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-5">
+                    <h:outputLabel value="Printed By : &nbsp;"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-5" style="text-align: right;" >
+                    <h:outputLabel style="text-align: right" value="Printed At : &nbsp;"/>
+                    <h:outputLabel value="#{sessionController.currentDate}" >
+                        <f:convertDateTime pattern="dd/MMM/yyyy HH:mm" />
+                    </h:outputLabel>
+                </div>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

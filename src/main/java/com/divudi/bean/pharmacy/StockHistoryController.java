@@ -167,22 +167,21 @@ public class StockHistoryController implements Serializable {
     public List<PharmacyBinCardDTO> findBinCardDTOs(Date fd, Date td, HistoryType ht, Department dep, Item i) {
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyBinCardDTO(")
-                .append("s.id, s.createdAt, ")
+                .append("s.id, s.pbItem.billItem.bill.id, s.createdAt, ")
                 .append("s.pbItem.billItem.bill.billType, ")
                 .append("s.pbItem.billItem.bill.billTypeAtomic, ")
                 .append("s.pbItem.billItem.item.name, ")
                 .append("s.pbItem.qty, s.pbItem.freeQty, ")
                 .append("s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, ")
                 .append("s.pbItem.billItem.item.dblValue, s.itemStock, ")
-                .append("s.stockQty, s.pbItem.stock.itemBatch.batchNo")
+                .append("s.stockQty, s.pbItem.itemBatch.batchNo")
                 .append(") from StockHistory s ")
                 .append("where s.createdAt between :fd and :td ")
                 .append("and s.pbItem is not null ")
                 .append("and s.pbItem.billItem is not null ")
                 .append("and s.pbItem.billItem.bill is not null ")
                 .append("and s.pbItem.billItem.item is not null ")
-                .append("and s.pbItem.stock is not null ")
-                .append("and s.pbItem.stock.itemBatch is not null ");
+                .append("and s.pbItem.itemBatch is not null ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("fd", fd);

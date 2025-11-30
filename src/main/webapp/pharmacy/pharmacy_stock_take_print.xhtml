@@ -16,45 +16,79 @@
                         </div>
                         <div class="card-body">
                             <h:form>
+                                <!-- Display status badge -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="alert" style="#{pharmacyStockTakeController.snapshotBill.completed ? 'background-color: #d4edda; border-color: #c3e6cb; color: #155724;' : 'background-color: #fff3cd; border-color: #ffeaa7; color: #856404;'}">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="fa #{pharmacyStockTakeController.snapshotBill.completed ? 'fa-check-circle' : 'fa-clock'}" style="margin-right: 8px;"></i>
+                                                    <strong>Stock Taking Status:</strong>
+                                                    <span style="margin-left: 8px; font-weight: bold;">
+                                                        #{pharmacyStockTakeController.snapshotBill.completed ? 'Completed' : 'Ongoing'}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <p:commandButton value="Complete Stock Taking"
+                                                                     icon="fa fa-check-circle"
+                                                                     styleClass="ui-button-success"
+                                                                     action="#{pharmacyStockTakeController.completeStockTaking}"
+                                                                     update="@form"
+                                                                     rendered="#{not pharmacyStockTakeController.snapshotBill.completed}">
+                                                        <p:confirm header="Complete Stock Taking"
+                                                                   message="Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed."
+                                                                   icon="fa fa-exclamation-triangle"/>
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="fa fa-check"/>
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times"/>
+                                </p:confirmDialog>
+
                                 <div class="row mb-4">
                                     <div class="col-lg-8">
                                         <div class="btn-toolbar" role="toolbar">
                                             <div class="btn-group mr-3" role="group" aria-label="Print Actions">
-                                                <p:commandButton 
-                                                    value="Print Report" 
-                                                    icon="fa fa-print" 
-                                                    ajax="false" 
+                                                <p:commandButton
+                                                    value="Print Report"
+                                                    icon="fa fa-print"
+                                                    ajax="false"
                                                     styleClass="ui-button-info mx-1">
                                                     <p:printer target="reportView" />
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    value="Export PDF" 
-                                                    icon="fa fa-file-pdf" 
-                                                    ajax="false" 
+                                                <p:commandButton
+                                                    value="Export PDF"
+                                                    icon="fa fa-file-pdf"
+                                                    ajax="false"
                                                     styleClass="ui-button-secondary mx-1">
                                                     <p:dataExporter type="pdf" target=":#{p:resolveFirstComponentWithId('tbl',view).clientId}" fileName="pharmacy_stock_count_#{pharmacyStockTakeController.snapshotBill.deptId}" />
                                                 </p:commandButton>
                                             </div>
                                             <div class="btn-group mr-3" role="group" aria-label="Download Sheets">
-                                                <p:commandButton value="Download Guided Sheet" ajax="false" 
-                                                               styleClass="ui-button-success mx-1" icon="fa fa-download" 
-                                                               onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                <p:commandButton value="Download Guided Sheet for All" ajax="false"
+                                                                 styleClass="ui-button-success mx-1" icon="fa fa-download">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadGuidedSheet}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Download Blind Sheet" ajax="false" 
-                                                               styleClass="ui-button-warning mx-1" icon="fa fa-download" 
-                                                               onclick="PrimeFaces.monitorDownload(start, stop);">
+                                                <p:commandButton value="Download Blind Sheet for All" ajax="false"
+                                                                 styleClass="ui-button-warning mx-1" icon="fa fa-download">
                                                     <p:fileDownload value="#{pharmacyStockTakeController.downloadBlindSheet}" />
                                                 </p:commandButton>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-lg-4 text-right">
-                                        <p:commandButton value="Back to Stock Take" ajax="false" 
-                                                       styleClass="ui-button-secondary" icon="fa fa-arrow-left" 
-                                                       action="pharmacy_stock_take?faces-redirect=true"/>
+                                        <p:commandButton value="Back to Stock Take" ajax="false"
+                                                         styleClass="ui-button-secondary" icon="fa fa-arrow-left"
+                                                         action="pharmacy_stock_take?faces-redirect=true"/>
                                     </div>
                                 </div>
+
+
 
                                 <h:panelGroup id="reportView">
                                     <div class="row mb-4">
@@ -62,18 +96,18 @@
                                             <div class="card bg-light">
                                                 <div class="card-body">
                                                     <h:outputText value="Bill Information" 
-                                                                 style="font-weight: bold; color: #495057; font-size: 1.1rem;"/>
+                                                                  style="font-weight: bold; color: #495057; font-size: 1.1rem;"/>
                                                     <p:panelGrid columns="2" styleClass="ui-panelgrid-blank mt-2" 
                                                                  columnClasses="text-right pr-3 font-weight-bold,text-left">
                                                         <h:outputText value="Institution:" style="font-weight:bold; color: #6c757d;"/>
                                                         <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}" 
-                                                                     style="color: #495057;"/>
+                                                                      style="color: #495057;"/>
                                                         <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
                                                         <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}" 
-                                                                     style="color: #495057;"/>
+                                                                      style="color: #495057;"/>
                                                         <h:outputText value="Bill No:" style="font-weight:bold; color: #6c757d;"/>
                                                         <h:outputText value="#{pharmacyStockTakeController.snapshotBill.deptId}" 
-                                                                     style="color: #495057; font-family: monospace;"/>
+                                                                      style="color: #495057; font-family: monospace;"/>
                                                     </p:panelGrid>
                                                 </div>
                                             </div>
@@ -82,109 +116,157 @@
                                             <div class="card bg-success text-white">
                                                 <div class="card-body text-center">
                                                     <h:outputText value="Total Stock Value" 
-                                                                 style="font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
+                                                                  style="font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
                                                     <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
-                                                                 style="font-weight: bold; font-size: 2rem;">
+                                                                  style="font-weight: bold; font-size: 2rem;">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </div>
                                             </div>
+                                            <!-- Category-specific download section -->
+                                            <div class="card mt-3">
+                                                <div class="card-header">
+                                                    <h:outputText value="Download by Category" style="font-size: 1.2rem; font-weight: bold; color: #495057;"/>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row align-items-end">
+                                                        <div class="col-lg-4">
+                                                            <h:outputLabel for="categoryFilter" value="Select Category:" styleClass="form-label font-weight-bold"/>
+                                                            <p:autoComplete id="categoryFilter"
+                                                                            value="#{pharmacyStockTakeController.selectedCategory}"
+                                                                            completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
+                                                                            var="cat"
+                                                                            itemLabel="#{cat.name}"
+                                                                            itemValue="#{cat}"
+                                                                            cache="false"
+                                                                            queryDelay="300"
+                                                                            minQueryLength="2"
+                                                                            styleClass="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            placeholder="Type to search categories...">
+                                                                <p:ajax event="itemSelect" update="categoryDownloadButtons"/>
+                                                            </p:autoComplete>
+                                                        </div>
+                                                        <div class="col-lg-8">
+                                                            <h:panelGroup id="categoryDownloadButtons">
+                                                                <div class="btn-group" role="group" aria-label="Category Download Actions">
+                                                                    <p:commandButton value="Download Category Guided Sheet"
+                                                                                     ajax="false"
+                                                                                     styleClass="ui-button-success mx-1"
+                                                                                     icon="fa fa-download"
+                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
+                                                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryGuidedSheet}" />
+                                                                    </p:commandButton>
+                                                                    <p:commandButton value="Download Category Blind Sheet"
+                                                                                     ajax="false"
+                                                                                     styleClass="ui-button-warning mx-1"
+                                                                                     icon="fa fa-download"
+                                                                                     disabled="#{pharmacyStockTakeController.selectedCategory == null}">
+                                                                        <p:fileDownload value="#{pharmacyStockTakeController.downloadCategoryBlindSheet}" />
+                                                                    </p:commandButton>
+                                                                </div>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
 
                                     <p:separator style="margin: 2rem 0;"/>
 
                                     <p:dataTable id="tbl" 
-                                                widgetVar="tbl" 
-                                                value="#{pharmacyStockTakeController.snapshotBill.billItems}" 
-                                                var="bi" 
-                                                rows="25" 
-                                                paginator="true"
-                                                paginatorPosition="both"
-                                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                rowsPerPageTemplate="10,25,50,100"
-                                                styleClass="ui-datatable-striped ui-datatable-gridlines"
-                                                emptyMessage="No stock items found for this bill."
-                                                sortMode="multiple">
-                                        
+                                                 widgetVar="tbl" 
+                                                 value="#{pharmacyStockTakeController.snapshotBill.billItems}" 
+                                                 var="bi" 
+                                                 rows="25" 
+                                                 paginator="true"
+                                                 paginatorPosition="both"
+                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="10,25,50,100"
+                                                 styleClass="ui-datatable-striped ui-datatable-gridlines"
+                                                 emptyMessage="No stock items found for this bill."
+                                                 sortMode="multiple">
+
                                         <p:column headerText="Bill Item ID" sortBy="#{bi.id}"
-                                                 filterBy="#{bi.id}" filterMatchMode="exact"
-                                                 style="width: 110px; text-align: right;">
+                                                  filterBy="#{bi.id}" filterMatchMode="exact"
+                                                  style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.id}" 
-                                                         style="color: #6c757d; font-family: monospace;"/>
+                                                          style="color: #6c757d; font-family: monospace;"/>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Category" sortBy="#{bi.item.category.name}" 
-                                                 filterBy="#{bi.item.category.name}" filterMatchMode="contains"
-                                                 style="width: 120px;">
+                                                  filterBy="#{bi.item.category.name}" filterMatchMode="contains"
+                                                  style="width: 120px;">
                                             <h:outputText value="#{bi.item.category.name}" 
-                                                         style="color: #495057;"/>
+                                                          style="color: #495057;"/>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Item Description" sortBy="#{bi.descreption}" 
-                                                 filterBy="#{bi.descreption}" filterMatchMode="contains"
-                                                 style="min-width: 200px;">
+                                                  filterBy="#{bi.descreption}" filterMatchMode="contains"
+                                                  style="min-width: 200px;">
                                             <h:outputText value="#{bi.descreption}" 
-                                                         style="color: #495057; font-weight: 500;"/>
+                                                          style="color: #495057; font-weight: 500;"/>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Batch No." sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
-                                                 filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" filterMatchMode="contains"
-                                                 style="width: 100px; text-align: center;">
+                                                  filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" filterMatchMode="contains"
+                                                  style="width: 100px; text-align: center;">
                                             <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.batchNo}" 
-                                                         style="color: #6c757d; font-family: monospace;"/>
+                                                          style="color: #6c757d; font-family: monospace;"/>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Expiry Date" sortBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
-                                                 filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" filterMatchMode="contains"
-                                                 style="width: 110px; text-align: center;">
+                                                  filterBy="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" filterMatchMode="contains"
+                                                  style="width: 110px; text-align: center;">
                                             <h:outputText value="#{bi.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" 
-                                                         style="color: #6c757d;">
+                                                          style="color: #6c757d;">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputText>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Quantity" sortBy="#{bi.qty}" 
-                                                 filterBy="#{bi.qty}" filterMatchMode="exact"
-                                                 style="width: 80px; text-align: right;">
+                                                  filterBy="#{bi.qty}" filterMatchMode="exact"
+                                                  style="width: 80px; text-align: right;">
                                             <h:outputText value="#{bi.qty}" 
-                                                         style="color: #495057; font-weight: 500;">
+                                                          style="color: #495057; font-weight: 500;">
                                                 <f:convertNumber integerOnly="true"/>
                                             </h:outputText>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Purchase Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
-                                                 filterBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" filterMatchMode="exact"
-                                                 style="width: 110px; text-align: right;">
+                                                  filterBy="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" filterMatchMode="exact"
+                                                  style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" 
-                                                         style="color: #6c757d;">
+                                                          style="color: #6c757d;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Retail Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
-                                                 filterBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" filterMatchMode="exact"
-                                                 style="width: 110px; text-align: right;">
+                                                  filterBy="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" filterMatchMode="exact"
+                                                  style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" 
-                                                         style="color: #6c757d;">
+                                                          style="color: #6c757d;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Cost Rate" sortBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
-                                                 filterBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" filterMatchMode="exact"
-                                                 style="width: 110px; text-align: right;">
+                                                  filterBy="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" filterMatchMode="exact"
+                                                  style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}" 
-                                                         style="color: #6c757d;">
+                                                          style="color: #6c757d;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column headerText="Line Value" sortBy="#{bi.netValue}" 
-                                                 filterBy="#{bi.netValue}" filterMatchMode="exact"
-                                                 style="width: 120px; text-align: right;">
+                                                  filterBy="#{bi.netValue}" filterMatchMode="exact"
+                                                  style="width: 120px; text-align: right;">
                                             <h:outputText value="#{bi.netValue}" 
-                                                         style="color: #28a745; font-weight: bold;">
+                                                          style="color: #28a745; font-weight: bold;">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
@@ -198,23 +280,23 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-right">
                                                     <h:outputText value="Report Summary" 
-                                                                 style="font-weight: bold; color: #6c757d; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
+                                                                  style="font-weight: bold; color: #6c757d; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
                                                     <h:outputText value="Total Items: " 
-                                                                 style="font-weight: bold; color: #6c757d;"/>
+                                                                  style="font-weight: bold; color: #6c757d;"/>
                                                     <h:outputText value="#{pharmacyStockTakeController.snapshotBill.billItems.size()}" 
-                                                                 style="color: #495057; font-weight: bold;"/>
+                                                                  style="color: #495057; font-weight: bold;"/>
                                                     <br/>
                                                     <h:outputText value="Net Total: " 
-                                                                 style="font-weight: bold; color: #6c757d;"/>
+                                                                  style="font-weight: bold; color: #6c757d;"/>
                                                     <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
-                                                                 style="font-weight: bold; color: #28a745; font-size: 1.3rem;">
+                                                                  style="font-weight: bold; color: #28a745; font-size: 1.3rem;">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                 </h:panelGroup>
 
                                 <style type="text/css">

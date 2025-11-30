@@ -56,10 +56,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -94,7 +96,6 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
-
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -103,6 +104,7 @@ public class InwardBeanController implements Serializable {
     private AdmissionFacade admissionFacade;
     @EJB
     private PatientEncounterFacade encounterFacade;
+    
     @Inject
     BillBeanController billBean;
     @Inject
@@ -636,7 +638,11 @@ public class InwardBeanController implements Serializable {
         list.addAll(bills);
         list.addAll(bills2);
 
-        return list;
+        List<Bill> sortedList = list.stream()
+                .sorted(Comparator.comparing(Bill::getCreatedAt))
+                .collect(Collectors.toList());
+
+        return sortedList;
     }
 
     public List<BillItem> fetchPharmacyIssueBillItem(PatientEncounter patientEncounter, BillType billType) {
@@ -916,15 +922,17 @@ public class InwardBeanController implements Serializable {
     public double getAdmissionCharge(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         Double total = 0.0;
         List<PatientEncounter> pts = new ArrayList<>();
+
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
             pts.addAll(cpts);
         }
 
         for (PatientEncounter pt : pts) {
-            total = total + pt.getAdmissionType().getAdmissionFee();
+            if (pt.getAdmissionType() != null) {
+                total = total + pt.getAdmissionType().getAdmissionFee();
+            }
         }
-
         return total;
     }
 
@@ -1668,7 +1676,7 @@ public class InwardBeanController implements Serializable {
 
         patientEncounterFacade.edit(patientEncounter);
     }
-
+    
     public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
 //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
         if (patientRoom == null) {
@@ -1714,6 +1722,75 @@ public class InwardBeanController implements Serializable {
             getPatientRoomFacade().edit(patientRoom);
         }
 
+        return patientRoom;
+    }
+    
+
+    public PatientRoom admitPatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, Date admittedAt, WebUser webUser) {
+//     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+        if (patientRoom == null) {
+            return null;
+        }
+        
+        if (newRoomFacilityCharge == null) {
+            return null;
+        }
+
+        if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
+            patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
+        }
+
+        if (newRoomFacilityCharge.getMaintananceCharge() != null) {
+            patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
+        }
+        if (newRoomFacilityCharge.getMoCharge() != null) {
+            patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
+        }
+        if (newRoomFacilityCharge.getNursingCharge() != null) {
+            patientRoom.setCurrentNursingCharge(newRoomFacilityCharge.getNursingCharge());
+        }
+        if (newRoomFacilityCharge.getRoomCharge() != null) {
+            patientRoom.setCurrentRoomCharge(newRoomFacilityCharge.getRoomCharge());
+        }
+        if (newRoomFacilityCharge.getLinenCharge() != null) {
+            patientRoom.setCurrentLinenCharge(newRoomFacilityCharge.getLinenCharge());
+        }
+        patientRoom.setCurrentMedicalCareCharge(newRoomFacilityCharge.getMedicalCareCharge());
+        patientRoom.setCurrentAdministrationCharge(newRoomFacilityCharge.getAdminstrationCharge());
+
+        patientRoom.setAdmitted(true);
+        patientRoom.setAdmittedAt(admittedAt);
+        patientRoom.setAddmittedBy(webUser);
+        patientRoom.setRoomFacilityCharge(newRoomFacilityCharge);
+
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
+
+        return patientRoom;
+    }
+    
+    public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientEncounter patientEncounter, WebUser webUser) {
+        if (patientRoom == null) {
+            return null;
+        }
+        
+        if (patientEncounter == null) {
+            return null;
+        }
+
+        patientRoom.setCreatedAt(new Date());
+        patientRoom.setCreater(webUser);
+        patientRoom.setAdmitted(false);
+        patientRoom.setPatientEncounter(patientEncounter);
+
+        if (patientRoom.getId() == null || patientRoom.getId() == 0) {
+            getPatientRoomFacade().create(patientRoom);
+        } else {
+            getPatientRoomFacade().edit(patientRoom);
+        }
         return patientRoom;
     }
 
@@ -1922,6 +1999,29 @@ public class InwardBeanController implements Serializable {
             margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
             billFee.setFeeMargin(margin);
             billFeeFacade.edit(billFee);
+        }
+
+        double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();
+
+        billFee.setFeeValue(net);
+    }
+
+    public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter) {
+        double margin = 0;
+
+        if (billFee == null || item.isMarginNotAllowed()) {
+            return;
+        }
+        if (patientEncounter == null || patientEncounter.getAdmissionType() == null){
+            return;
+        }
+
+        if (patientEncounter.getAdmissionType().isAllowToCalculateMargin()) {
+            if (billFee.getFee().getFeeType() != FeeType.Staff && priceMatrix != null) {
+                margin = (billFee.getFeeGrossValue() * priceMatrix.getMargin()) / 100;
+                billFee.setFeeMargin(margin);
+                billFeeFacade.edit(billFee);
+            }
         }
 
         double net = (billFee.getFeeGrossValue() + margin) - billFee.getFeeDiscount();

@@ -7,93 +7,290 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
-        <h:form  >
+        <h:form id="ampBulkForm">
+            <p:growl id="msg" life="3000" />
 
-            <p:commandButton value="Download" ajax="false" >
-                <p:dataExporter fileName="amps" target="tblamps" type="xlsx" ></p:dataExporter>
-            </p:commandButton>
-            
-            <p:dataTable 
-                id="tblamps"
-                value="#{pharmacyController.amps}" 
-                var="i"
-                rowKey="#{i.id}"
-                rows="5"
-                paginator="true" 
-                paginatorPosition="both"
-                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                rowsPerPageTemplate="5,10,1000,{ShowAll|'All'}"
-                >
-                <f:facet name="header">
-                    <h:outputText value="AMP List" ></h:outputText>
-                </f:facet>
-                <p:column 
-                    headerText="Category" 
-                    sortBy="#{i.id}"
-                    filterBy="#{i.id}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.category.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="AMP Name" 
-                    sortBy="#{i.name}"
-                    filterBy="#{i.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="AMP Code" 
-                    sortBy="#{i.code}"
-                    filterBy="#{i.code}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.code}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="AMP Barcode" 
-                    sortBy="#{i.barcode}"
-                    filterBy="#{i.barcode}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.barcode}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="VTM" 
-                    sortBy="#{i.vmp.vtm.name}"
-                    filterBy="#{i.vmp.vtm.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.vmp.vtm.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="VMP" 
-                    sortBy="#{i.vmp.name}"
-                    filterBy="#{i.vmp.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.vmp.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Strength" 
-                    sortBy="#{i.dblValue}"
-                    filterBy="#{i.dblValue}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.dblValue}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Strength Unit" 
-                    sortBy="#{i.strengthUnit.name}"
-                    filterBy="#{i.strengthUnit.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.measurementUnit.name}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Issue Unit" 
-                    sortBy="#{i.vmp.issueUnit.name}"
-                    filterBy="#{i.vmp.issueUnit.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.vmp.issueUnit.name}" ></h:outputText>
-                </p:column>
+            <p:panel header="AMP Bulk Editing (DTO - Optimized)" styleClass="mb-3">
+                <f:event type="preRenderComponent" listener="#{pharmacyController.fillAmpsDto()}" />
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle"></i>
+                            <strong>Instructions:</strong> Select one or more AMPs (Actual Medicinal Products) from the list below,
+                            then use the action buttons to update their properties in bulk.
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Selection Control Buttons -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <p:commandButton
+                            value="Select All AMPs"
+                            icon="pi pi-check-square"
+                            styleClass="ui-button-info"
+                            action="#{pharmacyController.selectAllAmpDtos()}"
+                            update="ampTable msg"
+                            process="@this">
+                            <p:tooltip value="Select all AMPs in the current view (filtered or all)" position="top"/>
+                        </p:commandButton>
 
-            </p:dataTable>
+                        <p:commandButton
+                            value="Deselect All"
+                            icon="pi pi-times"
+                            styleClass="ui-button-secondary ml-2"
+                            action="#{pharmacyController.deselectAllAmpDtos()}"
+                            update="ampTable msg"
+                            process="@this">
+                            <p:tooltip value="Clear all selections" position="top"/>
+                        </p:commandButton>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Panel -->
+                <p:panel header="Bulk Actions" styleClass="mb-3" toggleable="true" collapsed="false">
+                    <h:panelGrid columns="4" styleClass="w-100" cellpadding="5">
+                        <!-- Discount Actions -->
+                        <p:commandButton
+                            value="Mark as Discount Allowed"
+                            icon="pi pi-check"
+                            styleClass="ui-button-success w-100"
+                            action="#{pharmacyController.bulkUpdateDiscountAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Discount Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+
+                        <p:commandButton
+                            value="Mark as Discount Not Allowed"
+                            icon="pi pi-times"
+                            styleClass="ui-button-danger w-100"
+                            action="#{pharmacyController.bulkUpdateDiscountNotAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Discount Not Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+
+                        <!-- Fractions Actions -->
+                        <p:commandButton
+                            value="Mark as Fractions Allowed"
+                            icon="pi pi-check"
+                            styleClass="ui-button-success w-100"
+                            action="#{pharmacyController.bulkUpdateFractionsAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Fractions Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+
+                        <p:commandButton
+                            value="Mark as Fractions Not Allowed"
+                            icon="pi pi-times"
+                            styleClass="ui-button-danger w-100"
+                            action="#{pharmacyController.bulkUpdateFractionsNotAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Fractions Not Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+
+                        <!-- Consumption Actions -->
+                        <p:commandButton
+                            value="Mark as Consumption Allowed"
+                            icon="pi pi-check"
+                            styleClass="ui-button-success w-100"
+                            action="#{pharmacyController.bulkUpdateConsumptionAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Consumption Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+
+                        <p:commandButton
+                            value="Mark as Consumption Not Allowed"
+                            icon="pi pi-times"
+                            styleClass="ui-button-danger w-100"
+                            action="#{pharmacyController.bulkUpdateConsumptionNotAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Consumption Not Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+
+                        <!-- Refunds Actions -->
+                        <p:commandButton
+                            value="Mark as Refunds Allowed"
+                            icon="pi pi-check"
+                            styleClass="ui-button-success w-100"
+                            action="#{pharmacyController.bulkUpdateRefundsAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Refunds Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+
+                        <p:commandButton
+                            value="Mark as Refunds Not Allowed"
+                            icon="pi pi-times"
+                            styleClass="ui-button-danger w-100"
+                            action="#{pharmacyController.bulkUpdateRefundsNotAllowedDto()}"
+                            update="ampTable msg"
+                            process="@form">
+                            <p:confirm header="Confirmation"
+                                       message="Mark selected AMPs as Refunds Not Allowed?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+                    </h:panelGrid>
+                </p:panel>
+
+                <!-- AMP Data Table -->
+                <p:dataTable
+                    id="ampTable"
+                    widgetVar="ampTableWidget"
+                    value="#{pharmacyController.ampDtos}"
+                    var="amp"
+                    selection="#{pharmacyController.ampDtosSelected}"
+                    rowKey="#{amp.id}"
+                    rows="20"
+                    paginator="true"
+                    paginatorPosition="both"
+                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} AMPs"
+                    rowsPerPageTemplate="10,20,50,100,{ShowAll|'All'}"
+                    styleClass="w-100"
+                    filteredValue="#{pharmacyController.filteredAmpDtos}">
+
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fa fa-pills"></i>
+                                AMP List - Select items to apply bulk actions
+                            </span>
+                            <span class="text-muted small">
+                                #{pharmacyController.ampDtosSelected != null ? pharmacyController.ampDtosSelected.size() : 0} selected
+                            </span>
+                        </div>
+                    </f:facet>
+
+                    <!-- Selection Column -->
+                    <p:column selectionMode="multiple" selectionBox="true" style="width:70px; text-align:center">
+                        <f:facet name="header">
+                            <i class="pi pi-check-square" style="color: #6c757d;" title="Select rows"></i>
+                        </f:facet>
+                    </p:column>
+
+                    <!-- Name Column -->
+                    <p:column
+                        headerText="AMP Name"
+                        sortBy="#{amp.name}"
+                        filterBy="#{amp.name}"
+                        filterMatchMode="contains"
+                        style="width:30%">
+                        <h:outputText value="#{amp.name}" />
+                    </p:column>
+
+                    <!-- Category Column -->
+                    <p:column
+                        headerText="Category"
+                        sortBy="#{amp.categoryName}"
+                        filterBy="#{amp.categoryName}"
+                        filterMatchMode="contains"
+                        style="width:20%">
+                        <h:outputText value="#{empty amp.categoryName ? 'N/A' : amp.categoryName}" />
+                    </p:column>
+
+                    <!-- Discount Allowed Column -->
+                    <p:column
+                        headerText="Discount Allowed"
+                        sortBy="#{amp.discountAllowed}"
+                        filterBy="#{amp.discountAllowed}"
+                        filterMatchMode="equals"
+                        style="width:12%; text-align:center">
+                        <f:facet name="filter">
+                            <p:selectOneMenu onchange="PF('ampTableWidget').filter()">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                            </p:selectOneMenu>
+                        </f:facet>
+                        <h:outputText value="Yes" styleClass="badge bg-success" rendered="#{amp.discountAllowed}" />
+                        <h:outputText value="No" styleClass="badge bg-secondary" rendered="#{!amp.discountAllowed}" />
+                    </p:column>
+
+                    <!-- Fractions Allowed Column -->
+                    <p:column
+                        headerText="Fractions Allowed"
+                        sortBy="#{amp.allowFractions}"
+                        filterBy="#{amp.allowFractions}"
+                        filterMatchMode="equals"
+                        style="width:12%; text-align:center">
+                        <f:facet name="filter">
+                            <p:selectOneMenu onchange="PF('ampTableWidget').filter()">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                            </p:selectOneMenu>
+                        </f:facet>
+                        <h:outputText value="Yes" styleClass="badge bg-success" rendered="#{amp.allowFractions}" />
+                        <h:outputText value="No" styleClass="badge bg-secondary" rendered="#{!amp.allowFractions}" />
+                    </p:column>
+
+                    <!-- Consumption Allowed Column -->
+                    <p:column
+                        headerText="Consumption Allowed"
+                        sortBy="#{amp.consumptionAllowed}"
+                        filterBy="#{amp.consumptionAllowed}"
+                        filterMatchMode="equals"
+                        style="width:12%; text-align:center">
+                        <f:facet name="filter">
+                            <p:selectOneMenu onchange="PF('ampTableWidget').filter()">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                            </p:selectOneMenu>
+                        </f:facet>
+                        <h:outputText value="Yes" styleClass="badge bg-success" rendered="#{amp.consumptionAllowed}" />
+                        <h:outputText value="No" styleClass="badge bg-secondary" rendered="#{!amp.consumptionAllowed}" />
+                    </p:column>
+
+                    <!-- Refunds Allowed Column -->
+                    <p:column
+                        headerText="Refunds Allowed"
+                        sortBy="#{amp.refundsAllowed}"
+                        filterBy="#{amp.refundsAllowed}"
+                        filterMatchMode="equals"
+                        style="width:12%; text-align:center">
+                        <f:facet name="filter">
+                            <p:selectOneMenu onchange="PF('ampTableWidget').filter()">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItem itemLabel="Yes" itemValue="true" />
+                                <f:selectItem itemLabel="No" itemValue="false" />
+                            </p:selectOneMenu>
+                        </f:facet>
+                        <h:outputText value="Yes" styleClass="badge bg-success" rendered="#{amp.refundsAllowed}" />
+                        <h:outputText value="No" styleClass="badge bg-secondary" rendered="#{!amp.refundsAllowed}" />
+                    </p:column>
+
+                    <f:facet name="footer">
+                        Total: #{pharmacyController.ampDtos != null ? pharmacyController.ampDtos.size() : 0} AMPs
+                    </f:facet>
+                </p:dataTable>
+
+            </p:panel>
+
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+            </p:confirmDialog>
 
         </h:form>
     </ui:define>

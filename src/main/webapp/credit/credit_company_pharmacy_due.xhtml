@@ -1,32 +1,203 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+    DEPRECATED: This page will be removed in the next iteration.
+    Pharmacy credit bills are now managed through the Combined OPD Credit Collection page
+    (/credit/credit_company_bill_opd_combined.xhtml), which handles both OPD and Pharmacy credit bills.
+    The separate Pharmacy Credit Settle bill type is being deprecated in favor of the unified OPD Credit Settle bill type.
+-->
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
-
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
             <ui:define name="admin">
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
                             <h:outputLabel value="Pharmacy Credit Due"/>
                         </f:facet>
-                        <h:panelGrid columns="2" class="my-2">
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{creditCompanyDueController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                navigator="false">
+                                <f:ajax event="dateSelect" execute="toDate @this" render="lst"/>
                             </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{creditCompanyDueController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                navigator="false">
+                                <f:ajax event="dateSelect" execute="@this fromDate" render="lst"/>
                             </p:calendar>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0a0;" styleClass="fa mr-2" /> <!-- FontAwesome plus-square icon -->
+                                <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="visitType"
+                                styleClass="w-100 form-control"
+                                value="#{creditCompanyDueController.visitType}">
+                                <f:selectItem itemLabel="All Visit Types" itemValue="#{null}"/>
+                                <f:selectItem itemLabel="Out Patients (OP)" itemValue="OP"/>
+                                <f:selectItem itemLabel="In Patients (IP)" itemValue="IP"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control"
+                                value="#{creditCompanyDueController.institution}"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"
+                                value="#{creditCompanyDueController.site}"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institution eq null and creditCompanyDueController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institution eq null and creditCompanyDueController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institution ne null and creditCompanyDueController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{creditCompanyDueController.institution ne null and creditCompanyDueController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{creditCompanyDueController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institution, creditCompanyDueController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+
+
+                            </h:panelGroup>
+
+                            <h:outputLabel for="acCreditCompany" value="Credit Company" />
+                            <p:autoComplete id="acCreditCompany"
+                                            value="#{creditCompanyDueController.creditCompany}"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            forceSelection="true"
+                                            var="ins"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100">
+                                <p:column>
+                                    <h:outputText value="#{ins.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{ins.institutionCode}"/>
+                                </p:column>
+                            </p:autoComplete>
                         </h:panelGrid>
+
+
+
                         <h:panelGrid columns="3" class="my-2">
-                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{creditCompanyDueController.createPharmacyCreditDue}" />
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-cogs"
+                                ajax="false" 
+                                value="Process" 
+                                action="#{creditCompanyDueController.createPharmacyCreditDue}" />
                             <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
                                 <p:printer target="panIx" />
                             </p:commandButton>
@@ -50,21 +221,19 @@
                                 </f:facet>
                                 <p:columnGroup type="header">
                                     <p:row>
-                                        <p:column headerText="Bill No">                                    
+                                        <p:column headerText="Bill Number">                                    
                                         </p:column>
-                                        <p:column headerText="Bill No">                                    
+                                        <p:column headerText="Billed At">                                    
                                         </p:column>
-                                        <p:column headerText="Bill Date">                                    
+                                        <p:column headerText="Client">                                    
                                         </p:column>
-                                        <p:column headerText="Client Name">                                    
+                                        <p:column headerText="Billed Value">                                    
                                         </p:column>
-                                        <p:column headerText="Billed Amount">                                    
-                                        </p:column>
-                                        <p:column headerText="Staff Fee">                                    
+                                        <p:column headerText="Returned Value">                                    
                                         </p:column>
                                         <p:column headerText="Paid Amount">                                    
                                         </p:column>
-                                        <p:column headerText="Net Amount">                                    
+                                        <p:column headerText="Due Amount">                                    
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
@@ -75,33 +244,30 @@
                                     <p:column>                              
                                         <h:outputLabel value="#{b.deptId}" />                                
                                     </p:column>
-                                    <p:column>                              
-                                        <h:outputLabel value="#{b.deptId}" />                                
-                                    </p:column>
                                     <p:column>                                
                                         <h:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime pattern="yyyy MM dd" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                         </h:outputLabel>                                 
                                     </p:column>
                                     <p:column>                               
                                         <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
                                     </p:column>
-                                    <p:column style="text-align: right;">                                
+                                    <p:column class="text-end">                                
                                         <h:outputLabel value="#{b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
-                                    <p:column style="text-align: right;">                                
+                                    <p:column class="text-end">                                
                                         <h:outputLabel value="#{b.staffFee}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                 
                                     </p:column>
-                                    <p:column style="text-align: right;">                              
+                                    <p:column class="text-end">                              
                                         <h:outputLabel value="#{b.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column style="text-align: right;">                              
+                                    <p:column class="text-end">                              
                                         <h:outputLabel value="#{b.netTotal+b.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -109,7 +275,7 @@
                                     <p:columnGroup type="footer">
                                         <p:row>
                                             <p:column footerText="Total" colspan="3" />
-                                            <p:column style="text-align: right;">
+                                            <p:column class="text-end">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total}">
                                                         <f:convertNumber pattern="#,##0.00" />
@@ -119,14 +285,14 @@
                                             <p:column>
 
                                             </p:column>
-                                            <p:column style="text-align: right;" >
+                                            <p:column class="text-end" >
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.paidTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </f:facet>
                                             </p:column>
-                                            <p:column style="text-align: right;" >
+                                            <p:column class="text-end" >
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total+i.paidTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
