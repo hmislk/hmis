@@ -442,7 +442,7 @@
                             <p:column headerText="Cost Rate" styleClass="text-end" width="8em"
                                       rendered="#{userSettingsController.stockLedgerCostRateVisible}">
                                 <h:outputText value="#{f.itemBatch.costRate}">
-                                    <f:convertNumber pattern="#,##0.000" />
+                                    <f:convertNumber pattern="#,##0.000000" />
                                 </h:outputText>
                             </p:column>
 
