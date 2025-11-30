@@ -1925,6 +1925,23 @@ public class CashRecieveBillController implements Serializable {
     }
 
     /**
+     * Checks if the current bill is a cancellation bill (bill created during cancellation process).
+     * Cancellation bills have specific BillTypeAtomic values and should not be allowed to be cancelled again.
+     *
+     * @return true if the current bill is a cancellation bill, false otherwise
+     */
+    public boolean isCurrentBillACancellationBill() {
+        if (current == null || current.getBillTypeAtomic() == null) {
+            return false;
+        }
+
+        BillTypeAtomic billType = current.getBillTypeAtomic();
+        return billType == BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION;
+    }
+
+    /**
      * Legacy method - called when bill type dropdown changes to clear current selections
      * Kept for backward compatibility with pages that still use bill type selection
      */
@@ -1940,6 +1957,7 @@ public class CashRecieveBillController implements Serializable {
      * @return List of bills matching the query from all bill types
      */
     public List<Bill> completeCombinedCreditBills(String query) {
+
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
@@ -1947,22 +1965,27 @@ public class CashRecieveBillController implements Serializable {
         // Create combined list to hold results from all bill types
         List<Bill> combinedResults = new ArrayList<>();
 
-        // Get results from OPD Batch bills
-        List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
-        if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
-            combinedResults.addAll(opdBatchBills);
-        }
+        try {
+            // Get results from OPD Batch bills
+            List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
+            if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
+                combinedResults.addAll(opdBatchBills);
+            }
 
-        // Get results from OPD Package bills
-        List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
-        if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
-            combinedResults.addAll(opdPackageBills);
-        }
+            // Get results from OPD Package bills
+            List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
+            if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
+                combinedResults.addAll(opdPackageBills);
+            }
 
-        // Get results from Pharmacy bills
-        List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
-        if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
-            combinedResults.addAll(pharmacyBills);
+            // Get results from Pharmacy bills
+            List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
+            if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
+                combinedResults.addAll(pharmacyBills);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return combinedResults;
