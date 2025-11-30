@@ -3977,7 +3977,7 @@ public class PharmacyReportController implements Serializable {
 //                jpql += " and s.department IS NOT NULL ";
 //            }
 
-            jpql += " order by s.createdAt ";
+            jpql += " order by s.id ";
             stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }, InventoryReports.STOCK_LEDGER_REPORT, sessionController.getLoggedUser());
     }
