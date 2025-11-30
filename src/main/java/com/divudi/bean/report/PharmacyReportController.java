@@ -2766,7 +2766,13 @@ public class PharmacyReportController implements Serializable {
         List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
         creditTypePaymentMethods.add(PaymentMethod.Credit);
         creditTypePaymentMethods.add(PaymentMethod.Staff);
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), creditTypePaymentMethods);
+
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+
+        retrieveBillItems("b.billTypeAtomic", billTypes, creditTypePaymentMethods);
     }
 
     public void processBhtIssue() {
@@ -5543,6 +5549,7 @@ public class PharmacyReportController implements Serializable {
         try {
             List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
             creditTypePaymentMethods.add(PaymentMethod.Credit);
+            creditTypePaymentMethods.add(PaymentMethod.Staff);
 
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.PHARMACY_RETAIL_SALE,
