@@ -243,6 +243,18 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false);
 
+        // Configuration for Cashier Settlement Bill Number Generation
+        // Primary control configuration - enables separate bill number generation for cashier settlement
+        getBooleanValueByKey("Generate Separate Bill Numbers for Cashier Settlement - Pharmacy", false);
+
+        // Bill-type-specific numbering strategies for Cashier Settlement Bills (CSB)
+        getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
+        getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number", false);
+
+        // Custom prefix configuration for cashier settlement bills
+        getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+
         // Bill-type-specific numbering strategies for Sale Refund (SR)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false);
@@ -316,6 +328,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE", "SPB");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER", "SCPB");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE", "SB");
+        getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER", "CSB");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS", "SR");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL", "SRP");
         getShortTextValueByKey("Bill Number Suffix for PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS", "SRIP");
