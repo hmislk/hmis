@@ -3220,21 +3220,30 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         //applyPatientNameCapitalization(p);
-//        if (p.getPerson().getId() == null) {
-//            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
-//            p.getPerson().setCreater(getSessionController().getLoggedUser());
-//            getPersonFacade().create(p.getPerson());
-//        } else {
-//            getPersonFacade().edit(p.getPerson());
-//        }
+
+        // Generate PHN upfront if needed
+        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
+            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+        }
+
+        // Save Person first (no flush yet)
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            p.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(p.getPerson());
+        } else {
+            getPersonFacade().edit(p.getPerson());
+        }
+
+        // Save Patient with immediate flush (flushes both Person and Patient)
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
-            getFacade().create(p);
+            getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         } else {
-            getFacade().edit(p);
+            getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
         return true;
@@ -3314,6 +3323,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         //applyPatientNameCapitalization(p);
 
+        // Generate PHN upfront if needed
+        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
+            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+        }
+
+        // Save Person first (no flush yet)
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3322,19 +3337,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getPersonFacade().edit(p.getPerson());
         }
 
+        // Save Patient with immediate flush (flushes both Person and Patient)
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
-            getFacade().create(p);
+            getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Saved Successfully");
         } else {
-            getFacade().edit(p);
+            getFacade().editAndFlush(p);    // Immediate flush to database
         }
-        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
-            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
-            getEjbFacade().edit(p);
-        }
+
         p.setEditingMode(false);
     }
 

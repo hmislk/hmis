@@ -1203,9 +1203,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (updatedAddress != null) {
             getPatient().getPerson().setAddress(updatedAddress);
         }
-        Person person = getPatient().getPerson();
-        getPatient().setPerson(null);
 
+        Person person = getPatient().getPerson();
+        // DON'T set to null - keep reference throughout
+
+        // Save Person first (no flush yet)
         if (person != null) {
             person.setCreatedAt(Calendar.getInstance().getTime());
             person.setCreater(getSessionController().getLoggedUser());
@@ -1215,20 +1217,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             } else {
                 getPersonFacade().edit(person);
             }
-
         }
 
+        // Save Patient with immediate flush (flushes both Person and Patient)
         getPatient().setCreatedAt(Calendar.getInstance().getTime());
         getPatient().setCreater(getSessionController().getLoggedUser());
 
         if (getPatient().getId() == null) {
-            getPatientFacade().create(getPatient());
+            getPatientFacade().createAndFlush(getPatient());  // Immediate flush
         } else {
-            getPatientFacade().edit(getPatient());
+            getPatientFacade().editAndFlush(getPatient());    // Immediate flush
         }
 
-        getPatient().setPerson(person);
-        getPatientFacade().edit(getPatient());
+        // NO third edit operation - removed null/reassign pattern
     }
 
     private void saveGuardian() {
