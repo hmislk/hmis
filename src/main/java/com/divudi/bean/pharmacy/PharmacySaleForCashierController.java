@@ -4620,8 +4620,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
      *
      * @param bill The bill for which to calculate costing values
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private void calculateAndRecordCostingValues(Bill bill) {
+        private void calculateAndRecordCostingValues(Bill bill) {
         System.out.println("=== CALCULATE AND RECORD COSTING VALUES START ===");
         System.out.println("Bill ID: " + (bill != null ? bill.getId() : "null"));
         System.out.println("Method call stack trace (first 3 levels):");
