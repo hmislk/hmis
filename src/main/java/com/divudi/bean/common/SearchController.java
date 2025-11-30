@@ -16239,8 +16239,22 @@ public class SearchController implements Serializable {
             collectionForTheDay += getSafeTotal(opdServiceCollection);
 
             // Generate pharmacy collection and add to the main bundle
-            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
+            List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS);
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+            List<PaymentMethod> pharmacyPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollectionWithPaymentBreakdown(pharmacyBillTypes, pharmacyPaymentMethods);
+            pharmacyCollection.setBundleType("pharmacyCollection");
+            pharmacyCollection.setName("Pharmacy Sale");
+            System.out.println("pharmacyCollection = " + pharmacyCollection);
+            System.out.println("pharmacyCollection.getName() = " + pharmacyCollection.getName());
+            System.out.println("pharmacyCollection.getBundleType() = " + pharmacyCollection.getBundleType());
+            System.out.println("pharmacyCollection.getTotal() = " + pharmacyCollection.getTotal());
+            System.out.println("pharmacyCollection.getReportTemplateRows().size() = " + pharmacyCollection.getReportTemplateRows().size());
             bundle.getBundles().add(pharmacyCollection);
+            System.out.println("Added pharmacy collection to main bundle. Total bundles: " + bundle.getBundles().size());
             collectionForTheDay += getSafeTotal(pharmacyCollection);
 
             // Generate collecting centre collection and add to the main bundle
@@ -18866,7 +18880,9 @@ public class SearchController implements Serializable {
         pb.setBundleType("pharmacyCollection");
         double pharmacyCollectionTotal = 0.0;
         for (ReportTemplateRow row : pb.getReportTemplateRows()) {
-            pharmacyCollectionTotal += row.getRowValue();
+            System.out.println("row = " + row);
+            pharmacyCollectionTotal += row.getTotal();
+            System.out.println("row.getTotal() = " + row.getTotal());
         }
         pb.setTotal(pharmacyCollectionTotal);
         return pb;
