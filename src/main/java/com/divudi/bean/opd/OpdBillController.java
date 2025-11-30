@@ -2160,6 +2160,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (reminingCashPaid < 0) {
             newBatchBill.setBalance(Math.abs(reminingCashPaid));
         }
+
+        // Initialize balance field for credit bills
+        if (paymentMethod == PaymentMethod.Credit && newBatchBill.getBalance() <= 0.0) {
+            double totalAmount = Math.abs(newBatchBill.getNetTotal());
+            if (newBatchBill.getVat() != 0.0) {
+                totalAmount += Math.abs(newBatchBill.getVat());
+            }
+            newBatchBill.setBalance(totalAmount);
+        }
+
         newBatchBill.setCashBalance(reminingCashPaid);
         newBatchBill.setCashPaid(cashPaid);
         getBillFacade().edit(newBatchBill);
@@ -2263,6 +2273,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setDeptId(deptId);
 
         if (newBill.getId() == null) {
+            // Initialize balance field for credit bills before creating
+            if (paymentMethod == PaymentMethod.Credit) {
+                double totalAmount = Math.abs(newBill.getNetTotal());
+                if (newBill.getVat() != 0.0) {
+                    totalAmount += Math.abs(newBill.getVat());
+                }
+                newBill.setBalance(totalAmount);
+            }
             getFacade().create(newBill);
         } else {
             getFacade().edit(newBill);
@@ -2340,6 +2358,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         newBill.setInsId(insId);
         if (newBill.getId() == null) {
+            // Initialize balance field for credit bills before creating
+            if (paymentMethod == PaymentMethod.Credit) {
+                double totalAmount = Math.abs(newBill.getNetTotal());
+                if (newBill.getVat() != 0.0) {
+                    totalAmount += Math.abs(newBill.getVat());
+                }
+                newBill.setBalance(totalAmount);
+            }
             getFacade().create(newBill);
         } else {
             getFacade().edit(newBill);

@@ -163,7 +163,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
-    // </editor-fold>  
+    @Inject
+    private UserSettingsController userSettingsController;
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
     private WebUser loggedUser = null;
@@ -456,6 +458,8 @@ public class SessionController implements Serializable, HttpSessionListener {
             availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
         }
     }
+    
+    
 
     public void setAvailableDepartmentTypesForPharmacyTransactions(List<DepartmentType> availableDepartmentTypesForPharmacyTransactions) {
         this.availableDepartmentTypesForPharmacyTransactions = availableDepartmentTypesForPharmacyTransactions;
@@ -874,6 +878,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (department != null) {
             institution = department.getInstitution();
         }
+        // Clear cached department types when department changes
+        availableDepartmentTypesForPharmacyTransactions = null;
         this.department = department;
     }
 
@@ -1231,6 +1237,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                     // Load recently used departments
                     //recentDepartments = fillRecentDepartmentsForUser(u);
                     userIcons = userIconController.fillUserIcons(u, department);
+
+                    // Load user-specific UI settings (column visibility, preferences, etc.)
+                    // Performance-optimized: loads only current user's settings, cached in session
+                    userSettingsController.loadUserSettings();
+
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -1347,6 +1358,10 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggableDepartments = fillLoggableDepts();
 //            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
             loggableInstitutions = fillLoggableInstitutions();
+
+            // Load user-specific UI settings
+            userSettingsController.loadUserSettings();
+
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -1555,6 +1570,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("No person");
             return "";
         }
+
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
 
         System.out.println("DEBUG: Setting department and institution...");
         loggedUser.setDepartment(department);
@@ -1780,6 +1798,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggedUser.setWebUserPerson(p);
             webUserFacade.edit(loggedUser);
         }
+
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
 
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());

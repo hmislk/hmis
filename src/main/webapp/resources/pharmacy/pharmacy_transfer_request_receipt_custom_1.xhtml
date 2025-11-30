@@ -18,44 +18,44 @@
         <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
         <div style="width: 212mm; height: 275mm; padding-left: 0px">
             <div >
-                <div class="institutionName">
+<!--                <div class="institutionName">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}" />
-                </div>
+                </div>-->
 
                 <div class="headingBill">
                     <h:outputLabel value="Pharmacy Transfer Request" />
                     <br/>
-                    <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                    <h:outputLabel value="***Duplicate***" rendered="#{cc.attrs.reprint eq true}" />
                 </div>
             </div>
 
             <div >
                 <table class="table table-borderless">
-                    <tr style="line-height: 12px">
+                    <tr style="line-height: 10px">
                         <td>Request From</td>
                         <td>:</td>
                         <td>
                             <h:outputText value="#{cc.attrs.bill.fromDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.fromDepartment.institution.name}" />)
                         </td>
                     </tr>
-                    <tr style="line-height: 12px">
+                    <tr style="line-height: 10px">
                         <td>Request To</td>
                         <td>:</td>
                         <td>
                             <h:outputText value="#{cc.attrs.bill.toDepartment.name}" /> (<h:outputText value="#{cc.attrs.bill.toDepartment.institution.name}" />)
                         </td>
                     </tr>
-                    <tr style="line-height: 12px">
+                    <tr style="line-height: 10px">
                         <td>Req No</td>
                         <td>:</td>
                         <td><h:outputText value="#{cc.attrs.bill.deptId}" /></td>
                     </tr>
-                    <tr style="line-height: 12px">
+                    <tr style="line-height: 10px">
                         <td>Req By</td>
                         <td>:</td>
                         <td><h:outputText value="#{cc.attrs.bill.creater.name}" /></td>
                     </tr>
-                    <tr style="line-height: 12px">
+                    <tr style="line-height: 10px">
                         <td>Req Date/Time</td>
                         <td>:</td>
                         <td>

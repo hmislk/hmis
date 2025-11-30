@@ -145,6 +145,35 @@
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column headerText="Cost Rate"
+                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
+                                          sortBy="#{i.itemBatch.costRate}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.costRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cost Value"
+                                          style="text-align: right;"
+                                          styleClass="averageNumericColumn"
+                                          sortBy="#{i.itemBatch.costRate * i.stock}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.costRate * i.stock}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsStock.stockCostValue}" >
+                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
                                 <p:column headerText="Retail Sale Value" 
                                           style="text-align: right;"
                                           styleClass="averageNumericColumn"
@@ -188,6 +217,13 @@
                                             </f:facet>
                                         </p:column>
                                         <p:column></p:column>
+                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockCostValue}">
+                                            <f:facet name="footer" >
+                                                <h:outputLabel value="#{reportsStock.stockCostValue}" >
+                                                    <f:convertNumber parent="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
@@ -197,7 +233,7 @@
                                         </p:column>
                                     </p:row>
                                     <p:row>
-                                        <p:column colspan="9" >
+                                        <p:column colspan="11" >
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="Printed At " ></h:outputLabel>
                                                 <h:outputLabel value="#{sessionController.currentDate}" >

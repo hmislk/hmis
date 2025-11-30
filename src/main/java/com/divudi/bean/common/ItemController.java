@@ -2135,8 +2135,8 @@ public class ItemController implements Serializable {
     }
 
     /**
-     * Overloaded method that returns items sorted by type priority: VTM, ATM, VMP, AMP
-     * and then by name within each type
+     * Overloaded method that returns items sorted by type priority: VTM, ATM,
+     * VMP, AMP and then by name within each type
      */
     public List<Item> completeItem(String query, Class[] itemClasses, DepartmentType[] departmentTypes, int count, boolean sortByTypePriority) {
         if (!sortByTypePriority) {
@@ -2166,8 +2166,8 @@ public class ItemController implements Serializable {
     }
 
     /**
-     * Helper method to determine type priority for sorting
-     * VTM=1, ATM=2, VMP=3, AMP=4, Others=5
+     * Helper method to determine type priority for sorting VTM=1, ATM=2, VMP=3,
+     * AMP=4, Others=5
      */
     private int getTypePriority(Item item) {
         if (item instanceof Vtm) {
@@ -2275,8 +2275,8 @@ public class ItemController implements Serializable {
     }
 
     /**
-     * Returns medicine items sorted by type priority: VTM, ATM, VMP, AMP
-     * and then by name within each type
+     * Returns medicine items sorted by type priority: VTM, ATM, VMP, AMP and
+     * then by name within each type
      */
     public List<Item> completeMedicineByTypePriority(String query) {
         DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
@@ -2339,7 +2339,7 @@ public class ItemController implements Serializable {
             return suggestions;
         } else {
             String[] words = query.split("\\s+");
-           String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND c.departmentType in :dts AND (";
+            String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND c.departmentType in :dts AND (";
 
             StringBuilder nameConditions = new StringBuilder();
             for (int i = 0; i < words.length; i++) {
@@ -2710,6 +2710,90 @@ public class ItemController implements Serializable {
         results = getFacade().findByJpql(jpql, parameters, TemporalType.TIMESTAMP, maxResults);
 
         return results;
+    }
+
+    public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
+        return completeAmpAmppVmpVmppItemsForRequestingDepartment(query, null);
+    }
+
+    public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query, Department dept) {
+        List<Item> results;
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String q = query.trim().toUpperCase();
+
+        int barcodeMinLength = 8; // fallback default
+        int maxResults = 30; // fallback default
+
+        try {
+            barcodeMinLength = configOptionApplicationController.getIntegerValueByKey("BarcodeMinLength", 8);
+        } catch (Exception e) {
+            // Use default
+        }
+
+        try {
+            maxResults = configOptionApplicationController.getIntegerValueByKey("PharmaceuticalAutocompleteMaxResults", 30);
+        } catch (Exception e) {
+            // Use default
+        }
+
+        boolean includeBarcode = q.length() >= barcodeMinLength;
+
+        jpql = "SELECT i FROM Item i "
+                + "WHERE i.retired = false "
+                + "AND TYPE(i) IN (:amp, :ampp, :vmp, :vmpp) "
+                + "AND i.departmentType in :dts "
+                + "AND (UPPER(i.name) LIKE :q "
+                + "OR UPPER(COALESCE(i.code, '')) LIKE :q "
+                + (includeBarcode ? "OR UPPER(COALESCE(i.barcode, '')) LIKE :q " : "")
+                + ") "
+                + "ORDER BY i.name";
+
+        parameters.put("amp", Amp.class);
+        parameters.put("ampp", Ampp.class);
+        parameters.put("vmp", Vmp.class);
+        parameters.put("vmpp", Vmpp.class);
+        if (dept == null) {
+            parameters.put("dts", getAvailableDepartmentTypesForPharmacyTransactions(sessionController.getDepartment()));
+        } else {
+            parameters.put("dts", getAvailableDepartmentTypesForPharmacyTransactions(dept));
+        }
+        parameters.put("q", "%" + q + "%");
+
+        results = getFacade().findByJpql(jpql, parameters, TemporalType.TIMESTAMP, maxResults);
+
+        return results;
+    }
+
+    private List<DepartmentType> getAvailableDepartmentTypesForPharmacyTransactions(Department toDept) {
+        List<DepartmentType> availableDepartmentTypesForPharmacyTransactions = new ArrayList<>();
+
+        if (getDepartment() == null) {
+            return null;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Pharmacy Items In Pharmacy Transactions for " + toDept.getName(), true)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Pharmacy);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Lab Items In Pharmacy Transactions for " + toDept.getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Lab);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Store Items In Pharmacy Transactions for " + toDept.getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Store);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Etu Items In Pharmacy Transactions for " + toDept.getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Etu);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Theatre Items In Pharmacy Transactions for " + toDept.getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
+        }
+
+        return availableDepartmentTypesForPharmacyTransactions;
     }
 
     public List<Item> completeAmpAndVmpItem(String query) {
