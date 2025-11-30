@@ -1957,31 +1957,52 @@ public class CashRecieveBillController implements Serializable {
      * @return List of bills matching the query from all bill types
      */
     public List<Bill> completeCombinedCreditBills(String query) {
+        System.out.println("================= completeCombinedCreditBills START =================");
+        System.out.println("Input query: '" + query + "'");
+
         if (query == null || query.trim().isEmpty()) {
+            System.out.println("Query is null or empty - returning empty list");
             return new ArrayList<>();
         }
 
         // Create combined list to hold results from all bill types
         List<Bill> combinedResults = new ArrayList<>();
 
-        // Get results from OPD Batch bills
-        List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
-        if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
-            combinedResults.addAll(opdBatchBills);
+        try {
+            System.out.println("Calling OPD Batch bills...");
+            // Get results from OPD Batch bills
+            List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
+            System.out.println("OPD Batch bills returned: " + (opdBatchBills != null ? opdBatchBills.size() : "NULL"));
+            if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
+                combinedResults.addAll(opdBatchBills);
+                System.out.println("Added " + opdBatchBills.size() + " OPD Batch bills");
+            }
+
+            System.out.println("Calling OPD Package bills...");
+            // Get results from OPD Package bills
+            List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
+            System.out.println("OPD Package bills returned: " + (opdPackageBills != null ? opdPackageBills.size() : "NULL"));
+            if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
+                combinedResults.addAll(opdPackageBills);
+                System.out.println("Added " + opdPackageBills.size() + " OPD Package bills");
+            }
+
+            System.out.println("Calling Pharmacy bills...");
+            // Get results from Pharmacy bills
+            List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
+            System.out.println("Pharmacy bills returned: " + (pharmacyBills != null ? pharmacyBills.size() : "NULL"));
+            if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
+                combinedResults.addAll(pharmacyBills);
+                System.out.println("Added " + pharmacyBills.size() + " Pharmacy bills");
+            }
+
+        } catch (Exception e) {
+            System.out.println("ERROR in completeCombinedCreditBills: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        // Get results from OPD Package bills
-        List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
-        if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
-            combinedResults.addAll(opdPackageBills);
-        }
-
-        // Get results from Pharmacy bills
-        List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
-        if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
-            combinedResults.addAll(pharmacyBills);
-        }
-
+        System.out.println("Total combined results: " + combinedResults.size());
+        System.out.println("================= completeCombinedCreditBills END =================");
         return combinedResults;
     }
 
