@@ -182,7 +182,7 @@
                         <div class="col-4"><h:outputLabel value="Cancelled By" /></div>
                         <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
                         <div class="col-7">
-                            <h:outputLabel value="#{cc.attrs.cancellationBill.creater.person.nameWithTitle}" />
+                            <h:outputLabel value="#{cc.attrs.cancellationBill.creater.webUserPerson.nameWithTitle}" />
                         </div>
                     </div>
                     <h:panelGroup layout="block" styleClass="d-flex" rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
