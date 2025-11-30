@@ -193,6 +193,13 @@
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationFiveFive"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationFiveFive}" />
+                                            <p:outputLabel for="creditSettlementCancellationFiveFive" value="Five Five Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use 5.5 inch paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
                                                 id="creditSettlementCancellationCustom1"
                                                 value="#{pharmacyConfigController.creditSettlementCancellationCustom1}" />
                                             <p:outputLabel for="creditSettlementCancellationCustom1" value="Custom Format 1" class="ms-2" />
@@ -207,10 +214,24 @@
                                         </div>
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationCustom3"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationCustom3}" />
+                                            <p:outputLabel for="creditSettlementCancellationCustom3" value="Custom Format 3" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use third custom paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
                                                 id="creditSettlementCancellationPosHeader"
                                                 value="#{pharmacyConfigController.creditSettlementCancellationPosHeader}" />
                                             <p:outputLabel for="creditSettlementCancellationPosHeader" value="POS with Header Format" class="ms-2" />
                                             <small class="form-text text-muted d-block">Use POS paper with header space for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationPosCustom1"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationPosCustom1}" />
+                                            <p:outputLabel for="creditSettlementCancellationPosCustom1" value="POS Custom 1 Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use POS custom format 1 for credit settlement cancellation receipts</small>
                                         </div>
                                     </div>
                                 </div>
