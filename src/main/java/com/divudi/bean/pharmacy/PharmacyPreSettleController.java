@@ -236,6 +236,49 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             OptionScope.APPLICATION
         ));
 
+        // Cashier Settlement Bill Number Generation Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Generate Separate Bill Numbers for Cashier Settlement - Pharmacy",
+            "Master switch to enable separate bill number generation for cashier settlements. When enabled, cashier settlement bills get new bill numbers instead of copying from the original pharmacy bill",
+            "Line 720 (Controller): Primary control for bill number generation strategy",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Department-specific numbering format: CSB/DEPT/INS/YY/NNNNNN. Each department maintains its own bill number sequence",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixDeptInsYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Institution-first numbering format: CSB/INS/DEPT/YY/NNNNNN. Same sequence as strategy 1 but different format",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixInsDeptYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number",
+            "Institution-wide numbering format: CSB/INS/YY/NNNNNN. Single sequence across all departments within the institution",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixInsYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Custom Prefix",
+            "Custom prefix for cashier settlement bill numbers. Default is 'CS'. This prefix is used when no specific bill suffix is configured",
+            "BillNumberGenerator: Custom prefix configuration for all cashier settlement methods",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER",
+            "Bill type suffix specifically for cashier settlement bills. Default is 'CSB' (Cashier Settlement Bill)",
+            "BillNumberGenerator: Bill suffix configuration for atomic bill type",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
