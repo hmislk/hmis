@@ -41,6 +41,7 @@
                                     icon="fa fa-undo"
                                     action="#{bhtIssueReturnController.settle}" 
                                     ajax="false" 
+                                    onclick="return confirm('Are you sure you want to return this items ?')"
                                     class="ui-button-warning">
                                 </p:commandButton>
                             </div>
