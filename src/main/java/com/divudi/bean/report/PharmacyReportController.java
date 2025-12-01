@@ -2457,6 +2457,132 @@ public class PharmacyReportController implements Serializable {
         totalSaleValue = 0.0;
     }
 
+    private void retrieveBillWithoutReference(String billTypeField, Object billTypeValue) {
+        try {
+            netTotal = 0.0;
+            totalCostValue = 0.0;
+            totalPurchaseValue = 0.0;
+            totalRetailValue = 0.0;
+            totalSaleValue = 0.0;
+            // STEP 1: Fetch all parent bills (CostOfGoodSoldBillDTOs) in one query.
+            StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
+                    .append("b, ")
+                    .append("b.createdAt, ")
+                    .append("b.deptId, ")
+                    .append("b.netTotal, ")
+                    .append("b.paymentMethod, ")
+                    .append("b.discount, ")
+                    .append("b.id) ")
+                    .append("FROM Bill b ")
+                    .append("LEFT JOIN b.referenceBill rb ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND ").append(billTypeField).append(" IN :billTypes ")
+                    .append("AND (rb IS NULL OR rb.createdAt > :toDate) ")
+                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> billParams = new HashMap<>();
+            billParams.put("billTypes", billTypeValue);
+            billParams.put("fromDate", fromDate);
+            billParams.put("toDate", toDate);
+
+            addFilter(billJpql, billParams, "b.institution", "ins", institution);
+            addFilter(billJpql, billParams, "b.department.site", "sit", site);
+            addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+
+            // STEP 2: Collect all Bill IDs from the results.
+            List<Long> billIds = cogsBillDtos.stream()
+                    .map(CostOfGoodSoldBillDTO::getBillId)
+                    .collect(Collectors.toList());
+
+            // STEP 3: Fetch all associated BillItems in a single second query.
+            StringBuilder itemJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                    .append("bi.id, ")
+                    .append("bi.bill.id, ")
+                    .append("bi.bill.createdAt, ")
+                    .append("bi.item.name, ")
+                    .append("bi.item.code, ")
+                    .append("bi.bill.deptId, ")
+                    .append("pbi.itemBatch.batchNo, ")
+                    .append("bi.qty, ")
+                    .append("pbi.itemBatch.costRate, ")
+                    .append("pbi.itemBatch.purcahseRate, ")
+                    .append("pbi.retailRate, ")
+                    .append("bi.bill.netTotal) ")
+                    .append("FROM BillItem bi ")
+                    .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND bi.bill.id IN :billIds");
+
+            Map<String, Object> itemParams = new HashMap<>();
+            itemParams.put("billIds", billIds);
+
+            List<BillItemDTO> allBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+
+            // STEP 4: Group the fetched BillItems by their parent Bill's ID.
+            Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
+
+            // STEP 5: Attach the grouped items to their corresponding parent bills.
+            for (CostOfGoodSoldBillDTO billDto : cogsBillDtos) {
+                // 1. Accumulate the grand netTotal directly from the bill
+                netTotal += billDto.getNetTotal();
+
+                // Get the items associated with this specific bill
+                List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
+
+                if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
+
+                    // Populate the map as needed
+                    Map<Long, Object> billItemMap = itemsForThisBill.stream()
+                            .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
+                    billDto.setBillItemsMap(billItemMap);
+
+                    // For the list, simply set it
+                    billDto.setBillItems(itemsForThisBill);
+
+                    // Calculate Cost Value for THIS bill
+                    double billCost = itemsForThisBill.stream()
+                            .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getCostRate() * item.getQty())
+                            .sum();
+
+                    // Calculate Purchase Value for THIS bill
+                    double billPurchase = itemsForThisBill.stream()
+                            .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
+                            .sum();
+
+                    // 2. Accumulate the grand total for Cost
+                    totalCostValue += billCost;
+
+                    // 3. Accumulate the grand total for Purchase
+                    totalPurchaseValue += billPurchase;
+
+                    double billRetail = itemsForThisBill.stream()
+                            .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                            .sum();
+
+                    totalRetailValue += billRetail;
+
+                    // Calculate Sale Value for THIS bill (same as billRetail calculation)
+                    double billSaleValue = itemsForThisBill.stream()
+                            .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                            .sum();
+
+                    totalSaleValue += billSaleValue;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            cogsBillDtos = new ArrayList<>();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+        }
+    }
+
     private void retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
         try {
             netTotal = 0.0;
@@ -2792,6 +2918,13 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
         );
         retrieveBill("b.billTypeAtomic", billTypes, nonCreditPaymentMethods);
+    }
+
+    public void processAddToStockBills() {
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+        );
+        retrieveBillWithoutReference("b.billTypeAtomic", billTypes);
     }
 
     public void processSaleCash() {
@@ -3836,6 +3969,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
             } else if ("grnDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -3894,6 +4028,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
 
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
@@ -3977,7 +4112,7 @@ public class PharmacyReportController implements Serializable {
 //                jpql += " and s.department IS NOT NULL ";
 //            }
 
-            jpql += " order by s.createdAt ";
+            jpql += " order by s.id ";
             stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }, InventoryReports.STOCK_LEDGER_REPORT, sessionController.getLoggedUser());
     }
@@ -5199,6 +5334,62 @@ public class PharmacyReportController implements Serializable {
         return retrievePurchaseAndCostValuesWithComplete(billTypeValue, null);
     }
 
+    public Map<String, Double> retrievePurchaseAndCostValuesWithoutReference(List<BillTypeAtomic> billTypeValue) {
+        try {
+            Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("LEFT JOIN bi.bill.referenceBill rb ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND (rb IS NULL OR rb.createdAt > :td) ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            commonParams.put("ret", false);
+            commonParams.put("billTypes", billTypeValue);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            baseQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrievePurchaseAndCostValuesWithoutReference ===");
+                System.out.println("Bill Types: " + billTypeValue);
+                System.out.println("totals[0] = " + totals[0]);
+                System.out.println("totals[1] = " + totals[1]);
+                System.out.println("totals[2] = " + totals[2]);
+                System.out.println("Query: " + baseQuery.toString());
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
+            }
+            return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
     public Map<String, Double> retrievePurchaseAndCostValuesWithComplete(List<BillTypeAtomic> billTypeValue, Boolean includeOnlyCompleted) {
         try {
             Map<String, Object> commonParams = new HashMap<>();
@@ -5275,6 +5466,7 @@ public class PharmacyReportController implements Serializable {
             calculateSaleCreditValue();
             calculateBhtIssueValue();
             calculateSaleWithoutCreditPaymentMethod();
+            calculateAddToStockBills();
 
             Map<String, Double> calculatedClosingStockByCogsRowValues = calculateClosingStockValueByCalculatedRows();
             calculateClosingStockRow();
@@ -5595,6 +5787,20 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating sale without credit payment method value");
+        }
+    }
+
+    private void calculateAddToStockBills() {
+        try {
+            List<BillTypeAtomic> billTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+            );
+
+            Map<String, Double> addToStockBillsValues = retrievePurchaseAndCostValuesWithoutReference(billTypes);
+            cogsRows.put("Add to Stock Bills", addToStockBillsValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating add to stock bills value");
         }
     }
 
