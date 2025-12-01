@@ -17067,9 +17067,9 @@ public class SearchController implements Serializable {
 
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
 
 
             ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
