@@ -151,7 +151,7 @@
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
                                 </p:selectOneMenu>
-                                
+
                             </h:panelGroup>
                         </h:panelGrid>
 
@@ -227,15 +227,28 @@
                                 <ez:professionalPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}"/>
                                 <ez:professionalPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportInward'}"/>
 
-                                <ez:paymentReportCards bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCards'}"/>
-                                <ez:staffPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
-                                <ez:voucherPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
-                                <ez:chequePayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
-                                <ez:ewalletPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
-                                <ez:slipPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
+                                <ez:paymentReportCards  id="cardPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCards'}"/>
+                                <ez:staffPayments  id="staffPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
+                                <ez:voucherPayments  id="voucherPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
+                                <ez:chequePayments id="chequePaymentPanel" bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
+                                <ez:ewalletPayments  id="ewalletPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
+                                <ez:slipPayments  id="slipPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
+                                
+                                
+                                
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
 
                                 <ez:opdServiceCollectionCredit bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollectionCredit'}" />
+
+
+                                <ez:pharmacyCreditBills
+                                    id="panelPharmacyCreditBills"
+                                    bundle="#{myBundle}"
+                                    rendered="#{myBundle.bundleType eq 'pharmacyCreditBills'}"/>
+                                <ez:pharmacyCreditCancel id="pharmacyCreditCancel" bundle="#{myBundle}"
+                                                         rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
+                                <ez:pharmacyCreditRefund id="pharmacyCreditRefund" bundle="#{myBundle}"
+                                                         rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
 

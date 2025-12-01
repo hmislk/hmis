@@ -2811,6 +2811,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
     
+   
 
     public String navigateToOtRoomWiseSergeryCount(){
         
@@ -2846,6 +2847,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         
         return "/reports/managementReports/surgery_count_type?faces-redirect=true";
     }
+    
+    public String navigateToAdmissionCountConsultationWise(){
+       
+        return "/reports/managementReports/admission_count_consultant_wise?faces-redirect=true";
+    }
+    
     
     public String navigateToAdmissionCountPaymentTypeWise(){
         

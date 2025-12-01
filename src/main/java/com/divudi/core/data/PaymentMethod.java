@@ -83,6 +83,10 @@ public enum PaymentMethod {
     public static List<PaymentMethod> getNonCreditPaymentMethods() {
         return getMethodsByType(PaymentType.NON_CREDIT);
     }
+    
+    public static List<PaymentMethod> getCreditPaymentMethods() {
+        return getMethodsByType(PaymentType.CREDIT);
+    }
 
     public String getInHandLabel() {
         switch (this) {
