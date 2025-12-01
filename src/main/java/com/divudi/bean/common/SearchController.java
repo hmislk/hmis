@@ -16352,22 +16352,27 @@ public class SearchController implements Serializable {
             netCashCollection -= Math.abs(getSafeTotal(cardPayments));
 
             ReportTemplateRowBundle staffPayments = generateStaffPayments();
+            staffPayments.calculateTotalByPayments();
             bundle.getBundles().add(staffPayments);
             netCashCollection -= Math.abs(getSafeTotal(staffPayments));
 
             ReportTemplateRowBundle voucherPayments = generateVoucherPayments();
+            voucherPayments.calculateTotalByPayments();
             bundle.getBundles().add(voucherPayments);
             netCashCollection -= Math.abs(getSafeTotal(voucherPayments));
 
             ReportTemplateRowBundle chequePayments = generateChequePayments();
+            chequePayments.calculateTotalByPayments();
             bundle.getBundles().add(chequePayments);
             netCashCollection -= Math.abs(getSafeTotal(chequePayments));
 
             ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
+            ewalletPayments.calculateTotalByPayments();
             bundle.getBundles().add(ewalletPayments);
             netCashCollection -= Math.abs(getSafeTotal(ewalletPayments));
 
             ReportTemplateRowBundle slipPayments = generateSlipPayments();
+            slipPayments.calculateTotalByPayments();
             bundle.getBundles().add(slipPayments);
             netCashCollection -= Math.abs(getSafeTotal(slipPayments));
 
