@@ -4113,7 +4113,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void paymentSchemeChanged(AjaxBehaviorEvent ajaxBehavior) {
-        calculateRatesForAllBillItemsInPreBill();
+        // Mark that rates need recalculation due to payment scheme change
+        ratesNeedRecalculation = true;
+        calculateBillItemsAndBillTotalsOfPreBill();
     }
 
     @Deprecated // Use listnerForPaymentMethodChange
