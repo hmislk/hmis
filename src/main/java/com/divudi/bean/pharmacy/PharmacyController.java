@@ -5056,6 +5056,7 @@ public class PharmacyController implements Serializable {
         sql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
         sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
 
+
         try {
             List<Object[]> results = getBillFacade().findAggregates(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
@@ -5071,6 +5072,7 @@ public class PharmacyController implements Serializable {
                 BigDecimal costValue = (BigDecimal) result[4];
                 BigDecimal retailValue = (BigDecimal) result[5];
 
+
                 // Use the appropriate department based on transfer type
                 String keyDepartment = "issue".equals(transferType) ? fromDepartment : toDepartment;
                 if (keyDepartment == null) {
@@ -5084,7 +5086,7 @@ public class PharmacyController implements Serializable {
                     mainSummary.setDepartmentName(keyDepartment);
                     mainSummary.setIssuedDeptName(keyDepartment);
                     mainSummary.setTotalPurchaseValue(BigDecimal.ZERO);
-                    mainSummary.setTotalCostValue(BigDecimal.ZERO);
+                    mainSummary.setTotalCostValue(BigDecimal.ZERO.setScale(4, BigDecimal.ROUND_HALF_UP));
                     mainSummary.setTotalRetailSaleValue(BigDecimal.ZERO);
                     mainSummary.setSummeriesMap(new LinkedHashMap<>());
                     departmentMap.put(keyDepartment, mainSummary);
@@ -5098,8 +5100,10 @@ public class PharmacyController implements Serializable {
                     );
                 }
                 if (costValue != null) {
+                    // Ensure BigDecimal maintains database precision (4 decimal places)
+                    BigDecimal scaledCostValue = costValue.setScale(4, BigDecimal.ROUND_HALF_UP);
                     mainSummary.setTotalCostValue(
-                            mainSummary.getTotalCostValue().add(costValue)
+                            mainSummary.getTotalCostValue().add(scaledCostValue)
                     );
                 }
                 if (retailValue != null) {
@@ -5114,7 +5118,7 @@ public class PharmacyController implements Serializable {
                 detailSummary.setIssuedDeptName(fromDepartment);
                 detailSummary.setReceivedDeptName(toDepartment);
                 detailSummary.setTotalPurchaseValue(purchaseValue != null ? purchaseValue : BigDecimal.ZERO);
-                detailSummary.setTotalCostValue(costValue != null ? costValue : BigDecimal.ZERO);
+                detailSummary.setTotalCostValue(costValue != null ? costValue.setScale(4, BigDecimal.ROUND_HALF_UP) : BigDecimal.ZERO.setScale(4, BigDecimal.ROUND_HALF_UP));
                 detailSummary.setTotalRetailSaleValue(retailValue != null ? retailValue : BigDecimal.ZERO);
 
                 // Determine category for grouping details
@@ -5152,7 +5156,7 @@ public class PharmacyController implements Serializable {
                 totalRow.setIssuedDeptName("Total");
 
                 BigDecimal totalPurchase = BigDecimal.ZERO;
-                BigDecimal totalCost = BigDecimal.ZERO;
+                BigDecimal totalCost = BigDecimal.ZERO.setScale(4, BigDecimal.ROUND_HALF_UP);
                 BigDecimal totalRetail = BigDecimal.ZERO;
 
                 for (PharmacySummery summary : departmentSummaries) {
@@ -5168,7 +5172,7 @@ public class PharmacyController implements Serializable {
                 }
 
                 totalRow.setTotalPurchaseValue(totalPurchase);
-                totalRow.setTotalCostValue(totalCost);
+                totalRow.setTotalCostValue(totalCost.setScale(4, BigDecimal.ROUND_HALF_UP));
                 totalRow.setTotalRetailSaleValue(totalRetail);
                 totalRow.setSummeriesMap(new HashMap<>()); // Empty map for total row
 
