@@ -358,7 +358,7 @@
 
                 <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
-                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null}" >
+                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient.id ne null}" >
 
                             <h:outputLabel value="Name " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
