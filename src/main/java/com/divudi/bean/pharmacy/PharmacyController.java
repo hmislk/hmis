@@ -2849,11 +2849,24 @@ public class PharmacyController implements Serializable {
 
             for (Object[] result : results) {
                 String departmentName = (String) result[0]; // Extract department name
-                Double netTotal = (Double) result[1];       // Extract net total
-                grandTotal += netTotal;                     // Accumulate the grand total
 
-                // Add summary data
-                departmentSummaries.add(new PharmacySummery(departmentName, netTotal));
+                // Safe casting for netTotal - handle BigDecimal from SUM() function
+                Object netTotalObj = result[1];
+                Double netTotal = null;
+                if (netTotalObj instanceof BigDecimal) {
+                    netTotal = ((BigDecimal) netTotalObj).doubleValue();
+                } else if (netTotalObj instanceof Double) {
+                    netTotal = (Double) netTotalObj;
+                } else if (netTotalObj instanceof Number) {
+                    netTotal = ((Number) netTotalObj).doubleValue();
+                }
+
+                if (netTotal != null) {
+                    grandTotal += netTotal;                     // Accumulate the grand total
+
+                    // Add summary data
+                    departmentSummaries.add(new PharmacySummery(departmentName, netTotal));
+                }
             }
 
             // Add grand total
@@ -2948,14 +2961,32 @@ public class PharmacyController implements Serializable {
                 if (result[2] instanceof Item) {
                     report.setItm((Item) result[2]);
                 }
-                if (result[3] instanceof Double) {
-                    report.setPurchaseRate((Double) result[3]);
+
+                // Safe casting for purchaseRate - handle BigDecimal from database
+                if (result[3] != null) {
+                    if (result[3] instanceof BigDecimal) {
+                        report.setPurchaseRate(((BigDecimal) result[3]).doubleValue());
+                    } else if (result[3] instanceof Number) {
+                        report.setPurchaseRate(((Number) result[3]).doubleValue());
+                    }
                 }
-                if (result[4] instanceof Double) {
-                    report.setQty((Double) result[4]);
+
+                // Safe casting for qty - handle BigDecimal from SUM() function
+                if (result[4] != null) {
+                    if (result[4] instanceof BigDecimal) {
+                        report.setQty(((BigDecimal) result[4]).doubleValue());
+                    } else if (result[4] instanceof Number) {
+                        report.setQty(((Number) result[4]).doubleValue());
+                    }
                 }
-                if (result[5] instanceof Double) {
-                    report.setTotal((Double) result[5]);
+
+                // Safe casting for total - handle BigDecimal from SUM() function
+                if (result[5] != null) {
+                    if (result[5] instanceof BigDecimal) {
+                        report.setTotal(((BigDecimal) result[5]).doubleValue());
+                    } else if (result[5] instanceof Number) {
+                        report.setTotal(((Number) result[5]).doubleValue());
+                    }
                 }
 
                 issueDepartmentCategoryWiseItems.add(report);
@@ -4527,13 +4558,24 @@ public class PharmacyController implements Serializable {
 
             for (Object[] result : results) {
                 Department toDepartment = (Department) result[0];
+
+                // Safe casting for netTotal sum - handle BigDecimal from SUM() function
+                Double netTotalSum = null;
+                if (result[6] instanceof BigDecimal) {
+                    netTotalSum = ((BigDecimal) result[6]).doubleValue();
+                } else if (result[6] instanceof Double) {
+                    netTotalSum = (Double) result[6];
+                } else if (result[6] instanceof Number) {
+                    netTotalSum = ((Number) result[6]).doubleValue();
+                }
+
                 DepartmentWiseBill departmentWiseBill = new DepartmentWiseBill(
                         (Department) result[1],
                         (String) result[2],
                         (Date) result[3],
                         (Bill) result[4],
                         (String) result[5],
-                        (Double) result[6],
+                        netTotalSum,
                         (Bill) result[7]
                 );
 
@@ -4611,13 +4653,24 @@ public class PharmacyController implements Serializable {
 
             for (Object[] result : results) {
                 Department toDepartment = (Department) result[0];
+
+                // Safe casting for netTotal sum - handle BigDecimal from SUM() function
+                Double netTotalSum = null;
+                if (result[6] instanceof BigDecimal) {
+                    netTotalSum = ((BigDecimal) result[6]).doubleValue();
+                } else if (result[6] instanceof Double) {
+                    netTotalSum = (Double) result[6];
+                } else if (result[6] instanceof Number) {
+                    netTotalSum = ((Number) result[6]).doubleValue();
+                }
+
                 DepartmentWiseBill departmentWiseBill = new DepartmentWiseBill(
                         (Department) result[1],
                         (String) result[2],
                         (Date) result[3],
                         (Bill) result[4],
                         (String) result[5],
-                        (Double) result[6],
+                        netTotalSum,
                         (Bill) result[7]
                 );
 
@@ -5236,7 +5289,18 @@ public class PharmacyController implements Serializable {
             // Populate the map with received quantities
             for (Object[] result : receiveResults) {
                 Long issueItemId = (Long) result[0];
-                Double receivedQty = (Double) result[1];
+
+                // Safe casting for receivedQty - handle BigDecimal from SUM() function
+                Object receivedQtyObj = result[1];
+                Double receivedQty = null;
+                if (receivedQtyObj instanceof BigDecimal) {
+                    receivedQty = ((BigDecimal) receivedQtyObj).doubleValue();
+                } else if (receivedQtyObj instanceof Double) {
+                    receivedQty = (Double) receivedQtyObj;
+                } else if (receivedQtyObj instanceof Number) {
+                    receivedQty = ((Number) receivedQtyObj).doubleValue();
+                }
+
                 if (issueItemId != null && receivedQty != null) {
                     receivedQuantitiesMap.put(issueItemId, receivedQty);
                 }
@@ -5295,8 +5359,28 @@ public class PharmacyController implements Serializable {
             for (Object[] result : issueResults) {
                 Long issueItemId = (Long) result[0];
                 String departmentName = (String) result[1];
-                Double issuedQty = (Double) result[2];
-                Double lineNetRate = (Double) result[3];
+
+                // Safe casting for issuedQty - handle BigDecimal from database
+                Object issuedQtyObj = result[2];
+                Double issuedQty = null;
+                if (issuedQtyObj instanceof BigDecimal) {
+                    issuedQty = ((BigDecimal) issuedQtyObj).doubleValue();
+                } else if (issuedQtyObj instanceof Double) {
+                    issuedQty = (Double) issuedQtyObj;
+                } else if (issuedQtyObj instanceof Number) {
+                    issuedQty = ((Number) issuedQtyObj).doubleValue();
+                }
+
+                // Safe casting for lineNetRate - handle BigDecimal from database
+                Object lineNetRateObj = result[3];
+                Double lineNetRate = null;
+                if (lineNetRateObj instanceof BigDecimal) {
+                    lineNetRate = ((BigDecimal) lineNetRateObj).doubleValue();
+                } else if (lineNetRateObj instanceof Double) {
+                    lineNetRate = (Double) lineNetRateObj;
+                } else if (lineNetRateObj instanceof Number) {
+                    lineNetRate = ((Number) lineNetRateObj).doubleValue();
+                }
 
                 // Handle null department names
                 if (departmentName == null || departmentName.trim().isEmpty()) {
@@ -5828,7 +5912,15 @@ public class PharmacyController implements Serializable {
 //                    //System.err.println("Inside ");
                     DepartmentStock r = new DepartmentStock();
                     r.setDepartment((Department) obj[0]);
-                    r.setStock((Double) obj[1]);
+
+                    // Safe casting for stock - handle BigDecimal from SUM() function
+                    double stockValue = 0.0;
+                    if (obj[1] instanceof BigDecimal) {
+                        stockValue = ((BigDecimal) obj[1]).doubleValue();
+                    } else if (obj[1] instanceof Number) {
+                        stockValue = ((Number) obj[1]).doubleValue();
+                    }
+                    r.setStock(stockValue);
 
                     double qty = calDepartmentSaleQtyByPer(r.getDepartment(), i);
                     qty = 0 - qty;
@@ -6661,7 +6753,15 @@ public class PharmacyController implements Serializable {
 //                    System.err.println("Inside ");
                     DepartmentStock r = new DepartmentStock();
                     r.setDepartment((Department) obj[0]);
-                    r.setStock((Double) obj[1]);
+
+                    // Safe casting for stock - handle BigDecimal from SUM() function
+                    double stockValue = 0.0;
+                    if (obj[1] instanceof BigDecimal) {
+                        stockValue = ((BigDecimal) obj[1]).doubleValue();
+                    } else if (obj[1] instanceof Number) {
+                        stockValue = ((Number) obj[1]).doubleValue();
+                    }
+                    r.setStock(stockValue);
 
                     double qty = calDepartmentSaleQty(r.getDepartment(), i);
                     qty = 0 - qty;
@@ -6716,7 +6816,15 @@ public class PharmacyController implements Serializable {
             for (Object[] obj : objs) {
                 DepartmentStock r = new DepartmentStock();
                 r.setDepartment((Department) obj[0]);
-                r.setStock((Double) obj[1]);
+
+                // Safe casting for stock - handle BigDecimal from SUM() function
+                double stockValue = 0.0;
+                if (obj[1] instanceof BigDecimal) {
+                    stockValue = ((BigDecimal) obj[1]).doubleValue();
+                } else if (obj[1] instanceof Number) {
+                    stockValue = ((Number) obj[1]).doubleValue();
+                }
+                r.setStock(stockValue);
                 list.add(r);
 
                 //Total Institution Stock
@@ -6796,8 +6904,28 @@ public class PharmacyController implements Serializable {
         for (Object[] obj : results) {
             Institution ins = (Institution) obj[0];
             Department dep = (Department) obj[1];
-            double val = (Double) obj[2];
-            double qty = (Double) obj[3];
+
+            // Safe casting for val - handle BigDecimal from SUM() function
+            Object valObj = obj[2];
+            double val = 0.0;
+            if (valObj instanceof BigDecimal) {
+                val = ((BigDecimal) valObj).doubleValue();
+            } else if (valObj instanceof Double) {
+                val = (Double) valObj;
+            } else if (valObj instanceof Number) {
+                val = ((Number) valObj).doubleValue();
+            }
+
+            // Safe casting for qty - handle BigDecimal from SUM() function
+            Object qtyObj = obj[3];
+            double qty = 0.0;
+            if (qtyObj instanceof BigDecimal) {
+                qty = ((BigDecimal) qtyObj).doubleValue();
+            } else if (qtyObj instanceof Double) {
+                qty = (Double) qtyObj;
+            } else if (qtyObj instanceof Number) {
+                qty = ((Number) qtyObj).doubleValue();
+            }
 
             InstitutionSale insSale = saleMap.get(ins);
             if (insSale == null) {
@@ -6845,8 +6973,24 @@ public class PharmacyController implements Serializable {
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
                 r.setDepartment((Department) obj[0]);
-                r.setSaleValue((Double) obj[1]);
-                r.setSaleQty((Double) obj[2]);
+
+                // Safe casting for saleValue - handle BigDecimal from SUM() function
+                double saleValue = 0.0;
+                if (obj[1] instanceof BigDecimal) {
+                    saleValue = ((BigDecimal) obj[1]).doubleValue();
+                } else if (obj[1] instanceof Number) {
+                    saleValue = ((Number) obj[1]).doubleValue();
+                }
+                r.setSaleValue(saleValue);
+
+                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                double saleQty = 0.0;
+                if (obj[2] instanceof BigDecimal) {
+                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                } else if (obj[2] instanceof Number) {
+                    saleQty = ((Number) obj[2]).doubleValue();
+                }
+                r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
@@ -6910,8 +7054,24 @@ public class PharmacyController implements Serializable {
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
                 r.setDepartment((Department) obj[0]);
-                r.setSaleValue((Double) obj[1]);
-                r.setSaleQty((Double) obj[2]);
+
+                // Safe casting for saleValue - handle BigDecimal from SUM() function
+                double saleValue = 0.0;
+                if (obj[1] instanceof BigDecimal) {
+                    saleValue = ((BigDecimal) obj[1]).doubleValue();
+                } else if (obj[1] instanceof Number) {
+                    saleValue = ((Number) obj[1]).doubleValue();
+                }
+                r.setSaleValue(saleValue);
+
+                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                double saleQty = 0.0;
+                if (obj[2] instanceof BigDecimal) {
+                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                } else if (obj[2] instanceof Number) {
+                    saleQty = ((Number) obj[2]).doubleValue();
+                }
+                r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
@@ -6986,8 +7146,24 @@ public class PharmacyController implements Serializable {
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
                 r.setDepartment((Department) obj[0]);
-                r.setSaleValue((Double) obj[1]);
-                r.setSaleQty((Double) obj[2]);
+
+                // Safe casting for saleValue - handle BigDecimal from SUM() function
+                double saleValue = 0.0;
+                if (obj[1] instanceof BigDecimal) {
+                    saleValue = ((BigDecimal) obj[1]).doubleValue();
+                } else if (obj[1] instanceof Number) {
+                    saleValue = ((Number) obj[1]).doubleValue();
+                }
+                r.setSaleValue(saleValue);
+
+                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                double saleQty = 0.0;
+                if (obj[2] instanceof BigDecimal) {
+                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                } else if (obj[2] instanceof Number) {
+                    saleQty = ((Number) obj[2]).doubleValue();
+                }
+                r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
@@ -7043,8 +7219,24 @@ public class PharmacyController implements Serializable {
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
                 r.setDepartment((Department) obj[0]);
-                r.setSaleValue((Double) obj[1]);
-                r.setSaleQty((Double) obj[2]);
+
+                // Safe casting for saleValue - handle BigDecimal from SUM() function
+                double saleValue = 0.0;
+                if (obj[1] instanceof BigDecimal) {
+                    saleValue = ((BigDecimal) obj[1]).doubleValue();
+                } else if (obj[1] instanceof Number) {
+                    saleValue = ((Number) obj[1]).doubleValue();
+                }
+                r.setSaleValue(saleValue);
+
+                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                double saleQty = 0.0;
+                if (obj[2] instanceof BigDecimal) {
+                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                } else if (obj[2] instanceof Number) {
+                    saleQty = ((Number) obj[2]).doubleValue();
+                }
+                r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
@@ -7084,8 +7276,24 @@ public class PharmacyController implements Serializable {
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
                 r.setDepartment((Department) obj[0]);
-                r.setSaleValue((Double) obj[1]);
-                r.setSaleQty((Double) obj[2]);
+
+                // Safe casting for saleValue - handle BigDecimal from SUM() function
+                double saleValue = 0.0;
+                if (obj[1] instanceof BigDecimal) {
+                    saleValue = ((BigDecimal) obj[1]).doubleValue();
+                } else if (obj[1] instanceof Number) {
+                    saleValue = ((Number) obj[1]).doubleValue();
+                }
+                r.setSaleValue(saleValue);
+
+                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                double saleQty = 0.0;
+                if (obj[2] instanceof BigDecimal) {
+                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                } else if (obj[2] instanceof Number) {
+                    saleQty = ((Number) obj[2]).doubleValue();
+                }
+                r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
