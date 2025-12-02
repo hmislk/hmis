@@ -25,33 +25,36 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
 
-        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" class="w-100">
+        <p:dataTable 
+            rowIndexVar="i" 
+            id="tblBills" 
+            value="#{searchController.bills}" 
+            var="bill" 
+            class="w-100">
             <f:facet name="header">
                 <h:outputLabel value="GOOD RETURN NOTE WITHOUT RECEIPT"/>
             </f:facet>
+            
+            <p:column headerText="#" width="3em;" >
+                #{i+1}
+            </p:column>
 
-            <p:column headerText="GRN Return No" >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" value="#{bill.deptId}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
-                    <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
-                </h:commandLink>
-            </p:column> 
-            <p:column headerText="Delaor Name" >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" value="#{bill.toInstitution.name}">
+            <p:column headerText="GRN Return No" width="10em;" >
+                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
                     <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Billed At"  >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
-                    <h:outputLabel value="#{bill.createdAt}" >
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
-                    <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
-                </h:commandLink>
+
+            <p:column headerText="Delaor Name" >
+                <h:outputLabel value="#{bill.toInstitution.name}" ></h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Billed At"  width="12em;" >
+                <h:outputLabel value="#{bill.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </h:outputLabel>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -65,14 +68,11 @@
                         <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
                     </h:outputLabel>
                 </h:panelGroup>
-            </p:column>                 
-            <p:column headerText="Billed By" >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
-                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
-                    <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
-                </h:commandLink>
+            </p:column>   
+
+            <p:column headerText="Billed By"  width="12em;">
+                <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                </h:outputLabel>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled By " />
@@ -86,31 +86,24 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>          
-<!--            <p:column headerText="Paymentmethod"  >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
-                    <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>                               -->
-            <p:column headerText="Net Return Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
-                    <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
-                    <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
-                </h:commandLink>
+            <!--            <p:column headerText="Paymentmethod"  >
+                            <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
+                                <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
+                                <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                            </h:commandLink>
+                        </p:column>                               -->
+            <p:column headerText="Net Return Value" width="10em;" style="text-align: right;"  >
+                <h:outputLabel value="#{bill.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </p:column>
-            
-            <p:column headerText="Retail Sale Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
-                    <h:outputLabel value="#{bill.pharmacyBill.saleValue}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
-                </h:commandLink>
+
+            <p:column headerText="Retail Sale Value" width="10em;" style="text-align: right;"  >
+                <h:outputLabel value="#{bill.pharmacyBill.saleValue}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </p:column>
-            
+
             <p:column headerText="Comments" >
                 <h:outputLabel value="#{bill.comments}" >
                 </h:outputLabel>
