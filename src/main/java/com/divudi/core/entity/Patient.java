@@ -761,11 +761,11 @@ public class Patient implements Serializable, RetirableEntity {
 
     }
 
-    public String getSpecificStatus() {
+    public SpecificPatientStatus getSpecificStatus() {
         return specificStatus;
     }
 
-    public void setSpecificStatus(String specificStatus) {
+    public void setSpecificStatus(SpecificPatientStatus specificStatus) {
         this.specificStatus = specificStatus;
     }
 

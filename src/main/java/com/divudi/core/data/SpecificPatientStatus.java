@@ -8,9 +8,9 @@ package com.divudi.core.data;
  */
 public enum SpecificPatientStatus {
     
+    NORMAL("Normal Person"),
     VIP("Very Important Person"),
     VVIP("Very Very Important Person"),
-    NORMAL("Normal Person"),
     STAFF("Staff Member");
     
     private final String label;
