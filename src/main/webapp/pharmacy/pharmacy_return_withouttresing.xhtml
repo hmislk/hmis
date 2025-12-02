@@ -355,78 +355,95 @@
 
                 <h:form>
 
-                    <p:panel  rendered="#{pharmacyReturnwithouttresing.billPreview}" >
+                    <p:panel header="Preview" rendered="#{pharmacyReturnwithouttresing.billPreview}" >
 
-                        <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
-                        <p:defaultCommand  target="btnPrint" />
-
-                        <div class="nonPrintBlock mb-4" >
-                            <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" class="ui-button-info" icon="fas fa-print">
+                        <div class="d-flex justify-content-end gap-2 mb-3" >
+                            <p:commandButton 
+                                accesskey="p" 
+                                id="btnPrint" 
+                                value="Print" 
+                                ajax="false" 
+                                action="#" 
+                                class="ui-button-info" 
+                                icon="fas fa-print">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Return" class="mx-1 ui-button-success" icon="fas fa-plus"
-
-                                             ajax="false" action="/pharmacy/pharmacy_return_withouttresing"
-                                             actionListener="#{pharmacyReturnwithouttresing.resetAll()}" ></p:commandButton>
+                            <p:commandButton 
+                                accesskey="n" 
+                                value="New Return"
+                                class="mx-1 ui-button-success" 
+                                icon="fas fa-plus"
+                                ajax="false" action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                                actionListener="#{pharmacyReturnwithouttresing.resetAll()}" >
+                            </p:commandButton>
+                    
                             <p:spacer width="100"/>
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
-                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                <p:selectOneMenu value="#{sessionController.loggedPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
-                                    <f:selectItem itemLabel="Please Select Paper Type" />
-                                    <f:selectItems value="#{enumController.paperTypes}" />
-                                </p:selectOneMenu>
-                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
-                            </h:panelGroup>
-
                         </div>
 
-                        <!--                        <div >
-                                                    <h:panelGroup   id="gpBillPreview">
-                                                        <phi:issue bill="#{pharmacyReturnwithouttresing.printBill}"></phi:issue>
-                                                    </h:panelGroup>
-                                                </div>-->
+                    <!--                        <div >
+                                            <h:panelGroup   id="gpBillPreview">
+                                                <phi:issue bill="#{pharmacyReturnwithouttresing.printBill}"></phi:issue>
+                                            </h:panelGroup>
+                                        </div>-->
 
                         <h:panelGroup   id="gpBillPreview">
 
-                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
-                                        <phi:issue bill="#{pharmacyReturnwithouttresing.printBill}"></phi:issue>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
-                                    <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}">
-                                        <phi:saleBill_prabodha bill="#{pharmacyReturnwithouttresing.printBill}"></phi:saleBill_prabodha>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
-
+                            <h:panelGroup id="gpBillPreviewPosPaper" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Return Without Tresing Bill is POS Paper', true)}">
                                 <div>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
-                                        <phi:saleBill_five_five bill="#{pharmacyReturnwithouttresing.printBill}"></phi:saleBill_five_five>
-                                    </h:panelGroup>
+                                    <phi:issue bill="#{pharmacyReturnwithouttresing.printBill}"></phi:issue>
                                 </div>
-
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
-                                        <phi:pharmacyReturnWithoutTresingA4 bill="#{pharmacyReturnwithouttresing.printBill}" duplicate="false"></phi:pharmacyReturnWithoutTresingA4>
-                                    </h:panelGroup>
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Return Without Tresing Bill is FiveFive Paper', false)}">
+                                <div>
+                                    <phi:saleBill_five_five bill="#{pharmacyReturnwithouttresing.printBill}"></phi:saleBill_five_five>
                                 </div>
-
                             </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewA4" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Return Without Tresing Bill is A4 Paper', true)}">
+                                <div>
+                                    <phi:pharmacyReturnWithoutTresingA4 bill="#{pharmacyReturnwithouttresing.printBill}" duplicate="false"></phi:pharmacyReturnWithoutTresingA4>
+                                </div>
+                            </h:panelGroup>
+<!--                    <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                        <div >
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                <phi:issue bill="#{pharmacyReturnwithouttresing.printBill}"></phi:issue>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+
+                        <div >
+                            <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}">
+                                <phi:saleBill_prabodha bill="#{pharmacyReturnwithouttresing.printBill}"></phi:saleBill_prabodha>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+
+                        <div>
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                <phi:saleBill_five_five bill="#{pharmacyReturnwithouttresing.printBill}"></phi:saleBill_five_five>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType ne 'A4Paper'}">
+
+                        <div >
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                <phi:pharmacyReturnWithoutTresingA4 bill="#{pharmacyReturnwithouttresing.printBill}" duplicate="false"></phi:pharmacyReturnWithoutTresingA4>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>-->
                         </h:panelGroup>
                     </p:panel>
                 </h:form>
