@@ -10,363 +10,331 @@
 <h:body>
     <ui:composition template="/reports/index.xhtml">
         <ui:define name="subcontent">
-
             <h:form >
-<style>
-    /* CSS for width:100% inputs */
-    .ui-datepicker, 
-    .ui-inputfield,
-    .ui-datepicker-input,
-    .ui-calendar .ui-inputfield,
-    .p-datepicker .p-inputtext {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Wrapper fix for input */
-    .p-datepicker .p-inputtext {
-        width: 100% !important;
-    }
-
-    /* Popup panel size */
-    .ui-datepicker,
-    .ui-timepicker-div,
-    .ui-timepicker,
-    .p-datepicker-panel,
-    .p-timepicker-panel {
-        width: auto !important;
-        max-width: 450px !important;
-    }
-</style>
-
 
                 <p:panel header="IP Unsettled Invoices">
 
                     <p:panelGrid columns="4" class="w-100" style="align-items:center">
 
-<!-- Admission From Date -->
-<h:panelGroup>
-    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-    <p:outputLabel value="Admission From Date " class="m-3" />
-</h:panelGroup>
-<p:datePicker value="#{reportController.fromDate}"
-              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-              showTime="true"
-              hourFormat="24"
-              class="w-100" />
+                            <!-- Admission From Date -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission From Date " class="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control" />
+                                                           
 
-<!-- Admission To Date -->
-<h:panelGroup>
-    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-    <p:outputLabel value="Admission To Date " class="m-3" />
-</h:panelGroup>
-<p:datePicker value="#{reportController.toDate}"
-              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-              showTime="true"
-              hourFormat="24"
-              class="w-100" />
+                            <!-- Admission To Date -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admission To Date " class="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control" />
 
-<!-- Discharge From Date -->
-<h:panelGroup>
-    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-    <p:outputLabel value="Discharge From Date " class="m-3" />
-</h:panelGroup>
-<p:datePicker value="#{reportController.fromDate}"
-              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-              showTime="true"
-              hourFormat="24"
-              class="w-100" />
+                            <!-- Discharge From Date -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge From Date " class="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control" />
 
-<!-- Discharge To Date -->
-<h:panelGroup>
-    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-    <p:outputLabel value="Discharge To Date " class="m-3" />
-</h:panelGroup>
-<p:datePicker value="#{reportController.toDate}"
-              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-              showTime="true"
-              hourFormat="24"
-              class="w-100" />
+                            <!-- Discharge To Date -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge To Date " class="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control" />
 
-<!-- Invoice Approved From Date -->
-<h:panelGroup>
-    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-    <p:outputLabel value="Invoice Approved From Date" class="m-3" />
-</h:panelGroup>
-<p:datePicker value="#{reportController.fromDate}"
-              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-              showTime="true"
-              hourFormat="24"
-              class="w-100" />
+                            <!-- Invoice Approved From Date -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Approved From Date" class="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control" />
 
-<!-- Invoice Approved To Date -->
-<h:panelGroup>
-    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-    <p:outputLabel value="Invoice Approved To Date" class="m-3" />
-</h:panelGroup>
+                            <!-- Invoice Approved To Date -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Approved To Date" class="m-3" />
+                            </h:panelGroup>
 
-<p:datePicker value="#{reportController.toDate}"
-              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-              showTime="true"
-              hourFormat="24"
-              class="w-100"/>
-
-                        
-                        <!-- Branch -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-building mr-2"/>
-                            <p:outputLabel value="Branch" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="" var="d" itemLabel="" itemValue=""/>
-                        </p:selectOneMenu>
-
-                        <!-- Department -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-building mr-2"/>
-                            <p:outputLabel value="Department" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="#{reportController.fromDepartment}" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                           var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                        </p:selectOneMenu>
-                        
-                        <!-- Consultant -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-user-md mr-2"/>
-                            <p:outputLabel value="Cunsultant" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="" var="d" itemLabel="" itemValue=""/>
-                        </p:selectOneMenu>
-
-                        <!-- Service Centre -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-building mr-2"/>
-                            <p:outputLabel value="Service Center" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="#{reportController.fromDepartment}" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                           var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                        </p:selectOneMenu>                        
-                        
-
-                        <!-- Sponsor -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-user mr-2"/>
-                            <p:outputLabel value="Sponsor Name" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="" var="d" itemLabel="" itemValue=""/>
-                        </p:selectOneMenu>
-
-                        <!-- Discharge Type -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-medkit mr-2"/>
-                            <p:outputLabel value="Discharge Type" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="#{reportController.fromDepartment}" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                           var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                        </p:selectOneMenu>
-                        
-                        <!-- Patient Category -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-user mr-2"/>
-                            <p:outputLabel value="Patient Category" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="" var="d" itemLabel="" itemValue=""/>
-                        </p:selectOneMenu>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control"/>
 
 
+                            <!-- Branch -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Branch" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Branches"/>
 
-                        <!-- Admission Types -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-user mr-2"/>
-                            <p:outputLabel value="Admission Types" class="m-3"/>
-                        </h:panelGroup>
-                     <p:selectOneMenu value="" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="" var="i" itemLabel="" itemValue=""/>
-                        </p:selectOneMenu>
-                        
-                         <!-- Payment Mode -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-credit-card mr-2"/>
-                            <p:outputLabel value="Payment Mode" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="" var="i" itemLabel="" itemValue=""/>
-                        </p:selectOneMenu>
+                            </p:selectOneMenu>
 
-                        <!-- Room Category -->
-                        <h:panelGroup>
-                            <h:outputText styleClass="fa fa-bed mr-2"/>
-                            <p:outputLabel value="Room Category" class="m-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu value="" filter="true" class="w-100">
-                            <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="" var="i" itemLabel="" itemValue=""/>
-                        </p:selectOneMenu>
+                            <!-- Department -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Departments"/>
 
-                    </p:panelGrid>
+                            </p:selectOneMenu>
 
-                   
-<!-- Buttons -->
-<div class="d-flex align-items-center mt-3 mb-5">
+                            <!-- Consultant -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-user-md mr-2"/>
+                                <p:outputLabel value="Consultant" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Consultant"/>
 
-    <p:commandButton class="ui-button-warning mx-1"
-                     icon="fas fa-cogs"
-                     ajax="false"
-                     value="Process" />
+                            </p:selectOneMenu>
 
-    <p:commandButton class="ui-button-success mx-1"
-                     icon="fas fa-file-excel"
-                     ajax="false"
-                     value="Download Excel" />
+                            <!-- Service Centre -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Service Center" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Service Ctenters"/>
 
-    <p:commandButton class="ui-button-primary mx-1"
-                     icon="fas fa-print"
-                     ajax="false"
-                     value="Print" />
+                            </p:selectOneMenu>                        
 
-    <p:commandButton class="ui-button-danger mx-1"
-                     icon="fas fa-file-pdf"
-                     ajax="false"
-                     value="PDF" />
 
-</div>
+                            <!-- Sponsor -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-user mr-2"/>
+                                <p:outputLabel value="Sponsor Name" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Sponsors"/>
+
+                            </p:selectOneMenu>
+
+                            <!-- Discharge Type -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-medkit mr-2"/>
+                                <p:outputLabel value="Discharge Type" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All"/>
+
+                            </p:selectOneMenu>
+
+                            <!-- Patient Category -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-user mr-2"/>
+                                <p:outputLabel value="Patient Category" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Categories"/>
+
+                            </p:selectOneMenu>
 
 
 
+                            <!-- Admission Types -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-user mr-2"/>
+                                <p:outputLabel value="Admission Types" class="m-3"/>
+                            </h:panelGroup>
+                         <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Admission Types"/>
+
+                            </p:selectOneMenu>
+
+                             <!-- Payment Mode -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-credit-card mr-2"/>
+                                <p:outputLabel value="Payment Mode" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All"/>
+
+                            </p:selectOneMenu>
+
+                            <!-- Room Category -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-bed mr-2"/>
+                                <p:outputLabel value="Room Category" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All"/>
+
+                            </p:selectOneMenu>
+
+                        </p:panelGrid>
 
 
-<p:panel header="Discharged Patients Without Active Final Invoice">
-    
-  <h:outputText value="Criteria:" style="font-weight: bold; font-size: 16px;" />
-    <!-- Summary Table -->
-    <div class ="mt-3 mb-5 ">
+                        <!-- Buttons -->
+                        <div class="d-flex align-items-center mt-3 mb-5">
 
-<!-- Summary Table -->
+                            <p:commandButton class="ui-button-warning mx-1"
+                                             icon="fas fa-cogs"
+                                             ajax="false"
+                                             value="Process" />
 
-    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000000;">
-        <tr>
-            <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000; width: 30%;">
-                Branch
-            </td>
-            <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
-                value
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000; width: 30%;">
-                From Date
-            </td>
-            <td style="padding: 8px; border: 1px solid #000000; width: 70%;" >
-               value
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000; width: 30%;">
-                To Date
-            </td>
-            <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
-               value
-            </td>
-        </tr>
-    </table>
+                            <p:commandButton class="ui-button-success mx-1"
+                                             icon="fas fa-file-excel"
+                                             ajax="false"
+                                             value="Download Excel" />
 
-        
-    </div>
+                            <p:commandButton class="ui-button-primary mx-1"
+                                             icon="fas fa-print"
+                                             ajax="false"
+                                             value="Print" />
 
-    <h:outputText value="Report Data:" style="font-weight: bold; font-size: 16px;" />
-   <!-- Results Table -->
-    <div class ="mt-3 mb-5 ">
-<p:dataTable id="tbl" value=""  rows="10" class="w-100" paginator="true" paginatorPosition="bottom">
-    
-            
-    <p:column headerText="SI No">
-        <h:outputText value="" />
-    </p:column>
+                            <p:commandButton class="ui-button-danger mx-1"
+                                             icon="fas fa-file-pdf"
+                                             ajax="false"
+                                             value="PDF" />
 
-    <p:column headerText="MRN">
-        <h:outputText value="" />
-    </p:column>
+                        </div>
 
-    <p:column headerText="Patient Name">
-        <h:outputText value="" />
-    </p:column>
+                        <p:panel header="Discharged Patients Without Active Final Invoice">
 
-    <p:column headerText="Mobile Number">
-        <h:outputText value="" />
-    </p:column>
+                          <h:outputText value="Criteria:" style="font-weight: bold; font-size: 16px;" />
+                            <!-- Summary Table -->
+                            <div class ="mt-3 mb-5 ">
 
-    <p:column headerText="Age">
-        <h:outputText value="" />
-    </p:column>
+                        <!-- Summary Table -->
 
-    <p:column headerText="Location">
-        <h:outputText value="" />
-    </p:column>
-
-    <p:column headerText="Discharged On">
-        <h:outputText value="" />
-    </p:column>
-
-    <p:column headerText="Invoice Status">
-        <h:outputText value="" />
-    </p:column>
-
-    <p:column headerText="Total Amount">
-        <h:outputText value="" />
-    </p:column>
-
-    <p:column headerText="Collected Amount">
-        <h:outputText value="" />
-    </p:column>
-
-    <p:column headerText="Amount to be Paid">
-        <h:outputText value="" />
-    </p:column>
-
-    <p:column headerText="Discharged By">
-        <h:outputText value="" />
-    </p:column>
-
-        <!-- FOOTER  -->
-        <f:facet name="footer">
-            <div class="d-flex justify-content-between w-100">
-
-                <div>
-                    <bold>Generated By: </bold>
-                    <h:outputText value="" />
-                </div>
-
-                <div>
-                    <bold>Generated On: </bold>
-                    <h:outputText value="" />
-                </div>
-
-            </div>
-        </f:facet>
-</p:dataTable>
-    </div>
-</p:panel>
+                            <table style="width: 100%; border-collapse: collapse; border: 1px solid #000000;">
+                                <tr>
+                                    <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000; width: 30%;">
+                                        Branch
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
+                                       
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000; width: 30%;">
+                                        From Date
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #000000; width: 70%;" >
+                                      
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f8f9fa; font-weight: bold; padding: 8px; border: 1px solid #000000; width: 30%;">
+                                        To Date
+                                    </td>
+                                    <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
+                                      
+                                    </td>
+                                </tr>
+                            </table>
 
 
+                            </div>
 
-                </p:panel>
+                            <h:outputText value="Report Data:" style="font-weight: bold; font-size: 16px;" />
+                           <!-- Results Table -->
+                            <div class ="mt-3 mb-5 ">
+                                <p:dataTable id="tbl" value=""  rows="10" class="w-100" paginator="true" paginatorPosition="bottom">
+
+
+                                    <p:column headerText="SI No">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="MRN">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Patient Name">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Mobile Number">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Age">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Location">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Discharged On">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Invoice Status">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Total Amount">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Collected Amount">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Amount to be Paid">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                    <p:column headerText="Discharged By">
+                                        <h:outputText value="" />
+                                    </p:column>
+
+                                        <!-- FOOTER  -->
+                                        <f:facet name="footer">
+                                            <div class="d-flex justify-content-between w-100">
+
+                                                <div>
+                                                    <bold>Generated By: </bold>
+                                                    <h:outputText value="" />
+                                                </div>
+
+                                                <div>
+                                                    <bold>Generated On: </bold>
+                                                    <h:outputText value="" />
+                                                </div>
+
+                                            </div>
+                                        </f:facet>
+                                </p:dataTable>
+                            </div>
+                        </p:panel>
+                    </p:panel>
             </h:form>
-
         </ui:define>
     </ui:composition>
 </h:body>
