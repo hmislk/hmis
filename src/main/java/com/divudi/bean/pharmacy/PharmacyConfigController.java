@@ -143,6 +143,16 @@ public class PharmacyConfigController implements Serializable {
     private boolean returnWithoutTresingFiveFivePaper;
     private boolean returnWithoutTresingA4Paper;
 
+    // Credit Settlement Cancellation Settings
+    private boolean creditSettlementCancellationA4;
+    private boolean creditSettlementCancellationPos;
+    private boolean creditSettlementCancellationFiveFive;
+    private boolean creditSettlementCancellationCustom1;
+    private boolean creditSettlementCancellationCustom2;
+    private boolean creditSettlementCancellationCustom3;
+    private boolean creditSettlementCancellationPosHeader;
+    private boolean creditSettlementCancellationPosCustom1;
+
     public PharmacyConfigController() {
     }
     
@@ -269,6 +279,16 @@ public class PharmacyConfigController implements Serializable {
         returnWithoutTresingFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is FiveFive Paper", false);
         returnWithoutTresingA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is A4 Paper", true);
 
+        // Credit Settlement Cancellation Settings
+        creditSettlementCancellationA4 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is A4 Paper", true);
+        creditSettlementCancellationPos = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Paper", false);
+        creditSettlementCancellationFiveFive = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is FiveFive Paper", true);
+        creditSettlementCancellationCustom1 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 1", false);
+        creditSettlementCancellationCustom2 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 2", false);
+        creditSettlementCancellationCustom3 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", false);
+        creditSettlementCancellationPosHeader = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", false);
+        creditSettlementCancellationPosCustom1 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", false);
+
     }
 
     /**
@@ -380,6 +400,16 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Header Paper", retailSaleReturnPosHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper", retailSaleReturnFiveFiveCustom3);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper", retailSaleReturnPosPaperCustom1);
+
+            // Credit Settlement Cancellation Settings
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is A4 Paper", creditSettlementCancellationA4);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Paper", creditSettlementCancellationPos);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is FiveFive Paper", creditSettlementCancellationFiveFive);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 1", creditSettlementCancellationCustom1);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 2", creditSettlementCancellationCustom2);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", creditSettlementCancellationCustom3);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", creditSettlementCancellationPosHeader);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", creditSettlementCancellationPosCustom1);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -579,6 +609,31 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Return Without Tresing configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Credit Settlement Cancellation configuration changes specifically
+     */
+    public void saveCreditSettlementCancellationConfig() {
+        try {
+            // Credit Settlement Cancellation Settings
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is A4 Paper", creditSettlementCancellationA4);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Paper", creditSettlementCancellationPos);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is FiveFive Paper", creditSettlementCancellationFiveFive);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 1", creditSettlementCancellationCustom1);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 2", creditSettlementCancellationCustom2);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", creditSettlementCancellationCustom3);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", creditSettlementCancellationPosHeader);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", creditSettlementCancellationPosCustom1);
+
+            JsfUtil.addSuccessMessage("Credit Settlement Cancellation configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Credit Settlement Cancellation configuration: " + e.getMessage());
         }
     }
 
@@ -1214,6 +1269,71 @@ public class PharmacyConfigController implements Serializable {
 
     public void setReturnWithoutTresingA4Paper(boolean returnWithoutTresingA4Paper) {
         this.returnWithoutTresingA4Paper = returnWithoutTresingA4Paper;
+    }
+
+    // Credit Settlement Cancellation Getters and Setters
+    public boolean isCreditSettlementCancellationA4() {
+        return creditSettlementCancellationA4;
+    }
+
+    public void setCreditSettlementCancellationA4(boolean creditSettlementCancellationA4) {
+        this.creditSettlementCancellationA4 = creditSettlementCancellationA4;
+    }
+
+    public boolean isCreditSettlementCancellationPos() {
+        return creditSettlementCancellationPos;
+    }
+
+    public void setCreditSettlementCancellationPos(boolean creditSettlementCancellationPos) {
+        this.creditSettlementCancellationPos = creditSettlementCancellationPos;
+    }
+
+    public boolean isCreditSettlementCancellationCustom1() {
+        return creditSettlementCancellationCustom1;
+    }
+
+    public void setCreditSettlementCancellationCustom1(boolean creditSettlementCancellationCustom1) {
+        this.creditSettlementCancellationCustom1 = creditSettlementCancellationCustom1;
+    }
+
+    public boolean isCreditSettlementCancellationCustom2() {
+        return creditSettlementCancellationCustom2;
+    }
+
+    public void setCreditSettlementCancellationCustom2(boolean creditSettlementCancellationCustom2) {
+        this.creditSettlementCancellationCustom2 = creditSettlementCancellationCustom2;
+    }
+
+    public boolean isCreditSettlementCancellationPosHeader() {
+        return creditSettlementCancellationPosHeader;
+    }
+
+    public void setCreditSettlementCancellationPosHeader(boolean creditSettlementCancellationPosHeader) {
+        this.creditSettlementCancellationPosHeader = creditSettlementCancellationPosHeader;
+    }
+
+    public boolean isCreditSettlementCancellationFiveFive() {
+        return creditSettlementCancellationFiveFive;
+    }
+
+    public void setCreditSettlementCancellationFiveFive(boolean creditSettlementCancellationFiveFive) {
+        this.creditSettlementCancellationFiveFive = creditSettlementCancellationFiveFive;
+    }
+
+    public boolean isCreditSettlementCancellationCustom3() {
+        return creditSettlementCancellationCustom3;
+    }
+
+    public void setCreditSettlementCancellationCustom3(boolean creditSettlementCancellationCustom3) {
+        this.creditSettlementCancellationCustom3 = creditSettlementCancellationCustom3;
+    }
+
+    public boolean isCreditSettlementCancellationPosCustom1() {
+        return creditSettlementCancellationPosCustom1;
+    }
+
+    public void setCreditSettlementCancellationPosCustom1(boolean creditSettlementCancellationPosCustom1) {
+        this.creditSettlementCancellationPosCustom1 = creditSettlementCancellationPosCustom1;
     }
 
 }

@@ -85,6 +85,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private ReportViewType reportViewType;
     private List<ReportViewType> reportViewTypes;
     private Category category;
+    private DepartmentType departmentType;
     List<Stock> stocks;
     List<StockDTO> stockDtos;
     double stockSaleValue;
@@ -274,6 +275,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             } else if (institution != null) {
                 jpql.append(" and s.department.institution=:ins");
                 m.put("ins", institution);
+            }
+
+            if (departmentType != null) {
+                jpql.append(" and s.itemBatch.item.departmentType=:dt");
+                m.put("dt", departmentType);
             }
 
             stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
@@ -1544,6 +1550,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     @Override
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
     }
 
     @Override

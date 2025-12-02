@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -17,12 +17,13 @@
                                     <h:outputText value="Cancellation" class="mt-2"/>
                                     <div class="d-flex gap-4">
                                         <p:inputText value="#{creditCompanyBillSearch.comment}" style="width: 500px;" placeholder="Enter a comment"/>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
                                             value="Cancel"
                                             icon="fa fa-cancel"
                                             class="ui-button-danger"
                                             style="width: 150px;"
+                                            disabled="#{creditCompanyBillSearch.bill.cancelled eq true or creditCompanyBillSearch.bill.refunded eq true or creditCompanyBillSearch.billACancellationBill}"
                                             action="#{creditCompanyBillSearch.cancelBill()}" >
                                         </p:commandButton>
                                     </div>
@@ -63,6 +64,24 @@
                                 </div>
                             </div>
 
+                            <!-- Status Warning Messages -->
+                            <div class="row mt-2" style="margin-bottom: 15px;">
+                                <div class="col-12">
+                                    <p:outputLabel class="w-100 text-center bg-danger text-white p-2"
+                                                   value="This Bill is Already Cancelled - Cannot Cancel Again"
+                                                   rendered="#{creditCompanyBillSearch.bill.cancelled eq true}"
+                                                   style="display: block; border-radius: 4px;" />
+                                    <p:outputLabel class="w-100 text-center bg-danger text-white p-2"
+                                                   value="This Bill is Already Refunded - Cannot Cancel"
+                                                   rendered="#{creditCompanyBillSearch.bill.refunded eq true}"
+                                                   style="display: block; border-radius: 4px;" />
+                                    <p:outputLabel class="w-100 text-center bg-warning text-dark p-2"
+                                                   value="This is a Cancellation Bill - Cannot be Cancelled Again"
+                                                   rendered="#{creditCompanyBillSearch.billACancellationBill}"
+                                                   style="display: block; border-radius: 4px;" />
+                                </div>
+                            </div>
+
                             <p:panel header="Bill Item Detail" class="mt-3">
                                 <p:dataTable rowIndexVar="rowIndex" value="#{creditCompanyBillSearch.billItems}" var="b" >
                                     <p:column>
@@ -99,11 +118,219 @@
 
 
                     <h:panelGroup rendered="#{creditCompanyBillSearch.printPreview}" >
-                        <bi:CreditReceiveBill controller="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="false"/> 
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputText value="Credit Settlement Cancellation Receipt" />
+                                    </div>
+                                    <div>
+                                        <p:commandButton
+                                            value="Print"
+                                            icon="fas fa-print"
+                                            class="ui-button-info mx-2"
+                                            ajax="false">
+                                            <p:printer target="gpCreditCancellationPreview" />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            class="ui-button-secondary mx-1"
+                                            type="button"
+                                            onclick="PF('creditSettlementCancellationConfigDialog').show();" />
+                                    </div>
+                                </div>
+                            </f:facet>
+                            <h:panelGroup id="gpCreditCancellationPreview">
+                                <!-- A4 Paper Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is A4 Paper', true)}">
+                                    <bi:credit_settlement_cancellation_print_a4
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- POS Paper Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is POS Paper', false)}">
+                                    <bi:credit_settlement_cancellation_print_pos
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Five Five Paper Format (Default - existing component) -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is FiveFive Paper', true)}">
+                                    <bi:credit_settlement_cancellation_print
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Custom Format 1 -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is Custom 1', false)}">
+                                    <bi:credit_settlement_cancellation_print_custom1
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Custom Format 2 -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is Custom 2', false)}">
+                                    <bi:credit_settlement_cancellation_print_custom2
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- Custom Format 3 -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is Custom 3', false)}">
+                                    <bi:credit_settlement_cancellation_print_custom3
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- POS with Header Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is POS Header Paper', false)}">
+                                    <bi:credit_settlement_cancellation_print_pos_header
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+
+                                <!-- POS Custom 1 Format -->
+                                <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Credit Settlement Cancellation Receipt is POS Custom 1', false)}">
+                                    <bi:credit_settlement_cancellation_print_pos_custom1
+                                        controller="#{creditCompanyBillSearch}"
+                                        originalBill="#{creditCompanyBillSearch.bill}"
+                                        cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                        duplicate="false"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </p:panel>
                     </h:panelGroup>
 
 
-                </h:form>                
+                </h:form>
+
+                <!-- Credit Settlement Cancellation Configuration Dialog -->
+                <p:dialog id="creditSettlementCancellationConfigDialog"
+                          header="Credit Settlement Cancellation Printer Configuration"
+                          widgetVar="creditSettlementCancellationConfigDialog"
+                          modal="true"
+                          width="600"
+                          height="500"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="creditSettlementCancellationConfigForm" />
+
+                    <h:form id="creditSettlementCancellationConfigForm">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-file-alt"></i> Credit Settlement Cancellation Paper Settings</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationA4"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationA4}" />
+                                            <p:outputLabel for="creditSettlementCancellationA4" value="A4 Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use standard A4 paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationPos"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationPos}" />
+                                            <p:outputLabel for="creditSettlementCancellationPos" value="POS Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use POS thermal printer paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationFiveFive"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationFiveFive}" />
+                                            <p:outputLabel for="creditSettlementCancellationFiveFive" value="Five Five Paper Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use 5.5 inch paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationCustom1"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationCustom1}" />
+                                            <p:outputLabel for="creditSettlementCancellationCustom1" value="Custom Format 1" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use first custom paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationCustom2"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationCustom2}" />
+                                            <p:outputLabel for="creditSettlementCancellationCustom2" value="Custom Format 2" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use second custom paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationCustom3"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationCustom3}" />
+                                            <p:outputLabel for="creditSettlementCancellationCustom3" value="Custom Format 3" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use third custom paper format for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationPosHeader"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationPosHeader}" />
+                                            <p:outputLabel for="creditSettlementCancellationPosHeader" value="POS with Header Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use POS paper with header space for credit settlement cancellation receipts</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="creditSettlementCancellationPosCustom1"
+                                                value="#{pharmacyConfigController.creditSettlementCancellationPosCustom1}" />
+                                            <p:outputLabel for="creditSettlementCancellationPosCustom1" value="POS Custom 1 Format" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Use POS custom format 1 for credit settlement cancellation receipts</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="creditSettlementCancellationConfigMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Apply &amp; Close"
+                                                    icon="fas fa-save"
+                                                    class="ui-button-success"
+                                                    ajax="false"
+                                                    action="#{pharmacyConfigController.saveCreditSettlementCancellationConfig}" />
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="fas fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('creditSettlementCancellationConfigDialog').hide(); return false;"
+                                                    type="button" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
             </ui:define>
         </ui:composition>
     </h:body>

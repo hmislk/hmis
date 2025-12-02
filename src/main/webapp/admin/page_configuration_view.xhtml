@@ -57,7 +57,14 @@
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} configurations">
 
                                 <p:column headerText="Configuration Key" style="width: 35%">
-                                    <h:outputText value="#{config.key}" styleClass="fw-bold"/>
+                                    <!-- Clean display for department-specific configs -->
+                                    <h:outputText value="#{config.key.replace(' for [Department Name]', '')} (per department)"
+                                                  styleClass="fw-bold"
+                                                  rendered="#{config.key.contains('[Department Name]')}"/>
+                                    <!-- Normal display for regular configs -->
+                                    <h:outputText value="#{config.key}"
+                                                  styleClass="fw-bold"
+                                                  rendered="#{!config.key.contains('[Department Name]')}"/>
                                 </p:column>
 
                                 <p:column headerText="Current Value" style="width: 15%; text-align: center;">
@@ -68,7 +75,18 @@
                                 </p:column>
 
                                 <p:column headerText="Scope" style="width: 15%; text-align: center;">
-                                    <h:outputText value="#{config.scope}"/>
+                                    <!-- Department-Specific scope display -->
+                                    <h:panelGroup styleClass="badge badge-warning px-2 py-1"
+                                                  rendered="#{config.key.contains('[Department Name]')}">
+                                        <i class="fas fa-building me-1"></i>
+                                        <h:outputText value="Department-Specific"/>
+                                    </h:panelGroup>
+                                    <!-- Regular scope display -->
+                                    <h:panelGroup styleClass="badge badge-primary px-2 py-1"
+                                                  rendered="#{!config.key.contains('[Department Name]')}">
+                                        <i class="fas fa-globe me-1"></i>
+                                        <h:outputText value="#{config.scope}"/>
+                                    </h:panelGroup>
                                 </p:column>
 
                                 <p:column headerText="Description" style="width: 35%">
@@ -82,8 +100,17 @@
                                     icon="fa fa-cog"
                                     action="#{pageAdminController.navigateToPageSpecificConfigManagement()}"
                                     ajax="false"
-                                    styleClass="ui-button-info"
-                                    title="Manage configuration options specific to this page"/>
+                                    styleClass="ui-button-info me-2"
+                                    title="Manage application-wide configuration options"/>
+
+                                <p:commandButton
+                                    value="Manage Department Configuration"
+                                    icon="fas fa-building"
+                                    action="#{pageAdminController.navigateToDepartmentConfigManagement()}"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    title="Manage department-specific configuration options"
+                                    rendered="#{pageAdminController.hasDepartmentConfigOptions()}"/>
                             </div>
                         </p:panel>
 
@@ -180,6 +207,24 @@
                         padding: 4px 12px;
                         border-radius: 12px;
                         font-size: 0.85em;
+                        font-weight: bold;
+                    }
+
+                    .badge-warning {
+                        background-color: #ffc107;
+                        color: #212529;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+
+                    .badge-primary {
+                        background-color: #007bff;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        font-size: 0.8em;
                         font-weight: bold;
                     }
 

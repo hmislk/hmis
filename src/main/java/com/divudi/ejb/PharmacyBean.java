@@ -12,6 +12,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBatchQty;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
@@ -324,6 +325,9 @@ public class PharmacyBean {
             newBillItem.setPharmaceuticalBillItem(ph);
             getBillItemFacade().edit(newBillItem);
 
+            // Create finance details for the cancellation bill item
+            createFinanceDetailsForCancellationBillItem(newBillItem, bItem);
+
             double qty = 0;
             if (bItem.getQty() != null) {
                 qty = Math.abs(bItem.getQty());
@@ -336,6 +340,190 @@ public class PharmacyBean {
 
         return billItems;
 
+    }
+
+    /**
+     * Creates BillItemFinanceDetails for a bill item in a cancellation/return context.
+     * This method copies financial details from the original bill item and inverts values
+     * to reflect the return of stock.
+     *
+     * @param newBillItem The newly created bill item for the cancellation bill
+     * @param originalBillItem The original bill item being cancelled/returned
+     */
+    private void createFinanceDetailsForCancellationBillItem(BillItem newBillItem, BillItem originalBillItem) {
+        if (newBillItem == null || originalBillItem == null) {
+            return;
+        }
+
+        // Get the original finance details if they exist
+        BillItemFinanceDetails originalFinanceDetails = originalBillItem.getBillItemFinanceDetails();
+
+        // Create new finance details for the cancellation bill item
+        BillItemFinanceDetails newFinanceDetails = new BillItemFinanceDetails();
+        newFinanceDetails.setBillItem(newBillItem);
+
+        // If original has finance details, copy and invert the values
+        if (originalFinanceDetails != null) {
+            // Copy and invert quantity values
+            if (originalFinanceDetails.getQuantity() != null) {
+                newFinanceDetails.setQuantity(originalFinanceDetails.getQuantity().negate());
+            }
+            if (originalFinanceDetails.getFreeQuantity() != null) {
+                newFinanceDetails.setFreeQuantity(originalFinanceDetails.getFreeQuantity().negate());
+            }
+            if (originalFinanceDetails.getTotalQuantity() != null) {
+                newFinanceDetails.setTotalQuantity(originalFinanceDetails.getTotalQuantity().negate());
+            }
+
+            // Copy rates (rates don't invert - they're unit prices)
+            newFinanceDetails.setLineGrossRate(originalFinanceDetails.getLineGrossRate());
+            newFinanceDetails.setBillGrossRate(originalFinanceDetails.getBillGrossRate());
+            newFinanceDetails.setGrossRate(originalFinanceDetails.getGrossRate());
+            newFinanceDetails.setLineNetRate(originalFinanceDetails.getLineNetRate());
+            newFinanceDetails.setBillNetRate(originalFinanceDetails.getBillNetRate());
+            newFinanceDetails.setNetRate(originalFinanceDetails.getNetRate());
+            newFinanceDetails.setCostRate(originalFinanceDetails.getCostRate());
+            newFinanceDetails.setPurchaseRate(originalFinanceDetails.getPurchaseRate());
+            newFinanceDetails.setRetailSaleRate(originalFinanceDetails.getRetailSaleRate());
+            newFinanceDetails.setWholesaleRate(originalFinanceDetails.getWholesaleRate());
+
+            // Copy and invert value amounts
+            if (originalFinanceDetails.getLineGrossTotal() != null) {
+                newFinanceDetails.setLineGrossTotal(originalFinanceDetails.getLineGrossTotal().negate());
+            }
+            if (originalFinanceDetails.getBillGrossTotal() != null) {
+                newFinanceDetails.setBillGrossTotal(originalFinanceDetails.getBillGrossTotal().negate());
+            }
+            if (originalFinanceDetails.getGrossTotal() != null) {
+                newFinanceDetails.setGrossTotal(originalFinanceDetails.getGrossTotal().negate());
+            }
+            if (originalFinanceDetails.getLineNetTotal() != null) {
+                newFinanceDetails.setLineNetTotal(originalFinanceDetails.getLineNetTotal().negate());
+            }
+            if (originalFinanceDetails.getBillNetTotal() != null) {
+                newFinanceDetails.setBillNetTotal(originalFinanceDetails.getBillNetTotal().negate());
+            }
+            if (originalFinanceDetails.getNetTotal() != null) {
+                newFinanceDetails.setNetTotal(originalFinanceDetails.getNetTotal().negate());
+            }
+
+            // Copy and invert stock valuation values
+            if (originalFinanceDetails.getValueAtCostRate() != null) {
+                newFinanceDetails.setValueAtCostRate(originalFinanceDetails.getValueAtCostRate().negate());
+            }
+            if (originalFinanceDetails.getValueAtPurchaseRate() != null) {
+                newFinanceDetails.setValueAtPurchaseRate(originalFinanceDetails.getValueAtPurchaseRate().negate());
+            }
+            if (originalFinanceDetails.getValueAtRetailRate() != null) {
+                newFinanceDetails.setValueAtRetailRate(originalFinanceDetails.getValueAtRetailRate().negate());
+            }
+            if (originalFinanceDetails.getValueAtWholesaleRate() != null) {
+                newFinanceDetails.setValueAtWholesaleRate(originalFinanceDetails.getValueAtWholesaleRate().negate());
+            }
+
+            // Copy units per pack (doesn't invert)
+            newFinanceDetails.setUnitsPerPack(originalFinanceDetails.getUnitsPerPack());
+        } else {
+            // Original doesn't have finance details - calculate from pharmaceutical bill item
+            PharmaceuticalBillItem pharmaItem = newBillItem.getPharmaceuticalBillItem();
+            if (pharmaItem != null) {
+                BigDecimal quantity = newBillItem.getQty() != null
+                    ? BigDecimal.valueOf(newBillItem.getQty())
+                    : BigDecimal.ZERO;
+
+                newFinanceDetails.setQuantity(quantity);
+                newFinanceDetails.setTotalQuantity(quantity);
+
+                // Calculate stock valuations based on pharmaceutical bill item rates
+                if (pharmaItem.getItemBatch() != null && pharmaItem.getItemBatch().getCostRate() != null && pharmaItem.getItemBatch().getCostRate() > 0) {
+                    BigDecimal costRate = BigDecimal.valueOf(pharmaItem.getItemBatch().getCostRate());
+                    newFinanceDetails.setCostRate(costRate);
+                    newFinanceDetails.setValueAtCostRate(quantity.multiply(costRate));
+                } else if (pharmaItem.getPurchaseRate() > 0) {
+                    BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                    newFinanceDetails.setCostRate(purchaseRate);
+                    newFinanceDetails.setValueAtCostRate(quantity.multiply(purchaseRate));
+                }
+
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                    newFinanceDetails.setPurchaseRate(purchaseRate);
+                    newFinanceDetails.setValueAtPurchaseRate(quantity.multiply(purchaseRate));
+                }
+
+                if (pharmaItem.getRetailRate() > 0) {
+                    BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+                    newFinanceDetails.setRetailSaleRate(retailRate);
+                    newFinanceDetails.setValueAtRetailRate(quantity.multiply(retailRate));
+                }
+
+                double wholesaleRate = pharmaItem.getWholesaleRate() > 0
+                        ? pharmaItem.getWholesaleRate()
+                        : (pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
+
+                if (wholesaleRate > 0) {
+                    BigDecimal wholesaleRateBd = BigDecimal.valueOf(wholesaleRate);
+                    newFinanceDetails.setWholesaleRate(wholesaleRateBd);
+                    newFinanceDetails.setValueAtWholesaleRate(quantity.multiply(wholesaleRateBd));
+                }
+            }
+        }
+
+        // Set the finance details on the bill item (will be cascaded on save)
+        newBillItem.setBillItemFinanceDetails(newFinanceDetails);
+    }
+
+    /**
+     * Creates and aggregates BillFinanceDetails for a cancellation pre-bill.
+     * This method creates bill-level financial summary by aggregating values from bill items.
+     *
+     * @param cancellationBill The cancellation pre-bill
+     */
+    private void createFinanceDetailsForCancellationBill(Bill cancellationBill) {
+        if (cancellationBill == null || cancellationBill.getBillItems() == null || cancellationBill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Create bill finance details
+        BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
+        billFinanceDetails.setBill(cancellationBill);
+
+        // Initialize aggregated values
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+
+        // Aggregate values from bill items
+        for (BillItem billItem : cancellationBill.getBillItems()) {
+            if (billItem == null || billItem.getBillItemFinanceDetails() == null) {
+                continue;
+            }
+
+            BillItemFinanceDetails itemFinance = billItem.getBillItemFinanceDetails();
+
+            if (itemFinance.getValueAtCostRate() != null) {
+                totalCostValue = totalCostValue.add(itemFinance.getValueAtCostRate());
+            }
+            if (itemFinance.getValueAtPurchaseRate() != null) {
+                totalPurchaseValue = totalPurchaseValue.add(itemFinance.getValueAtPurchaseRate());
+            }
+            if (itemFinance.getValueAtRetailRate() != null) {
+                totalRetailSaleValue = totalRetailSaleValue.add(itemFinance.getValueAtRetailRate());
+            }
+            if (itemFinance.getValueAtWholesaleRate() != null) {
+                totalWholesaleValue = totalWholesaleValue.add(itemFinance.getValueAtWholesaleRate());
+            }
+        }
+
+        // Set aggregated values
+        billFinanceDetails.setTotalCostValue(totalCostValue);
+        billFinanceDetails.setTotalPurchaseValue(totalPurchaseValue);
+        billFinanceDetails.setTotalRetailSaleValue(totalRetailSaleValue);
+        billFinanceDetails.setTotalWholesaleValue(totalWholesaleValue);
+
+        // Set the finance details on the bill (will be cascaded on save)
+        cancellationBill.setBillFinanceDetails(billFinanceDetails);
     }
 
     private List<BillItem> createBillItemsForPharmacyRetailSaleCancellationPreBillWithStockReturn(Bill originalBill, Bill cancellationPreBill, WebUser user, Department department) {
@@ -367,6 +555,9 @@ public class PharmacyBean {
 
             getBillItemFacade().create(newlyCreatedBillItemForCancellationPrebill);
 
+            // Create finance details for the cancellation bill item
+            createFinanceDetailsForCancellationBillItem(newlyCreatedBillItemForCancellationPrebill, existingBillItemFromOriginalBill);
+
             double qty = 0;
             if (existingBillItemFromOriginalBill.getQty() != null) {
                 qty = Math.abs(existingBillItemFromOriginalBill.getQty());
@@ -393,6 +584,10 @@ public class PharmacyBean {
         getBillFacade().edit(bill);
 
         preBill.setBillItems(list);
+
+        // Create bill-level finance details by aggregating from bill items
+        createFinanceDetailsForCancellationBill(preBill);
+
         getBillFacade().edit(preBill);
 
         return preBill;
@@ -424,6 +619,10 @@ public class PharmacyBean {
         getBillFacade().edit(originalBill);
 
         newCancellationPreBillCreated.setBillItems(listOfNewlyCreatedBillItemsForPharmacyRetailSaleCancellationPreBill);
+
+        // Create bill-level finance details by aggregating from bill items
+        createFinanceDetailsForCancellationBill(newCancellationPreBillCreated);
+
         getBillFacade().edit(newCancellationPreBillCreated);
 
         return newCancellationPreBillCreated;
@@ -440,6 +639,10 @@ public class PharmacyBean {
         getBillFacade().edit(bill);
 
         preBill.setBillItems(list);
+
+        // Create bill-level finance details by aggregating from bill items
+        createFinanceDetailsForCancellationBill(preBill);
+
         getBillFacade().edit(preBill);
 
         return preBill;
@@ -1318,6 +1521,7 @@ public class PharmacyBean {
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
+
 
     public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
         if (billItem == null) {

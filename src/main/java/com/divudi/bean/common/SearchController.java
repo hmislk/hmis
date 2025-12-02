@@ -264,6 +264,8 @@ public class SearchController implements Serializable {
     private double allCashierSummaryExcludedTotal;
     private List<PaymentMethod> allCashierCollectionIncludedMethods = new ArrayList<>();
     private List<PaymentMethod> allCashierCollectionExcludedMethods = new ArrayList<>();
+    private List<PaymentMethod> nonCreditPaymentMethods;
+    private List<PaymentMethod> creditPaymentMethods;
     private List<Bill> bills;
     private List<Bill> filteredBills;
     // DTO list for all bill list report optimization
@@ -2313,6 +2315,21 @@ public class SearchController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public List<PaymentMethod> getNonCreditPaymentMethods() {
+        if (nonCreditPaymentMethods == null) {
+            nonCreditPaymentMethods = PaymentMethod.getNonCreditPaymentMethods();
+        }
+        return nonCreditPaymentMethods;
+    }
+    
+    
+     public List<PaymentMethod> getCreditPaymentMethods() {
+        if (creditPaymentMethods == null) {
+            creditPaymentMethods = PaymentMethod.getCreditPaymentMethods();
+        }
+        return creditPaymentMethods;
     }
 
     public List<PaymentMethod> getAllCashierCollectionIncludedMethods() {
@@ -16231,8 +16248,34 @@ public class SearchController implements Serializable {
             collectionForTheDay += getSafeTotal(opdServiceCollection);
 
             // Generate pharmacy collection and add to the main bundle
-            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
+            List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
+
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Retail Sale
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS); // Retail Sale
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK); // Retail Sale
+
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED); // Retail Sale Cancellations
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED); // Retail Sale Cancellations
+
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
+
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Return Item Payments
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Return Items and Payments
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Retail Sale Refund
+
+            pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Sale Without Stock Refund
+
+            List<PaymentMethod> pharmacyPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+            ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollectionWithPaymentBreakdown(pharmacyBillTypes, pharmacyPaymentMethods);
+            pharmacyCollection.setBundleType("pharmacyCollection");
+            pharmacyCollection.setName("Pharmacy Sale");
+            System.out.println("pharmacyCollection = " + pharmacyCollection);
+            System.out.println("pharmacyCollection.getName() = " + pharmacyCollection.getName());
+            System.out.println("pharmacyCollection.getBundleType() = " + pharmacyCollection.getBundleType());
+            System.out.println("pharmacyCollection.getTotal() = " + pharmacyCollection.getTotal());
+            System.out.println("pharmacyCollection.getReportTemplateRows().size() = " + pharmacyCollection.getReportTemplateRows().size());
             bundle.getBundles().add(pharmacyCollection);
+            System.out.println("Added pharmacy collection to main bundle. Total bundles: " + bundle.getBundles().size());
             collectionForTheDay += getSafeTotal(pharmacyCollection);
 
             // Generate collecting centre collection and add to the main bundle
@@ -16240,12 +16283,11 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(ccCollection);
             collectionForTheDay += getSafeTotal(ccCollection);
 
-            // COMMENTED OUT: Duplicate processing of OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
-            // This section was causing duplicate counting - now handled in unified Outpatient Credit Settling section
             // Generate OPD Credit Company Payment Collection and add to the main bundle
-//            ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
-//            bundle.getBundles().add(opdCreditCompanyCollection);
-//            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
+            ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
+            bundle.getBundles().add(opdCreditCompanyCollection);
+            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
+
             // Generate Inward Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
             bundle.getBundles().add(inwardCreditCompanyCollection);
@@ -16279,15 +16321,14 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(pettyCashPayments);
             netCashCollection -= Math.abs(getSafeTotal(pettyCashPayments));
 
-            ReportTemplateRowBundle creditBills;
-            if (isWithProfessionalFee()) {
-                creditBills = generateCreditBills();
-            } else {
-                creditBills = generateCreditBills();
-            }
-            bundle.getBundles().add(creditBills);
+//            ReportTemplateRowBundle creditBills;
+//            if (isWithProfessionalFee()) {
+//                creditBills = generateCreditBills();
+//            } else {
+//                creditBills = generateCreditBills();
+//            }
+//            bundle.getBundles().add(creditBills);
 //        netCashCollection -= Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
-
             if (isWithProfessionalFee()) {
                 // Generate OPD professional payments and add to the main bundle
                 ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
@@ -16311,22 +16352,27 @@ public class SearchController implements Serializable {
             netCashCollection -= Math.abs(getSafeTotal(cardPayments));
 
             ReportTemplateRowBundle staffPayments = generateStaffPayments();
+            staffPayments.calculateTotalByPayments();
             bundle.getBundles().add(staffPayments);
             netCashCollection -= Math.abs(getSafeTotal(staffPayments));
 
             ReportTemplateRowBundle voucherPayments = generateVoucherPayments();
+            voucherPayments.calculateTotalByPayments();
             bundle.getBundles().add(voucherPayments);
             netCashCollection -= Math.abs(getSafeTotal(voucherPayments));
 
             ReportTemplateRowBundle chequePayments = generateChequePayments();
+            chequePayments.calculateTotalByPayments();
             bundle.getBundles().add(chequePayments);
             netCashCollection -= Math.abs(getSafeTotal(chequePayments));
 
             ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
+            ewalletPayments.calculateTotalByPayments();
             bundle.getBundles().add(ewalletPayments);
             netCashCollection -= Math.abs(getSafeTotal(ewalletPayments));
 
             ReportTemplateRowBundle slipPayments = generateSlipPayments();
+            slipPayments.calculateTotalByPayments();
             bundle.getBundles().add(slipPayments);
             netCashCollection -= Math.abs(getSafeTotal(slipPayments));
 
@@ -16341,6 +16387,32 @@ public class SearchController implements Serializable {
             opdServiceCollectionCredit = generateCreditOpdServiceCollection();
             bundle.getBundles().add(opdServiceCollectionCredit);
             netCollectionPlusCredits = netCashCollection + Math.abs(getSafeTotal(opdServiceCollectionCredit)); // NOT Deducted from Totals
+
+            ReportTemplateRowBundle pharmacyCreditBillList;
+            pharmacyCreditBillList = generatePharmacyCreditBillList();
+            bundle.getBundles().add(pharmacyCreditBillList);
+            netCollectionPlusCredits += Math.abs(getSafeTotal(pharmacyCreditBillList)); // NOT Deducted from Totals
+            
+            //TODO : Add Pharmacy Credit Cancellations
+            
+            //TODO: Add Channelling Collections
+            
+            List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+            ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, getCreditPaymentMethods());
+            pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
+            pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
+            bundle.getBundles().add(pharmacyCreditRefundBundle);
+            netCollectionPlusCredits += getSafeTotal(pharmacyCreditRefundBundle);
+            
+            
+            
+            
+
+
 
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundlePlusCredits = new ReportTemplateRowBundle();
@@ -16995,6 +17067,11 @@ public class SearchController implements Serializable {
 
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+
+
             ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
             pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
             pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
@@ -18820,13 +18897,27 @@ public class SearchController implements Serializable {
     public ReportTemplateRowBundle generatePharmacyCollection() {
         ReportTemplateRowBundle pb;
         //TODO: Use a List of Bill Type Atomics instead of calling the findByServiceTypeAndPaymentCategory
-        List<BillTypeAtomic> pharmacyBillTypesAtomics = BillTypeAtomic.findByServiceTypeAndPaymentCategory(ServiceType.PHARMACY,
-                PaymentCategory.NON_CREDIT_COLLECTION);
-        List<PaymentMethod> ppms = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+        List<BillTypeAtomic> pharmacyBillTypesAtomics = new ArrayList<>();
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Retail Sale
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS); // Retail Sale
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK); // Retail Sale
+
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED); // Retail Sale Cancellations
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED); // Retail Sale Cancellations
+
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
+
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Return Item Payments
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Return Items and Payments
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Retail Sale Refund
+
+        pharmacyBillTypesAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Sale Without Stock Refund
+
+        List<PaymentMethod> nonCreditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT); // All Payment methods except credit payment method should be here . ie credit, staff
 
         pb = reportTemplateController.generateValueByDepartmentReport(
                 pharmacyBillTypesAtomics,
-                ppms,
+                nonCreditPaymentMethods,
                 fromDate,
                 toDate,
                 institution,
@@ -18836,7 +18927,9 @@ public class SearchController implements Serializable {
         pb.setBundleType("pharmacyCollection");
         double pharmacyCollectionTotal = 0.0;
         for (ReportTemplateRow row : pb.getReportTemplateRows()) {
-            pharmacyCollectionTotal += row.getRowValue();
+            System.out.println("row = " + row);
+            pharmacyCollectionTotal += row.getTotal();
+            System.out.println("row.getTotal() = " + row.getTotal());
         }
         pb.setTotal(pharmacyCollectionTotal);
         return pb;
@@ -18903,6 +18996,9 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> ccCollection = new ArrayList<>();
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+
+        ccCollection.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
 
@@ -18913,7 +19009,7 @@ public class SearchController implements Serializable {
                 institution,
                 department,
                 site, false, false);
-        ap.setName("OPD Credit Company Payment Collection");
+        ap.setName("Outpatient Credit Company Payment Collection");
         ap.setBundleType("companyPaymentBillOpd");
         return ap;
     }
@@ -19177,6 +19273,62 @@ public class SearchController implements Serializable {
                 true);
         ap.setName("Credit Bills");
         ap.setBundleType("creditBills");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateOpdCreditBillList() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        ap = reportTemplateController.generateBillReport(
+                btas,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site,
+                false,
+                true);
+        ap.setName("OPD Credit Bills");
+        ap.setBundleType("opdCreditBills");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generatePharmacyCreditBillList() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
+
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Retail Sale
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS); // Retail Sale
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK); // Retail Sale
+
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED); // Retail Sale Cancellations
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED); // Retail Sale Cancellations
+
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
+
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Return Item Payments
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Return Items and Payments
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Retail Sale Refund
+
+        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Sale Without Stock Refund
+
+        ap = reportTemplateController.generateBillReport(
+                pharmacyBillTypes,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site,
+                false,
+                true);
+        ap.setName("Pharmacy Credit Bills");
+        ap.setBundleType("pharmacyCreditBills");
         return ap;
     }
 
