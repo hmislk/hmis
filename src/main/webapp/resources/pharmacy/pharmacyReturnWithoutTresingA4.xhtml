@@ -273,7 +273,12 @@
 
             <div class="mb-4">
                 <h:outputLabel value="Approved By : #{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}" style="text-align: right!important;" rendered="#{!empty cc.attrs.bill.approveAt}"/>
-                <h:outputLabel value="Printed At : #{sessionController.currentDate}" style="text-align: right!important;"/>
+                <div class="d-flex gap-2">
+                    <h:outputLabel value="Printed At : "></h:outputLabel>
+                    <h:outputLabel value="#{sessionController.currentDate}" style="text-align: right!important;">
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputLabel>
+                </div>
             </div>
 
 
@@ -285,7 +290,7 @@
 
                 <div class="col-6 text-center">
                     <h:outputLabel value="......................................................................"/><br></br>
-                    <h:outputLabel value="Authorized By.(Cheif Pharmacist) " />
+                    <h:outputLabel value="Authorized By. (Cheif Pharmacist) " />
                 </div>
 
             </div>
