@@ -2581,11 +2581,138 @@ public class PharmacyReportController implements Serializable {
                     totalSaleValue += billSaleValue;
                 }
             }
+
+            // STEP 6: Retrieve and subtract bills where referenceBill.createdAt < toDate
+            retrieveNegativeReferenceBills(billTypeField, billTypeValue);
+
         } catch (Exception e) {
             e.printStackTrace();
             cogsBillDtos = new ArrayList<>();
             billItems = new ArrayList<>();
             netTotal = 0.0;
+        }
+    }
+
+    private void retrieveNegativeReferenceBills(String billTypeField, Object billTypeValue) {
+        try {
+            // STEP 1: Fetch all bills where referenceBill.createdAt < toDate (these should be subtracted)
+            StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
+                    .append("b, ")
+                    .append("b.createdAt, ")
+                    .append("b.deptId, ")
+                    .append("b.netTotal, ")
+                    .append("b.paymentMethod, ")
+                    .append("b.discount, ")
+                    .append("b.id) ")
+                    .append("FROM Bill b ")
+                    .append("JOIN b.referenceBill rb ")  // INNER JOIN since we need referenceBill
+                    .append("WHERE b.retired = false ")
+                    .append("AND ").append(billTypeField).append(" IN :billTypes ")
+                    .append("AND (rb.createdAt > :fromDate AND rb.createdAt < :toDate) ")  // The key condition - reference bill created between fromDate and toDate
+                    .append("AND b.createdAt < :fromDate ");
+
+            Map<String, Object> billParams = new HashMap<>();
+            billParams.put("billTypes", billTypeValue);
+            billParams.put("fromDate", fromDate);
+            billParams.put("toDate", toDate);
+
+            addFilter(billJpql, billParams, "b.institution", "ins", institution);
+            addFilter(billJpql, billParams, "b.department.site", "sit", site);
+            addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            List<CostOfGoodSoldBillDTO> negativeBills = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+
+            // STEP 2: Collect all Bill IDs from the negative bills for fetching items
+            List<Long> negativeBillIds = negativeBills.stream()
+                    .map(CostOfGoodSoldBillDTO::getBillId)
+                    .collect(Collectors.toList());
+
+            // STEP 3: Fetch all associated BillItems for negative bills
+            if (!negativeBillIds.isEmpty()) {
+                StringBuilder itemJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                        .append("bi.id, ")
+                        .append("bi.bill.id, ")
+                        .append("bi.bill.createdAt, ")
+                        .append("bi.item.name, ")
+                        .append("bi.item.code, ")
+                        .append("bi.bill.deptId, ")
+                        .append("pbi.itemBatch.batchNo, ")
+                        .append("bi.qty, ")
+                        .append("pbi.itemBatch.costRate, ")
+                        .append("pbi.itemBatch.purcahseRate, ")
+                        .append("pbi.retailRate, ")
+                        .append("bi.bill.netTotal) ")
+                        .append("FROM BillItem bi ")
+                        .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                        .append("WHERE bi.retired = false ")
+                        .append("AND bi.bill.id IN :billIds");
+
+                Map<String, Object> itemParams = new HashMap<>();
+                itemParams.put("billIds", negativeBillIds);
+
+                List<BillItemDTO> allNegativeBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+
+                // STEP 4: Group the fetched BillItems by their parent Bill's ID
+                Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allNegativeBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
+
+                // STEP 5: Process negative bills and negate their contributions
+                for (CostOfGoodSoldBillDTO billDto : negativeBills) {
+                    // 1. Subtract the netTotal (negate it)
+                    double originalNetTotal = billDto.getNetTotal();
+                    billDto.setNetTotal(-originalNetTotal);
+                    netTotal += billDto.getNetTotal();  // This will subtract since it's negative
+
+                    // Get the items associated with this specific bill
+                    List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
+
+                    if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
+                        // Populate the map as needed
+                        Map<Long, Object> billItemMap = itemsForThisBill.stream()
+                                .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
+                        billDto.setBillItemsMap(billItemMap);
+
+                        // For the list, simply set it
+                        billDto.setBillItems(itemsForThisBill);
+
+                        // Calculate Cost Value for THIS bill (and subtract it)
+                        double billCost = itemsForThisBill.stream()
+                                .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getCostRate() * item.getQty())
+                                .sum();
+
+                        // Calculate Purchase Value for THIS bill (and subtract it)
+                        double billPurchase = itemsForThisBill.stream()
+                                .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
+                                .sum();
+
+                        // 2. Subtract the totals (negate them)
+                        totalCostValue -= billCost;
+                        totalPurchaseValue -= billPurchase;
+
+                        double billRetail = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                                .sum();
+
+                        totalRetailValue -= billRetail;
+
+                        // Calculate Sale Value for THIS bill (and subtract it)
+                        double billSaleValue = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                                .sum();
+
+                        totalSaleValue -= billSaleValue;
+                    }
+                }
+
+                // STEP 6: Add negative bills to the main cogsBillDtos list
+                cogsBillDtos.addAll(negativeBills);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Don't reset the main lists here since this is additive to the main method
         }
     }
 
@@ -5763,9 +5890,76 @@ public class PharmacyReportController implements Serializable {
                 result.put("costValue", 0.0);
                 result.put("retailValue", 0.0);
             }
+
+            // Add negative reference bills (where referenceBill.createdAt < toDate)
+            Map<String, Double> negativeValues = retrieveNegativeReferenceBillsForValues(billTypeValue);
+            result.put("purchaseValue", result.get("purchaseValue") + negativeValues.get("purchaseValue"));
+            result.put("costValue", result.get("costValue") + negativeValues.get("costValue"));
+            result.put("retailValue", result.get("retailValue") + negativeValues.get("retailValue"));
+
             return result;
 
         } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
+    private Map<String, Double> retrieveNegativeReferenceBillsForValues(List<BillTypeAtomic> billTypeValue) {
+        try {
+            // Query for bills where referenceBill.createdAt < toDate (these should be subtracted)
+            Map<String, Object> negativeParams = new HashMap<>();
+            StringBuilder negativeQuery = new StringBuilder();
+            negativeQuery.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("JOIN bi.bill.referenceBill rb ")  // INNER JOIN since we need referenceBill
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND (rb.createdAt > :fd AND rb.createdAt < :td) ")  // The key condition - reference bill created between fromDate and toDate
+                    .append("AND bi.bill.createdAt < :fd ");
+
+            negativeParams.put("ret", false);
+            negativeParams.put("billTypes", billTypeValue);
+            negativeParams.put("fd", fromDate);
+            negativeParams.put("td", toDate);
+
+            addFilter(negativeQuery, negativeParams, "bi.bill.institution", "ins", institution);
+            addFilter(negativeQuery, negativeParams, "bi.bill.department.site", "sit", site);
+            addFilter(negativeQuery, negativeParams, "bi.bill.department", "dep", department);
+            addFilter(negativeQuery, negativeParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+
+            negativeQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> negativeResults = facade.findRawResultsByJpql(negativeQuery.toString(), negativeParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> negativeResult = new HashMap<>();
+
+            if (negativeResults != null && !negativeResults.isEmpty()) {
+                Object[] negativeTotals = negativeResults.get(0);
+                // Return negative values to be subtracted from the main totals
+                negativeResult.put("purchaseValue", negativeTotals[0] != null ? -((Number) negativeTotals[0]).doubleValue() : 0.0);
+                negativeResult.put("costValue", negativeTotals[1] != null ? -((Number) negativeTotals[1]).doubleValue() : 0.0);
+                negativeResult.put("retailValue", negativeTotals[2] != null ? -((Number) negativeTotals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrieveNegativeReferenceBillsForValues ===");
+                System.out.println("Bill Types: " + billTypeValue);
+                System.out.println("negative totals[0] = " + negativeTotals[0] + " (negated: " + negativeResult.get("purchaseValue") + ")");
+                System.out.println("negative totals[1] = " + negativeTotals[1] + " (negated: " + negativeResult.get("costValue") + ")");
+                System.out.println("negative totals[2] = " + negativeTotals[2] + " (negated: " + negativeResult.get("retailValue") + ")");
+                System.out.println("Negative Query: " + negativeQuery.toString());
+            } else {
+                negativeResult.put("purchaseValue", 0.0);
+                negativeResult.put("costValue", 0.0);
+                negativeResult.put("retailValue", 0.0);
+            }
+            return negativeResult;
+
+        } catch (Exception e) {
+            e.printStackTrace();
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
