@@ -79,7 +79,7 @@
                                 title="Quick Search from Phone Number"
                                 action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                update="ptImp selectPatient editPatient viewPatient"
+                                update="ptImp selectPatient editPatient viewPatient ptAl"
                                 styleClass="btn-sm mx-1"/>
                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
                             <p:commandButton 
@@ -384,9 +384,23 @@
                 <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null}" >
+
                             <h:outputLabel value="Name " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nameWithTitle}" />
+
+                            <h:panelGroup class="d-flex">
+
+                                <p:outputLabel class="ml-4" value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty cc.attrs.controller.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
+                                    <p:outputLabel value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle}" />
+                                </p:badge> 
+
+                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                </p:badge>
+
+                            </h:panelGroup>
 
                             <h:outputLabel value="Gender " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
@@ -448,17 +462,20 @@
                 </h:panelGroup>
 
             </h:panelGroup>
+            
+            <hr></hr>
 
-            <p:panel header="Add Patient Allergies" >
+            <p:panel class="my-3" header="Add Patient Allergies" rendered="#{cc.attrs.controller.patient ne null}">
                 <div>
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-10 d-flex">
 
                             <p:autoComplete 
                                 id="acAllergy"
                                 placeholder="Search Patient Allergies"
                                 completeMethod="#{vtmController.completeVtm}"
                                 var="pta" 
+                                style="width: 150px"
                                 itemLabel="#{pta}"
                                 itemValue="#{pta}" 
                                 forceSelection="true"
@@ -466,20 +483,21 @@
                                 inputStyleClass="form-control w-100"
                                 class="w-100"/>
 
-                            <p:inputText placeholder="Remark" class="my-1 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
+                            <p:inputText placeholder="Remark" class="mx-4 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
 
                         </div>
-                        <div class="col-6">
+                        <div class="col-2">
                             <p:commandButton 
                                 id="btnAddAllergy" 
                                 value="Add" 
+                                class="w-100"
                                 process="btnAddAllergy acAllergy txtAllergy" 
                                 update="ptAl txtAllergy acAllergy msg" 
                                 action="#{cc.attrs.controller.addPatientAllergy()}"/>
 
                         </div>
                     </div>
-                    <div class="row" >                                    
+                    <div class="row my-2" >                                    
                         <div class="col-12" >
                             <h:panelGroup id="ptAl" >
                                 <ui:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">

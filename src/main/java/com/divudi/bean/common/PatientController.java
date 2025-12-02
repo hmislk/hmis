@@ -2027,6 +2027,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         boolean usePHN = false;
         String j;
         Map m = new HashMap();
+        
+        admissionController.setPatientAllergies(null);
 
         if (checkOnlyNumeric) {
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
@@ -2066,9 +2068,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
 //            controller.setPaymentMethod(null);
-
-            admissionController.fillCurrentPatientAllergies(current);//TODO
-
+            System.out.println("line 2071"+patientSearched);
+            admissionController.fillCurrentPatientAllergies(patientSearched);//TODO
+            System.out.println("line 2071"+current);
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
             System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
             if (controller.getPatient().getHasAnAccount() != null) {
@@ -2082,6 +2084,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             controller.setPatient(null);
             patientSearched = null;
+            this.current = null;
             controller.setPatientDetailsEditable(false);
             JsfUtil.addErrorMessage("Pleace Select Patient");
         }
