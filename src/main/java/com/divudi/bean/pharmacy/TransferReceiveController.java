@@ -1369,7 +1369,8 @@ public class TransferReceiveController implements Serializable {
             String filledHeader;
 
             // Institution details
-            String institutionName = b.getCreater().getDepartment().getPrintingName();
+            String institutionName = b.getCreater().getDepartment().getPrintingName() != null ?
+                    b.getCreater().getDepartment().getPrintingName() : "";
             String institutionAddress = b.getCreater().getDepartment().getAddress() != null ?
                     b.getCreater().getDepartment().getAddress() : "";
 
@@ -1403,19 +1404,39 @@ public class TransferReceiveController implements Serializable {
             }
 
             // Bill details
-            String locationFrom = b.getFromDepartment() != null ? b.getFromDepartment().getName() : "";
-            String locationTo = b.getDepartment() != null ? b.getDepartment().getName() : "";
-            String receivedPerson = b.getCreater().getWebUserPerson().getName();
-            String issuedPerson = b.getBackwardReferenceBill() != null &&
-                    b.getBackwardReferenceBill().getCreater() != null ?
+            String locationFrom = b.getFromDepartment() != null && b.getFromDepartment().getName() != null ?
+                    b.getFromDepartment().getName() : "";
+            String locationTo = b.getDepartment() != null && b.getDepartment().getName() != null ?
+                    b.getDepartment().getName() : "";
+            String receivedPerson = (b.getCreater() != null && b.getCreater().getWebUserPerson() != null &&
+                    b.getCreater().getWebUserPerson().getName() != null) ?
+                    b.getCreater().getWebUserPerson().getName() : "";
+            String issuedPerson = (b.getBackwardReferenceBill() != null &&
+                    b.getBackwardReferenceBill().getCreater() != null &&
+                    b.getBackwardReferenceBill().getCreater().getWebUserPerson() != null &&
+                    b.getBackwardReferenceBill().getCreater().getWebUserPerson().getName() != null) ?
                     b.getBackwardReferenceBill().getCreater().getWebUserPerson().getName() : "";
             String receiveNo = b.getDeptId() != null ? b.getDeptId() : "";
-            String issueNo = b.getBackwardReferenceBill() != null ?
+            String issueNo = (b.getBackwardReferenceBill() != null && b.getBackwardReferenceBill().getDeptId() != null) ?
                     b.getBackwardReferenceBill().getDeptId() : "";
 
-            // Date formatting
-            String receivedTime =  (b != null ? CommonFunctions.getDateFormat(b.getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
-            String issueTime = (b != null ? CommonFunctions.getDateFormat(b.getBackwardReferenceBill().getCreatedAt(), sessionController.getApplicationPreference().getLongDateTimeFormat()) : "");
+            // Date formatting with proper null checks
+            String receivedTime = "";
+            if (b.getCreatedAt() != null && sessionController.getApplicationPreference() != null &&
+                    sessionController.getApplicationPreference().getLongDateTimeFormat() != null) {
+                String formattedDate = CommonFunctions.getDateFormat(b.getCreatedAt(),
+                        sessionController.getApplicationPreference().getLongDateTimeFormat());
+                receivedTime = formattedDate != null ? formattedDate : "";
+            }
+
+            String issueTime = "";
+            if (b.getBackwardReferenceBill() != null && b.getBackwardReferenceBill().getCreatedAt() != null &&
+                    sessionController.getApplicationPreference() != null &&
+                    sessionController.getApplicationPreference().getLongDateTimeFormat() != null) {
+                String formattedDate = CommonFunctions.getDateFormat(b.getBackwardReferenceBill().getCreatedAt(),
+                        sessionController.getApplicationPreference().getLongDateTimeFormat());
+                issueTime = formattedDate != null ? formattedDate : "";
+            }
 
             filledHeader = s.replace("{{institution_name}}", institutionName)
                     .replace("{{institution_address}}", institutionAddress)
