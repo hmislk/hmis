@@ -15,41 +15,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet>
-            /* Styles for screen display */
-            .page {
 
-            }
-            .d-flex {
-            display: flex;
-            }
-            .flex-grow-1 {
-            flex: 1;
-            }
-            .bill-item {
-            border: 1px solid #ddd;
-            margin: 20px;
-            padding: 20px;
-            background-color: whitesmoke;
-            page-break-after: always;
-            }
-
-            /* Styles for print */
-            @media print {
-            .bill-item {
-            page-break-after: always;
-            margin: 0px;
-            padding: 0px
-            }
-            .page {
-            border: none;
-            background-color: transparent;
-            box-shadow: none;
-            margin: 0px;
-            padding: 0px
-            }
-            }
-        </h:outputStylesheet>
         <h:form>
             
             <div class="w-100 m-1">
@@ -69,7 +35,7 @@
 
                         <div class="row m-2 ">
                             
-                            <div class="my-4 text-center" style="font-weight: bold;">
+                            <div class="my-2 text-center" style="font-weight: bold;">
                                 <p:outputLabel value="PATIENT DETAILS" />
                             </div>
 
@@ -139,7 +105,7 @@
                                 </div>
                             </div>
                             
-                            <div class="my-4 text-center" style="font-weight: bold;">
+                            <div class="my-2 text-center" style="font-weight: bold;">
                                 <p:outputLabel   value="REFERING DOCTOR DETAIL" />
                             </div>
 
@@ -167,13 +133,20 @@
                             </div>
 
                             <h:panelGroup rendered="#{cc.attrs.controller.reservation ne null}">
-                                <div class="my-4 text-center" style="font-weight: bold;">
+                                <div class="my-2 text-center" style="font-weight: bold;">
                                     <p:outputLabel   value="RESERVATION DETAILS" />
                                 </div>
 
                                 <div class="d-flex justify-content-center align-items-center">
                                     <table>
                                         <tbody>
+                                            <tr>
+                                                <th class="text-left">Reservation No</th>
+                                                <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                <td class="text-left">
+                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.appointment.appointmentNumber}"></h:outputLabel>
+                                                </td>
+                                            </tr>
                                             <tr>
                                                 <th class="text-left">Room No</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -204,7 +177,7 @@
                                 </div>
                             </h:panelGroup>
 
-                            <div class="my-4 text-center" style="font-weight: bold;">
+                            <div class="my-2 text-center" style="font-weight: bold;">
                                 <p:outputLabel   value="BILL DETAILS" />
                             </div>
 
