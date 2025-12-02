@@ -196,6 +196,28 @@
                                             </p:autoComplete> 
                                         </div>
                                     </div>
+                                    
+                                    <div class="row form-group mb-1" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system') ? 'block' : 'none'}}">
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Patient Specific Status:" class="form-label" />
+                                            <div class="input-group">
+                                                <p:selectOneMenu class="w-100" id="specificStatus" value="#{patientController.current.specificStatus}">
+                                                    <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                </p:selectOneMenu>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-9">
+                                            <p:outputLabel value="Comment for Patient Specific Status:" class="form-label" />
+                                            <div class="input-group">
+                                                <p:inputText value="#{patientController.current.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
                                     <div class="row form-group mb-1">
                                         <div class="col-md-6">
                                             <p:outputLabel value="PHN Number:" class="form-label" />
