@@ -2585,6 +2585,9 @@ public class PharmacyReportController implements Serializable {
             // STEP 6: Retrieve and subtract bills where referenceBill.createdAt < toDate
             retrieveNegativeReferenceBills(billTypeField, billTypeValue);
 
+            // STEP 7: Retrieve and add PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills as positive values
+            retrievePreAddToStockBills();
+
         } catch (Exception e) {
             e.printStackTrace();
             cogsBillDtos = new ArrayList<>();
@@ -2709,6 +2712,125 @@ public class PharmacyReportController implements Serializable {
 
                 // STEP 6: Add negative bills to the main cogsBillDtos list
                 cogsBillDtos.addAll(negativeBills);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Don't reset the main lists here since this is additive to the main method
+        }
+    }
+
+    private void retrievePreAddToStockBills() {
+        try {
+            // STEP 1: Fetch all PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills (values taken as positive)
+            StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
+                    .append("b, ")
+                    .append("b.createdAt, ")
+                    .append("b.deptId, ")
+                    .append("ABS(b.netTotal), ")  // Take absolute value to ensure positive
+                    .append("b.paymentMethod, ")
+                    .append("b.discount, ")
+                    .append("b.id) ")
+                    .append("FROM Bill b ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND b.billTypeAtomic = :preAddToStockType ")
+                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> billParams = new HashMap<>();
+            billParams.put("preAddToStockType", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            billParams.put("fromDate", fromDate);
+            billParams.put("toDate", toDate);
+
+            addFilter(billJpql, billParams, "b.institution", "ins", institution);
+            addFilter(billJpql, billParams, "b.department.site", "sit", site);
+            addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            List<CostOfGoodSoldBillDTO> preAddToStockBills = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+
+            // STEP 2: Collect all Bill IDs from the pre-add-to-stock bills for fetching items
+            List<Long> preAddBillIds = preAddToStockBills.stream()
+                    .map(CostOfGoodSoldBillDTO::getBillId)
+                    .collect(Collectors.toList());
+
+            // STEP 3: Fetch all associated BillItems for pre-add-to-stock bills
+            if (!preAddBillIds.isEmpty()) {
+                StringBuilder itemJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                        .append("bi.id, ")
+                        .append("bi.bill.id, ")
+                        .append("bi.bill.createdAt, ")
+                        .append("bi.item.name, ")
+                        .append("bi.item.code, ")
+                        .append("bi.bill.deptId, ")
+                        .append("pbi.itemBatch.batchNo, ")
+                        .append("ABS(bi.qty), ")  // Take absolute value of quantity
+                        .append("pbi.itemBatch.costRate, ")
+                        .append("pbi.itemBatch.purcahseRate, ")
+                        .append("pbi.retailRate, ")
+                        .append("ABS(bi.bill.netTotal)) ")  // Take absolute value of bill netTotal
+                        .append("FROM BillItem bi ")
+                        .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                        .append("WHERE bi.retired = false ")
+                        .append("AND bi.bill.id IN :billIds");
+
+                Map<String, Object> itemParams = new HashMap<>();
+                itemParams.put("billIds", preAddBillIds);
+
+                List<BillItemDTO> allPreAddBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+
+                // STEP 4: Group the fetched BillItems by their parent Bill's ID
+                Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allPreAddBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
+
+                // STEP 5: Process pre-add-to-stock bills and add their positive contributions
+                for (CostOfGoodSoldBillDTO billDto : preAddToStockBills) {
+                    // 1. Add the netTotal (already made positive in the query)
+                    netTotal += billDto.getNetTotal();
+
+                    // Get the items associated with this specific bill
+                    List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
+
+                    if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
+                        // Populate the map as needed
+                        Map<Long, Object> billItemMap = itemsForThisBill.stream()
+                                .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
+                        billDto.setBillItemsMap(billItemMap);
+
+                        // For the list, simply set it
+                        billDto.setBillItems(itemsForThisBill);
+
+                        // Calculate Cost Value for THIS bill (as positive)
+                        double billCost = itemsForThisBill.stream()
+                                .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getCostRate() * item.getQty()))
+                                .sum();
+
+                        // Calculate Purchase Value for THIS bill (as positive)
+                        double billPurchase = itemsForThisBill.stream()
+                                .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getPurchaseRate() * item.getQty()))
+                                .sum();
+
+                        // 2. Add the totals (as positive values)
+                        totalCostValue += billCost;
+                        totalPurchaseValue += billPurchase;
+
+                        double billRetail = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getRetailRate() * item.getQty()))
+                                .sum();
+
+                        totalRetailValue += billRetail;
+
+                        // Calculate Sale Value for THIS bill (as positive)
+                        double billSaleValue = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getRetailRate() * item.getQty()))
+                                .sum();
+
+                        totalSaleValue += billSaleValue;
+                    }
+                }
+
+                // STEP 6: Add pre-add-to-stock bills to the main cogsBillDtos list
+                cogsBillDtos.addAll(preAddToStockBills);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -5841,6 +5963,64 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private Map<String, Double> retrievePreAddToStockBillsForValues() {
+        try {
+            // Query for PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills (values taken as absolute/positive)
+            Map<String, Object> preAddParams = new HashMap<>();
+            StringBuilder preAddQuery = new StringBuilder();
+            preAddQuery.append("SELECT ")
+                    .append("ABS(SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate)), ")  // Absolute value for purchase
+                    .append("ABS(SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate)), ")     // Absolute value for cost
+                    .append("ABS(SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate)) ") // Absolute value for retail
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic = :preAddToStockType ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            preAddParams.put("ret", false);
+            preAddParams.put("preAddToStockType", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            preAddParams.put("fd", fromDate);
+            preAddParams.put("td", toDate);
+
+            addFilter(preAddQuery, preAddParams, "bi.bill.institution", "ins", institution);
+            addFilter(preAddQuery, preAddParams, "bi.bill.department.site", "sit", site);
+            addFilter(preAddQuery, preAddParams, "bi.bill.department", "dep", department);
+            addFilter(preAddQuery, preAddParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+
+            preAddQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> preAddResults = facade.findRawResultsByJpql(preAddQuery.toString(), preAddParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> preAddResult = new HashMap<>();
+
+            if (preAddResults != null && !preAddResults.isEmpty()) {
+                Object[] preAddTotals = preAddResults.get(0);
+                // Return positive values (already made absolute in the query)
+                preAddResult.put("purchaseValue", preAddTotals[0] != null ? ((Number) preAddTotals[0]).doubleValue() : 0.0);
+                preAddResult.put("costValue", preAddTotals[1] != null ? ((Number) preAddTotals[1]).doubleValue() : 0.0);
+                preAddResult.put("retailValue", preAddTotals[2] != null ? ((Number) preAddTotals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrievePreAddToStockBillsForValues ===");
+                System.out.println("Bill Type: PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK");
+                System.out.println("preAdd totals[0] = " + preAddTotals[0] + " (positive: " + preAddResult.get("purchaseValue") + ")");
+                System.out.println("preAdd totals[1] = " + preAddTotals[1] + " (positive: " + preAddResult.get("costValue") + ")");
+                System.out.println("preAdd totals[2] = " + preAddTotals[2] + " (positive: " + preAddResult.get("retailValue") + ")");
+                System.out.println("PreAdd Query: " + preAddQuery.toString());
+            } else {
+                preAddResult.put("purchaseValue", 0.0);
+                preAddResult.put("costValue", 0.0);
+                preAddResult.put("retailValue", 0.0);
+            }
+            return preAddResult;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
     public Map<String, Double> retrievePurchaseAndCostValues(List<BillTypeAtomic> billTypeValue) {
         return retrievePurchaseAndCostValuesWithComplete(billTypeValue, null);
     }
@@ -5896,6 +6076,12 @@ public class PharmacyReportController implements Serializable {
             result.put("purchaseValue", result.get("purchaseValue") + negativeValues.get("purchaseValue"));
             result.put("costValue", result.get("costValue") + negativeValues.get("costValue"));
             result.put("retailValue", result.get("retailValue") + negativeValues.get("retailValue"));
+
+            // Add PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills as positive values
+            Map<String, Double> preAddValues = retrievePreAddToStockBillsForValues();
+            result.put("purchaseValue", result.get("purchaseValue") + preAddValues.get("purchaseValue"));
+            result.put("costValue", result.get("costValue") + preAddValues.get("costValue"));
+            result.put("retailValue", result.get("retailValue") + preAddValues.get("retailValue"));
 
             return result;
 
