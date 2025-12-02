@@ -16391,7 +16391,7 @@ public class SearchController implements Serializable {
             ReportTemplateRowBundle pharmacyCreditBillList;
             pharmacyCreditBillList = generatePharmacyCreditBillList();
             bundle.getBundles().add(pharmacyCreditBillList);
-            netCollectionPlusCredits = netCashCollection + Math.abs(getSafeTotal(pharmacyCreditBillList)); // NOT Deducted from Totals
+            netCollectionPlusCredits += Math.abs(getSafeTotal(pharmacyCreditBillList)); // NOT Deducted from Totals
             
             //TODO : Add Pharmacy Credit Cancellations
             
@@ -17067,9 +17067,9 @@ public class SearchController implements Serializable {
 
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-            pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+            pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
 
 
             ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
