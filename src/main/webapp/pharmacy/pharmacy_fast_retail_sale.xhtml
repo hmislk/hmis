@@ -678,6 +678,24 @@
                                                                                 class="w-100"/>
                                                                         </div>
                                                                     </div>
+                                                                    
+                                                                    <div class="row">
+                                                                    <div class="col-md-4 p-1">
+                                                                      
+                                                                        <div class="input-group">
+                                                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacyFastRetailSaleController.patient.specificStatus}">
+                                                                                <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                            </p:selectOneMenu>
+
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-8 p-1">
+                                                                        <div class="input-group">
+                                                                            <p:inputText placeholder="Comment for Patient Specific Status" value="#{pharmacyFastRetailSaleController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
 
                                                                     <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                     <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
