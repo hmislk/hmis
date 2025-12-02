@@ -2608,8 +2608,8 @@ public class PharmacyReportController implements Serializable {
                     .append("JOIN b.referenceBill rb ")  // INNER JOIN since we need referenceBill
                     .append("WHERE b.retired = false ")
                     .append("AND ").append(billTypeField).append(" IN :billTypes ")
-                    .append("AND rb.createdAt < :toDate ")  // The key condition - reference bill created before toDate
-                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+                    .append("AND (rb.createdAt > :fromDate AND rb.createdAt < :toDate) ")  // The key condition - reference bill created between fromDate and toDate
+                    .append("AND b.createdAt < :fromDate ");
 
             Map<String, Object> billParams = new HashMap<>();
             billParams.put("billTypes", billTypeValue);
@@ -5921,8 +5921,8 @@ public class PharmacyReportController implements Serializable {
                     .append("JOIN bi.bill.referenceBill rb ")  // INNER JOIN since we need referenceBill
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billTypeAtomic IN :billTypes ")
-                    .append("AND rb.createdAt < :td ")  // The key condition - reference bill created before toDate
-                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+                    .append("AND (rb.createdAt > :fd AND rb.createdAt < :td) ")  // The key condition - reference bill created between fromDate and toDate
+                    .append("AND bi.bill.createdAt < :fd ");
 
             negativeParams.put("ret", false);
             negativeParams.put("billTypes", billTypeValue);
