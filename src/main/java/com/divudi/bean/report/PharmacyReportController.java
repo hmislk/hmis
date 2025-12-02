@@ -3563,48 +3563,52 @@ public class PharmacyReportController implements Serializable {
 
     public void processGoodInTransistReport() {
         reportTimerController.trackReportExecution(() -> {
-            Map<String, Object> parameters = new HashMap<>();
-            StringBuilder sql = new StringBuilder();
-            sql.append("select bi from BillItem bi"
-                    + " where bi.bill.billType = :bt"
-                    + " and bi.retired = :ret"
-                    + " and bi.bill.billedBill is null "
-                    + " and bi.bill.createdAt between :fd and :td"
-                    + " and bi.bill.toStaff is not null"
-                    + " and bi.bill.fromDepartment is not null");
+            if (reportType != null && reportType.equals("pending")) {
+                // Use BillItem-level logic for pending items (items with remaining quantity in transit)
+                billItems = findPendingGoodInTransitItems();
+            } else {
+                // Use original Bill-level logic for other report types
+                Map<String, Object> parameters = new HashMap<>();
+                StringBuilder sql = new StringBuilder();
+                sql.append("select bi from BillItem bi"
+                        + " where bi.bill.billType = :bt"
+                        + " and bi.retired = :ret"
+                        + " and bi.bill.billedBill is null "
+                        + " and bi.bill.createdAt between :fd and :td"
+                        + " and bi.bill.toStaff is not null"
+                        + " and bi.bill.fromDepartment is not null");
 
-            parameters.put("bt", BillType.PharmacyTransferIssue);
-            parameters.put("ret", false);
-            parameters.put("fd", fromDate);
-            parameters.put("td", toDate);
+                parameters.put("bt", BillType.PharmacyTransferIssue);
+                parameters.put("ret", false);
+                parameters.put("fd", fromDate);
+                parameters.put("td", toDate);
 
-            addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
-            addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
-            addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
-            addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
-            addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
-            addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
-            addFilter(sql, parameters, "bi.item", "item", item);
-            addFilter(sql, parameters, "bi.item.category", "cat", category);
-            addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
+                addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+                addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+                addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+                addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+                addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+                addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+                addFilter(sql, parameters, "bi.item", "item", item);
+                addFilter(sql, parameters, "bi.item.category", "cat", category);
+                addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
 
-            if (reportType != null) {
-                if (reportType.equals("pending")) {
-                    addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
-                } else if (reportType.equals("accepted")) {
-                    addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
-                } else if (reportType.equals("issueCancel")) {
-                    addFilter(sql, "and bi.bill.cancelled = true");
+                if (reportType != null) {
+                    if (reportType.equals("accepted")) {
+                        addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
+                    } else if (reportType.equals("issueCancel")) {
+                        addFilter(sql, "and bi.bill.cancelled = true");
+                    }
+                    // "any" or null - no additional status filtering
                 }
-                // "any" or null - no additional status filtering
+
+                sql.append(" order by bi.bill.id ");
+
+                System.out.println("sql = " + sql);
+                System.out.println("parameters = " + parameters);
+
+                billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             }
-
-            sql.append(" order by bi.bill.id ");
-
-            System.out.println("sql = " + sql);
-            System.out.println("parameters = " + parameters);
-
-            billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
             // Calculate totals for footer using BIFD values
             totalRetailValue = 0.0;
@@ -3648,6 +3652,185 @@ public class PharmacyReportController implements Serializable {
                 pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
             }
         }, InventoryReports.GOOD_IN_TRANSIT_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Finds pending Good In Transit items using BillItem-level logic.
+     * Uses a two-query approach:
+     * 1. First query: Get all received quantities grouped by issue item ID
+     * 2. Second query: Get issue items and filter in Java for items with remaining quantity
+     *
+     * This approach correctly handles partially delivered items where (issued_qty - received_qty) > 0
+     */
+    private List<BillItem> findPendingGoodInTransitItems() {
+        try {
+            // Step 1: Get received quantities per issue item ID
+            Map<Long, Double> receivedQuantitiesMap = new HashMap<>();
+
+            StringBuilder receiveSql = new StringBuilder();
+            receiveSql.append("SELECT receiveBi.referanceBillItem.id, SUM(receiveBi.pharmaceuticalBillItem.qty) ")
+                    .append("FROM BillItem receiveBi ")
+                    .append("WHERE receiveBi.bill.billTypeAtomic = :receiveType ")
+                    .append("AND receiveBi.bill.retired = false ")
+                    .append("AND receiveBi.retired = false ")
+                    .append("AND receiveBi.referanceBillItem IS NOT NULL ")
+                    .append("AND receiveBi.pharmaceuticalBillItem IS NOT NULL ")
+                    .append("AND receiveBi.bill.createdAt <= :toDate ");
+
+            Map<String, Object> receiveParameters = new HashMap<>();
+            receiveParameters.put("receiveType", BillTypeAtomic.PHARMACY_RECEIVE);
+            receiveParameters.put("toDate", toDate);
+
+            // Apply filters for receive bills
+            if (fromInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.fromInstitution = :fIns ");
+                receiveParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment.site = :fSite ");
+                receiveParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment = :fDept ");
+                receiveParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.toInstitution = :tIns ");
+                receiveParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment.site = :tSite ");
+                receiveParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment = :tDept ");
+                receiveParameters.put("tDept", toDepartment);
+            }
+
+            receiveSql.append("GROUP BY receiveBi.referanceBillItem.id");
+
+            List<Object[]> receiveResults = billItemFacade.findObjectsArrayByJpql(
+                    receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
+
+            // Populate the map with received quantities
+            for (Object[] result : receiveResults) {
+                Long issueItemId = (Long) result[0];
+                Object receivedQtyObj = result[1];
+                Double receivedQty = null;
+
+                if (receivedQtyObj instanceof BigDecimal) {
+                    receivedQty = ((BigDecimal) receivedQtyObj).doubleValue();
+                } else if (receivedQtyObj instanceof Double) {
+                    receivedQty = (Double) receivedQtyObj;
+                } else if (receivedQtyObj instanceof Number) {
+                    receivedQty = ((Number) receivedQtyObj).doubleValue();
+                }
+
+                if (issueItemId != null && receivedQty != null) {
+                    receivedQuantitiesMap.put(issueItemId, receivedQty);
+                }
+            }
+
+            // Step 2: Get issue items
+            StringBuilder issueSql = new StringBuilder();
+            issueSql.append("SELECT issueBi ")
+                    .append("FROM BillItem issueBi ")
+                    .append("WHERE issueBi.retired = false ")
+                    .append("AND issueBi.bill.retired = false ")
+                    .append("AND issueBi.bill.cancelled = false ")
+                    .append("AND issueBi.bill.billType = :bt ")
+                    .append("AND issueBi.bill.billedBill is null ")
+                    .append("AND issueBi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                    .append("AND issueBi.bill.toStaff is not null ")
+                    .append("AND issueBi.bill.fromDepartment is not null ")
+                    .append("AND issueBi.pharmaceuticalBillItem IS NOT NULL ");
+
+            Map<String, Object> issueParameters = new HashMap<>();
+            issueParameters.put("bt", BillType.PharmacyTransferIssue);
+            issueParameters.put("fromDate", fromDate);
+            issueParameters.put("toDate", toDate);
+
+            // Apply filters for issue bills
+            if (fromInstitution != null) {
+                issueSql.append("AND issueBi.bill.fromInstitution = :fIns ");
+                issueParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment.site = :fSite ");
+                issueParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment = :fDept ");
+                issueParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                issueSql.append("AND issueBi.bill.toInstitution = :tIns ");
+                issueParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                issueSql.append("AND issueBi.bill.toDepartment.site = :tSite ");
+                issueParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                issueSql.append("AND issueBi.bill.toDepartment = :tDept ");
+                issueParameters.put("tDept", toDepartment);
+            }
+            if (item != null) {
+                issueSql.append("AND issueBi.item = :item ");
+                issueParameters.put("item", item);
+            }
+            if (category != null) {
+                issueSql.append("AND issueBi.item.category = :cat ");
+                issueParameters.put("cat", category);
+            }
+            if (toStaff != null) {
+                issueSql.append("AND issueBi.bill.toStaff = :user ");
+                issueParameters.put("user", toStaff);
+            }
+
+            issueSql.append("ORDER BY issueBi.bill.id");
+
+            List<BillItem> allIssueItems = billItemFacade.findByJpql(
+                    issueSql.toString(), issueParameters, TemporalType.TIMESTAMP);
+
+            // Step 3: Filter items with remaining quantity in transit
+            List<BillItem> pendingItems = new ArrayList<>();
+
+            for (BillItem issueItem : allIssueItems) {
+                if (issueItem.getPharmaceuticalBillItem() == null) {
+                    continue;
+                }
+
+                Double issuedQty = issueItem.getPharmaceuticalBillItem().getQty();
+                if (issuedQty == null) {
+                    continue;
+                }
+
+                // Get received quantity for this issue item (default to 0 if not received)
+                Double receivedQty = receivedQuantitiesMap.getOrDefault(issueItem.getId(), 0.0);
+
+                // Calculate quantity in transit using absolute values
+                // Issue quantities are negative (stock goes out), receive quantities are positive (stock comes in)
+                double issuedQtyAbs = Math.abs(issuedQty);
+                double receivedQtyAbs = Math.abs(receivedQty);
+                double qtyInTransit = issuedQtyAbs - receivedQtyAbs;
+
+                // Only include if quantity in transit is positive (with tolerance for floating point)
+                if (qtyInTransit > 0.001) {
+                    pendingItems.add(issueItem);
+                }
+            }
+
+            System.out.println("findPendingGoodInTransitItems: Found " + allIssueItems.size() +
+                    " issue items, " + pendingItems.size() + " with remaining quantity in transit");
+
+            return pendingItems;
+
+        } catch (Exception e) {
+            System.err.println("Error in findPendingGoodInTransitItems: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     private List<ItemBatch> getItemBatchesByItems(List<Item> items) {
