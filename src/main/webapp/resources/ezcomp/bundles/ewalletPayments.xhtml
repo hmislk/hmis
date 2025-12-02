@@ -43,7 +43,7 @@
                     <tr>
                         <th>Bill No</th>
                         <th>Bill Class</th>
-                        <th>Bill Type</th>
+                        <th>Bill Date</th>
                         <th>eWallet Provider</th>
                         <th>Transaction Ref</th>
                         <th class="text-end">Fee</th>
@@ -54,7 +54,7 @@
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
                         <tr>
                             <td>
-                                <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.bill.deptId eq null}" />
+                                <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
                                 <h:commandLink rendered="#{row.payment.bill ne null}"
                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                                styleClass="btn btn-link" title="View Bill Details">
