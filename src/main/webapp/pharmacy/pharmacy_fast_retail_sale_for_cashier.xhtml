@@ -673,6 +673,24 @@
                                                                                 class="w-100"/>
                                                                         </div>
                                                                     </div>
+                                                                    
+                                                                     <div class="row">
+                                                                        <div class="col-md-4 p-1">
+
+                                                                            <div class="input-group">
+                                                                                <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}">
+                                                                                    <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                                </p:selectOneMenu>
+
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-8 p-1">
+                                                                            <div class="input-group">
+                                                                                <p:inputText placeholder="Comment for Patient Specific Status" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
 
                                                                     <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                     <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -699,9 +717,23 @@
                                                     <h:panelGroup  rendered="#{not pharmacyFastRetailSaleForCashierController.patientDetailsEditable}"  >
                                                         <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                             <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacyFastRetailSaleForCashierController.patient ne null}" >
-                                                                <h:outputLabel value="Name " class="mx-3"/>
+                                                                
+                                                                 <h:outputLabel value="Name " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" />
+
+                                                                <h:panelGroup class="d-flex">
+
+                                                                    <p:outputLabel class="ml-4" value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                                                    <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty pharmacyFastRetailSaleForCashierController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}" severity="danger">
+                                                                        <p:outputLabel value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" />
+                                                                    </p:badge> 
+
+                                                                    <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleForCashierController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacyFastRetailSaleForCashierController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                                    </p:badge>
+
+                                                                </h:panelGroup>
 
                                                                 <h:outputLabel value="Gender " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
@@ -727,19 +759,19 @@
 
                                                                 <h:outputLabel value="Email " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.email}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.email ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.email}" />
 
                                                                 <h:outputLabel value="National ID No. " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.nic}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.nic ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.nic}" />
 
                                                                 <h:outputLabel value="Address " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.address}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.address ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.address}" />
 
                                                                 <h:outputLabel value="Area " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.area.name}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.area.name ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.area.name}" />
 
                                                             </h:panelGrid>
                                                         </h:panelGroup>
