@@ -38,6 +38,8 @@ public class StockDTO implements Serializable {
     private Boolean allowFractions = false;
     // Whether the underlying Item allows discounts (prevents database queries during rate calculation)
     private Boolean discountAllowed = true;  // Default to true for safety
+    // Category ID for price matrix discount calculations
+    private Long categoryId;
 
     public StockDTO() {
     }
@@ -215,6 +217,24 @@ public class StockDTO implements Serializable {
         this.stockQty = stockQty;
         this.dateOfExpire = dateOfExpire;
         this.discountAllowed = discountAllowed;
+    }
+
+    // Constructor for optimized retail sale autocomplete with category ID for price matrix discount calculation
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, Long categoryId) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.categoryId = categoryId;
     }
 
     public Long getId() {
@@ -429,5 +449,13 @@ public class StockDTO implements Serializable {
     // Prefer boolean accessor for EL friendliness
     public boolean isDiscountAllowed() {
         return discountAllowed != null && discountAllowed;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 }

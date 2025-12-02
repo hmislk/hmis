@@ -54,6 +54,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
@@ -1223,6 +1224,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
      * Creates a minimal Item entity from StockDTO data.
      * Since Item is abstract, we create an Amp instance.
      * This is safe because we only use properties set from DTO data.
+     * Includes minimal Category entities for price matrix discount calculation.
      *
      * @param stockDto The DTO containing item data
      * @return A minimal Amp instance with properties from DTO
@@ -1235,6 +1237,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         item.setCode(stockDto.getCode());
         // Set discountAllowed from DTO, defaulting to true for safety
         item.setDiscountAllowed(stockDto.getDiscountAllowed() != null ? stockDto.getDiscountAllowed() : true);
+
+        // Create minimal Category entity for price matrix discount calculation
+        if (stockDto.getCategoryId() != null) {
+            Category category = new Category();
+            category.setId(stockDto.getCategoryId());
+            item.setCategory(category);
+        }
+
         return item;
     }
 
@@ -1566,8 +1576,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                 .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
-                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed) ")
+                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed, ")
+                .append("c.id) ")
                 .append("FROM Stock i ")
+                .append("LEFT JOIN i.itemBatch.item.category c ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
                 .append("AND (");
@@ -1614,8 +1626,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                 .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
-                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed) ")
+                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed, ")
+                .append("c.id) ")
                 .append("FROM Stock i ")
+                .append("LEFT JOIN i.itemBatch.item.category c ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
                 .append("AND (");
