@@ -205,6 +205,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     Integer intQty;
     Stock stock;
     StockDTO stockDto;
+    private List<StockDTO> lastAutocompleteResults; // Cache for converter
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -788,11 +789,66 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         this.stock = stock;
     }
 
+    /**
+     * Converts a StockDTO to a minimal Stock entity without database queries.
+     * Creates detached entities populated only with data from the DTO.
+     * This avoids JPA proxy issues and LazyInitializationException.
+     *
+     * @param stockDto The DTO containing all necessary data
+     * @return A minimal Stock entity with ItemBatch and Item populated from DTO
+     */
     public Stock convertStockDtoToEntity(StockDTO stockDto) {
         if (stockDto == null || stockDto.getId() == null) {
             return null;
         }
+
+        // Check if we have the necessary data for lightweight creation
+        if (stockDto.getItemBatchId() != null && stockDto.getItemId() != null) {
+            // Create minimal Stock entity with data from DTO
+            Stock stock = new Stock();
+            stock.setId(stockDto.getId());
+            stock.setStock(stockDto.getStockQty());
+
+            // Create minimal ItemBatch with data from DTO
+            ItemBatch itemBatch = new ItemBatch();
+            itemBatch.setId(stockDto.getItemBatchId());
+            itemBatch.setRetailsaleRate(stockDto.getRetailRate());
+            itemBatch.setDateOfExpire(stockDto.getDateOfExpire());
+            itemBatch.setBatchNo(stockDto.getBatchNo());
+
+            // Create minimal Item (we use Amp as a concrete implementation)
+            // Note: This is a detached entity used only for reference
+            // The actual fetch happens when saving the bill if needed
+            Item item = createMinimalItemFromDto(stockDto);
+
+            itemBatch.setItem(item);
+            stock.setItemBatch(itemBatch);
+
+            return stock;
+        }
+
+        // Fallback to database fetch if DTO doesn't have all required data
+        // This ensures backward compatibility with existing code
         return stockFacade.find(stockDto.getId());
+    }
+
+    /**
+     * Creates a minimal Item entity from StockDTO data.
+     * Since Item is abstract, we create an Amp instance.
+     * This is safe because we only use properties set from DTO data.
+     *
+     * @param stockDto The DTO containing item data
+     * @return A minimal Amp instance with properties from DTO
+     */
+    private Item createMinimalItemFromDto(StockDTO stockDto) {
+        // Create a minimal Amp instance (Item is abstract)
+        Amp item = new Amp();
+        item.setId(stockDto.getItemId());
+        item.setName(stockDto.getItemName());
+        item.setCode(stockDto.getCode());
+        // Set discountAllowed from DTO, defaulting to true for safety
+        item.setDiscountAllowed(stockDto.getDiscountAllowed() != null ? stockDto.getDiscountAllowed() : true);
+        return item;
     }
 
     public StockDTO getStockDto() {
@@ -1095,52 +1151,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
-    public List<Stock> completeAvailableStockOptimized(String qry) {
-        if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        qry = qry.replaceAll("[\\n\\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
-
-        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by item code", true);
-        boolean searchByBarcode = qry.length() > 6
-                ? configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", true)
-                : configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", false);
-        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by generic name(VMP)", false);
-
-        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
-                .append("WHERE i.stock > :stockMin ")
-                .append("AND i.department = :department ")
-                .append("AND (");
-
-        sql.append("i.itemBatch.item.name LIKE :query ");
-
-        if (searchByItemCode) {
-            sql.append("OR i.itemBatch.item.code LIKE :query ");
-        }
-
-        if (searchByBarcode) {
-            sql.append("OR i.itemBatch.item.barcode = :query ");
-        }
-
-        if (searchByGeneric) {
-            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
-        }
-
-        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
-
-        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
-    }
-
-    public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+    public List<StockDTO> completeAvailableStockOptimized(String qry) {
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
@@ -1162,8 +1173,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 "Enable search medicines by generic name(VMP)", false);
 
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
-                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
-                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
+                .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed) ")
                 .append("FROM Stock i ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
@@ -1188,13 +1199,82 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
     }
 
+    public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\\n\\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed) ")
+                .append("FROM Stock i ")
+                .append("WHERE i.stock > :stockMin ")
+                .append("AND i.department = :department ")
+                .append("AND (");
+
+        sql.append("i.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR i.itemBatch.item.barcode = :query ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+
+        List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+        // Cache results for the converter to use
+        this.lastAutocompleteResults = results;
+
+        return results;
+    }
+
+    /**
+     * Handles item selection from autocomplete.
+     * Converts DTO to minimal entity (no database query) and calculates rates.
+     */
     public void handleSelectAction() {
+        if (stockDto == null) {
+            return;
+        }
+
+        // Convert DTO to minimal entity (no database query)
+        this.stock = convertStockDtoToEntity(stockDto);
+
         if (stock == null) {
             return;
         }
+
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
         calculateRatesOfSelectedBillItemBeforeAddingToTheList(billItem);
-        pharmacyService.addBillItemInstructions(billItem);
+
+        // Load item instructions only if configured (performance optimization)
+        if (configOptionApplicationController.getBooleanValueByKey("Load Item Instructions in Pharmacy Retail Sale", false)) {
+            pharmacyService.addBillItemInstructions(billItem);
+        }
     }
 
     public void handleSelect(SelectEvent event) {
@@ -1337,7 +1417,18 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             if (itemBatch != null) {
                 bi.setRate(itemBatch.getRetailsaleRate());
             }
-            bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+
+            // Performance optimization: Skip discount calculation if no discount scheme is active
+            boolean hasDiscountScheme = getPaymentScheme() != null ||
+                                       getPaymentMethod() != null ||
+                                       (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null);
+
+            if (hasDiscountScheme) {
+                bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+            } else {
+                bi.setDiscountRate(0.0);
+            }
+
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
 
             bi.setGrossValue(bi.getRate() * bi.getQty());
@@ -4513,10 +4604,27 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 Long id = Long.valueOf(value);
                 PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
                         .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
-                if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
-                    return controller.getStockDto();
+
+                // CRITICAL FIX: Return the StockDTO from the cached autocomplete results to preserve all fields
+                if (controller != null) {
+                    // First, search in the cached autocomplete results
+                    // This preserves the itemBatchId and itemId from the query
+                    if (controller.lastAutocompleteResults != null) {
+                        for (StockDTO dto : controller.lastAutocompleteResults) {
+                            if (id.equals(dto.getId())) {
+                                return dto;
+                            }
+                        }
+                    }
+
+                    // Second, check if it's the currently selected stockDto
+                    if (controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
+                        return controller.getStockDto();
+                    }
                 }
-                // Create a minimal DTO with just the ID for form submission
+
+                // Fallback: Create a minimal DTO with just the ID for form submission
+                // This will trigger the database fetch in convertStockDtoToEntity
                 StockDTO dto = new StockDTO();
                 dto.setId(id);
                 return dto;
