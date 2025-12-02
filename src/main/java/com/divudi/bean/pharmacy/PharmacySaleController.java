@@ -1538,7 +1538,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
-    public List<Stock> completeAvailableStockOptimized(String qry) {
+    public List<StockDTO> completeAvailableStockOptimized(String qry) {
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
@@ -1631,7 +1631,19 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
-        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+        System.out.println(">>> completeAvailableStockOptimizedDto - JPQL Query:");
+        System.out.println(sql.toString());
+
+        List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+        if (results != null && !results.isEmpty()) {
+            StockDTO first = results.get(0);
+            System.out.println(">>> First result - ID: " + first.getId() + ", ItemBatchId: " + first.getItemBatchId() + ", ItemId: " + first.getItemId());
+        } else {
+            System.out.println(">>> No results returned from query");
+        }
+
+        return results;
     }
 
     /**
