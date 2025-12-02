@@ -64,7 +64,6 @@
                             </p:selectOneMenu>
 
 
-                            <p:spacer width="20"></p:spacer>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -80,11 +79,7 @@
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
-
-
                             <p:spacer width="20"></p:spacer>
-
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
                                 <p:outputLabel value="Department" for="phmDept" class="m-3">
