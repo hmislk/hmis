@@ -100,6 +100,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -214,6 +215,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private boolean billSettlingStarted;
 
     private PaymentScheme paymentScheme;
+
+    // Performance optimization: Track payment terms changes to avoid O(n²) rate recalculation
+    private PaymentScheme lastCalculatedPaymentScheme = null;
+    private PaymentMethod lastCalculatedPaymentMethod = null;
+    private boolean ratesNeedRecalculation = false;
 
     int activeIndex;
 
@@ -1354,6 +1360,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void resetAll() {
+        // Reset rate calculation state
+        lastCalculatedPaymentScheme = null;
+        lastCalculatedPaymentMethod = null;
+        ratesNeedRecalculation = false;
+
         setBillSettlingStarted(false);
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
@@ -1768,8 +1779,24 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void calculateBillItemsAndBillTotalsOfPreBill() {
-        calculateRatesForAllBillItemsInPreBill();
+        // Performance optimization: Only recalculate all rates if payment terms changed
+        // This prevents O(n²) recalculation on every item add
+        if (ratesNeedRecalculation || hasPaymentTermsChanged()) {
+            calculateRatesForAllBillItemsInPreBill();
+            ratesNeedRecalculation = false;
+            lastCalculatedPaymentScheme = paymentScheme;
+            lastCalculatedPaymentMethod = paymentMethod;
+        }
         calculatePreBillTotals();
+    }
+
+    /**
+     * Check if payment terms (scheme or method) have changed since last calculation.
+     * Used to avoid unnecessary rate recalculations.
+     */
+    private boolean hasPaymentTermsChanged() {
+        return !Objects.equals(lastCalculatedPaymentScheme, paymentScheme) ||
+               !Objects.equals(lastCalculatedPaymentMethod, paymentMethod);
     }
 
     public void calculateRatesForAllBillItemsInPreBill() {
@@ -1788,17 +1815,20 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 bi.setRate(itemBatch.getRetailsaleRate());
             }
 
-            // Performance optimization: Skip discount calculation if no discount scheme is active
-            boolean hasDiscountScheme = getPaymentScheme() != null ||
-                                       getPaymentMethod() != null ||
-                                       (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null);
-
-            if (hasDiscountScheme) {
-                long discountStart = System.currentTimeMillis();
-                bi.setDiscountRate(calculateBillItemDiscountRate(bi));
-                long discountEnd = System.currentTimeMillis();
-            } else {
+            // Performance optimization: Skip discount calculation if not applicable
+            // Check if item allows discount first (cheapest check)
+            if (bi.getItem() != null && !bi.getItem().isDiscountAllowed()) {
                 bi.setDiscountRate(0.0);
+            } else {
+                boolean hasDiscountScheme = getPaymentScheme() != null ||
+                                           (getPaymentMethod() != null && getPaymentMethod() != PaymentMethod.Cash) ||
+                                           (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null);
+
+                if (hasDiscountScheme) {
+                    bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+                } else {
+                    bi.setDiscountRate(0.0);
+                }
             }
 
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
@@ -4805,6 +4835,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Override
     public void listnerForPaymentMethodChange() {
+        // Mark that rates need recalculation due to payment change
+        ratesNeedRecalculation = true;
+
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             if (patient == null || patient.getId() == null) {
                 return; // Patient not selected yet, ignore
