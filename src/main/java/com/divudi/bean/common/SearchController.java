@@ -4315,7 +4315,7 @@ public class SearchController implements Serializable {
             params.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        jpql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt asc  ";
 
         params.put("class1", BilledBill.class);
         params.put("class2", PreBill.class);
