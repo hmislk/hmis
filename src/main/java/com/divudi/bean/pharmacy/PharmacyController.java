@@ -5136,7 +5136,7 @@ public class PharmacyController implements Serializable {
      *
      * <p>This method determines the value of items that have been issued but not yet fully received
      * by calculating the difference between issued and received quantities, then multiplying by
-     * the net rate from BillItemFinanceDetails.</p>
+     * the lineNetRate from BillItemFinanceDetails.</p>
      *
      * <p><b>Implementation Approach:</b></p>
      * <p>Uses a two-query approach to work within JPQL limitations (JPQL does not support LEFT JOIN with subqueries):</p>
@@ -5148,7 +5148,7 @@ public class PharmacyController implements Serializable {
      *
      * <p><b>Calculation Logic:</b></p>
      * <ul>
-     *   <li>For each issue BillItem, calculate: (issued_qty - received_qty) * netRate</li>
+     *   <li>For each issue BillItem, calculate: (issued_qty - received_qty) * lineNetRate</li>
      *   <li>Only includes items where (issued_qty - received_qty) > 0.001</li>
      *   <li>Received quantities are looked up from a Map populated by the first query</li>
      *   <li>Aggregates by department name for summary reporting</li>
@@ -5164,7 +5164,7 @@ public class PharmacyController implements Serializable {
      * <p><b>Data Validation:</b></p>
      * <ul>
      *   <li>Filters out retired bills and items in both queries</li>
-     *   <li>Checks for non-null pharmaceuticalBillItem, billItemFinanceDetails, and netRate</li>
+     *   <li>Checks for non-null pharmaceuticalBillItem, billItemFinanceDetails, and lineNetRate</li>
      *   <li>Uses 0.001 tolerance for floating-point quantity comparisons</li>
      *   <li>Handles null department names with "Unspecified Department"</li>
      *   <li>Applies date filter: receive query uses createdAt <= toDate, issue query uses BETWEEN fromDate AND toDate</li>
@@ -5245,14 +5245,14 @@ public class PharmacyController implements Serializable {
             // Step 2: Get issue items and calculate GIT using the received quantities map
             StringBuilder issueSql = new StringBuilder();
             issueSql.append("SELECT issueBi.id, issueBi.bill.department.name, ")
-                    .append("issueBi.pharmaceuticalBillItem.qty, issueBi.billItemFinanceDetails.netRate ")
+                    .append("issueBi.pharmaceuticalBillItem.qty, issueBi.billItemFinanceDetails.lineNetRate ")
                     .append("FROM BillItem issueBi ")
                     .append("WHERE issueBi.retired = false ")
                     .append("AND issueBi.bill.retired = false ")
                     .append("AND issueBi.bill.billTypeAtomic IN :btAtomics ")
                     .append("AND issueBi.bill.createdAt BETWEEN :fromDate AND :toDate ")
                     .append("AND issueBi.billItemFinanceDetails IS NOT NULL ")
-                    .append("AND issueBi.billItemFinanceDetails.netRate IS NOT NULL ")
+                    .append("AND issueBi.billItemFinanceDetails.lineNetRate IS NOT NULL ")
                     .append("AND issueBi.pharmaceuticalBillItem IS NOT NULL ");
 
             Map<String, Object> issueParameters = new HashMap<>();
@@ -5296,7 +5296,7 @@ public class PharmacyController implements Serializable {
                 Long issueItemId = (Long) result[0];
                 String departmentName = (String) result[1];
                 Double issuedQty = (Double) result[2];
-                Double netRate = (Double) result[3];
+                Double lineNetRate = (Double) result[3];
 
                 // Handle null department names
                 if (departmentName == null || departmentName.trim().isEmpty()) {
@@ -5304,7 +5304,7 @@ public class PharmacyController implements Serializable {
                 }
 
                 // Skip if essential data is missing
-                if (issuedQty == null || netRate == null) {
+                if (issuedQty == null || lineNetRate == null) {
                     continue;
                 }
 
@@ -5316,7 +5316,7 @@ public class PharmacyController implements Serializable {
 
                 // Only include if quantity in transit is positive (with tolerance for floating point)
                 if (qtyInTransit > 0.001) {
-                    double gitAmount = qtyInTransit * netRate;
+                    double gitAmount = qtyInTransit * lineNetRate;
                     departmentGitMap.merge(departmentName, gitAmount, Double::sum);
                 }
             }
