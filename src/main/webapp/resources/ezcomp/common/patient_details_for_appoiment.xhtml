@@ -22,7 +22,7 @@
 
             <p:growl id="msg"/>
             <f:facet name="header">
-               
+
                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                     <!-- Left aligned content -->
                     <h:panelGroup id="headerFacet">
@@ -287,7 +287,10 @@
                                             inputStyleClass="form-control"
                                             class="w-100"/>
                                     </div>
-                                    <div class="col-md-4 p-1">
+                                </div>
+                                <div class="row">
+
+                                    <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="ptReligion"
                                             class="form-control w-100"
@@ -298,7 +301,7 @@
 
                                         </p:selectOneMenu>
                                     </div>
-                                    <div class="col-md-4 p-1">
+                                    <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="ptCivilStatus"
                                             class="form-control w-100"
@@ -309,7 +312,7 @@
 
                                         </p:selectOneMenu>
                                     </div>
-                                    <div class="col-md-4 p-1">
+                                    <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="ptBloodGroop"
                                             class="form-control w-100"
@@ -320,7 +323,7 @@
 
                                         </p:selectOneMenu>
                                     </div>
-                                    <div class="col-md-4 p-1">
+                                    <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="ptEmp"
                                             class="form-control w-100"
@@ -332,9 +335,26 @@
                                         </p:selectOneMenu>
                                     </div>
 
-
-
                                 </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 p-1">
+
+                                        <div class="input-group">
+                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{cc.attrs.controller.patient.specificStatus}">
+                                                <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                            </p:selectOneMenu>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 p-1">
+                                        <div class="input-group">
+                                            <p:inputText placeholder="Comment for Patient Specific Status" value="#{cc.attrs.controller.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
