@@ -33,7 +33,7 @@ public class BillFinanceDetails implements Serializable {
 
     // ------------------ DISCOUNTS ------------------
     // Discount applied directly to the Bill (not tied to specific lines)
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal billDiscount;
 
     // Total of all line-level discounts (sum of discounts on individual BillItems)
@@ -41,20 +41,20 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal lineDiscount;
 
     // Total discount (bill-level + all line-level)
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal totalDiscount;
 
     // ------------------ EXPENSES ------------------
     // Expense applied to the Bill itself (e.g., delivery fee, service charge)
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal billExpense;
 
     // Total of all expenses from individual BillItems
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal lineExpense;
 
     // Total expense (bill-level + all line-level)
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal totalExpense;
 
     // Expenses considered for costing calculation
@@ -75,7 +75,7 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal lineCostValue;
 
     // Total cost value for all BillItems (excluding discounts/taxes)
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal totalCostValue;
 
     @Column(precision = 18, scale = 4, nullable = true)
@@ -99,7 +99,7 @@ public class BillFinanceDetails implements Serializable {
 
     // ------------------ STOCK VALUATIONS START------------------
     // Total purchase value for all BillItems (excluding discounts/taxes)
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal totalPurchaseValue;
 
     @Column(precision = 18, scale = 4, nullable = true)
@@ -120,7 +120,7 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal totalOfFreeItemValuesNonFree;
 
     // Expected total if all items sold at retail rate
-    @Column(precision = 18, scale = 4, nullable = true)
+    @Column(precision = 20, scale = 4, nullable = true)
     private BigDecimal totalRetailSaleValue;
 
     @Column(precision = 18, scale = 4, nullable = true)
