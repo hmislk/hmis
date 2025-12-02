@@ -5890,9 +5890,76 @@ public class PharmacyReportController implements Serializable {
                 result.put("costValue", 0.0);
                 result.put("retailValue", 0.0);
             }
+
+            // Add negative reference bills (where referenceBill.createdAt < toDate)
+            Map<String, Double> negativeValues = retrieveNegativeReferenceBillsForValues(billTypeValue);
+            result.put("purchaseValue", result.get("purchaseValue") + negativeValues.get("purchaseValue"));
+            result.put("costValue", result.get("costValue") + negativeValues.get("costValue"));
+            result.put("retailValue", result.get("retailValue") + negativeValues.get("retailValue"));
+
             return result;
 
         } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
+    private Map<String, Double> retrieveNegativeReferenceBillsForValues(List<BillTypeAtomic> billTypeValue) {
+        try {
+            // Query for bills where referenceBill.createdAt < toDate (these should be subtracted)
+            Map<String, Object> negativeParams = new HashMap<>();
+            StringBuilder negativeQuery = new StringBuilder();
+            negativeQuery.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("JOIN bi.bill.referenceBill rb ")  // INNER JOIN since we need referenceBill
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND rb.createdAt < :td ")  // The key condition - reference bill created before toDate
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            negativeParams.put("ret", false);
+            negativeParams.put("billTypes", billTypeValue);
+            negativeParams.put("fd", fromDate);
+            negativeParams.put("td", toDate);
+
+            addFilter(negativeQuery, negativeParams, "bi.bill.institution", "ins", institution);
+            addFilter(negativeQuery, negativeParams, "bi.bill.department.site", "sit", site);
+            addFilter(negativeQuery, negativeParams, "bi.bill.department", "dep", department);
+            addFilter(negativeQuery, negativeParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+
+            negativeQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> negativeResults = facade.findRawResultsByJpql(negativeQuery.toString(), negativeParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> negativeResult = new HashMap<>();
+
+            if (negativeResults != null && !negativeResults.isEmpty()) {
+                Object[] negativeTotals = negativeResults.get(0);
+                // Return negative values to be subtracted from the main totals
+                negativeResult.put("purchaseValue", negativeTotals[0] != null ? -((Number) negativeTotals[0]).doubleValue() : 0.0);
+                negativeResult.put("costValue", negativeTotals[1] != null ? -((Number) negativeTotals[1]).doubleValue() : 0.0);
+                negativeResult.put("retailValue", negativeTotals[2] != null ? -((Number) negativeTotals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrieveNegativeReferenceBillsForValues ===");
+                System.out.println("Bill Types: " + billTypeValue);
+                System.out.println("negative totals[0] = " + negativeTotals[0] + " (negated: " + negativeResult.get("purchaseValue") + ")");
+                System.out.println("negative totals[1] = " + negativeTotals[1] + " (negated: " + negativeResult.get("costValue") + ")");
+                System.out.println("negative totals[2] = " + negativeTotals[2] + " (negated: " + negativeResult.get("retailValue") + ")");
+                System.out.println("Negative Query: " + negativeQuery.toString());
+            } else {
+                negativeResult.put("purchaseValue", 0.0);
+                negativeResult.put("costValue", 0.0);
+                negativeResult.put("retailValue", 0.0);
+            }
+            return negativeResult;
+
+        } catch (Exception e) {
+            e.printStackTrace();
             Map<String, Double> errorResult = new HashMap<>();
             errorResult.put("purchaseValue", 0.0);
             errorResult.put("costValue", 0.0);
