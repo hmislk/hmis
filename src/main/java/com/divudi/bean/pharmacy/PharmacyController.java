@@ -5131,8 +5131,50 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    /**
+     * Calculates Good In Transit (GIT) amounts based on BillItem-level data using a two-query approach.
+     *
+     * <p>This method determines the value of items that have been issued but not yet fully received
+     * by calculating the difference between issued and received quantities, then multiplying by
+     * the net rate from BillItemFinanceDetails.</p>
+     *
+     * <p><b>Implementation Approach:</b></p>
+     * <p>Uses a two-query approach to work within JPQL limitations (JPQL does not support LEFT JOIN with subqueries):</p>
+     * <ol>
+     *   <li><b>Query 1:</b> Retrieves all received quantities grouped by the original issue item ID (referanceBillItem.id)</li>
+     *   <li><b>Query 2:</b> Retrieves all issue items with their quantities and rates</li>
+     *   <li><b>In-Memory Calculation:</b> Combines the results using a HashMap lookup to calculate GIT per department</li>
+     * </ol>
+     *
+     * <p><b>Calculation Logic:</b></p>
+     * <ul>
+     *   <li>For each issue BillItem, calculate: (issued_qty - received_qty) * netRate</li>
+     *   <li>Only includes items where (issued_qty - received_qty) > 0.001</li>
+     *   <li>Received quantities are looked up from a Map populated by the first query</li>
+     *   <li>Aggregates by department name for summary reporting</li>
+     * </ul>
+     *
+     * <p><b>Key Relationships:</b></p>
+     * <ul>
+     *   <li>Issue items have billTypeAtomic = PHARMACY_ISSUE</li>
+     *   <li>Receive items have billTypeAtomic = PHARMACY_RECEIVE</li>
+     *   <li>Receive items link to issue items via referanceBillItem.id</li>
+     * </ul>
+     *
+     * <p><b>Data Validation:</b></p>
+     * <ul>
+     *   <li>Filters out retired bills and items in both queries</li>
+     *   <li>Checks for non-null pharmaceuticalBillItem, billItemFinanceDetails, and netRate</li>
+     *   <li>Uses 0.001 tolerance for floating-point quantity comparisons</li>
+     *   <li>Handles null department names with "Unspecified Department"</li>
+     *   <li>Applies date filter: receive query uses createdAt <= toDate, issue query uses BETWEEN fromDate AND toDate</li>
+     *   <li>Applies common filters (fromInstitution, fromDepartment, toInstitution, toDepartment, etc.) to both queries</li>
+     * </ul>
+     *
+     * @param billTypeAtomics List of bill type atomics to include in the calculation (typically contains PHARMACY_ISSUE)
+     */
     private void calculateGoodInTransitAmounts(List<BillTypeAtomic> billTypeAtomics) {
-        // Create a map for quick lookup using combination of all three department names
+        // Create a map for quick lookup using department name
         Map<String, PharmacySummery> departmentMap = new HashMap<>();
         for (PharmacySummery summary : departmentSummaries) {
             if (!"Total".equals(summary.getDepartmentName())) {
@@ -5141,47 +5183,158 @@ public class PharmacyController implements Serializable {
             }
         }
 
-        // Calculate GIT amounts
-        StringBuilder gitSql = new StringBuilder();
-        gitSql.append("SELECT ")
-                .append("b.department.name, ")
-//                .append("b.fromDepartment.name, ")
-//                .append("b.toDepartment.name, ")
-                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalCostValue ELSE 0 END) ")
-                .append("FROM Bill b ")
-                .append("WHERE b.retired = false ")
-                .append("AND b.billTypeAtomic IN :btAtomics ")
-                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
-
-        Map<String, Object> gitParameters = new HashMap<>();
-        gitParameters.put("fromDate", fromDate);
-        gitParameters.put("toDate", toDate);
-        gitParameters.put("btAtomics", billTypeAtomics);
-
-        additionalCommonFilltersForBillEntity(gitSql, gitParameters);
-        gitSql.append(" GROUP BY b.department.name ");
-
         try {
-            List<Object[]> gitResults = getBillFacade().findObjectsArrayByJpql(gitSql.toString(), gitParameters, TemporalType.TIMESTAMP);
+            // Step 1: Get received quantities per issue item ID
+            // This query gets all received quantities grouped by the original issue item
+            Map<Long, Double> receivedQuantitiesMap = new HashMap<>();
 
-            for (Object[] result : gitResults) {
-                String departmentName = (String) result[0];
-                BigDecimal gitAmountBD = (BigDecimal) result[1];
-                double gitAmount = gitAmountBD != null ? gitAmountBD.doubleValue() : 0.0;
+            StringBuilder receiveSql = new StringBuilder();
+            receiveSql.append("SELECT receiveBi.referanceBillItem.id, SUM(receiveBi.pharmaceuticalBillItem.qty) ")
+                    .append("FROM BillItem receiveBi ")
+                    .append("WHERE receiveBi.bill.billTypeAtomic = :receiveType ")
+                    .append("AND receiveBi.bill.retired = false ")
+                    .append("AND receiveBi.retired = false ")
+                    .append("AND receiveBi.referanceBillItem IS NOT NULL ")
+                    .append("AND receiveBi.pharmaceuticalBillItem IS NOT NULL ")
+                    .append("AND receiveBi.bill.createdAt <= :toDate ");
+
+            Map<String, Object> receiveParameters = new HashMap<>();
+            receiveParameters.put("receiveType", BillTypeAtomic.PHARMACY_RECEIVE);
+            receiveParameters.put("toDate", toDate);
+
+            // Apply additional filters for receive bills using 'receiveBi.bill' alias
+            if (fromInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.fromInstitution = :fIns ");
+                receiveParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment.site = :fSite ");
+                receiveParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment = :fDept ");
+                receiveParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.toInstitution = :tIns ");
+                receiveParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment.site = :tSite ");
+                receiveParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment = :tDept ");
+                receiveParameters.put("tDept", toDepartment);
+            }
+
+            receiveSql.append("GROUP BY receiveBi.referanceBillItem.id");
+
+            List<Object[]> receiveResults = getBillItemFacade().findObjectsArrayByJpql(
+                    receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
+
+            // Populate the map with received quantities
+            for (Object[] result : receiveResults) {
+                Long issueItemId = (Long) result[0];
+                Double receivedQty = (Double) result[1];
+                if (issueItemId != null && receivedQty != null) {
+                    receivedQuantitiesMap.put(issueItemId, receivedQty);
+                }
+            }
+
+            // Step 2: Get issue items and calculate GIT using the received quantities map
+            StringBuilder issueSql = new StringBuilder();
+            issueSql.append("SELECT issueBi.id, issueBi.bill.department.name, ")
+                    .append("issueBi.pharmaceuticalBillItem.qty, issueBi.billItemFinanceDetails.netRate ")
+                    .append("FROM BillItem issueBi ")
+                    .append("WHERE issueBi.retired = false ")
+                    .append("AND issueBi.bill.retired = false ")
+                    .append("AND issueBi.bill.billTypeAtomic IN :btAtomics ")
+                    .append("AND issueBi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                    .append("AND issueBi.billItemFinanceDetails IS NOT NULL ")
+                    .append("AND issueBi.billItemFinanceDetails.netRate IS NOT NULL ")
+                    .append("AND issueBi.pharmaceuticalBillItem IS NOT NULL ");
+
+            Map<String, Object> issueParameters = new HashMap<>();
+            issueParameters.put("fromDate", fromDate);
+            issueParameters.put("toDate", toDate);
+            issueParameters.put("btAtomics", billTypeAtomics);
+
+            // Apply additional filters for issue bills using 'issueBi.bill' alias
+            if (fromInstitution != null) {
+                issueSql.append("AND issueBi.bill.fromInstitution = :fIns ");
+                issueParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment.site = :fSite ");
+                issueParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment = :fDept ");
+                issueParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                issueSql.append("AND issueBi.bill.toInstitution = :tIns ");
+                issueParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                issueSql.append("AND issueBi.bill.toDepartment.site = :tSite ");
+                issueParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                issueSql.append("AND issueBi.bill.toDepartment = :tDept ");
+                issueParameters.put("tDept", toDepartment);
+            }
+
+            List<Object[]> issueResults = getBillItemFacade().findObjectsArrayByJpql(
+                    issueSql.toString(), issueParameters, TemporalType.TIMESTAMP);
+
+            // Step 3: Calculate GIT amounts by department
+            Map<String, Double> departmentGitMap = new HashMap<>();
+
+            for (Object[] result : issueResults) {
+                Long issueItemId = (Long) result[0];
+                String departmentName = (String) result[1];
+                Double issuedQty = (Double) result[2];
+                Double netRate = (Double) result[3];
 
                 // Handle null department names
                 if (departmentName == null || departmentName.trim().isEmpty()) {
                     departmentName = "Unspecified Department";
                 }
 
-                String key = departmentName;
-                PharmacySummery summary = departmentMap.get(key);
+                // Skip if essential data is missing
+                if (issuedQty == null || netRate == null) {
+                    continue;
+                }
+
+                // Get received quantity for this issue item (default to 0 if not received)
+                Double receivedQty = receivedQuantitiesMap.getOrDefault(issueItemId, 0.0);
+
+                // Calculate quantity in transit
+                double qtyInTransit = issuedQty - receivedQty;
+
+                // Only include if quantity in transit is positive (with tolerance for floating point)
+                if (qtyInTransit > 0.001) {
+                    double gitAmount = qtyInTransit * netRate;
+                    departmentGitMap.merge(departmentName, gitAmount, Double::sum);
+                }
+            }
+
+            // Step 4: Update department summaries with calculated GIT amounts
+            for (Map.Entry<String, Double> entry : departmentGitMap.entrySet()) {
+                String departmentName = entry.getKey();
+                double gitAmount = entry.getValue();
+
+                PharmacySummery summary = departmentMap.get(departmentName);
                 if (summary != null) {
                     summary.setGoodInTransistAmount(gitAmount);
                 }
             }
+
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error calculating GIT amounts", e);
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE,
+                    "Error calculating GIT amounts at BillItem level", e);
         }
     }
 
