@@ -1360,6 +1360,11 @@ public class TransferReceiveController implements Serializable {
     }
 
     public String fillHeaderDataOfTransferReceiveNote(String s, Bill b) {
+        // Add null check for the string parameter to prevent NPE
+        if (s == null) {
+            return "";
+        }
+
         if (b != null) {
             String filledHeader;
 
