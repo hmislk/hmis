@@ -5178,6 +5178,26 @@ public class PharmacyController implements Serializable {
             // Calculate GIT amounts
             calculateGoodInTransitAmounts(billTypeAtomics);
 
+            // Update totals for GIT amounts after GIT calculation
+            if (!departmentSummaries.isEmpty()) {
+                double totalGitAmount = 0.0;
+                for (PharmacySummery summary : departmentSummaries) {
+                    if (!"Total".equals(summary.getDepartmentName()) && !"Grand Total".equals(summary.getDepartmentName())) {
+                        totalGitAmount += summary.getGoodInTransistAmount();
+                    }
+                }
+
+                // Set GIT total for Total row
+                for (PharmacySummery summary : departmentSummaries) {
+                    if ("Total".equals(summary.getDepartmentName())) {
+                        summary.setGoodInTransistAmount(totalGitAmount);
+                        Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                                "Set Total GIT amount: " + totalGitAmount);
+                        break;
+                    }
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             JsfUtil.addErrorMessage("Error generating summary report: " + e.getMessage());
@@ -5227,6 +5247,27 @@ public class PharmacyController implements Serializable {
      * @param billTypeAtomics List of bill type atomics to include in the calculation (typically contains PHARMACY_ISSUE)
      */
     private void calculateGoodInTransitAmounts(List<BillTypeAtomic> billTypeAtomics) {
+        // Filter to only include positive issue types for GIT calculation
+        // Returns and cancellations have negative quantities and should not be considered "in transit"
+        List<BillTypeAtomic> gitBillTypeAtomics = new ArrayList<>();
+        for (BillTypeAtomic atomic : billTypeAtomics) {
+            if (atomic == BillTypeAtomic.PHARMACY_ISSUE) {
+                gitBillTypeAtomics.add(atomic);
+            }
+        }
+
+        Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                "Starting GIT calculation for filtered billTypeAtomics: " + gitBillTypeAtomics +
+                " (original: " + billTypeAtomics + ")" +
+                ", fromDate: " + fromDate + ", toDate: " + toDate +
+                ", filters: fromDept=" + fromDepartment + ", toDept=" + toDepartment);
+
+        if (gitBillTypeAtomics.isEmpty()) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                    "No positive issue types found for GIT calculation");
+            return;
+        }
+
         // Create a map for quick lookup using department name
         Map<String, PharmacySummery> departmentMap = new HashMap<>();
         for (PharmacySummery summary : departmentSummaries) {
@@ -5286,6 +5327,9 @@ public class PharmacyController implements Serializable {
             List<Object[]> receiveResults = getBillItemFacade().findObjectsArrayByJpql(
                     receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
 
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                    "Receive query returned " + receiveResults.size() + " results");
+
             // Populate the map with received quantities
             for (Object[] result : receiveResults) {
                 Long issueItemId = (Long) result[0];
@@ -5322,7 +5366,7 @@ public class PharmacyController implements Serializable {
             Map<String, Object> issueParameters = new HashMap<>();
             issueParameters.put("fromDate", fromDate);
             issueParameters.put("toDate", toDate);
-            issueParameters.put("btAtomics", billTypeAtomics);
+            issueParameters.put("btAtomics", gitBillTypeAtomics);
 
             // Apply additional filters for issue bills using 'issueBi.bill' alias
             if (fromInstitution != null) {
@@ -5352,6 +5396,9 @@ public class PharmacyController implements Serializable {
 
             List<Object[]> issueResults = getBillItemFacade().findObjectsArrayByJpql(
                     issueSql.toString(), issueParameters, TemporalType.TIMESTAMP);
+
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                    "Issue query returned " + issueResults.size() + " results");
 
             // Step 3: Calculate GIT amounts by department
             Map<String, Double> departmentGitMap = new HashMap<>();
@@ -5395,17 +5442,32 @@ public class PharmacyController implements Serializable {
                 // Get received quantity for this issue item (default to 0 if not received)
                 Double receivedQty = receivedQuantitiesMap.getOrDefault(issueItemId, 0.0);
 
-                // Calculate quantity in transit
-                double qtyInTransit = issuedQty - receivedQty;
+                // Calculate quantity in transit using absolute values
+                // Issue quantities are negative (stock goes out), receive quantities are positive (stock comes in)
+                double issuedQtyAbs = Math.abs(issuedQty);
+                double receivedQtyAbs = Math.abs(receivedQty);
+                double qtyInTransit = issuedQtyAbs - receivedQtyAbs;
+
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                        "Processing issue item ID=" + issueItemId + ", dept=" + departmentName +
+                        ", issued=" + issuedQty + " (abs=" + issuedQtyAbs + ")" +
+                        ", received=" + receivedQty + " (abs=" + receivedQtyAbs + ")" +
+                        ", inTransit=" + qtyInTransit + ", rate=" + lineNetRate);
 
                 // Only include if quantity in transit is positive (with tolerance for floating point)
                 if (qtyInTransit > 0.001) {
                     double gitAmount = qtyInTransit * lineNetRate;
                     departmentGitMap.merge(departmentName, gitAmount, Double::sum);
+
+                    Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                            "Added GIT amount: " + gitAmount + " for dept: " + departmentName);
                 }
             }
 
             // Step 4: Update department summaries with calculated GIT amounts
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                    "GIT calculation results - departmentGitMap: " + departmentGitMap);
+
             for (Map.Entry<String, Double> entry : departmentGitMap.entrySet()) {
                 String departmentName = entry.getKey();
                 double gitAmount = entry.getValue();
@@ -5413,6 +5475,8 @@ public class PharmacyController implements Serializable {
                 PharmacySummery summary = departmentMap.get(departmentName);
                 if (summary != null) {
                     summary.setGoodInTransistAmount(gitAmount);
+                    Logger.getLogger(PharmacyController.class.getName()).log(Level.INFO,
+                            "Set GIT amount for department '" + departmentName + "': " + gitAmount);
                 }
             }
 
