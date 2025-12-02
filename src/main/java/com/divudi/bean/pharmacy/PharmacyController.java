@@ -5131,8 +5131,40 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    /**
+     * Calculates Good In Transit (GIT) amounts based on BillItem-level data.
+     *
+     * <p>This method determines the value of items that have been issued but not yet fully received
+     * by calculating the difference between issued and received quantities, then multiplying by
+     * the net rate from BillItemFinanceDetails.</p>
+     *
+     * <p><b>Calculation Logic:</b></p>
+     * <ul>
+     *   <li>For each issue BillItem, calculate: (issued_qty - received_qty) * netRate</li>
+     *   <li>Only includes items where (issued_qty - received_qty) > 0.001</li>
+     *   <li>Uses LEFT JOIN to match issue items with received items via referanceBillItem</li>
+     *   <li>Aggregates by department name for summary reporting</li>
+     * </ul>
+     *
+     * <p><b>Key Relationships:</b></p>
+     * <ul>
+     *   <li>Issue items have billTypeAtomic = PHARMACY_ISSUE</li>
+     *   <li>Receive items have billTypeAtomic = PHARMACY_RECEIVE</li>
+     *   <li>Receive items link to issue items via referanceBillItem.id</li>
+     * </ul>
+     *
+     * <p><b>Data Validation:</b></p>
+     * <ul>
+     *   <li>Filters out retired bills and items</li>
+     *   <li>Checks for non-null billItemFinanceDetails and netRate</li>
+     *   <li>Uses 0.001 tolerance for floating-point quantity comparisons</li>
+     *   <li>Handles null department names with "Unspecified Department"</li>
+     * </ul>
+     *
+     * @param billTypeAtomics List of bill type atomics to include in the calculation (typically contains PHARMACY_ISSUE)
+     */
     private void calculateGoodInTransitAmounts(List<BillTypeAtomic> billTypeAtomics) {
-        // Create a map for quick lookup using combination of all three department names
+        // Create a map for quick lookup using department name
         Map<String, PharmacySummery> departmentMap = new HashMap<>();
         for (PharmacySummery summary : departmentSummaries) {
             if (!"Total".equals(summary.getDepartmentName())) {
@@ -5141,33 +5173,49 @@ public class PharmacyController implements Serializable {
             }
         }
 
-        // Calculate GIT amounts
+        // Build JPQL query for BillItem-level GIT calculation
         StringBuilder gitSql = new StringBuilder();
         gitSql.append("SELECT ")
-                .append("b.department.name, ")
-//                .append("b.fromDepartment.name, ")
-//                .append("b.toDepartment.name, ")
-                .append("SUM(CASE WHEN b.forwardReferenceBill IS NULL AND SIZE(b.forwardReferenceBills) = 0 THEN b.billFinanceDetails.totalCostValue ELSE 0 END) ")
-                .append("FROM Bill b ")
-                .append("WHERE b.retired = false ")
-                .append("AND b.billTypeAtomic IN :btAtomics ")
-                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+                .append("issueBi.bill.department.name, ")
+                .append("SUM((issueBi.pharmaceuticalBillItem.qty - COALESCE(receivedQty.total, 0)) * issueBi.billItemFinanceDetails.netRate) ")
+                .append("FROM BillItem issueBi ")
+                .append("LEFT JOIN (")
+                .append("  SELECT receiveBi.referanceBillItem.id as issueItemId, ")
+                .append("         SUM(ABS(receiveBi.pharmaceuticalBillItem.qty)) as total ")
+                .append("  FROM BillItem receiveBi ")
+                .append("  WHERE receiveBi.bill.billTypeAtomic = :receiveType ")
+                .append("  AND receiveBi.bill.retired = false ")
+                .append("  AND receiveBi.retired = false ")
+                .append("  AND receiveBi.referanceBillItem IS NOT NULL ")
+                .append("  GROUP BY receiveBi.referanceBillItem.id")
+                .append(") receivedQty ON receivedQty.issueItemId = issueBi.id ")
+                .append("WHERE issueBi.retired = false ")
+                .append("AND issueBi.bill.retired = false ")
+                .append("AND issueBi.bill.billTypeAtomic IN :btAtomics ")
+                .append("AND issueBi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                .append("AND issueBi.billItemFinanceDetails IS NOT NULL ")
+                .append("AND issueBi.billItemFinanceDetails.netRate IS NOT NULL ")
+                .append("AND (issueBi.pharmaceuticalBillItem.qty - COALESCE(receivedQty.total, 0)) > 0.001 ");
 
         Map<String, Object> gitParameters = new HashMap<>();
         gitParameters.put("fromDate", fromDate);
         gitParameters.put("toDate", toDate);
         gitParameters.put("btAtomics", billTypeAtomics);
+        gitParameters.put("receiveType", BillTypeAtomic.PHARMACY_RECEIVE);
 
+        // Apply additional common filters for Bill entity
+        // Note: These filters are applied to the issueBi.bill entity
         additionalCommonFilltersForBillEntity(gitSql, gitParameters);
-        gitSql.append(" GROUP BY b.department.name ");
+
+        gitSql.append(" GROUP BY issueBi.bill.department.name");
 
         try {
-            List<Object[]> gitResults = getBillFacade().findObjectsArrayByJpql(gitSql.toString(), gitParameters, TemporalType.TIMESTAMP);
+            List<Object[]> gitResults = getBillItemFacade().findObjectsArrayByJpql(gitSql.toString(), gitParameters, TemporalType.TIMESTAMP);
 
             for (Object[] result : gitResults) {
                 String departmentName = (String) result[0];
-                BigDecimal gitAmountBD = (BigDecimal) result[1];
-                double gitAmount = gitAmountBD != null ? gitAmountBD.doubleValue() : 0.0;
+                Double gitAmountDouble = (Double) result[1];
+                double gitAmount = gitAmountDouble != null ? gitAmountDouble : 0.0;
 
                 // Handle null department names
                 if (departmentName == null || departmentName.trim().isEmpty()) {
@@ -5181,7 +5229,7 @@ public class PharmacyController implements Serializable {
                 }
             }
         } catch (Exception e) {
-            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error calculating GIT amounts", e);
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error calculating GIT amounts at BillItem level", e);
         }
     }
 
