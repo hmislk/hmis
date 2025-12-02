@@ -1,0 +1,88 @@
+{
+    "version": "v2.1.4",
+    "description": "Add Composite Index for USER_STOCK Performance Optimization - Pharmacy Retail Sale Speed Improvement",
+    "author": "Dr M H B Ariyaratne",
+    "date": "2025-12-03",
+    "githubIssue": "16990",
+    "branch": "16990-speed-up-the-pharmacy-retail-sale",
+    "estimatedDurationMinutes": 2,
+    "requiresDowntime": false,
+    "affectedTables": ["USER_STOCK", "userstock"],
+    "affectedModules": ["Pharmacy", "Retail Sale", "Stock Management", "User Stock Container"],
+    "dependencies": [],
+    "preRequisites": [
+        "Database backup completed and verified",
+        "Ensure USER_STOCK or userstock table exists",
+        "No active long-running queries on USER_STOCK table recommended",
+        "Check current index count (SHOW INDEX FROM USER_STOCK)"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Pre-migration verification - check table existence and current indexes",
+            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('USER_STOCK', 'userstock')"
+        },
+        {
+            "step": 2,
+            "description": "Check if index idx_user_stock_fast_lookup already exists",
+            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME = 'idx_user_stock_fast_lookup'"
+        },
+        {
+            "step": 3,
+            "description": "Create composite index on USER_STOCK (uppercase - production/Ubuntu)",
+            "sql": "CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup ON USER_STOCK(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID)"
+        },
+        {
+            "step": 4,
+            "description": "Create composite index on userstock (lowercase - development/Windows)",
+            "sql": "CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup ON userstock(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID)"
+        },
+        {
+            "step": 5,
+            "description": "Verify index creation and column order",
+            "sql": "SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME = 'idx_user_stock_fast_lookup'"
+        },
+        {
+            "step": 6,
+            "description": "Test index usage with EXPLAIN query",
+            "sql": "EXPLAIN SELECT SUM(UPDATIONQTY) FROM USER_STOCK WHERE RETIRED=0 AND STOCK_ID=1 AND CREATEDAT BETWEEN ... "
+        }
+    ],
+    "verificationQueries": [
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME = 'idx_user_stock_fast_lookup'",
+        "SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX, CARDINALITY FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME IN ('USER_STOCK', 'userstock') AND INDEX_NAME = 'idx_user_stock_fast_lookup' ORDER BY SEQ_IN_INDEX",
+        "EXPLAIN SELECT SUM(UPDATIONQTY) FROM USER_STOCK WHERE RETIRED=0 AND STOCK_ID=1 AND CREATER_ID!=1 AND CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()"
+    ],
+    "rollbackNotes": [
+        "This migration only adds an index - safe to rollback",
+        "No data modifications - schema change only",
+        "Rollback simply drops the index (instant operation)",
+        "Application will continue to work without index (just slower)",
+        "If performance improvement insufficient, rollback and try alternative approaches"
+    ],
+    "postMigrationVerification": [
+        "Monitor UserStockController.isStockAvailable() query execution time in logs",
+        "Expected improvement: 50-150ms → 5-15ms per query",
+        "Test pharmacy retail sale item addition lag (autocomplete to qty field focus)",
+        "Verify index is being used: Run EXPLAIN on isStockAvailable query",
+        "Check MySQL slow query log for USER_STOCK queries (should decrease significantly)",
+        "Monitor database index size increase (minimal impact expected)"
+    ],
+    "technicalNotes": [
+        "Index column order optimized for query selectivity:",
+        "  1. STOCK_ID - Most selective (specific stock lookup)",
+        "  2. RETIRED - Boolean filter (eliminates retired records early)",
+        "  3. CREATEDAT - Date range filter (30-minute window)",
+        "  4. CREATER_ID - User exclusion (NOT equal condition)",
+        "Query pattern: SELECT sum(UPDATIONQTY) WHERE STOCK_ID=? AND RETIRED=0 AND CREATER_ID!=? AND CREATEDAT BETWEEN ? AND ?",
+        "This index enables index-only scan for covered columns",
+        "Expected cardinality improvement for stock lookups",
+        "Compatible with MySQL InnoDB and MyISAM engines"
+    ],
+    "performanceMetrics": {
+        "expectedQueryTimeReduction": "10x faster (50-150ms → 5-15ms)",
+        "expectedUserExperienceImprovement": "Noticeable reduction in UI lag",
+        "indexSizeImpact": "Minimal (<1MB for typical pharmacy dataset)",
+        "maintenanceOverhead": "Low (automatically updated on INSERT/UPDATE)"
+    }
+}
