@@ -342,6 +342,12 @@ public class PharmacyReportController implements Serializable {
     private double totalRetailValue;
     private double totalSaleValue;
 
+    // Maps to store remaining quantities and values for Good In Transit report
+    private Map<Long, Double> billItemRemainingQuantities = new HashMap<>();
+    private Map<Long, Double> billItemRemainingRetailValues = new HashMap<>();
+    private Map<Long, Double> billItemRemainingPurchaseValues = new HashMap<>();
+    private Map<Long, Double> billItemRemainingCostValues = new HashMap<>();
+
     //Constructor
     public PharmacyReportController() {
     }
@@ -3610,28 +3616,51 @@ public class PharmacyReportController implements Serializable {
                 billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             }
 
-            // Calculate totals for footer using BIFD values
+            // Calculate totals for footer
             totalRetailValue = 0.0;
             totalPurchaseValue = 0.0;
             totalCostValue = 0.0;
 
-            for (BillItem billItem : billItems) {
-                if (billItem.getBillItemFinanceDetails() != null) {
-                    BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            if (reportType != null && reportType.equals("pending")) {
+                // For pending items, use remaining values (not total issued values)
+                for (BillItem billItem : billItems) {
+                    Long itemId = billItem.getId();
 
-                    // Retail Value calculation using BIFD
-                    if (bifd.getValueAtRetailRate() != null) {
-                        totalRetailValue += Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                    Double remainingRetail = billItemRemainingRetailValues.get(itemId);
+                    if (remainingRetail != null) {
+                        totalRetailValue += remainingRetail;
                     }
 
-                    // Purchase Value calculation using BIFD
-                    if (bifd.getValueAtPurchaseRate() != null) {
-                        totalPurchaseValue += Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                    Double remainingPurchase = billItemRemainingPurchaseValues.get(itemId);
+                    if (remainingPurchase != null) {
+                        totalPurchaseValue += remainingPurchase;
                     }
 
-                    // Cost Value calculation using BIFD
-                    if (bifd.getValueAtCostRate() != null) {
-                        totalCostValue += Math.abs(bifd.getValueAtCostRate().doubleValue());
+                    Double remainingCost = billItemRemainingCostValues.get(itemId);
+                    if (remainingCost != null) {
+                        totalCostValue += remainingCost;
+                    }
+                }
+            } else {
+                // For other report types, use total issued values from BIFD
+                for (BillItem billItem : billItems) {
+                    if (billItem.getBillItemFinanceDetails() != null) {
+                        BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+                        // Retail Value calculation using BIFD
+                        if (bifd.getValueAtRetailRate() != null) {
+                            totalRetailValue += Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                        }
+
+                        // Purchase Value calculation using BIFD
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            totalPurchaseValue += Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                        }
+
+                        // Cost Value calculation using BIFD
+                        if (bifd.getValueAtCostRate() != null) {
+                            totalCostValue += Math.abs(bifd.getValueAtCostRate().doubleValue());
+                        }
                     }
                 }
             }
@@ -3793,8 +3822,14 @@ public class PharmacyReportController implements Serializable {
             List<BillItem> allIssueItems = billItemFacade.findByJpql(
                     issueSql.toString(), issueParameters, TemporalType.TIMESTAMP);
 
-            // Step 3: Filter items with remaining quantity in transit
+            // Step 3: Filter items with remaining quantity in transit and calculate remaining values
             List<BillItem> pendingItems = new ArrayList<>();
+
+            // Clear previous calculations
+            billItemRemainingQuantities.clear();
+            billItemRemainingRetailValues.clear();
+            billItemRemainingPurchaseValues.clear();
+            billItemRemainingCostValues.clear();
 
             for (BillItem issueItem : allIssueItems) {
                 if (issueItem.getPharmaceuticalBillItem() == null) {
@@ -3818,6 +3853,37 @@ public class PharmacyReportController implements Serializable {
                 // Only include if quantity in transit is positive (with tolerance for floating point)
                 if (qtyInTransit > 0.001) {
                     pendingItems.add(issueItem);
+
+                    // Store remaining quantity
+                    billItemRemainingQuantities.put(issueItem.getId(), qtyInTransit);
+
+                    // Calculate remaining values proportionally
+                    // Formula: remainingValue = (remainingQty / issuedQty) * totalIssuedValue
+                    double proportionRemaining = qtyInTransit / issuedQtyAbs;
+
+                    BillItemFinanceDetails bifd = issueItem.getBillItemFinanceDetails();
+                    if (bifd != null) {
+                        // Calculate remaining retail value
+                        if (bifd.getValueAtRetailRate() != null) {
+                            double totalRetailValue = Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                            double remainingRetailValue = totalRetailValue * proportionRemaining;
+                            billItemRemainingRetailValues.put(issueItem.getId(), remainingRetailValue);
+                        }
+
+                        // Calculate remaining purchase value
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            double totalPurchaseValue = Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                            double remainingPurchaseValue = totalPurchaseValue * proportionRemaining;
+                            billItemRemainingPurchaseValues.put(issueItem.getId(), remainingPurchaseValue);
+                        }
+
+                        // Calculate remaining cost value
+                        if (bifd.getValueAtCostRate() != null) {
+                            double totalCostValue = Math.abs(bifd.getValueAtCostRate().doubleValue());
+                            double remainingCostValue = totalCostValue * proportionRemaining;
+                            billItemRemainingCostValues.put(issueItem.getId(), remainingCostValue);
+                        }
+                    }
                 }
             }
 
@@ -8290,5 +8356,37 @@ public class PharmacyReportController implements Serializable {
 
     public void setCogsBillDtos(List<CostOfGoodSoldBillDTO> cogsBillDtos) {
         this.cogsBillDtos = cogsBillDtos;
+    }
+
+    public Map<Long, Double> getBillItemRemainingQuantities() {
+        return billItemRemainingQuantities;
+    }
+
+    public void setBillItemRemainingQuantities(Map<Long, Double> billItemRemainingQuantities) {
+        this.billItemRemainingQuantities = billItemRemainingQuantities;
+    }
+
+    public Map<Long, Double> getBillItemRemainingRetailValues() {
+        return billItemRemainingRetailValues;
+    }
+
+    public void setBillItemRemainingRetailValues(Map<Long, Double> billItemRemainingRetailValues) {
+        this.billItemRemainingRetailValues = billItemRemainingRetailValues;
+    }
+
+    public Map<Long, Double> getBillItemRemainingPurchaseValues() {
+        return billItemRemainingPurchaseValues;
+    }
+
+    public void setBillItemRemainingPurchaseValues(Map<Long, Double> billItemRemainingPurchaseValues) {
+        this.billItemRemainingPurchaseValues = billItemRemainingPurchaseValues;
+    }
+
+    public Map<Long, Double> getBillItemRemainingCostValues() {
+        return billItemRemainingCostValues;
+    }
+
+    public void setBillItemRemainingCostValues(Map<Long, Double> billItemRemainingCostValues) {
+        this.billItemRemainingCostValues = billItemRemainingCostValues;
     }
 }
