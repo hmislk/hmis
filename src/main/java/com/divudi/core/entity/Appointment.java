@@ -5,10 +5,14 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.data.AppointmentStatus;
+import com.divudi.core.data.AppointmentType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -53,10 +57,31 @@ public class Appointment extends PatientEncounter implements Serializable {
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PatientEncounter patientEncounter;
-
+    
     @ManyToOne
     private Patient patient;
-
+    
+    @Enumerated(EnumType.STRING)
+    private AppointmentType appointmentType;
+    
+    private String appointmentNumber;
+    
+    private boolean appointmentComplete;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date appointmentCompleteAt;
+    @ManyToOne
+    private WebUser appointmentCompleteBy;
+    
+    private boolean appointmentCancel;
+    private String appointmentCancelReason;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date appointmentCancelAt;
+    @ManyToOne
+    private WebUser appointmentCancelBy;
+    
+    @Enumerated(EnumType.STRING)
+    private AppointmentStatus status;
+    
     public Long getId() {
         return id;
     }
@@ -184,6 +209,86 @@ public class Appointment extends PatientEncounter implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public AppointmentType getAppointmentType() {
+        return appointmentType;
+    }
+
+    public void setAppointmentType(AppointmentType appointmentType) {
+        this.appointmentType = appointmentType;
+    }
+
+    public String getAppointmentNumber() {
+        return appointmentNumber;
+    }
+
+    public void setAppointmentNumber(String appointmentNumber) {
+        this.appointmentNumber = appointmentNumber;
+    }
+
+    public boolean isAppointmentComplete() {
+        return appointmentComplete;
+    }
+
+    public void setAppointmentComplete(boolean appointmentComplete) {
+        this.appointmentComplete = appointmentComplete;
+    }
+
+    public Date getAppointmentCompleteAt() {
+        return appointmentCompleteAt;
+    }
+
+    public void setAppointmentCompleteAt(Date appointmentCompleteAt) {
+        this.appointmentCompleteAt = appointmentCompleteAt;
+    }
+
+    public WebUser getAppointmentCompleteBy() {
+        return appointmentCompleteBy;
+    }
+
+    public void setAppointmentCompleteBy(WebUser appointmentCompleteBy) {
+        this.appointmentCompleteBy = appointmentCompleteBy;
+    }
+
+    public boolean isAppointmentCancel() {
+        return appointmentCancel;
+    }
+
+    public void setAppointmentCancel(boolean appointmentCancel) {
+        this.appointmentCancel = appointmentCancel;
+    }
+
+    public String getAppointmentCancelReason() {
+        return appointmentCancelReason;
+    }
+
+    public void setAppointmentCancelReason(String appointmentCancelReason) {
+        this.appointmentCancelReason = appointmentCancelReason;
+    }
+
+    public Date getAppointmentCancelAt() {
+        return appointmentCancelAt;
+    }
+
+    public void setAppointmentCancelAt(Date appointmentCancelAt) {
+        this.appointmentCancelAt = appointmentCancelAt;
+    }
+
+    public WebUser getAppointmentCancelBy() {
+        return appointmentCancelBy;
+    }
+
+    public void setAppointmentCancelBy(WebUser appointmentCancelBy) {
+        this.appointmentCancelBy = appointmentCancelBy;
+    }
+
+    public AppointmentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AppointmentStatus status) {
+        this.status = status;
     }
 
 }
