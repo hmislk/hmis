@@ -61,7 +61,20 @@
                                     <p:panelGrid columns="2" class="w-100 table table-striped" >
 
                                         <p:outputLabel value="Name:" rendered="#{not empty patientController.current.person.nameWithTitle}" />
-                                        <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+                                        <h:panelGroup class="d-flex">
+                                            
+                                            <p:outputLabel class="ml-4" value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+                                            
+                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty patientController.current.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{patientController.current.specificStatus}" severity="danger">
+                                                <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+                                            </p:badge> 
+                                            
+                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{patientController.current.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{patientController.current.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                               
+                                            </p:badge>
+                                           
+                                        </h:panelGroup>
+
 
                                         <p:outputLabel value="Age:" rendered="#{not empty patientController.current.person.ageAsString}" />
                                         <p:outputLabel value="#{patientController.current.person.ageAsString}" rendered="#{not empty patientController.current.person.ageAsString}" />
@@ -124,10 +137,15 @@
                                         <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
-                                        
+
                                         <p:outputLabel value="Patient Active Status:" />
-                                        <p:outputLabel value="#{patientController.current.blacklisted eq true ? 'Blacklist Patient' : 'Active Patient'}" style="color: #{patientController.current.blacklisted eq true ? 'red' : 'green'}; font-weight: bold" >
-                                           
+                                        <p:outputLabel value="#{patientController.current.blacklisted eq true ? 'Blacklist Patient' : 'Active Patient'}" style="color: #{patientController.current.blacklisted eq true ? 'black' : 'green'}; font-weight: bold" >
+
+                                        </p:outputLabel>
+
+                                        <p:outputLabel value="Patient Specific Status:" />
+                                        <p:outputLabel value="#{not empty patientController.current.specificStatus ? patientController.current.specificStatus : 'Normal'} Patient" style="color:tomato; font-weight: bold" >
+
                                         </p:outputLabel>
 
 <!--                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
@@ -264,7 +282,7 @@
                                         styleClass="mx-2 ui-button-danger"
                                         icon="fa fa-ban"
                                         onclick="PF('blacklistModal').show()">
-                                   
+
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -274,7 +292,7 @@
                                         styleClass="mx-2 ui-button-danger"
                                         icon="fa fa-ban"
                                         onclick="PF('blacklistModal').show();">
-                                       
+
                                     </p:commandButton>
 
                                     <p:dialog 
@@ -285,7 +303,7 @@
                                         width="400" 
                                         showEffect="fade" 
                                         modal="true" 
-                                        
+
                                         closeOnEscape="true">
 
 
@@ -302,7 +320,7 @@
                                             <p:inputTextarea id="blacklistComment" 
                                                              value="#{patientController.blacklistComment}" 
                                                              rows="4" 
-                                                             
+
                                                              autoResize="false" 
                                                              maxlength="500" 
                                                              placeholder="Enter reason" />
@@ -355,9 +373,9 @@
                                         onclick="return confirm('Are you sure you want to delete this patient?');">
                                     </p:commandButton>
                                     <p:growl id="msg" showDetail="false" showSummary="true"></p:growl>
-                                    
+
                                 </div>
-                            
+
 
                             </div>  
 

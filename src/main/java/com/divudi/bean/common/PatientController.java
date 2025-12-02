@@ -57,6 +57,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.SpecificPatientStatus;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
@@ -71,6 +72,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -315,6 +317,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToPatientPastChannelBiiking() {
         return "/channel/patients_pastbookings_channel?faces-redirect=true";
+    }
+    
+    public List<SpecificPatientStatus> getAllPatientSpecificLabels(){
+        return Arrays.asList(SpecificPatientStatus.values());
     }
 
     public void fillPatientsPastChannelbookings() {
