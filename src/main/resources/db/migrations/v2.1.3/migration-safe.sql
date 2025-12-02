@@ -24,7 +24,6 @@ DELIMITER //
 
 CREATE PROCEDURE migrate_v2_1_3_safe()
 LANGUAGE SQL
-DETERMINISTIC
 MODIFIES SQL DATA
 SQL SECURITY DEFINER
 COMMENT 'Safe migration for decimal precision fixes with full validation'
@@ -174,6 +173,11 @@ BEGIN
 
     ALTER TABLE BILLFINANCEDETAILS MODIFY COLUMN LINEEXPENSE DECIMAL(20,4);
     SELECT '✓ LINEEXPENSE upgraded to DECIMAL(20,4)' AS result;
+
+    -- Update table statistics after schema changes
+    SELECT 'Updating table statistics after schema modifications...' AS progress;
+    ANALYZE TABLE BILLFINANCEDETAILS;
+    SELECT '✓ Table statistics refreshed for query optimizer' AS result;
 
     -- ==========================================
     -- PHASE 3: POST-MIGRATION VALIDATION

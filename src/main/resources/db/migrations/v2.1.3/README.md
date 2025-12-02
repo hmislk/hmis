@@ -223,8 +223,8 @@ This migration resolves: [GitHub Issue #16989](https://github.com/hmislk/hmis/is
 ## 🔍 Technical Details
 
 ### MySQL Compatibility
-- **Minimum**: MySQL 5.6
-- **Recommended**: MySQL 5.7+
+- **Minimum**: MySQL 5.7+ (5.6 reached EOL in February 2021)
+- **Recommended**: MySQL 8.0+
 - **Tested**: MySQL 8.0
 
 ### Performance Impact

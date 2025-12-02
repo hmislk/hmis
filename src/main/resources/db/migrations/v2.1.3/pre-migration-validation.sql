@@ -26,14 +26,27 @@ SELECT '' AS spacer1;
 SELECT '1. ENVIRONMENT VALIDATION' AS section_header;
 SELECT '==========================================' AS separator;
 
--- Check MySQL version compatibility
+-- Check MySQL version compatibility (enforcing)
 SELECT
     VERSION() AS mysql_version,
     CASE
-        WHEN VERSION() >= '5.7.0' THEN '✓ Compatible'
-        WHEN VERSION() >= '5.6.0' THEN '⚠️  Supported but recommend upgrade'
-        ELSE '❌ Version too old - upgrade required'
+        WHEN VERSION() >= '5.7.0' THEN '✓ Compatible - proceeding with migration'
+        ELSE 'BLOCKED - MySQL 5.6 and below not supported'
     END AS version_status;
+
+-- Enforce MySQL version requirement (abort if < 5.7)
+DROP PROCEDURE IF EXISTS enforce_mysql_version;
+DELIMITER //
+CREATE PROCEDURE enforce_mysql_version()
+BEGIN
+    IF VERSION() < '5.7.0' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Migration aborted: MySQL 5.7+ required. Current version is EOL (MySQL 5.6 reached end-of-life February 2021). Please upgrade to MySQL 5.7 or higher before running this migration.';
+    END IF;
+END//
+DELIMITER ;
+CALL enforce_mysql_version();
+DROP PROCEDURE enforce_mysql_version;
 
 -- Check table existence
 SELECT
@@ -223,9 +236,13 @@ SELECT
     SUM(TOTALCOSTVALUE) as sum_cost_value,
     SUM(TOTALPURCHASEVALUE) as sum_purchase_value,
     AVG(TOTALCOSTVALUE) as avg_cost_value,
+    COUNT(CASE WHEN (TOTALCOSTVALUE % 1) != 0 THEN 1 END) as fractional_cost_count,
+    COUNT(CASE WHEN (TOTALPURCHASEVALUE % 1) != 0 THEN 1 END) as fractional_purchase_count,
     CASE
-        WHEN SUM(TOTALCOSTVALUE) % 1 = 0 AND AVG(TOTALCOSTVALUE) % 1 = 0 THEN '❌ Precision lost (integers only)'
-        ELSE '✓ Some precision maintained'
+        WHEN COUNT(CASE WHEN (TOTALCOSTVALUE % 1) != 0 THEN 1 END) > 0
+          OR COUNT(CASE WHEN (TOTALPURCHASEVALUE % 1) != 0 THEN 1 END) > 0
+        THEN '✓ Fractional precision in use'
+        ELSE '⚠️  No fractional data currently stored'
     END AS current_precision_status
 FROM BILLFINANCEDETAILS
 WHERE TOTALCOSTVALUE IS NOT NULL
