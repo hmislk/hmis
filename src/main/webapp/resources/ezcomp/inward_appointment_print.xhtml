@@ -31,7 +31,6 @@
             margin: 20px;
             padding: 20px;
             background-color: whitesmoke;
-            box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
             page-break-after: always;
             }
 
@@ -52,30 +51,29 @@
             }
         </h:outputStylesheet>
         <h:form>
-            <p:commandButton class="my-1" value="Print" ajax="false" >
-                <p:printer target="gpBillPreview" ></p:printer>
-            </p:commandButton>
+            
             <div class="w-100 m-1">
                 <h:panelGroup id="gpBillPreview" class="w-100 " >
 
-                    <div class="container-fluid bill-item">
+                    <div class="container-fluid bill-item" style="width: 210mm;">
                         <div class="row text-center">
                             <div class="col-12">
-                                <h2><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.name}" /></h2>
-                                <h3><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.address}" /></h3>
-                                <h4>#{cc.attrs.controller.currentBill.institution.phone}</h4>
-                                <h5>#{cc.attrs.controller.currentBill.institution.fax}</h5>
-                                <h5>#{cc.attrs.controller.currentBill.institution.email}</h5>
-                                <h5>#{cc.attrs.controller.currentBill.institution.web}</h5>
+                                <h3><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.name}" /></h3>
+                                <h4><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.address}" /></h4>
+                                <h5><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.phone}"/></h5>
+                                <h6><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.fax}"/></h6>
+                                <h6><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.email}"/></h6>
+                                <h6><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.web}"/></h6>
                             </div>
                         </div>
 
                         <div class="row m-2 ">
+                            
                             <div class="my-4 text-center" style="font-weight: bold;">
-                                <p:outputLabel   value="PATIENT DETAILS" />
+                                <p:outputLabel value="PATIENT DETAILS" />
                             </div>
 
-                            <div class="row d-flex justify-content-center align-items-center">
+                            <div class="row d-flex justify-content-center align-items-start">
                                 <div class="col-6 d-flex text-left align-items-center justify-content-center">
                                     <table>
                                         <tbody>
@@ -83,26 +81,32 @@
                                                 <th class="text-left">Name</th>
                                                 <td class="text-right">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.currentAppointment.patient.person.nameWithTitle}
+                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.nameWithTitle}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Address</th>
                                                 <td class="text-right">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.currentAppointment.patient.person.address}
+                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.address}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Age</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.currentAppointment.patient.age}
+                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.age}"></h:outputLabel>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-left">Mobile No</th>
+                                                <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                <td class="text-left">
+                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.mobile}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
-
                                 </div>
 
                                 <div class="col-6  d-flex justify-content-end align-items-center justify-content-center">
@@ -112,37 +116,29 @@
                                                 <th class="text-left">Sex</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.currentAppointment.patient.person.sex}
+                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.sex}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">NIC / Passport</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.currentAppointment.patient.person.nic}
+                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.nic}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Address</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.currentAppointment.patient.person.address}
+                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.address}"></h:outputLabel>
                                                 </td>
                                             </tr>
-                                            <tr>
-                                                <th class="text-left">Mobile No</th>
-                                                <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                                                <td class="text-left">
-                                                    #{cc.attrs.controller.currentAppointment.patient.person.mobile}
-                                                </td>
-                                            </tr>
+                                            
                                         </tbody>
                                     </table>
-
-
-
                                 </div>
                             </div>
+                            
                             <div class="my-4 text-center" style="font-weight: bold;">
                                 <p:outputLabel   value="REFERING DOCTOR DETAIL" />
                             </div>
@@ -154,20 +150,20 @@
                                             <th class="text-left">Doctor Name</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                #{cc.attrs.controller.currentBill.referredBy.person.name}
+                                                <h:outputLabel value="#{cc.attrs.controller.currentBill.referredBy.person.name}"></h:outputLabel>
                                             </td>
                                         </tr>
                                         <tr>
                                             <th class="text-left">Appointment Date</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                #{cc.attrs.controller.currentAppointment.appointmentDate}
+                                                <h:outputLabel value="#{cc.attrs.controller.currentAppointment.appointmentDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputLabel>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-
-
                             </div>
 
                             <h:panelGroup rendered="#{cc.attrs.controller.reservation ne null}">
@@ -182,27 +178,29 @@
                                                 <th class="text-left">Room No</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.reservation.room.name}
+                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.room.name}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Reserved From Date</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.reservation.reservedFrom}
+                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.reservedFrom}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Reserved To Date</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    #{cc.attrs.controller.reservation.reservedTo}
+                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.reservedTo}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputLabel>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
-
-
                                 </div>
                             </h:panelGroup>
 
@@ -217,29 +215,26 @@
                                             <th class="text-left">Total</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                #{cc.attrs.controller.currentBill.total}
+                                                <h:outputLabel value="#{cc.attrs.controller.currentBill.total}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
                                             </td>
                                         </tr>
                                         <tr>
                                             <th class="text-left">Payment Method</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                #{cc.attrs.controller.currentBill.paymentMethod}
+                                                <h:outputLabel value="#{cc.attrs.controller.currentBill.paymentMethod}"></h:outputLabel>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-
-
                         </div>
-
-
-
                     </div>
                 </h:panelGroup>    
             </div>
         </h:form>
-
+        
     </cc:implementation>
 </html>
