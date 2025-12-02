@@ -26,22 +26,28 @@
             <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
         </p:commandButton>
         
-        <p:dataTable id="tbl" rowIndexVar="i"  value="#{searchController.bills}" var="bill" >
+        <p:dataTable id="tbl" rowIndexVar="i"  value="#{searchController.bills}" var="bill" 
+                     paginator="true"
+                     rows="10"
+                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                     rowsPerPageTemplate="10,20,50,100"
+                     emptyMessage="No Bills Found"
+                     filteredValue="#{searchController.filteredBills}">
             <f:facet name="header">
                 <h:outputLabel value="Pharmacy Whole Sale Bill Search"/>
             </f:facet>
 
             <p:column>
-                <p:commandButton ajax="false" action="/pharmacy/pharmacy_reprint_bill" value="View BIll">
+                <p:commandButton ajax="false" action="/pharmacy/pharmacy_reprint_bill?faces-redirect=true" value="View BIll">
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </p:commandButton>
             </p:column>
-            <p:column headerText="BILL NO"  >                
+            <p:column headerText="BILL NO" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                
                 <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                    
             </p:column>    
 
 
-            <p:column headerText="Billed At"  >
+            <p:column headerText="Billed At" sortBy="#{bill.createdAt}" >
 
                 <h:outputLabel value="#{bill.createdAt}" >
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -54,7 +60,7 @@
                     </h:outputLabel>
                 </h:panelGroup>               
             </p:column>                 
-            <p:column headerText="Billed By" >
+            <p:column headerText="Billed By" sortBy="#{bill.creater.webUserPerson.name}" filterBy="#{bill.creater.webUserPerson.name}" filterMatchMode="contains">
                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                 </h:outputLabel>                
                 <br/>

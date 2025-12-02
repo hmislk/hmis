@@ -77,9 +77,20 @@
 
                                 <p:commandButton 
                                     value="Process" 
-                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListDto()}" 
                                     icon="fa fa-prescription-bottle-alt"
                                     class="ui-button-success"
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                </p:commandButton>
+                                
+                                 <p:commandButton 
+                                    value="Process" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList()}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="ui-button-warning"
                                     >
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}" 

@@ -1,275 +1,598 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-<h:body>
-    <ui:composition template="/resources/template/template.xhtml">
-        <ui:define name="content">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
 
-            <h:form>
-                <p:panel header="Channel Income Report Print View" styleClass="w-100">
-                    <f:facet name="header">
-                        <div class="d-flex justify-content-between">
-                            <h:outputText value="Channel Income Report Print View" class="mt-2"/>
-                            <div class="d-flex gap-2">
-                                <p:commandButton
+                <h:form>
+                    <p:panel header="Channel Income Report Print View" styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Channel Income Report Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
                                         icon="fa-solid fa-print"
                                         class="ui-button-info"
                                         style="width: 150px"
                                         ajax="false"
                                         value="Print">
-                                    <p:printer target="reportView"/>
-                                </p:commandButton>
-                                <p:commandButton
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+                                    <p:commandButton
                                         ajax="false"
                                         value="Back to Report"
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
                                         action="channel_income?faces-redirect=true">
-                                </p:commandButton>
+                                    </p:commandButton>
+                                </div>
+
                             </div>
+                        </f:facet>
 
-                        </div>
-                    </f:facet>
+                        <style>
 
-                    <style>
-
-                        @media screen {
-                            .paper {
-                                position: static !important;
-                                width: 297mm !important;
-                                zoom: 2.0;
-                            }
-
-                            table {
-                                border-collapse: collapse;
-                                width: 100%;
-                                font-size: 12px !important;
-                                margin-top: 1mm !important;
-                            }
-
-                            th, td {
-                                border: 1px solid #000;
-                                padding: 2px !important;
-                                margin: 2px !important;
-                                text-align: left;
-                                margin-left: 10mm !important;
-                            }
-
-                            .header {
-                                font-size: 16px !important;
-                            }
-
-                            tfoot {
-                                font-weight: 700 !important;
-                                font-size: 11px !important;
-                            }
-                        }
-
-                        @media print {
-                            @page {
-                                @bottom-right {
-                                    content: "Page " counter(page) " of " counter(pages);
-                                    font-family: Arial, sans-serif;
-                                    font-size: 10pt;
+                            @media screen {
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm !important;
+                                    zoom: 2.0;
                                 }
-                                size: A4 landscape !important;
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px !important;
+                                    margin-top: 1mm !important;
+                                }
+
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 2px !important;
+                                    margin: 2px !important;
+                                    text-align: left;
+                                    margin-left: 10mm !important;
+                                }
+
+                                .header {
+                                    font-size: 16px !important;
+                                }
+
+                                tfoot {
+                                    font-weight: 700 !important;
+                                    font-size: 11px !important;
+                                }
                             }
 
-                            body {
-                                counter-reset: page;
-                            }
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A4 landscape !important;
+                                }
 
-                            .paper {
-                                position: static !important;
-                                width: 297mm !important;
-                            }
+                                body {
+                                    counter-reset: page;
+                                }
 
-                            .header {
-                                line-height: 1.1;
-                                margin: 0mm !important;
-                                font-size: 13px !important;
-                            }
+                                .paper {
+                                    position: static !important;
+                                    width: 297mm !important;
+                                }
 
-                            table {
-                                border-collapse: collapse;
-                                width: 99.9%;
-                                font-size: 10px !important;
-                                margin-top: 1mm !important;
-                            }
+                                .header {
+                                    line-height: 1.1;
+                                    margin: 0mm !important;
+                                    font-size: 13px !important;
+                                }
 
-                            th, td {
-                                border: 1px solid #000;
-                                padding: 1px !important;
-                                margin: 1px !important;
-                                text-align: left;
-                                margin-left: 10mm !important;
-                            }
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 10px !important;
+                                    margin-top: 1mm !important;
+                                }
 
-                            tfoot {
-                                font-weight: 700 !important;
-                                font-size: 11px !important;
-                            }
-                        }
-                    </style>
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 1px !important;
+                                    margin: 1px !important;
+                                    text-align: left;
+                                    margin-left: 10mm !important;
+                                }
 
-                    <h:panelGroup id="reportView" class="d-flex justify-content-center">
-                        <div class="paper">
-                            <div class="header">
-                                <div class="d-flex justify-content-center text-5 gap-2"
-                                     style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
-                                    <h:outputText value="#{sessionController.institution.name}"/>
-                                </div>
-                                <div class="d-flex justify-content-center text-5 gap-2"
-                                     style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
-                                    <h:outputText value="Channel Income Report"/>
-                                </div>
-                                <div class="d-flex justify-content-center text-5 gap-2"
-                                     style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
-                                    <h:outputText value="From Date - "/>
-                                    <h:outputText value="#{searchController.fromDate}">
-                                        <f:convertDateTime
+                                tfoot {
+                                    font-weight: 700 !important;
+                                    font-size: 11px !important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="Channel Income Report"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="From Date - "/>
+                                        <h:outputText value="#{searchController.fromDate}">
+                                            <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputText>
-                                    <h:outputText value="" style="width: 2em!important;" class="text-center"/>
-                                    <h:outputText value="To Date - "/>
-                                    <h:outputText value="#{searchController.toDate}">
-                                        <f:convertDateTime
+                                        </h:outputText>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="To Date - "/>
+                                        <h:outputText value="#{searchController.toDate}">
+                                            <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </h:outputText>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: center;">Serial</th>
+                                                <th style="text-align: center;">Date / Time</th>
+                                                <th style="text-align: center;">Bill No</th>
+                                                <th style="text-align: center;">Bill Type</th>
+                                                <th style="text-align: center;">Patient</th>
+                                                <th style="text-align: center;">Cashier</th>
+                                                <th style="text-align: center;">Hospital Fee</th>
+                                                <th style="text-align: center;">Staff Fee</th>
+                                                <th style="text-align: center;">Gross Total</th>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                    <th style="text-align: center;">Discount</th>
+                                                    <th style="text-align: center;">Net Total</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasCashTransaction}">
+                                                    <th style="text-align: center;">Cash</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasCardTransaction}">
+                                                    <th style="text-align: center;">Card</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                    <th style="text-align: center;">Credit</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                    <th style="text-align: center;">Staff Welfare</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                    <th style="text-align: center;">Voucher</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasIouTransaction}">
+                                                    <th style="text-align: center;">IOU</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                    <th style="text-align: center;">Agent</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                    <th style="text-align: center;">Cheque</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                    <th style="text-align: center;">Slip</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                    <th style="text-align: center;">eWallet</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                    <th style="text-align: center;">Patient Deposit</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                    <th style="text-align: center;">Patient Points</th>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                                    <th style="text-align: center;">Online Settlement</th>
+                                                </h:panelGroup>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{searchController.bundle.reportTemplateRows}" var="row" varStatus="status">
+                                                <tr>
+                                                    <td style="text-align: center;"><h:outputText value="#{status.index + 1}"/></td>
+                                                    <td>
+                                                        <h:outputText value="#{row.bill.createdAt}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{row.bill.deptId}"/>
+                                                        <h:panelGroup rendered="#{row.bill.cancelled}">
+                                                            <span style="color: red; font-weight: bold;"> [Cancelled]</span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{row.bill.refunded}">
+                                                            <span style="color: orange; font-weight: bold;"> [Refunded]</span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}">
+                                                            <span style="color: orange; font-weight: bold;"> [Refund Bill]</span>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}">
+                                                            <span style="color: red; font-weight: bold;"> [Cancel Bill]</span>
+                                                        </h:panelGroup>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{row.bill.billTypeAtomic}"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}"/>
+                                                        <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}"/>
+                                                        <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}"/>
+                                                    </td>
+                                                    <td>
+                                                        <h:outputText value="#{row.bill.creater.name}">
+                                                        </h:outputText>
+                                                        <h:outputText value="OB" style="color: #003157; font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="hosValue" value="#{row.bill.hospitalFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="staffValue" value="#{row.bill.staffFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="grossValue" value="#{row.bill.total}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="discountValue" value="#{row.bill.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="netValue" value="#{row.bill.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasCashTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="cashValue" value="#{row.cashValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasCardTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="cardValue" value="#{row.cardValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="creditValue" value="#{row.creditValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="staffWelfareValue" value="#{row.staffWelfareValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="voucherValue" value="#{row.voucherValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasIouTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="iouValue" value="#{row.iouValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="agentValue" value="#{row.agentValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="chequeValue" value="#{row.chequeValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="slipValue" value="#{row.slipValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="ewalletValue" value="#{row.ewalletValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="patientDepositValue" value="#{row.patientDepositValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="patientPointsValue" value="#{row.patientPointsValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                                        <td style="text-align: right;">
+                                                            <h:outputText styleClass="onlineSettlementValue" value="#{row.onlineSettlementValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="6" style="text-align: center; font-weight: 700;">
+                                                    <h:outputText value="Total"/>
+                                                </td>
+                                                <td style="text-align: right; font-weight: 700;">
+                                                    <h:outputText styleClass="totalHosValue" value="0.00">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right; font-weight: 700;">
+                                                    <h:outputText styleClass="totalStaffValue" value="0.00">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align: right; font-weight: 700;">
+                                                    <h:outputText styleClass="totalGrossValue" value="0.00">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">  
+
+                                                    <td style="text-align: right; font-weight: 700;">
+                                                        <h:outputText styleClass="totalDiscountValue" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                                                    <td style="text-align: right; font-weight: 700;">
+                                                        <h:outputText styleClass="totalNetValue" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasCashTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="cashValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasCardTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="cardValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasCreditTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="creditValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasStaffWelfareTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="staffWelfareValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasVoucherTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="voucherValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasIouTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="iouValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasAgentTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="agentValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasChequeTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="chequeValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasSlipTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="slipValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasEWalletTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="ewalletValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientDepositTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="patientDepositValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasPatientPointsTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="patientPointsValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{searchController.bundle.hasOnlineSettlementTransaction}">
+                                                    <td style="text-align: right;">
+                                                        <h:outputText styleClass="onlineSettlementValueTotal" value="0.00">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+
+
+
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <script>
+                                        function calculateTotals(selector, targeter) {
+                                            const values = Array.from(document.querySelectorAll(selector));
+                                            const totalValue = values
+                                                    .map(value => {
+                                                        const cleanValue = value.innerText.replace(/,/g, "");
+                                                        return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                                    })
+                                                    .reduce((total, value) => total + value, 0);
+
+                                            const targetElement = document.querySelector(targeter);
+                                            if (targetElement) {
+                                                targetElement.innerText = totalValue.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                });
+                                            }
+                                        }
+
+                                        function handleRowClick() {
+                                            onBillRowClick(); // triggers AJAX to server
+                                            setTimeout(updateTotals, 500);
+                                        }
+
+                                        function updateTotals() {
+                                            calculateTotals('.grossValue', '.totalGrossValue');
+                                            calculateTotals('.hosValue', '.totalHosValue');
+                                            calculateTotals('.staffValue', '.totalStaffValue');
+                                            calculateTotals('.netValue', '.totalNetValue');
+                                            calculateTotals('.discountValue', '.totalDiscountValue');
+                                            calculateTotals('.cashValue', '.cashValueTotal');
+                                            calculateTotals('.cardValue', '.cardValueTotal');
+                                            calculateTotals('.creditValue', '.creditValueTotal');
+                                            calculateTotals('.staffWelfareValue', '.staffWelfareValueTotal');
+                                            calculateTotals('.voucherValue', '.voucherValueTotal');
+                                            calculateTotals('.iouValue', '.iouValueTotal');
+                                            calculateTotals('.agentValue', '.agentValueTotal');
+                                            calculateTotals('.chequeValue', '.chequeValueTotal');
+                                            calculateTotals('.slipValue', '.slipValueTotal');
+                                            calculateTotals('.ewalletValue', '.ewalletValueTotal');
+                                            calculateTotals('.patientDepositValue', '.patientDepositValueTotal');
+                                            calculateTotals('.patientPointsValue', '.patientPointsValueTotal');
+                                            calculateTotals('.onlineSettlementValue', '.onlineSettlementValueTotal');
+                                        }
+
+                                        // Run the calculation after page loads
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            setTimeout(updateTotals, 1000);
+                                        });
+
+                                        // Also run on window load as backup
+                                        window.addEventListener('load', function () {
+                                            setTimeout(updateTotals, 500);
+                                        });
+
+                                    </script>
                                 </div>
                             </div>
+                        </h:panelGroup>
 
-                            <div>
-                                <table style="width: 100%; border-collapse: collapse;">
-                                    <thead>
-                                    <tr>
-                                        <th style="text-align: center;">Serial</th>
-                                        <th style="text-align: center;">Date / Time</th>
-                                        <th style="text-align: center;">Bill No</th>
-                                        <th style="text-align: center;">Bill Type</th>
-                                        <th style="text-align: center;">Patient</th>
-                                        <th style="text-align: center;">Cashier</th>
-                                        <th style="text-align: center;">Hospital Fee</th>
-                                        <th style="text-align: center;">Staff Fee</th>
-                                        <th style="text-align: center;">Gross Total</th>
-                                        <th style="text-align: center;">Discount</th>
-                                        <th style="text-align: center;">Net Total</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <ui:repeat value="#{searchController.bundle.reportTemplateRows}" var="row" varStatus="status">
-                                        <tr>
-                                            <td style="text-align: center;"><h:outputText value="#{status.index + 1}"/></td>
-                                            <td>
-                                                <h:outputText value="#{row.bill.createdAt}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{row.bill.deptId}"/>
-                                                <h:panelGroup rendered="#{row.bill.cancelled}">
-                                                    <span style="color: red; font-weight: bold;"> [Cancelled]</span>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{row.bill.refunded}">
-                                                    <span style="color: orange; font-weight: bold;"> [Refunded]</span>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}">
-                                                    <span style="color: orange; font-weight: bold;"> [Refund Bill]</span>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}">
-                                                    <span style="color: red; font-weight: bold;"> [Cancel Bill]</span>
-                                                </h:panelGroup>
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{row.bill.billTypeAtomic}"/>
-                                            </td>
-                                            <td>
-                                                <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}"/>
-                                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}"/>
-                                                <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}"/>
-                                            </td>
-                                            <td>
-                                                <h:outputText value="#{row.bill.creater.name}">
-                                                </h:outputText>
-                                                <h:outputText value="OB" style="color: #003157; font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
-                                                </h:outputText>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.hospitalFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.staffFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.total}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.discount}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <h:outputText value="#{row.bill.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </td>
-                                        </tr>
-                                    </ui:repeat>
-                                    </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <td colspan="6" style="text-align: center; font-weight: 700;">
-                                            <h:outputText value="Total"/>
-                                        </td>
-                                        <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.hospitalTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.staffTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.grossTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.discount}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                        <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.total}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputText>
-                                        </td>
-                                    </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
-                    </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
 
-                </p:panel>
-            </h:form>
-        </ui:define>
-    </ui:composition>
-
-</h:body>
+    </h:body>
 </html>

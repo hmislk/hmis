@@ -1,0 +1,841 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy"
+                xmlns:pha="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form>
+
+            <h:panelGroup 
+                rendered="#{!grnCostingController.printPreview}">
+                <p:panel
+                    class="w-100">
+                    <f:facet name="header">
+                        <div class="row">
+                            <div class="text-start col-3">
+                                <h:outputLabel value="Goods Receive with Save/Approve" />
+                            </div>
+                            <div class="text-end col-9">
+          /                      <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fa fa-arrow-left"
+                                    value="To PO List">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-plus-circle"
+                                    value="To Finalize GRNs">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-check-circle"
+                                    value="To Approve GRNs">
+                                </p:commandButton>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <p:messages id="messages" showDetail="true" closable="true" />
+                            </div>
+                        </div>
+
+                    </f:facet>
+
+                    <div class="row" >
+                        <div class="col-12" >
+                            <p:dataTable
+                                var="bi" rowIndexVar="i"
+                                styleClass="noBorder"
+                                rowKey="#{bi.searialNo}"
+                                selection="#{grnCostingController.selectedBillItems}"
+                                value="#{grnCostingController.billItems}" 
+                                class="w-100" scrollable="true"
+                                scrollHeight="350px"
+                                id="itemList" 
+                                selectionMode="multiple"
+                                editable="true">  
+                                <p:focus id="focusPrate" for="pRate"></p:focus>
+
+                                <f:facet name="header">  
+                                    <h:outputLabel  value="Ordered Bill Item"/>   
+                                    <p:commandButton 
+                                        id="btnRemoveSelected"
+                                        ajax="false" 
+                                        value="Remove Selected"
+                                        style="float: right;"
+                                        class="ui-button-danger"
+                                        icon="fas fa-trash"
+                                        action="#{grnCostingController.removeSelected()}"/>
+                                </f:facet>  
+                                <p:column 
+                                    width="2em"
+                                    selectionBox="true"
+                                    styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}"/>
+                                <p:column
+                                    id="colItem"
+                                    headerText="Item Name"
+                                    width="20em"
+                                    styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
+                                    <h:outputText id="item" value="#{bi.item.name}" />
+                                    <p:commandLink
+                                        id="btnViewFinanceDetails"
+                                        styleClass="mx-2"
+                                        title="View Finance Details"
+                                        oncomplete="PF('dialog#{i}').show()"
+                                        process="@this"
+                                        update="@none">
+                                        <i class="fas fa-info-circle" />
+                                    </p:commandLink>
+                                    <p:commandButton
+                                        icon="fas fa-history"
+                                        class="ui-button-info mx-1"
+                                        title="View Item History"
+                                        action="#{pharmacyController.selectItemForHistory(bi.item)}"
+                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                        process="@this"/>
+                                    <p:dialog id="dialog"
+                                              widgetVar="dialog#{i}"
+                                              header="Details"
+                                              modal="true"
+                                              closable="true"
+                                              resizable="false"
+                                              class="w-75"
+                                              position="top">
+                                        <ph:bill_item_finance_details pbi="#{bi}"/>
+                                    </p:dialog>
+                                </p:column>
+                                <p:column 
+                                    headerText="Code" 
+                                    width="4em"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used', true)}"
+                                    styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}"> 
+                                    <h:outputText id="code" value="#{bi.item.code}" >                                   
+                                    </h:outputText>
+                                </p:column> 
+                                <p:column 
+                                    width="4em"
+                                    headerText="Ordered Qty" 
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
+                                    <h:outputLabel
+                                        class="w-100 text-end text-secondary"
+                                        value="#{bi.referanceBillItem.billItemFinanceDetails.quantity}"/>
+                                </p:column>  
+
+                                <p:column 
+                                    width="4em"
+                                    headerText="Ordered Free Qty" 
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
+                                    <h:outputLabel 
+                                        class="w-100 text-end text-secondary"
+                                        value="#{bi.referanceBillItem.billItemFinanceDetails.freeQuantity}"/>
+                                </p:column> 
+
+                                <p:column
+                                    width="6em"
+                                    headerText="Receiving Qty"
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
+                                    <p:inputText
+                                        id="txtQty"
+                                        onfocus="this.select();"
+                                        autocomplete="off"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.quantity}" >
+                                        <p:ajax
+                                            event="blur"
+                                            process="txtQty"
+                                            update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} @this :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                            listener="#{grnCostingController.qtyChangedListner(bi)}"></p:ajax>
+                                    </p:inputText>
+                                </p:column>  
+
+
+
+                                <p:column
+                                    width="6em"
+                                    headerText="Received Free Qty"
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        class="text-end text-primary w-100"
+                                        onfocus="this.select();"
+                                        value="#{bi.billItemFinanceDetails.freeQuantity}"
+                                        id="freeQty" >
+                                        <p:ajax
+                                            event="blur"
+                                            process="freeQty"
+                                            update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} profMargin :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} @this :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                            listener="#{grnCostingController.freeQtyChangedListner(bi)}"></p:ajax>
+                                    </p:inputText>
+                                </p:column> 
+                                <p:column
+                                    width="8em"
+                                    headerText="Purchase Rate"
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        disabled="#{not configOptionApplicationController.getBooleanValueByKey('Allow Editing the Purchase Rate during Goods Receipt', true)}"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.lineGrossRate}"
+                                        id="pRate" >
+                                        <f:ajax 
+                                            event="blur" 
+                                            execute="pRate" 
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                            listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column
+                                    width="8em"
+                                    headerText="Discount Rate"
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.lineDiscountRate}"
+                                        id="dRate"
+                                        onfocus="this.select()">
+                                        <f:ajax 
+                                            event="blur" 
+                                            execute="dRate" 
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total doeDateOnlyShort profMargin batch pRate rRate :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                            listener="#{grnCostingController.lineDiscountRateChangedListner(bi)}"></f:ajax>
+                                    </p:inputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Retail Rate"
+                                    width="8em"
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        id="rRate"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.retailSaleRate}"  
+                                        onfocus="this.select()">
+                                        <f:ajax 
+                                            event="blur"
+                                            execute="rRate" 
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                            listener="#{grnCostingController.retailRateChangedListner(bi)}"></f:ajax>
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </p:column>
+
+                                <p:column 
+                                    headerText="Line Net Total" 
+                                    width="8em"
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
+                                    <h:panelGroup id="total">
+                                        <h:outputLabel
+                                            class="text-end text-secondary w-100"
+                                            value="#{bi.billItemFinanceDetails.lineNetTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column 
+                                    headerText="Date Of Expiry" 
+                                    width="8em"
+                                    styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >  
+                                    <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
+                                                 id="doeDateOnlyShort"
+                                                 class="text-center text-primary w-100"
+                                                 inputStyleClass="w-100"
+                                                 navigator="true" 
+                                                 pattern="#{sessionController.applicationPreference.shortDateFormat}"    > 
+                                        <f:ajax event="dateSelect" execute="doeDateOnlyShort batch" render="itemList" listener="#{grnCostingController.setBatch(bi)}"></f:ajax>
+                                    </p:calendar>
+                                </p:column> 
+
+                                <p:column 
+                                    width="9em"
+                                    headerText="Batch No"
+                                    styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
+                                    <p:inputText 
+                                        class="w-100"
+                                        autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}" id="batch">  
+                                    </p:inputText>
+                                </p:column>  
+                                <p:column 
+                                    headerText="Comments"
+                                    width="5em"
+                                    styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
+                                    <p:inputText 
+                                        class="w-100"
+                                        autocomplete="off"
+                                        value="#{bi.descreption}" id="comments">  
+                                    </p:inputText>
+                                </p:column>  
+                                <p:column
+                                    width="4em"
+                                    headerText="Profit %"
+                                    rendered="#{grnCostingController.showProfitInGrnBill}"
+                                    styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
+                                    <h:outputLabel
+                                        id="profMargin"
+                                        class="text-end w-100 text-secondary"
+                                        value="#{bi.billItemFinanceDetails.profitMargin}" >
+                                        <f:convertNumber pattern="0.0"></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column 
+                                    headerText="Actions"
+                                    width="7em"
+                                    styleClass="text-center #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
+                                    <p:commandButton 
+                                        process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
+                                        update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
+                                        icon="fas fa-plus"
+                                        class="ui-button-warning mx-1"
+                                        action="#{grnCostingController.duplicateItem(bi)}"/>
+                                    <p:commandButton
+                                        id="btnRemoveItem"
+                                        ajax="false"
+                                        icon="fas fa-trash"
+                                        class="ui-button-danger"
+                                        action="#{grnCostingController.removeItem(bi)}"/>
+
+
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+                    </div>
+
+                    <div class="row" >
+                        <div class="col-9" >
+                            <p:panel header="Bill Expenses" class="my-3" >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill-wave" />
+                                    <h:outputText class="mx-4" value="Bill Expenses" />
+                                </f:facet>
+                                <h:panelGroup id="billExpenseGrid">
+                                    <div class="row w-100">
+                                        <div class="col-4">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Select Expense"/><br/>
+                                            <p:autoComplete
+                                                id="acExpense"
+                                                class="w-100 m-1"
+                                                inputStyleClass="w-100"
+                                                value="#{grnCostingController.currentExpense.item}"
+                                                forceSelection="true"
+                                                completeMethod="#{itemController.completeExpenseItem}"
+                                                var="ex"
+                                                itemLabel="#{ex.name}"
+                                                itemValue="#{ex}">
+                                                <p:ajax
+                                                    event="itemSelect"
+                                                    process="acExpense"
+                                                    listener="#{grnCostingController.onExpenseItemSelect}"
+                                                    update="billExpenseGrid" />
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Value"/><br/>
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="txtExpense"
+                                                class="w-100 m-1 text-end"
+                                                onfocus="this.select()"
+                                                value="#{grnCostingController.currentExpense.rate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+                                        </div>
+                                        <div class="col-3">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Description"/><br/>
+                                            <p:inputText 
+                                                maxlength="250" 
+                                                class="w-100 m-1"
+                                                value="#{grnCostingController.currentExpense.descreption}">
+                                            </p:inputText>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="Considered for Costing"/><br/>
+                                            <div class="w-100 m-1 d-flex align-items-center justify-content-center" style="height: 38px;">
+                                                <p:selectBooleanCheckbox value="#{grnCostingController.currentExpense.consideredForCosting}" />
+                                            </div>
+                                        </div>
+                                        <div class="col-1">
+                                            <h:outputLabel 
+                                                class="w-100 m-1"
+                                                value="&nbsp;"/><br/>
+                                            <p:commandButton
+                                                id="btnAddExpense"
+                                                value="Add"
+                                                icon="fas fa-plus"
+                                                class="ui-button-warning w-100"
+                                                action="#{grnCostingController.addExpense()}"
+                                                ajax = "false"
+                                                process="billExpenseGrid btnAddExpense @this"
+                                                update="@all"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                <p:dataTable 
+                                    id="tblExpenses"
+                                    value="#{grnCostingController.grnBill.billExpenses}" 
+                                    var="be"
+                                    class="w-100"
+                                    emptyMessage="No Bill Expenses" >
+                                    <p:column headerText="Expense" >
+                                        <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Value" >
+                                        <h:outputLabel value="#{be.netValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Description" >
+                                        <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Considered for Costing" >
+                                        <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
+                                            <p:ajax event="change"
+                                                    listener="#{grnCostingController.updateExpenseCosting(be)}"
+                                                    update="@parent :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column headerText="Delete" >
+                                        <p:commandButton
+                                            id="btnRemoveExpense"
+                                            title="Delete expense"
+                                            styleClass="ui-button-danger"
+                                            icon="pi pi-trash"
+                                            action="#{grnCostingController.removeExpense(be)}"
+                                            process="@this"
+                                            update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId} :#{p:resolveFirstComponentWithId('txtBillExpenses',view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal',view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered',view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered',view).clientId}" />
+
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+
+                        </div>
+                        <div class="col-3" >
+                            <p:panelGrid 
+                                columns="2" 
+                                class="w-100"
+                                id="grn"
+                                layout="tabular">
+
+                                <f:facet name="header" >
+                                    <p:commandButton
+                                        value="Save"
+                                        action="#{grnCostingController.requestWithSaveApprove}"
+                                        class="ui-button-success mx-1"
+                                        icon="pi pi-save"
+                                        ajax="false"
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Finalize"
+                                        action="#{grnCostingController.finalizeGrnWithSaveApprove}"
+                                        class="ui-button-warning mx-1"
+                                        icon="fas fa-flag"
+                                        ajax="false"
+                                        onclick="return confirm('Are you sure you want to finalize this GRN? This action cannot be undone.');"
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Approve"
+                                        action="#{grnCostingController.approveGrnWithSaveApprove}"
+                                        class="ui-button-warning mx-1"
+                                        icon="fas fa-check"
+                                        ajax="false"
+                                        onclick="return confirm('Are you sure you want to approve this GRN? This action cannot be undone.');"
+                                        rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
+                                    </p:commandButton>
+                                </f:facet>
+
+
+                                <h:outputLabel value="Supplier"/>
+                                <p:autoComplete 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    converter="deal" 
+                                    value="#{grnCostingController.currentGrnBillPre.fromInstitution}"
+                                    completeMethod="#{dealerController.completeDealor}" 
+                                    forceSelection="true"
+                                    var="vt" 
+                                    itemLabel="#{vt.name}" 
+                                    itemValue="#{vt}" />
+                                <h:outputLabel value="GRN Institution"/>
+                                <p:autoComplete           
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    value="#{grnCostingController.currentGrnBillPre.referenceInstitution}"
+                                    completeMethod="#{institutionController.completeCompany}" 
+                                    forceSelection="true"
+                                    var="vt" 
+                                    itemLabel="#{vt.name}" 
+                                    itemValue="#{vt}" />
+                                <h:outputLabel value="Payment Method"/>
+                                <h:panelGroup >
+                                    <p:selectOneMenu 
+                                        id="cmbPs" 
+                                        value="#{grnCostingController.currentGrnBillPre.paymentMethod}">    
+                                        <f:selectItem itemLabel="SelectPayment method"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                                        <p:ajax process="@this" update="grn" event="change"/>
+                                        <p:ajax process="@this" update="duration" event="itemSelect" />
+                                    </p:selectOneMenu>
+
+                                </h:panelGroup>
+
+                                <p:spacer  rendered="#{grnCostingController.currentGrnBillPre.paymentMethod eq 'Credit'}" ></p:spacer>
+                                <h:panelGroup rendered="#{grnCostingController.currentGrnBillPre.paymentMethod eq 'Credit'}" id="duration" >
+                                    <p:inputText  
+                                        value="#{grnCostingController.currentGrnBillPre.creditDuration}"
+                                        style="width: 5em;"
+                                        class="ms-1">
+                                    </p:inputText>
+                                    <p:outputLabel class="ms-2" value="Days"></p:outputLabel>
+                                </h:panelGroup>
+
+                                <p:spacer  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}"></p:spacer>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                    <p:selectBooleanCheckbox value="#{grnCostingController.currentGrnBillPre.consignment}" itemLabel="Consignment"/>
+                                </h:panelGroup>
+
+                                <h:outputLabel value="Comment"/>
+                                <p:inputText autocomplete="off" 
+                                             onfocus="this.select()"
+                                             class="w-100"
+                                             value="#{grnCostingController.currentGrnBillPre.comments}" />  
+
+                                <p:outputLabel value="Invoice No "/>
+                                <p:inputText 
+                                    class="w-100"
+                                    autocomplete="off" 
+                                    value="#{grnCostingController.currentGrnBillPre.invoiceNumber}" >
+                                    <p:ajax process="@this" event="keyup"></p:ajax>
+                                </p:inputText>
+                                <p:outputLabel value="Invoice Date"/>
+                                <p:calendar  
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    value="#{grnCostingController.currentGrnBillPre.invoiceDate}"
+                                    navigator="true"
+                                    pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                                    <p:ajax process="@this" ></p:ajax>
+                                </p:calendar>
+                                <p:outputLabel value="Invoice Total"/>
+                                <p:inputText 
+                                    id="insv"  
+                                    class="text-end w-100"
+                                    onfocus="this.select()"
+                                    value="#{grnCostingController.insTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                    <p:ajax 
+                                        process="@this" 
+                                        update="diff" 
+                                        event="keyup"
+                                        listener="#{grnCostingController.calDifference()}"/>
+                                </p:inputText>
+                                <p:outputLabel value="Difference"/>
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    class="text-end w-100"
+                                    disabled="true" 
+                                    id="diff" 
+                                    value="#{grnCostingController.difference}"
+                                    style="background-color: #e6e6e6;color: #{grnCostingController.difference > 0 ? 'green' : (grnCostingController.difference == 0 ? 'inherit' : 'red')}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+
+                            </p:panelGrid>
+
+                            <p:panel id="panelBillDetails" header="Bill details" class="m-1" >
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fas fa-receipt"/>
+                                    <h:outputText  class="mx-4" value="Bill Details" />
+                                </f:facet>
+                                <p:tabView id="tot">
+                                    <!-- Legacy Summary -->
+                                    <p:tab title="Bill Summary">
+                                        <p:panelGrid 
+                                            columns="2"
+                                            class="w-100"
+                                            layout="tabular">
+
+                                            <p:outputLabel value="Gross Total" title="Sum of Line Net Totals is considered as Gross Total"/>
+                                            <p:outputLabel 
+                                                id="gro" 
+                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                value="#{grnCostingController.currentGrnBillPre.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+
+                                            <p:outputLabel value="Bill Tax"/>
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="txtBillTax"
+                                                class="text-end w-100"
+                                                onfocus="this.select()"
+                                                value="#{grnCostingController.currentGrnBillPre.tax}" >
+                                                <p:ajax
+                                                    process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    event="keyup"
+                                                    listener="#{grnCostingController.discountChangedLitener()}"/>
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+
+                                            <p:outputLabel value="Bill Discount"/>
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="txtBillDiscount"
+                                                class="text-end w-100"
+                                                onfocus="this.select()"
+                                                value="#{grnCostingController.currentGrnBillPre.discount}" >
+                                                <p:ajax
+                                                    process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    event="keyup"
+                                                    listener="#{grnCostingController.discountChangedLitener()}"/>
+                                                <p:ajax
+                                                    process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
+                                                    event="blur"
+                                                    listener="#{grnCostingController.discountChangedLitener()}"/>
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+
+                                            <p:outputLabel value="Bill Expenses (Considered for Costing)" />
+                                            <h:outputLabel 
+                                                id="expensesConsidered"
+                                                class="w-100 text-end ui-inputfield bg-info text-white"
+                                                value="#{grnCostingController.currentGrnBillPre.expensesTotalConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Net Total"/>
+                                            <p:outputLabel
+                                                id="txtBillNetTotal"
+                                                value="#{grnCostingController.currentGrnBillPre.netTotal}"
+                                                class="w-100 text-end ui-inputfield bg-success text-dark">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+
+                                            <p:outputLabel value="Bill Expenses (Not Considered for Costing)" />
+                                            <h:outputLabel 
+                                                id="expensesNotConsidered"
+                                                class="w-100 text-end ui-inputfield bg-warning text-dark"
+                                                value="#{grnCostingController.currentGrnBillPre.expensesTotalNotConsideredForCosting}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                            <p:outputLabel value="Sale Value" />
+                                            <h:outputLabel 
+                                                id="saleValue"
+                                                class="w-100 text-end ui-inputfield bg-primary text-white"
+                                                value="#{grnCostingController.currentGrnBillPre.saleValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+
+                                        </p:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Financial Summary">
+                                        <p:panel  id="billFinanceDetails"  header="Financial Summary">
+                                            <ph:bill_finance_details
+                                                id="panelBillFinanceDetails"
+                                                bill="#{grnCostingController.currentGrnBillPre}" ></ph:bill_finance_details>
+                                        </p:panel>
+                                    </p:tab>
+                                </p:tabView>
+                            </p:panel>
+
+
+
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12" >
+                            <pha:history/>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:panelGroup>
+
+            <h:panelGroup >
+                <p:panel rendered="#{grnCostingController.printPreview}" style="border: none;">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="GRN Preview " class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    class="ui-button-secondary"
+                                    type="button"
+                                    onclick="PF('grnConfigDialog').show();" />
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fa fa-arrow-left"
+                                    value="To PO List">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_finalize?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-plus-circle"
+                                    value="To Finalize GRNs">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info ui-button-outlined mx-1"
+                                    icon="fas fa-check-circle"
+                                    value="To Approve GRNs">
+                                </p:commandButton>
+
+
+                                <p:commandButton 
+                                    value="Print" 
+                                    ajax="false" 
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
+                        <h:panelGroup class="d-flex justify-content-center">
+                            <pha:grn_with_costing
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true)}"
+                                bill="#{grnCostingController.currentGrnBillPre}"/>
+                            <pha:grn_with_costing_custom_1
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
+                                bill="#{grnCostingController.currentGrnBillPre}"/>
+                            <pha:grn_with_costing_custom_2
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 2', true)}"
+                                bill="#{grnCostingController.currentGrnBillPre}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </p:panel>
+            </h:panelGroup>
+
+
+
+
+        </h:form>
+
+        <!-- GRN Configuration Dialog -->
+        <p:dialog id="grnConfigDialog"
+                  header="GRN Printer Configuration"
+                  widgetVar="grnConfigDialog"
+                  modal="true"
+                  width="600"
+                  height="400"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="grnConfigForm" />
+
+            <h:form id="grnConfigForm">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> GRN Receipt Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptA4"
+                                        value="#{pharmacyConfigController.grnReceiptA4}" />
+                                    <p:outputLabel for="grnReceiptA4" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptCustom1"
+                                        value="#{pharmacyConfigController.grnReceiptCustom1}" />
+                                    <p:outputLabel for="grnReceiptCustom1" value="Custom Format 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom GRN receipt format 1</small>
+                                </div>
+                                
+                                 <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptCustom2"
+                                        value="#{pharmacyConfigController.grnReceiptCustom2}" />
+                                    <p:outputLabel for="grnReceiptCustom2" value="Custom Format 2" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom GRN receipt format 2</small>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="grnConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.saveConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('grnConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>

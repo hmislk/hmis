@@ -265,7 +265,7 @@ public class FeeValueController implements Serializable {
             feeValue.setCreater(getSessionController().getLoggedUser());
         }
         feeValue.setTotalValueForLocals(feeValueForLocals);
-        feeValue.setTotalValueForLocals(feeValueForForeigners);
+        feeValue.setTotalValueForForeigners(feeValueForForeigners);
         save(feeValue);
     }
 

@@ -28,6 +28,15 @@
         </h:panelGroup>
 
         <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-success">
+                        <th class="text-light bg-success">
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
             <p:dataTable id="tbl"
                          class="w-100 m-2"
                          value="#{cc.attrs.bundle.reportTemplateRows}"
@@ -241,7 +250,7 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}" filterBy="#{row.onlineSettlementValue}"  rendered="#{cc.attrs.bundle.hasOnCallTransaction}" >
+                <p:column  class="text-end"  headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}" filterBy="#{row.onlineSettlementValue}"  rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}" >
                     <h:outputText value="#{row.onlineSettlementValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>

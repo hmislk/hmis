@@ -8,186 +8,283 @@
                 xmlns:p="http://primefaces.org/ui">
 
     <ui:define name="subcontent">
-        <h:form>
-            <p:growl id="msg"/>
-            <p:focus id="selectFocus" for="lstSelect" />
-            <p:focus id="detailFocus" for="gpDetail" />
+        <h:form id="vmpForm">
+            <p:growl id="messages"  life="3000"/>
+            <p:focus id="selectFocus" for="acVmp" />
 
-            <p:panel header="Manage VMP" class="w-100">
+            <p:panel header="Virtual Medicinal Product (VMP) Management" styleClass="w-100 mb-3">
 
-                <div class="row" >
-                    <div class="col-5" >
+                <div class="row">
+                    <!-- Left Panel - Actions and Selection -->
+                    <div class="col-md-5">
+                        <!-- Action Buttons -->
+                        <div class="mb-3">
+                            <h5 class="mb-2">Actions</h5>
+                            <div  id="actionButtons">
+                            <p:commandButton
+                                    id="btnAdd"
+                                    value="Add New"
+                                    action="#{vmpController.prepareAdd()}"
+                                    styleClass="ui-button-success m-1"
+                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
+                                    icon="fas fa-plus"
+                                    process="@this"
+                                    disabled="#{vmpController.editable}"
+                                    title="Add a new VMP record">
+                                </p:commandButton>
 
-                        <p:commandButton 
-                            id="btnAdd" 
-                            value="Add" 
-                            action="#{vmpController.prepareAdd()}"
-                            class="ui-button-success"
-                            update="lstSelect gpDetail" 
-                            icon="fa fa-plus"
-                            process="btnAdd"
-                            >
-                        </p:commandButton>
+                                <p:commandButton
+                                    id="btnEdit"
+                                    value="Edit Selected"
+                                    action="#{vmpController.edit()}"
+                                    icon="fas fa-edit"
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel acVmp"
+                                    process="@this"
+                                    styleClass="ui-button-warning m-1"
+                                    disabled="#{vmpController.editable or vmpController.current.id eq null}"
+                                    title="Edit selected VMP record">
+                                </p:commandButton>
 
-                        <p:commandButton 
-                            id="btnDelete" 
-                            icon="fas fa-trash"
-                            update="lstSelect gpDetail msg" process="btnDelete"
-                            class=" m-1 ui-button-danger w-25"
-                            onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{vmpController.delete()}"  
-                            value="Delete"  >
-                        </p:commandButton>
+                                <p:commandButton 
+                                    id="btnDelete" 
+                                    value="Delete Selected"
+                                    action="#{vmpController.delete()}"
+                                    icon="fas fa-trash"
+                                    update="vmpForm" 
+                                    process="@this"
+                                    styleClass="ui-button-danger m-1"
+                                    disabled="#{vmpController.editable}"
+                                    title="Delete selected VMP record">
+                                    <p:confirm 
+                                        header="Confirm Delete" 
+                                        message="Are you sure you want to delete this VMP record?" 
+                                        icon="fas fa-exclamation-triangle" />
+                                </p:commandButton>
+                            </div>
+                        </div>
 
-                        <p:selectOneListbox 
-                            filter="true"
-                            class="w-100" 
-                            id="lstSelect" 
-                            value="#{vmpController.current}">
-                            <f:selectItems value="#{vmpController.selectedItems}" itemLabel="#{v.name}" var="v" itemValue="#{v}"/>
-                            <p:ajax update="gpDetail" process="lstSelect" >
-                            </p:ajax>
-                        </p:selectOneListbox>
-
-
-
-
+                        <!-- Selection List -->
+                        <div>
+                            <h5 class="mb-2">Select VMP</h5>
+                            <p:autoComplete
+                                id="acVmp"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{vmpController.current}"
+                                completeMethod="#{vmpController.completeVmp}"
+                                var="vmp"
+                                itemLabel="#{vmp.name}"
+                                itemValue="#{vmp}"
+                                maxResults="10"
+                                minQueryLength="3"
+                                forceSelection="true"
+                                disabled="#{vmpController.editable}">
+                                <p:ajax update="detailPanel btnAdd btnEdit btnDelete" process="acVmp"/>
+                                <p:column headerText="Name" style="padding: 3px;">
+                                    <h:outputText value="#{vmp.name}"/>
+                                </p:column>
+                            </p:autoComplete>
+                        </div>
                     </div>
-                    <div class="col-md-7" >
-                        <p:panel header="Vmp Details">
-                            <h:panelGrid 
-                                id="gpDetail"
-                                columns="2" 
-                                class="w-100" >
-                                <h:outputText 
-                                    value="Name" 
-                                    ></h:outputText>
-                                <p:inputText 
-                                    class="w-100"
-                                    required="true"
-                                    requiredMessage="Name Required"
-                                    autocomplete="off"
-                                    value="#{vmpController.current.name}" 
-                                    ></p:inputText>
 
-                                <h:outputText 
-                                    value="Generic Name" 
-                                    ></h:outputText>
+                    <!-- Right Panel - VMP Details -->
+                    <div class="col-md-7">
+                        <p:panel id="detailPanel" header="#{empty vmpController.current ? 'VMP Details' : (empty vmpController.current.id ? 'Add New VMP' : 'Edit VMP Details')}" styleClass="h-100">
+                            <p:panelGrid 
+                                id="vmpDetailForm"
+                                columns="2" 
+                                styleClass="w-100 ui-panelgrid-blank">
+
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                <p:outputLabel for="txtName" value="Name" styleClass="fw-bold"/>
+                                <p:inputText 
+                                    id="txtName"
+                                    value="#{vmpController.current.name}" 
+                                    styleClass="w-100"
+                                    required="true"
+                                    requiredMessage="VMP Name is required"
+                                    autocomplete="off"
+                                    placeholder="Enter VMP name"
+                                    maxlength="255"
+                                    disabled="#{!vmpController.editable}"/>
+
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                <p:outputLabel for="acVtm" value="Generic Name" styleClass="fw-bold"/>
                                 <p:autoComplete 
+                                    id="acVtm"
                                     value="#{vmpController.current.vtm}" 
                                     forceSelection="true"
                                     completeMethod="#{vtmController.completeVtm}" 
                                     var="vt" 
-                                    class="w-100"
+                                    styleClass="w-100"
                                     required="true"
-                                    requiredMessage="Generic Unit Required"
+                                    requiredMessage="Generic Name is required"
                                     inputStyleClass="w-100"
                                     itemLabel="#{vt.name}" 
-                                    itemValue="#{vt}" >
-                                </p:autoComplete>
+                                    itemValue="#{vt}"
+                                    placeholder="Search and select generic name"
+                                    disabled="#{!vmpController.editable}"/>
 
-                                <h:outputText value="Dosage Form" ></h:outputText>
+                                <p:outputLabel for="selDosageForm" value="Dosage Form" styleClass="fw-bold"/>
                                 <p:selectOneMenu 
-                                    filter="true"
-                                    required="true"
-                                    requiredMessage="Dosage Form Required"
+                                    id="selDosageForm"
                                     value="#{vmpController.current.dosageForm}" 
-                                    class="w-100"
-                                    >
-                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                    <f:selectItems value="#{dosageFormController.items}"
-                                                   var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
-                                </p:selectOneMenu>
-
-
-                                <h:outputText value="Category" ></h:outputText>
-                                <p:selectOneMenu 
+                                    styleClass="w-100"
                                     filter="true"
                                     required="true"
-                                    class="w-100"
-                                    requiredMessage="Category Required"
-                                    value="#{vmpController.current.category}" 
-                                    >
-                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                    <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
-                                                   var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
+                                    requiredMessage="Dosage Form is required"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Dosage Form --" itemValue="#{null}"/>
+                                    <f:selectItems 
+                                        value="#{dosageFormController.items}"
+                                        var="df" 
+                                        itemValue="#{df}" 
+                                        itemLabel="#{df.name}"/>
                                 </p:selectOneMenu>
 
+                                <p:outputLabel for="selCategory" value="Category" styleClass="fw-bold"/>
+                                <p:selectOneMenu 
+                                    id="selCategory"
+                                    value="#{vmpController.current.category}" 
+                                    styleClass="w-100"
+                                    filter="true"
+                                    required="true"
+                                    requiredMessage="Category is required"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Category --" itemValue="#{null}"/>
+                                    <f:selectItems 
+                                        value="#{pharmaceuticalItemCategoryController.items}"
+                                        var="cat" 
+                                        itemValue="#{cat}" 
+                                        itemLabel="#{cat.name}"/>
+                                </p:selectOneMenu>
 
-                                <h:outputText value="Strength" >
-                                </h:outputText>
+                                <p:outputLabel for="txtStrength" value="Strength" styleClass="fw-bold"/>
                                 <p:inputText 
-                                    autocomplete="off"
-                                    class="w-100"
+                                    id="txtStrength"
                                     value="#{vmpController.current.strengthOfAnIssueUnit}"
-                                    ></p:inputText>
+                                    styleClass="w-100"
+                                    autocomplete="off"
+                                    placeholder="Enter strength value"
+                                    disabled="#{!vmpController.editable}"/>
 
-                                <!--                                <h:outputText value="No of days to mark as Short Expiary" >
-                                                                </h:outputText>
-                                                                <p:inputText 
-                                                                    autocomplete="off"
-                                                                    class="w-100"
-                                                                    value="#{vmpController.current.numberOfDaysToMarkAsShortExpiary}"
-                                                                    ></p:inputText>-->
-
-
-
-                                <h:outputText value="Strength Unit" >
-                                </h:outputText>
-                                <p:selectOneMenu 
-                                    class="w-100"
-                                    required="true"
-                                    requiredMessage="Strength Unit Required"
+                                <p:outputLabel for="selStrengthUnit" value="Strength Unit" styleClass="fw-bold"/>
+                                <p:selectOneMenu
+                                    id="selStrengthUnit"
                                     value="#{vmpController.current.strengthUnit}"
-                                    filter="true"             
-                                    >
-                                    <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
-                                    <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                                </p:selectOneMenu>     
-
-                                <h:outputText value="Dispensing Unit" >
-                                </h:outputText>
-                                <p:selectOneMenu 
+                                    styleClass="w-100"
+                                    filter="true"
                                     required="true"
-                                    requiredMessage="Issue Unit Required"
+                                    requiredMessage="Strength Unit is required"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Strength Unit --" itemValue="#{null}"/>
+                                    <f:selectItems
+                                        value="#{measurementUnitController.items}"
+                                        var="m"
+                                        itemValue="#{m}"
+                                        itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="selDoseUnit" value="Dose Unit" styleClass="fw-bold"/>
+                                <p:selectOneMenu
+                                    id="selDoseUnit"
+                                    value="#{vmpController.current.measurementUnit}"
+                                    styleClass="w-100"
+                                    filter="true"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Dose Unit --" itemValue="#{null}"/>
+                                    <f:selectItems
+                                        value="#{measurementUnitController.items}"
+                                        var="m"
+                                        itemValue="#{m}"
+                                        itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="selIssueUnit" value="Dispensing Unit" styleClass="fw-bold"/>
+                                <p:selectOneMenu 
+                                    id="selIssueUnit"
                                     value="#{vmpController.current.issueUnit}"
-                                    filter="true"  
-                                    class="w-100"
-                                    >
-                                    <f:selectItem itemLabel="Select Issue Unit" ></f:selectItem>
-                                    <f:selectItems value="#{measurementUnitController.issueUnits}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                                </p:selectOneMenu>  
+                                    styleClass="w-100"
+                                    filter="true"
+                                    required="true"
+                                    requiredMessage="Dispensing Unit is required"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Dispensing Unit --" itemValue="#{null}"/>
+                                    <f:selectItems 
+                                        value="#{measurementUnitController.issueUnits}" 
+                                        var="m" 
+                                        itemValue="#{m}" 
+                                        itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
 
-                                <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>
-                                <h:inputTextarea id="txtComments"
-                                                 value="#{vmpController.current.comments}"
-                                                 required="false"
-                                                 class="w-100" />
+                                <p:outputLabel for="selectDepartmentType" value="Type" styleClass="fw-bold"/>
+                                <p:selectOneMenu  
+                                    id="selectDepartmentType"
+                                    value="#{vmpController.current.departmentType}" 
+                                    styleClass="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Department Type --" itemValue="#{null}"/>
+                                    <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
+                                </p:selectOneMenu>
 
-                                <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
-                                <h:inputTextarea
-                                    id="txtIns"
+                                <p:outputLabel for="txtDescription" value="Description" styleClass="fw-bold"/>
+                                <p:inputTextarea 
+                                    id="txtDescription"
+                                    value="#{vmpController.current.comments}"
+                                    styleClass="w-100" 
+                                    rows="3"
+                                    placeholder="Enter description or comments"
+                                    maxlength="1000"
+                                    disabled="#{!vmpController.editable}"/>
+
+                                <p:outputLabel for="txtInstructions" value="Instructions" styleClass="fw-bold"/>
+                                <p:inputTextarea
+                                    id="txtInstructions"
                                     value="#{vmpController.current.instructions}"
-                                    required="false"
-                                    class="form-control" ></h:inputTextarea>
+                                    styleClass="w-100"
+                                    rows="3"
+                                    placeholder="Enter usage instructions"
+                                    maxlength="1000"
+                                    disabled="#{!vmpController.editable}"/>
 
-                            </h:panelGrid>
-                            <p:commandButton 
-                                action="#{vmpController.save}" 
-                                id="btnSave"
-                                value="Save"
-                                process="btnSave gpDetail" 
-                                update="lstSelect msg" 
-                                class=" m-1 mt-2 ui-button-warning w-25"
-                                icon="fas fa-save"></p:commandButton>
+                            </p:panelGrid>
+
+                            <!-- Action Buttons -->
+                            <div class="mt-3 d-flex gap-2">
+                                <p:commandButton 
+                                    id="btnSave"
+                                    value="Save"
+                                    ajax="false"
+                                    action="#{vmpController.saveSelected}" 
+                                    styleClass="ui-button-success"
+                                    icon="fas fa-save"
+                                    disabled="#{!vmpController.editable}"
+                                    title="Save VMP record"/>
+
+                                <p:commandButton 
+                                    id="btnCancel"
+                                    value="Cancel"
+                                    action="#{vmpController.cancel()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary"
+                                    icon="fas fa-times"
+                                    disabled="#{!vmpController.editable}"
+                                    title="Cancel changes and clear form"/>
+                            </div>
                         </p:panel>
-
                     </div>
                 </div>
             </p:panel>
 
-        </h:form>
+            <!-- Confirmation Dialog -->
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+            </p:confirmDialog>
 
+        </h:form>
     </ui:define>
 
 </ui:composition>

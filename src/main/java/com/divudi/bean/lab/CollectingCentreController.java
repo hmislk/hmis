@@ -183,8 +183,7 @@ public class CollectingCentreController implements Serializable {
         auditDataBefore = null;
     }
 
-
-    public void processCollectingCentreBookWiseDetail(){
+    public void processCollectingCentreBookWiseDetail() {
         //TO DO - Add Logic
         bills = new ArrayList<>();
     }
@@ -207,6 +206,44 @@ public class CollectingCentreController implements Serializable {
         return navigateToEditNextCollectingCentreBalanceEntry(agentHistory);
     }
 
+    public String fixAllRemainingRecords() {
+        if (agentHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+
+        AgentHistory currentRecord = agentHistory;
+        int recordsProcessed = 0;
+
+        while (currentRecord != null) {
+            // Set the current record for processing
+            this.agentHistory = currentRecord;
+
+            // Step 1: Fix starting balance from last record
+            fixStartingBalanceFromLastEntry();
+
+            // Step 2: Fix ending balance
+            fixEndingBalance();
+
+            // Step 3: Save the current record
+            saveAgentHistory();
+
+            recordsProcessed++;
+
+            // Step 4: Get the next record
+            AgentHistory nextRecord = nextAgentHistory(currentRecord);
+            if (nextRecord == null) {
+                // No more records to process
+                break;
+            }
+
+            currentRecord = nextRecord;
+        }
+
+        JsfUtil.addSuccessMessage("Successfully processed " + recordsProcessed + " record(s)");
+        return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
+    }
+
     public AgentHistory nextAgentHistory(AgentHistory ahx) {
         if (ahx == null || ahx.getAgency() == null || ahx.getId() == null) {
             return null;
@@ -214,12 +251,13 @@ public class CollectingCentreController implements Serializable {
         String jpql = "SELECT ah FROM AgentHistory ah "
                 + "WHERE ah.retired = :ret "
                 + "AND ah.agency = :agency "
+                + "AND ah.bill.retired = :bret "
                 + "AND ah.id > :thisid "
-                + // Note: '>' to get the next record
-                "ORDER BY ah.id ASC"; // Ascending order to get the next one
+                + "ORDER BY ah.id ASC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
+        params.put("bret", false);
         params.put("agency", ahx.getAgency());
         params.put("thisid", ahx.getId());
 
@@ -232,6 +270,7 @@ public class CollectingCentreController implements Serializable {
         }
         String jpql = "SELECT ah FROM AgentHistory ah "
                 + "WHERE ah.retired = :ret "
+                + "AND ah.bill.retired = :bret "
                 + "AND ah.agency = :agency "
                 + "AND ah.id < :thisid "
                 + // '<' to get the previous record
@@ -239,6 +278,7 @@ public class CollectingCentreController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
+        params.put("bret", false);
         params.put("agency", ahx.getAgency());
         params.put("thisid", ahx.getId());
 
@@ -710,7 +750,5 @@ public class CollectingCentreController implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-
-
 
 }

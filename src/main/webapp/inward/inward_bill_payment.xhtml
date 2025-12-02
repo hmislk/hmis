@@ -21,34 +21,73 @@
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
                         <p:outputLabel value="Patient Details" class="m-2"/>
                     </f:facet>
-                    <h:outputLabel value="Type Patient Name or BHT : "/>
 
-                    <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                     value="#{inwardPaymentController.current.patientEncounter}"
-                                     completeMethod="#{admissionController.completePatientAll}" 
-                                     var="myItem" itemValue="#{myItem}" 
-                                     itemLabel="#{myItem.bhtNo}" 
-                                     size="30"  class="mx-2">
-                        <!--                        <p:ajax event="itemSelect" process="@this" update="@all" />-->
-                        <p:column>
-                            <h:outputLabel value="#{myItem.bhtNo}"/>
-                        </p:column>
-                        <p:column>
-                            <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                        </p:column>
-                        <p:column>
-                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                        </p:column>
-                        <p:column>
-                            <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                        </p:column>
-                        <p:column>
-                            <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                        </p:column>
-                    </p:autoComplete>
+                    <div class="d-flex gap-4">
+                        <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
 
+                        <p:autoComplete  
+                            widgetVar="aPt" 
+                            id="acPt" 
+                            forceSelection="true" 
+                            value="#{inwardPaymentController.current.patientEncounter}"
+                            completeMethod="#{admissionController.completePatientAll}" 
+                            var="myItem" 
+                            size="60"
+                            maxResults="20"
+                            itemValue="#{myItem}" 
+                            itemLabel="#{myItem.bhtNo}"
+                            style="width: 550px;"
+                            class="mx-2">
 
-                    <p:commandButton value="select" ajax="false" action="#{inwardPaymentController.bhtListener}" />
+                            <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{myItem.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient" style="padding: 6px; width: 15em;">
+                                <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                            <p:column headerText="Status" style="padding: 6px; width: 12em;">
+                                <div class="d-flex justify-content-center">
+                                    <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                        #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                    </span>
+                                </div>
+                            </p:column>
+                            <p:column headerText="Payment" style="padding: 6px; width: 12em;">
+                                <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                            </p:column>
+                        </p:autoComplete>
+
+                        <p:commandButton 
+                            value="select" 
+                            ajax="false" 
+                            action="#{inwardPaymentController.bhtListener}" >
+                        </p:commandButton>
+                        
+                        <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
+                    
+                    </div>
+
                 </p:panel>
             </h:form>
         </h:panelGroup>
@@ -69,18 +108,19 @@
                                         class="ui-button-warning" 
                                         value="Lookup"
                                         action="#{patientController.navigateToSearchPatients()}"
-                                        />
+                                        >
+                                    </p:commandButton>
 
                                     <p:commandButton 
                                         ajax="false"
                                         icon="fa fa-user"
                                         value="Patient Profile"
                                         class="ui-button-warning  mx-2" 
-                                        action="#{patientController.navigateToOpdPatientProfile()}" 
-                                        > 
+                                        action="#{patientController.navigateToOpdPatientProfile()}"> 
                                         <f:setPropertyActionListener 
                                             value="#{inwardPaymentController.current.patientEncounter.patient}" 
-                                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                                            target="#{patientController.current}" >
+                                        </f:setPropertyActionListener>
                                     </p:commandButton>
 
 
@@ -89,8 +129,8 @@
                                         icon="fas fa-id-card"
                                         value="Inpatient Dashboard"
                                         class="ui-button-secondary " 
-                                        action="#{inwardPaymentController.navigateToInpationDashbord()}" 
-                                        />
+                                        action="#{inwardPaymentController.navigateToInpationDashbord()}" >
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </div>
@@ -109,51 +149,6 @@
                                     <h:outputText class="mx-4" styleClass="fas fa-money-bill-wave" />
                                     <p:outputLabel value="&nbsp; Payment Details" />
                                 </f:facet>
-                                <h:panelGroup rendered="#{!inwardPaymentController.current.patientEncounter.paymentFinalized}">
-                                    <div class="row mt-1">
-                                        <div class="col-md-2">
-                                            <h:outputLabel value="Due" class="mt-2"/>
-                                        </div>
-                                        <div class="col-md-5">
-                                            <h:outputLabel value="Payment Details are not Finalized"/>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-2">
-                                            <h:outputLabel value="Paying Amount"  class="mt-2"/>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <p:inputText class=" w-100" autocomplete="off" value="#{inwardPaymentController.current.total}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-
-                                <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized}">
-                                    <div class="row mt-1">
-                                        <div class="col-md-2">
-                                            <h:outputLabel value="Due" class="mt-2"/>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <h:outputLabel class="w-100" value="#{inwardPaymentController.due}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mt-1">
-                                        <div class="col-md-2">
-                                            <h:outputLabel value="Paying Amount" class="mt-2"/>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <p:inputText autocomplete="off" value="#{inwardPaymentController.current.total}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-
 
                                 <div class="row mt-1">
                                     <div class="col-md-2">
@@ -164,33 +159,106 @@
                                             class="w-100" 
                                             autoWidth="false"  
                                             id="cmbPs" 
-                                            value="#{inwardPaymentController.current.paymentMethod}"  >
-                                            <f:selectItems value="#{enumController.paymentMethodsForIwardDeposit}"  />
-                                            <p:ajax process="cmbPs" update="paymentDetails" event="change" listener="#{inwardPaymentController.listnerForPaymentMethodChange()}" />
+                                            value="#{inwardPaymentController.paymentMethod}"  >
+                                            <f:selectItem itemLabel="Select Payment Method."/>
+                                            <f:selectItems 
+                                                value="#{enumController.paymentMethodsForIwardDeposit}" 
+                                                var="payment"
+                                                itemLabel="#{payment.label}"
+                                                itemValue="#{payment}"/>
+                                            <p:ajax 
+                                                process="cmbPs" 
+                                                update="paymentDetails notFinalized finalized" 
+                                                event="change" 
+                                                listener="#{inwardPaymentController.changePaymentMethodChange()}" >
+                                            </p:ajax>
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
+
+
+                                <h:panelGroup rendered="#{!inwardPaymentController.current.patientEncounter.paymentFinalized}" id="notFinalized">
+                                    <div class="row my-3">
+                                        <div class="col-md-2">
+                                            <h:outputLabel value="Due"/>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <h:outputLabel value="Payment Details are not Finalized"/>
+                                        </div>
+                                    </div>
+                                    <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'Cash'}">
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Paying Amount"  class="mt-2"/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p:inputText class=" w-100" autocomplete="off" value="#{inwardPaymentController.total}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized}"  id="finalized">
+                                    <div class="row mt-3">
+                                        <div class="col-md-2">
+                                            <h:outputLabel value="Due"/>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputLabel class="w-100" value="#{inwardPaymentController.due}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+
+                                    <h:panelGroup rendered="#{inwardPaymentController.paymentMethod eq 'Cash'}">
+                                        <div class="row mt-1">
+                                            <div class="col-md-2">
+                                                <h:outputLabel value="Paying Amount" class="mt-2"/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p:inputText autocomplete="off" value="#{inwardPaymentController.total}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
                                 <div class="row ">
                                     <div class="col-md-2"></div>
                                     <div class="col-md-8">
                                         <h:panelGroup id="paymentDetails">
-                                            <h:panelGroup id="creditCard" rendered="#{inwardPaymentController.current.paymentMethod eq 'Card'}">
+                                            <h:panelGroup id="creditCard" rendered="#{inwardPaymentController.paymentMethod eq 'Card'}">
                                                 <pa:creditCard paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" rendered="#{inwardPaymentController.current.paymentMethod eq 'Cheque'}" >
+                                            <h:panelGroup id="cheque" rendered="#{inwardPaymentController.paymentMethod eq 'Cheque'}" >
                                                 <pa:cheque paymentMethodData="#{inwardPaymentController.paymentMethodData}" valueRequired="false"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" rendered="#{inwardPaymentController.current.paymentMethod eq 'Slip'}" >
+                                            <h:panelGroup id="slip" rendered="#{inwardPaymentController.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup 
                                                 class="row my-1"
                                                 layout="block" 
-                                                id="patientDeposit"  rendered="#{inwardPaymentController.current.paymentMethod eq 'PatientDeposit'}" >
+                                                id="patientDeposit"  rendered="#{inwardPaymentController.paymentMethod eq 'PatientDeposit'}" >
                                                 <pa:patient_deposit paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                             </h:panelGroup>
+
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="multiplePaymentMethods" 
+                                                rendered="#{inwardPaymentController.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                                <pa:multiple_payment_methods_inwardDeposit
+                                                    controller="#{inwardPaymentController}" 
+                                                    paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" 
+                                                    class="w-100"/>
+                                            </h:panelGroup>
+
                                         </h:panelGroup>
                                     </div>
                                 </div>
@@ -231,20 +299,26 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <div class="d-flex w-50 my-2">
+
+                                <div class="d-flex justify-content-end gap-3">
                                     <p:commandButton 
-                                        class="ui-button-success w-50" 
+                                        class="ui-button-success" 
                                         icon="fas fa-money-bill" 
-                                        id="btnPay" value="Pay" 
+                                        id="btnPay" 
+                                        value="Pay"
+                                        style="width:250px;"
                                         ajax="false" 
-                                        action="#{inwardPaymentController.pay}" />
+                                        action="#{inwardPaymentController.pay()}" >
+                                    </p:commandButton>
+
                                     <p:commandButton 
-                                        class="ui-button-danger mx-2 w-50" 
+                                        class="ui-button-danger mx-2" 
                                         icon="fas fa-ban" 
                                         value="Clear" 
                                         ajax="false" 
-                                        action="#{inwardPaymentController.makeNull}" />
-                                    <p:defaultCommand target="btnPay"/>
+                                        style="width:250px;"
+                                        action="#{inwardPaymentController.makeNull}" >
+                                    </p:commandButton>
 
                                 </div>
 
@@ -321,20 +395,12 @@
                                     </ui:repeat>
                                 </h:panelGroup> 
 
-<!--                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4PrintedPaper'}" >
-    <ui:repeat value="#{inwardPaymentController.current}" var="pp">
-        <bill:A4PaperPaymentBillWithoutHeading bill="#{pp}" />                        
-    </ui:repeat>
-</h:panelGroup> -->
-
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'PosPaper'}" style="align-items: center;">
                                     <ui:repeat value="#{inwardPaymentController.current}" var="pp" >
                                         <bill:posPaperPaymentBill bill="#{pp}"/>                        
                                     </ui:repeat>
                                 </h:panelGroup>
 
-<!--                        <bill:payment bill="#{inwardPaymentController.current}" rendered="#{sessionController.departmentPreference.applicationInstitution ne 'Cooperative'}"/>
-                        <bill:payment_coop bill="#{inwardPaymentController.current}" rendered="#{sessionController.departmentPreference.applicationInstitution eq 'Cooperative'}"/>-->
                             </div>
 
                         </h:panelGroup>

@@ -28,14 +28,17 @@
                                     action="#{admissionController.saveSelected}" 
                                     ajax="false" 
                                     class="ui-button-success mx-1"
-                                    value="Admit"  />
+                                    value="Admit">
+                                </p:commandButton>
+
                                 <p:commandButton 
                                     ajax="false" 
                                     immediate="true"
                                     value="Patient Lookup" 
                                     class="ui-button-warning mx-1" 
                                     action="#{patientController.navigateToSearchPatients()}" 
-                                    icon="fa fa-search" /> <!-- Font Awesome icon for search -->
+                                    icon="fa fa-search" >
+                                </p:commandButton>
 
                                 <p:commandButton 
                                     ajax="false" 
@@ -46,15 +49,14 @@
                                     icon="fa fa-user" > <!-- Font Awesome icon for user -->
                                     <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
-                                <p:defaultCommand target="admt"/>
                             </div>
                         </div>
                     </f:facet>
 
-
-
-
                     <div class="row">
+<!--                        <p:messages id="messages" showDetail="true" closable="true">
+                            <p:autoUpdate/>
+                        </p:messages>-->
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"
@@ -107,8 +109,6 @@
                         </div>
                     </div>
 
-
-
                     <div class="row">
                         <div class="col-5">
                             <h:panelGroup id="ptd">
@@ -121,84 +121,136 @@
                                 <div class="col-6">
                                     <p:panel header="Admission Details">
                                         <p:outputLabel value="Admitted Time*"/>
-                                        <p:datePicker value="#{admissionController.current.dateOfAdmission}" 
-                                                      id="admissionTimeStamp"
-                                                      pattern="dd/MMM/yyyy - hh:mm:ss a" 
-                                                      styleClass="form-control w-100"
-                                                      showTime="true"
-                                                      showButtonBar="true"
-                                                      timeInput="true"
-                                                      class="w-100" 
-                                                      inputStyleClass="w-100" >                               
+                                        <p:datePicker 
+                                            value="#{admissionController.current.dateOfAdmission}" 
+                                            id="admissionTimeStamp"
+                                            pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                            styleClass="form-control w-100"
+                                            showTime="true"
+                                            yearNavigator="true"
+                                            monthNavigator="true"
+                                            showButtonBar="true"
+                                            timeInput="true"
+                                            class="w-100" 
+                                            inputStyleClass="w-100" >                               
                                         </p:datePicker>     
 
                                         <p:outputLabel value="Consultant*" />
-                                        <p:autoComplete forceSelection="true" 
-                                                        value="#{admissionController.current.referringConsultant}" 
-                                                        id="refCon"
-                                                        required="true" requiredMessage="Please select referring consultant"
-                                                        completeMethod="#{consultantController.completeConsultant}" 
-                                                        var="mysp" itemLabel="#{mysp.person.name}" itemValue="#{mysp}"
-                                                        styleClass="form-control w-100"
-                                                        class="w-100" placeholder="Referring Consultant"
-                                                        inputStyleClass="w-100" />
+                                        <p:autoComplete 
+                                            forceSelection="true" 
+                                            value="#{admissionController.current.referringConsultant}" 
+                                            id="refCon"
+                                            required="true" 
+                                            requiredMessage="Please select referring consultant"
+                                            completeMethod="#{consultantController.completeConsultant}" 
+                                            var="mysp"
+                                            itemLabel="#{mysp.person.nameWithTitle}" 
+                                            itemValue="#{mysp}"
+                                            styleClass="form-control w-100"
+                                            class="w-100" 
+                                            placeholder="Referring Consultant"
+                                            maxResults="15"
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
 
                                         <p:outputLabel value="Medical Officer*"/>
-                                        <p:autoComplete required="true" 
-                                                        requiredMessage="Please select referring doctor"
-                                                        forceSelection="true" id="scStaff" placeholder="OPD Doctor"
-                                                        value="#{admissionController.current.opdDoctor}" 
-                                                        completeMethod="#{doctorController.completeDoctor}"
-                                                        var="mys" 
-                                                        itemLabel="#{mys.person.name}" 
-                                                        itemValue="#{mys}"
-                                                        styleClass="form-control w-100"
-                                                        class="w-100" 
-                                                        inputStyleClass="w-100"
-                                                        >
+                                        <p:autoComplete 
+                                            required="true" 
+                                            requiredMessage="Please select referring doctor"
+                                            forceSelection="true" 
+                                            id="scStaff" 
+                                            maxResults="15"
+                                            placeholder="OPD Doctor"
+                                            value="#{admissionController.current.opdDoctor}" 
+                                            completeMethod="#{doctorController.completeDoctor}"
+                                            var="mys" 
+                                            itemLabel="#{mys.person.nameWithTitle}" 
+                                            itemValue="#{mys}"
+                                            styleClass="form-control w-100"
+                                            class="w-100" 
+                                            inputStyleClass="w-100">
                                         </p:autoComplete>
 
                                         <p:outputLabel for="acRefDoc" value="Doctor who referred the patient"/>
-                                        <p:autoComplete id="acRefDoc" forceSelection="true" placeholder="Search &amp; select the Doctor"
-                                                        value="#{admissionController.current.referringDoctor}"
-                                                        completeMethod="#{doctorController.completeDoctor}" var="ix"
-                                                        itemLabel="#{ix.person.name}" itemValue="#{ix}" 
-                                                        styleClass="form-control w-100"
-                                                        class="w-100" 
-                                                        inputStyleClass="w-100"
-                                                        />
+                                        <p:autoComplete
+                                            id="acRefDoc" 
+                                            forceSelection="true" 
+                                            placeholder="Search &amp; select the Doctor"
+                                            value="#{admissionController.current.referringDoctor}"
+                                            completeMethod="#{doctorController.completeDoctor}" 
+                                            var="ix"
+                                            maxResults="15"
+                                            itemLabel="#{ix.person.nameWithTitle}" 
+                                            itemValue="#{ix}" 
+                                            styleClass="form-control w-100"
+                                            class="w-100" 
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
 
                                         <p:outputLabel for="acRefStaff" value="Staff who referred the patient"/>
-                                        <p:autoComplete id="acRefStaff" forceSelection="true" placeholder="Search &amp; select the Staff"
-                                                        value="#{admissionController.current.referringStaff}"
-                                                        completeMethod="#{staffController.completeStaff}" var="ix"
-                                                        class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
-                                                        itemLabel="#{ix.person.name}" itemValue="#{ix}" />
+                                        <p:autoComplete 
+                                            id="acRefStaff" 
+                                            forceSelection="true" 
+                                            placeholder="Search &amp; select the Staff"
+                                            value="#{admissionController.current.referringStaff}"
+                                            completeMethod="#{staffController.completeStaff}" 
+                                            var="ix"
+                                            maxResults="15"
+                                            class="w-100 form-control" 
+                                            styleClass="w-100" 
+                                            inputStyleClass="w-100"
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}">
+                                        </p:autoComplete>
 
                                         <p:outputLabel for="refPer" value="Person who referred the patient" />
-                                        <p:autoComplete id="refPer" forceSelection="true" value="#{admissionController.current.referringPerson}"
-                                                        completeMethod="#{personController.completePerson}" var="mysp"
-                                                        placeholder="Search &amp; select the Person"
-                                                        itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                        class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"/>
+                                        <p:autoComplete 
+                                            id="refPer" 
+                                            forceSelection="true" 
+                                            value="#{admissionController.current.referringPerson}"
+                                            completeMethod="#{personController.completePerson}" 
+                                            var="mysp"
+                                            maxResults="15"
+                                            placeholder="Search &amp; select the Person"
+                                            itemLabel="#{mysp.name}" 
+                                            itemValue="#{mysp}"
+                                            class="w-100 form-control"
+                                            styleClass="w-100" 
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
 
                                         <p:outputLabel for="cmdIns" value="Referral Institution"/>
-                                        <p:autoComplete id="cmdIns" forceSelection="true" value="#{admissionController.current.referredByInstitution}"
-                                                        completeMethod="#{institutionController.completeIns}" var="refi"
-                                                        itemLabel="#{refi.name}" itemValue="#{refi}" 
-                                                        placeholder="Search &amp; select the Institution"
-                                                        class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100">
+                                        <p:autoComplete 
+                                            id="cmdIns" forceSelection="true" 
+                                            value="#{admissionController.current.referredByInstitution}"
+                                            completeMethod="#{institutionController.completeIns}" 
+                                            var="refi"
+                                            itemLabel="#{refi.name}" 
+                                            itemValue="#{refi}" 
+                                            maxResults="15"
+                                            placeholder="Search &amp; select the Institution"
+                                            class="w-100 form-control" 
+                                            styleClass="w-100" 
+                                            inputStyleClass="w-100">
                                             <p:column headerText="Name">#{refi.name}</p:column>
                                             <p:column headerText="Code">#{refi.institutionCode}</p:column>
                                             <p:column headerText="Institution Type">#{refi.institutionType}</p:column>
                                         </p:autoComplete>
 
                                         <p:outputLabel for="work" value="Workplace" />
-                                        <p:autoComplete id="work" forceSelection="true" value="#{admissionController.current.workplace}"
-                                                        completeMethod="#{institutionController.completeIns}" var="mysp"
-                                                        itemLabel="#{mysp.name}" itemValue="#{mysp}" 
-                                                        placeholder="Search &amp; Select the Workplaces"
-                                                        class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"/>
+                                        <p:autoComplete 
+                                            id="work" forceSelection="true" 
+                                            value="#{admissionController.current.workplace}"
+                                            completeMethod="#{institutionController.completeIns}" 
+                                            var="mysp"
+                                            itemLabel="#{mysp.name}" 
+                                            itemValue="#{mysp}" 
+                                            maxResults="15"
+                                            placeholder="Search &amp; Select the Workplaces"
+                                            class="w-100 form-control" 
+                                            styleClass="w-100" 
+                                            inputStyleClass="w-100">
+                                        </p:autoComplete>
 
                                         <p:outputLabel for="referralId" value="Referral Number"/>
                                         <p:inputText id="referralId" value="#{admissionController.current.referralId}" styleClass="form-control"/>
@@ -211,11 +263,12 @@
                                                 <p:tab title="Guardian Detail">
                                                     <h:panelGrid columns="2">
                                                         <p:outputLabel value="Title"/>
-                                                        <p:selectOneMenu id="cmbTitle" 
-                                                                         placeholder="Title"
-                                                                         class="form-control mx-2 w-100"
-                                                                         autoWidth="false"
-                                                                         value="#{admissionController.current.guardian.title}">
+                                                        <p:selectOneMenu 
+                                                            id="cmbTitle" 
+                                                            placeholder="Title"
+                                                            class="form-control mx-2 w-100"
+                                                            autoWidth="false"
+                                                            value="#{admissionController.current.guardian.title}">
                                                             <f:selectItem itemLabel="Select Title" />
                                                             <f:selectItems value="#{enumController.title}" />
                                                         </p:selectOneMenu>
@@ -236,15 +289,15 @@
                                                             <p:spacer />
                                                         </h:panelGrid>
 
-
                                                         <p:outputLabel value="Home Phone No" />
                                                         <p:inputText class="mx-2 w-100" id="ghno" value="#{admissionController.current.guardian.phone}"  />
 
                                                         <p:outputLabel value="Relationship" />
-                                                        <p:selectOneMenu value="#{admissionController.current.guardianRelationshipToPatient}"
-                                                                         filter="true"
-                                                                         filterMatchMode="contains"
-                                                                         class="w-100 mx-2 w-100">
+                                                        <p:selectOneMenu 
+                                                            value="#{admissionController.current.guardianRelationshipToPatient}"
+                                                            filter="true"
+                                                            filterMatchMode="contains"
+                                                            class="w-100 mx-2 w-100">
                                                             <f:selectItems value="#{clinicalEntityController.relationships}" var="r"
                                                                            itemLabel="#{r.name}" itemValue="#{r}" />
                                                         </p:selectOneMenu>
@@ -253,12 +306,15 @@
                                                     </h:panelGrid>
                                                 </p:tab>
                                                 <p:tab title="Appointment" >
-                                                    <p:autoComplete forceSelection="true" id="aBill" 
-                                                                    value="#{admissionController.appointmentBill}" 
-                                                                    completeMethod="#{billController.completeAppointmentBill}" 
-                                                                    var="apt2" itemLabel="#{apt2.patient.person.nameWithTitle}" 
-                                                                    itemValue="#{apt2}" >
-                                                        <p:ajax event="itemSelect" process="aBill" update="panSearch2" />
+                                                    <p:autoComplete 
+                                                        forceSelection="true"
+                                                        id="aBill" 
+                                                        value="#{admissionController.appointmentBill}" 
+                                                        completeMethod="#{billController.completeAppointmentBill}" 
+                                                        var="apt2" 
+                                                        itemLabel="#{apt2.patient.person.nameWithTitle}" 
+                                                        itemValue="#{apt2}" >
+                                                        <p:ajax event="itemSelect" process="aBill" update="panSearch2 :#{p:resolveFirstComponentWithId('ptd',view).clientId} @all" listener="#{admissionController.listnerForAppoimentSelect(admissionController.appointmentBill)}" />
                                                         <p:column>
                                                             #{apt2.deptId}
                                                         </p:column>
@@ -289,16 +345,30 @@
                                     <p:panel header="Additonal Info" style="margin-top: 10px;">
                                         <h:panelGrid id="ad1" columns="1" class="my-1 w-100" >
                                             <h:outputLabel for="acPrimRes" value="Primary Reason"/>
-                                            <p:autoComplete id="acPrimRes" forceSelection="true" placeholder="Search &amp; select a Referring Method"
-                                                            value="#{admissionController.current.primaryReason}"
-                                                            completeMethod="#{symptomController.completeSymptom}" var="myItem"
-                                                            class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
-                                                            itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                            <p:autoComplete 
+                                                id="acPrimRes" 
+                                                forceSelection="true" 
+                                                placeholder="Search &amp; select a Referring Method"
+                                                value="#{admissionController.current.primaryReason}"
+                                                completeMethod="#{symptomController.completeSymptom}" 
+                                                var="myItem"
+                                                class="w-100 form-control" 
+                                                styleClass="w-100" 
+                                                inputStyleClass="w-100"
+                                                itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                             <h:outputLabel for="acRefMeth" value="Referred From" rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}"/>
-                                            <p:selectOneMenu id="acRefMeth" value="#{admissionController.current.referringMethod}" editable="false" filter="true" 
-                                                             placeholder="Search &amp; select a Referring Method" filterMatchMode="contains" styleClass="w-100" required="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Require Referred From in Patient Admission')}" 
-                                                             requiredMessage="Need a Referring Method " class="w-100 form-control" 
-                                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}">
+                                            <p:selectOneMenu 
+                                                id="acRefMeth" 
+                                                value="#{admissionController.current.referringMethod}" 
+                                                editable="false" 
+                                                filter="true" 
+                                                placeholder="Search &amp; select a Referring Method" 
+                                                filterMatchMode="contains" 
+                                                styleClass="w-100" 
+                                                required="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Require Referred From in Patient Admission')}" 
+                                                requiredMessage="Need a Referring Method " 
+                                                class="w-100 form-control" 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}">
                                                 <f:selectItem itemLabel="Search &amp; select a Method" itemValue="" noSelectionOption="true"/>
                                                 <f:selectItems 
                                                     value="#{configOptionApplicationController.getListOfCustomOptions('Patient Admit - Referred From Methods')}" 
@@ -320,16 +390,18 @@
                                 <div class="col-12">
                                     <h:panelGrid id="pg1" columns="2" class="my-2 w-100" >
                                         <p:outputLabel value="Nationality"/>
-                                        <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
-                                                                 styleClass="form-control w-100"
-                                                                 class="w-100"
-                                                                 itemLabel="Mark as Foreigner"/>
+                                        <p:selectBooleanCheckbox 
+                                            value="#{admissionController.current.foriegner}"
+                                            styleClass="form-control w-100"
+                                            class="w-100"
+                                            itemLabel="Mark as Foreigner"/>
 
                                         <p:outputLabel value="Claimable Status"/>
-                                        <p:selectBooleanCheckbox value="#{admissionController.current.claimable}"
-                                                                 styleClass="form-control w-100"
-                                                                 class="w-100"
-                                                                 itemLabel="Claimable" />
+                                        <p:selectBooleanCheckbox 
+                                            value="#{admissionController.current.claimable}"
+                                            styleClass="form-control w-100"
+                                            class="w-100"
+                                            itemLabel="Claimable" />
 
                                         <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
                                         <p:badge value="#{admissionController.lastCreditCompany.name}"
@@ -367,7 +439,8 @@
                                 value="Patient Lookup" 
                                 class="ui-button-warning" 
                                 action="#{patientController.navigateToSearchPatients()}" 
-                                icon="fa fa-search" /> 
+                                icon="fa fa-search" > 
+                            </p:commandButton>
 
                             <p:commandButton 
                                 ajax="false" 
@@ -403,10 +476,8 @@
                             <bill:bht_with_header_logo admission="#{admissionController.current}" controller="#{admissionController}" />
                         </h:panelGroup>
                     </h:panelGroup>
+
                 </p:panel>
-
-
-
 
             </p:panel>
 

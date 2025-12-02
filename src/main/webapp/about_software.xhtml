@@ -1,52 +1,107 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <ui:define name="content">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>About Software - HMIS</title>
+</h:head>
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
         <h:form>
-            <div style="display: flex; justify-content: center; height: 100vh;">
-                <p:panel style=" height: 100vh; width: 80%">
+            <div class="d-flex justify-content-center min-vh-100 p-3">
+                <p:panel styleClass="w-100" style="max-width: 1200px;">
                     <f:facet name="header">
                         <p:outputLabel value="About Software"></p:outputLabel>
                     </f:facet>
-                    <div class="row" style="width: 100%">
-                        <div class="col-4" style="width: 200px">
-                            <p:graphicImage library="image" name="CompanyLogo/companyLogo.png" style="cursor: pointer;" width="180" height="180"/>
-                        </div>
-                        <div class="col-8" >
-                            <h:outputLabel class="mx-2 h3" value="Hospital Management Information System" /><br/>
-                            <h:outputLabel class="mx-2 h5" value="Powered by CareCode Solutions (Pvt) Ltd" /><br/>
-                            <h:outputLink value="https://carecode.org" target="_blank">
-                                <p:chip label="carecode.org" icon="fas fa-globe" styleClass="mr-3" />
-                            </h:outputLink>
-                            <h:outputLink value="https://github.com/hmislk" target="_blank" class="mx-2">
-                                <p:chip label="hmislk" icon="fab fa-github" styleClass="mr-3" />
-                            </h:outputLink>
-                            <h:outputLink value="https://facebook.com/carecodes" target="_blank">
-                                <p:chip label="CareCode Solutions" icon="fab fa-facebook" styleClass="mr-3" />
-                            </h:outputLink>
-                            <h:outputLink value="https://youtube.com/@CareCode" target="_blank" class="mx-2">
-                                <p:chip label="CareCode" icon="fab fa-youtube" styleClass="mr-3" />
-                            </h:outputLink>
-                            <h:outputLink value="mailto:info@carecode.org" target="_blank">
-                                <p:chip label="info@carecode.org" icon="fas fa-envelope" styleClass="mr-3" /><br/><br/>
-                            </h:outputLink>
-                            <h:panelGrid columns="3">
-                                <h:outputLabel class="mx-2 h6" value="Current version" />
-                                <h:outputLabel class="mx-2 h6" value=":" />
-                                <h:outputLabel class="mx-2 h6" value="#{versionController.systemVersion}" />
-                                <h:outputLabel class="mx-2 h6" value="Latest version" />
-                                <h:outputLabel class="mx-2 h6" value=": " />
-                                <h:outputLabel class="mx-2 h6" value="#{versionController.latestVersion}" />
+                    <div class="container-fluid">
+                        <div class="row g-3">
+                            <div class="col-md-3 col-sm-4 text-center">
+                                <p:graphicImage library="image" name="CompanyLogo/companyLogo.png"
+                                              styleClass="img-fluid"
+                                              style="max-width: 180px; max-height: 180px; cursor: pointer;"
+                                              title="CareCode Company Logo - Hospital Management Information System"
+                                              alt="CareCode Company Logo"/>
+                            </div>
+                            <div class="col-md-9 col-sm-8">
+                            <div class="mb-3">
+                                <h:outputText styleClass="h3 fw-bold d-block" value="Hospital Management Information System" />
+                                <h:outputText styleClass="h5 text-muted" value="Powered by CareCode (Pvt) Ltd." />
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mb-4">
+                                <h:outputLink value="https://carecode.org" target="_blank" title="Visit CareCode official website">
+                                    <p:chip label="carecode.org" icon="fas fa-globe" />
+                                </h:outputLink>
+                                <h:outputLink value="https://github.com/hmislk" target="_blank" title="View HMIS project on GitHub">
+                                    <p:chip label="hmislk" icon="fab fa-github" />
+                                </h:outputLink>
+                                <h:outputLink value="https://facebook.com/carecodes" target="_blank" title="Follow CareCode on Facebook">
+                                    <p:chip label="CareCode" icon="fab fa-facebook" />
+                                </h:outputLink>
+                                <h:outputLink value="https://youtube.com/@CareCode" target="_blank" title="Watch CareCode tutorials on YouTube">
+                                    <p:chip label="CareCode" icon="fab fa-youtube" />
+                                </h:outputLink>
+                                <h:outputLink value="mailto:info@carecode.org" target="_blank" title="Contact CareCode support team">
+                                    <p:chip label="info@carecode.org" icon="fas fa-envelope" />
+                                </h:outputLink>
+                            </div>
+                            <h:panelGrid columns="3" styleClass="table table-borderless">
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Current version" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{versionController.systemVersion}" />
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Build time" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{versionController.gitBuildTime}" />
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Last commit" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{versionController.gitCommitIdAbbrev} (#{versionController.gitBranch})" />
                             </h:panelGrid>
+
+                            <div class="mt-4 mb-3">
+                                <h:outputText styleClass="h4 fw-bold text-primary" value="Current User Information" />
+                            </div>
+                            <h:panelGrid columns="3" styleClass="table table-borderless" rendered="#{sessionController.loggedUser != null}">
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Logged User" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{sessionController.loggedUser.webUserPerson.name}" />
+
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Username" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{sessionController.loggedUser.name}" />
+
+                                <h:outputText styleClass="mx-2 fw-semibold" value="User Code" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{sessionController.loggedUser.code}" />
+
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Institution" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{sessionController.institution.name}" />
+
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Site" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{sessionController.department.site.name}" />
+
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Department" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{sessionController.department.name}" />
+                            </h:panelGrid>
+
+                            <div class="mt-4 mb-3" rendered="#{sessionController.loggedUser != null}">
+                                <h:outputText styleClass="h4 fw-bold text-primary" value="Available Department Types for Pharmacy Transactions" />
+                            </div>
+                            <p:dataList value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}" var="deptType" rendered="#{sessionController.loggedUser != null}">
+                                <p:chip label="#{deptType}" styleClass="me-2 mb-2"/>
+                            </p:dataList>
+                            </div>
                         </div>
                     </div>
                 </p:panel>
             </div>
         </h:form>
-    </ui:define>
-</ui:composition>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

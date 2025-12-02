@@ -64,7 +64,10 @@
                                 value="#{reportsController.institution}"
                                 filter="true">
                             <f:selectItem itemLabel="All Institutions"/>
-                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                            <f:selectItems 
+                                value="#{institutionController.companies}" 
+                                var="ins" 
+                                itemLabel="#{ins.name}"
                                            itemValue="#{ins}"/>
                             <p:ajax process="cmbIns" update="cmbDept"/>
                         </p:selectOneMenu>
@@ -217,7 +220,8 @@
                                 filter="true"
                                 filterMatchMode="contains">
                             <f:selectItem itemLabel="All"/>
-                            <f:selectItems value="#{routeController.items}"
+                            <f:selectItems 
+                                value="#{routeController.items}"
                                            var="r"
                                            itemLabel="#{r.name}"
                                            itemValue="#{r}"/>
@@ -309,15 +313,18 @@
                                 itemValue="#{oi}">
                             <p:column style="padding: 4px;">#{oi.institutionCode}</p:column>
                             <p:column style="padding: 4px;">#{oi.name}</p:column>
-                            <p:ajax event="itemSelect"
+                            <p:ajax 
+                                event="itemSelect"
                                     process="@this"
                                     listener="#{reportsController.resetToDepartment}"
                                     update="sendSampleDept"/>
-                            <p:ajax event="itemUnselect"
+                            <p:ajax 
+                                event="itemUnselect"
                                     process="@this"
                                     listener="#{reportsController.resetToDepartment}"
                                     update="sendSampleDept"/>
-                            <p:ajax event="change"
+                            <p:ajax 
+                                event="change"
                                     process="@this"
                                     listener="#{reportsController.resetToDepartment}"
                                     update="sendSampleDept"/>
@@ -330,7 +337,6 @@
                             <h:outputLabel value="Sent Department" class="m-3"/>
                         </h:panelGroup>
                         <p:selectOneMenu
-                                inputStyleClass="w-100"
                                 class="w-100"
                                 filter="true"
                                 value="#{reportsController.toDepartment}"
@@ -387,7 +393,8 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel">
-                        <p:dataExporter type="xlsx"
+                        <p:dataExporter 
+                            type="xlsx"
                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
                                         fileName="external_laboratary_workload.xlsx"/>
                     </p:commandButton>
@@ -398,7 +405,8 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF">
-                        <p:dataExporter type="pdf"
+                        <p:dataExporter 
+                            type="pdf"
                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
                                         fileName="external_laboratary_workload.pdf"/>
                     </p:commandButton>
@@ -424,7 +432,7 @@
 
                             <p:column headerText="Sample ID" width="8rem">
                                 <h:outputText
-                                        value="#{patientInvestigationController.getPatientSamplesByInvestigationAsString(row.billItem.patientInvestigation)}"/>
+                                    value="#{patientInvestigationController.getPatientSamplesByInvestigationAsString(row.billItem.patientInvestigation)}"/>
                             </p:column>
                             <p:column headerText="Invoice No" width="14rem">
                                 <h:outputText value="#{row.billItem.patientEncounter != null ?

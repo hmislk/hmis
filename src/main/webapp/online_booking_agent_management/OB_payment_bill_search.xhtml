@@ -53,11 +53,11 @@
                             <p:spacer></p:spacer>
                             <p:spacer></p:spacer>
 
-                            <h:outputLabel value="Institution"/>                                
+                            <h:outputLabel value="Institution"/>   
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
-                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
-                                <p:ajax event="change" process="@this"/>
+                                <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Bill Status"/>                                
@@ -192,8 +192,8 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Bill No">
-                                <h:outputText value="#{bill.deptId}">
+                            <p:column width="10em" headerText="Bill No" filterMatchMode="contains" filterBy="#{bill.deptId}">
+                                <h:outputText value="#{bill.deptId}" style="font-weight: bold">
                                 </h:outputText>
                             </p:column>
 
@@ -208,7 +208,7 @@
                                     <h:outputText value="Totals"></h:outputText>
                                 </f:facet>
                                 <p:tag rendered="#{bill.cancelled ne true and bill.refunded ne true and bill.billType eq 'ChannelOnlineBookingAgentPaidToHospital'}" value="completed" style="color: white; font-weight: bold" ></p:tag>
-                                <p:tag rendered="#{bill.cancelled eq true }" value="Cancelled" style="color:white ; font-weight: bold; background-color: #8e44ad"></p:tag>
+                                <p:tag rendered="#{bill.cancelled eq true }" value="Cancelled - #{bill.cancelledBill.deptId}" style="color:white ; font-weight: bold; background-color: #8e44ad"></p:tag>
                                 <p:tag rendered="#{bill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}" value="Cancel Bill" style="color:white ; font-weight: bold; background-color: #c0392b"></p:tag>
                                 <p:tag rendered="#{bill.refunded eq true}" value="Refunded" style="color: #e67e22; font-weight: bold"></p:tag>
                             </p:column>

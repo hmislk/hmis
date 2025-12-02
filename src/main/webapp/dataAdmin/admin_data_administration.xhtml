@@ -239,6 +239,18 @@
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
+                                                action="/audit/report_execution_logs?faces-redirect=true"
+                                                value="Report Execution Logs"
+                                                icon="pi pi-history" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/report_analytics?faces-redirect=true"
+                                                value="Report Analytics Dashboard"
+                                                icon="pi pi-chart-bar" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
                                                 action="/audit/all_audit_events?faces-redirect=true"
                                                 value="All Audit Events"
                                                 icon="pi pi-history" >
@@ -252,6 +264,13 @@
                                                 ajax="false" 
                                                 action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
                                                 value="Update Database Structure"  
+                                                class="w-100 m-1"
+                                                />
+                                            
+                                            <p:commandButton
+                                                ajax="false" 
+                                                action="#{databaseMigrationController.navigateToDatabaseMigration()}" 
+                                                value="Database Migration"  
                                                 class="w-100 m-1"
                                                 />
 

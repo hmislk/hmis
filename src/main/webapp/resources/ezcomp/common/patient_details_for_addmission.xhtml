@@ -20,9 +20,9 @@
 
         <p:panel id="ptImp">
 
-            <p:growl id="msg"/>
+            <p:growl id="msg" showDetail="false" showSummary="true"/>
             <f:facet name="header">
-               
+
                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                     <!-- Left aligned content -->
                     <h:panelGroup id="headerFacet">
@@ -55,7 +55,7 @@
 
 
                                 </p:selectBooleanButton>
-                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
+                                <p:commandButton id="btnDone" alt="Save Patient Details" ajax="true" process="ptImp" update="ptImp" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
                             </h:panelGroup>
 
                         </h:panelGroup>
@@ -205,6 +205,8 @@
                                                     inputStyleClass="form-control"
                                                     pattern="dd/MMM/yyyy - hh:mm:ss a"
                                                     showTime="true"
+                                                    yearNavigator="true"
+                                                    monthNavigator="true"
                                                     showButtonBar="true"
                                                     timeInput="true"
                                                     placeholder="Date of Birth (dd/mm/yyyy - hh:mm:ss a)"
@@ -294,7 +296,7 @@
                                             class="form-control w-100"
                                             value="#{cc.attrs.controller.patient.person.religion}">
                                             <f:selectItem itemLabel="Select Religion" />
-                                            <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
+                                            <f:selectItems value="#{clinicalEntityController.religion}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}"/>
 
                                         </p:selectOneMenu>
@@ -388,15 +390,15 @@
 
                             <h:outputLabel value="Email " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.email}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.email ? 'N/A' : cc.attrs.controller.patient.person.email}" />
 
                             <h:outputLabel value="National ID No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nic}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.nic ? 'N/A' : cc.attrs.controller.patient.person.nic}" />
 
                             <h:outputLabel value="Address " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.address ? 'N/A' : cc.attrs.controller.patient.person.address}" />
 
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
@@ -404,19 +406,19 @@
 
                             <h:outputLabel value="Religion " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.religion.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.religion.name ? 'N/A' : cc.attrs.controller.patient.person.religion.name}" />
 
                             <h:outputLabel value="Occupation " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.occupation.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.occupation.name ? 'N/A' : cc.attrs.controller.patient.person.occupation.name}" />
 
                             <h:outputLabel value="Civil Status " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.civilStatus.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.civilStatus.name ? 'N/A' : cc.attrs.controller.patient.person.civilStatus.name}" />
 
                             <h:outputLabel value="Blood Group" class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.bloodGroup.name}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.bloodGroup.name ? 'N/A' : cc.attrs.controller.patient.person.bloodGroup.name}" />
 
 
                         </h:panelGrid>
@@ -429,6 +431,7 @@
                 <div>
                     <div class="row">
                         <div class="col-6">
+
                             <p:autoComplete 
                                 id="acAllergy"
                                 placeholder="Search Patient Allergies"
@@ -440,14 +443,16 @@
                                 value="#{cc.attrs.controller.currentPatientAllergy.itemValue}"
                                 inputStyleClass="form-control w-100"
                                 class="w-100"/>
-                            <p:inputText class="my-1 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
+
+                            <p:inputText placeholder="Remark" class="my-1 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
+
                         </div>
                         <div class="col-6">
                             <p:commandButton 
                                 id="btnAddAllergy" 
                                 value="Add" 
                                 process="btnAddAllergy acAllergy txtAllergy" 
-                                update="ptAl txtAllergy acAllergy" 
+                                update="ptAl txtAllergy acAllergy msg" 
                                 action="#{cc.attrs.controller.addPatientAllergy()}"/>
 
                         </div>

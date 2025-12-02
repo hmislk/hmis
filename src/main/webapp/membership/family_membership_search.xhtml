@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
@@ -7,85 +8,121 @@
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
 
-                <h:panelGroup rendered="#{!webUserController.hasPrivilege('MemberShipSearch')}">
-                    <na:not_authorize />
-                </h:panelGroup>
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('MemberShipSearch')}">
+                <na:not_authorize/>
+            </h:panelGroup>
 
 
-                <h:panelGroup  rendered="#{webUserController.hasPrivilege('MemberShipSearch')}">
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('MemberShipSearch')}">
 
-                    <p:panel header="Search Families" >
-                        <div class="row" >
-                            <div class="col" >
-                                <h:form  >
-                                    <p:panelGrid columns="3" layout="tabular" class="w-100">
-                                        <p:outputLabel value="Membership Card No / Membership Phone Number" ></p:outputLabel>
-                                        <p:inputText value="#{patientController.searchText}" autocomplete="off" style="width: 30em;"></p:inputText>
-                                        <p:commandButton 
+                <p:panel header="Search Families">
+                    <div class="row">
+                        <div class="col">
+                            <h:form>
+                                <p:panelGrid columns="3" layout="tabular" class="w-100">
+                                    <p:outputLabel value="Membership Card No / Membership Phone Number"/>
+                                    <p:inputText value="#{patientController.searchMembershipCardNo}" autocomplete="off"
+                                                 style="width: 30em;"/>
+                                    <p:commandButton
                                             ajax="false"
                                             icon="fa fa-search-plus"
                                             class="ui-button-success"
-                                            action="#{patientController.searchFamily()}" 
-                                            value="Search Families" >
-                                        </p:commandButton>
-                                    </p:panelGrid>
-                                </h:form>
-                            </div>
-                            <div class="col" >
-                                <h:form  >
-                                    <p:panelGrid columns="3" layout="tabular" class="w-100">
-                                        <p:outputLabel value="Name of the Chief House Holder" ></p:outputLabel>
-                                        <p:inputText value="#{patientController.searchText}" autocomplete="off" style="width: 30em;"></p:inputText>
-                                        <p:commandButton 
-                                            ajax="false"
-                                            icon="fa fa-search-plus"
-                                            class="ui-button-success"
-                                            action="#{patientController.searchFamilyByChhName()}" 
-                                            value="Search Families" >
-                                        </p:commandButton>
-                                    </p:panelGrid>
-                                </h:form>
-                            </div>
+                                            action="#{patientController.searchFamily()}"
+                                            value="Search Families">
+                                    </p:commandButton>
+                                </p:panelGrid>
+                            </h:form>
                         </div>
+                        <div class="col">
+                            <h:form>
+                                <p:panelGrid columns="3" layout="tabular" class="w-100">
+                                    <p:outputLabel value="Name of the Chief House Holder"/>
+                                    <p:inputText value="#{patientController.searchText}" autocomplete="off"
+                                                 style="width: 30em;"/>
+                                    <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-search-plus"
+                                            class="ui-button-success"
+                                            action="#{patientController.searchFamilyByChhName()}"
+                                            value="Search Families">
+                                    </p:commandButton>
+                                </p:panelGrid>
+                            </h:form>
+                        </div>
+                    </div>
+                </p:panel>
+                <p:panel>
+                    <div class="row">
+                        <div class="col">
+                            <h:form>
+                                <p:panelGrid columns="3" layout="tabular" class="w-100">
+                                    <p:outputLabel value="Member NIC No"/>
+                                    <p:inputText value="#{patientController.searchNic}" autocomplete="off"
+                                                 style="width: 30em;"/>
+                                    <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-search-plus"
+                                            class="ui-button-success"
+                                            action="#{patientController.searchFamilyByNIC()}"
+                                            value="Search Families">
+                                    </p:commandButton>
+                                </p:panelGrid>
+                            </h:form>
+                        </div>
+                        <div class="col">
+                            <h:form>
+                                <p:panelGrid columns="3" layout="tabular" class="w-100">
+                                    <p:outputLabel value="Address"/>
+                                    <p:inputText value="#{patientController.searchPatientAddress}" autocomplete="off"
+                                                 style="width: 30em;"/>
+                                    <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-search-plus"
+                                            class="ui-button-success"
+                                            action="#{patientController.searchFamilyByAddress()}"
+                                            value="Search Families">
+                                    </p:commandButton>
+                                </p:panelGrid>
+                            </h:form>
+                        </div>
+                    </div>
+                </p:panel>
 
-                    </p:panel>
-
-                    <h:form>
-                        <p:dataTable 
+                <h:form>
+                    <p:dataTable
                             rendered="#{patientController.families ne null and not empty patientController.families}"
-                            value="#{patientController.families}" 
-                            var="f" 
-                            rowIndexVar="n" 
-                            rowKey="#{f.id}" >
-                            <p:column headerText="Membership No" >
-                                <p:outputLabel value="#{f.membershipCardNo}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Phone No" >
-                                <p:outputLabel value="#{f.phoneNo}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Chief Householder's Name" >
-                                <p:outputLabel value="#{f.chiefHouseHolder.person.nameWithTitle}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Actions" >
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Manage" 
-                                    action="#{patientController.navigateToManageFamilyMembership}" 
+                            value="#{patientController.families}"
+                            var="f"
+                            rowIndexVar="n"
+                            rowKey="#{f.id}">
+                        <p:column headerText="Membership No">
+                            <p:outputLabel value="#{f.membershipCardNo}"/>
+                        </p:column>
+                        <p:column headerText="Phone No">
+                            <p:outputLabel value="#{f.phoneNo}"/>
+                        </p:column>
+                        <p:column headerText="Chief Householder's Name">
+                            <p:outputLabel value="#{f.chiefHouseHolder.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Actions">
+                            <p:commandButton
+                                    ajax="false"
+                                    value="Manage"
+                                    action="#{patientController.navigateToManageFamilyMembership}"
                                     icon="fas fa-users">
-                                    <f:setPropertyActionListener value="#{f}" target="#{patientController.currentFamily}" />
-                                </p:commandButton>
-                            </p:column>
-                        </p:dataTable>
+                                <f:setPropertyActionListener value="#{f}" target="#{patientController.currentFamily}"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
 
 
-
-                    </h:form>
-                </h:panelGroup>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+                </h:form>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>

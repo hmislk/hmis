@@ -20,7 +20,9 @@
                         class="ui-button-success"
                         icon="fas fa-check"
                         ajax="false"
-                        style="float: right;">
+                        style="float: right;"
+                        onclick="if (!confirm('Are you sure you want to settle this GRN?'))
+                                    return false;">
                     </p:commandButton>
                 </f:facet>
                 <h:panelGroup >
@@ -105,8 +107,10 @@
 
                         <p:column headerText="Receiving Qty" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >
                             <p:inputText autocomplete="off" value="#{bi.tmpQty}" onfocus="this.select()" id="ordQty">
+                                <f:convertNumber integerOnly="#{!bi.item.allowFractions}" />
                                 <f:ajax event="blur" execute="@this pRate rRate doeDateOnlyShort batch" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnController.onEdit(bi)}"></f:ajax>
                             </p:inputText>
+                            <p:keyFilter for="ordQty" mask="#{bi.item.allowFractions ? 'num' : 'int'}" />
                         </p:column>
 
                         <p:column headerText="Ordered Free Qty" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
@@ -123,8 +127,10 @@
                                                             </f:facet>
                                                         </p:cellEditor>                        -->
                             <p:inputText autocomplete="off" value="#{bi.tmpFreeQty}" id="freeQty" onfocus="this.select()">
+                                <f:convertNumber integerOnly="#{!bi.item.allowFractions}" />
                                 <f:ajax event="blur" execute="@this pRate rRate ordQty doeDateOnlyShort batch" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnController.onEdit(bi)}"></f:ajax>
                             </p:inputText>
+                            <p:keyFilter for="freeQty" mask="#{bi.item.allowFractions ? 'num' : 'int'}" />
                         </p:column>
 
                         <p:column headerText="Purchase Rate" styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">

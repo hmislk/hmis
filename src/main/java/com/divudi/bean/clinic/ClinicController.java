@@ -715,6 +715,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
@@ -744,11 +745,29 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
                 pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
                 pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
             }
 
         }
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public String navigateToManageSessionInstance(SessionInstance sessionInstance) {
@@ -3067,6 +3086,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     private boolean paymentMethodErrorPresent() {
+        syncDirectStaffSelectionFromPaymentData(paymentMethod);
         if (paymentMethod == null) {
             return true;
         }
@@ -3099,6 +3119,19 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
         }
 
+        if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            if (toStaff == null) {
+                return true;
+            }
+            setNetPlusVat(feeTotalForSelectedBill);
+            double utilized = Math.abs(toStaff.getAnnualWelfareUtilized());
+            if (utilized + netPlusVat > toStaff.getAnnualWelfareQualified()) {
+                JsfUtil.addErrorMessage("Staff welfare limit exceeded. The utilized value cannot exceed the qualified welfare balance.");
+                return true;
+            }
+            staffBean.updateStaffWelfare(toStaff, netPlusVat);
+        }
+
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             if (getPaymentMethodData() == null) {
                 JsfUtil.addErrorMessage("No Details on multiple payment methods given");
@@ -3126,6 +3159,17 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                         JsfUtil.addErrorMessage("No enough Credit.");
                         return true;
                     }
+                } else if (cd.getPaymentMethod().equals(PaymentMethod.Staff_Welfare)) {
+                    if (cd.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    Staff welfareStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
+                    double utilized = Math.abs(welfareStaff.getAnnualWelfareUtilized());
+                    if (utilized + cd.getPaymentMethodData().getStaffWelfare().getTotalValue() > welfareStaff.getAnnualWelfareQualified()) {
+                        JsfUtil.addErrorMessage("No enough credit.");
+                        return true;
+                    }
                 }
                 //TODO - filter only relavant value
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
@@ -3135,6 +3179,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = feeTotalForSelectedBill - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -5487,16 +5532,28 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
                     case OnCall:
+                        break;
                     case OnlineSettlement:
+                        break;
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
                             staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Credit Updated");
+                        }
+                        break;
+                    case Staff_Welfare:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                            staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
                         }
+                        break;
                     case YouOweMe:
                     case MultiplePaymentMethods:
+                        break;
                 }
 
                 paymentFacade.create(p);
@@ -5538,6 +5595,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                 case OnlineSettlement:
                     break;
                 case Staff:
+                    break;
+                case Staff_Welfare:
                     break;
                 case YouOweMe:
                     break;
@@ -6114,6 +6173,10 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                     bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
                     break;
                 case Staff:
+                    bill.setBillType(BillType.ChannelStaff);
+                    bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+                    break;
+                case Staff_Welfare:
                     bill.setBillType(BillType.ChannelStaff);
                     bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
                     break;
@@ -6816,6 +6879,28 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+        if (paymentMethodData != null || toStaff != null) {
+            getPaymentMethodData().getStaffCredit().setToStaff(toStaff);
+            getPaymentMethodData().getStaffWelfare().setToStaff(toStaff);
+        }
+    }
+
+    private void syncDirectStaffSelectionFromPaymentData(PaymentMethod method) {
+        if (method != PaymentMethod.Staff && method != PaymentMethod.Staff_Welfare) {
+            return;
+        }
+        if (paymentMethodData == null) {
+            return;
+        }
+        if (toStaff != null) {
+            return;
+        }
+        ComponentDetail staffComponent = method == PaymentMethod.Staff
+                ? paymentMethodData.getStaffCredit()
+                : paymentMethodData.getStaffWelfare();
+        if (staffComponent != null && staffComponent.getToStaff() != null) {
+            setToStaff(staffComponent.getToStaff());
+        }
     }
 
     public boolean isForiegn() {
@@ -6999,10 +7084,10 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
         if (toStaff != null && settlePaymentMethod == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(toStaff, getBillSession().getBill().getTotal());
-            JsfUtil.addSuccessMessage("User Credit Updated");
+            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
         } else if (toStaff != null && settlePaymentMethod == PaymentMethod.Staff) {
             staffBean.updateStaffCredit(toStaff, getBillSession().getBill().getTotal());
-            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+            JsfUtil.addSuccessMessage("Staff Credit Updated");
         }
 
         if (settlePaymentMethod == PaymentMethod.PatientDeposit) {
@@ -7088,6 +7173,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     private boolean errorChecksettle() {
+        syncDirectStaffSelectionFromPaymentData(settlePaymentMethod);
         if (getPaymentSchemeController().checkPaymentMethodError(settlePaymentMethod, getPaymentMethodData())) {
             return true;
         }
@@ -7170,6 +7256,17 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                         JsfUtil.addErrorMessage("No enough Credit.");
                         return true;
                     }
+                } else if (cd.getPaymentMethod().equals(PaymentMethod.Staff_Welfare)) {
+                    if (cd.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0 || cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    Staff welfareStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
+                    double utilized = Math.abs(welfareStaff.getAnnualWelfareUtilized());
+                    if (utilized + cd.getPaymentMethodData().getStaffWelfare().getTotalValue() > welfareStaff.getAnnualWelfareQualified()) {
+                        JsfUtil.addErrorMessage("No enough credit.");
+                        return true;
+                    }
                 }
                 //TODO - filter only relavant value
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
@@ -7179,6 +7276,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
             }
 //            System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
             double differenceOfBillTotalAndPaymentValue = getSelectedBillSession().getBillItem().getBill().getNetTotal() - multiplePaymentMethodTotalValue;

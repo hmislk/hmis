@@ -8,8 +8,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
 <h:body>
-    <ui:composition template="/resources/template/template.xhtml">
-        <ui:define name="content">
+    <ui:composition template="/pharmacy/disbursement_index.xhtml">
+        <ui:define name="subcontent">
 
             <h:form>
                 <p:panel header="Report Transfer Issued not Recieved Print View" styleClass="w-100">
@@ -142,7 +142,7 @@
                                     <h:outputText value="#{searchController.searchKeyword.frmDepartment.name}"/>
                                     <h:outputText value="" style="width: 2em!important;" class="text-center"/>
                                     <h:outputText value="To Department - "/>
-                                    <h:outputText value="#{searchController.searchKeyword.toDepartment.name}"/>
+                                    <h:outputText value="#{searchController.searchKeyword.department}"/>
                                 </div>
                                 <div class="d-flex justify-content-center text-5 gap-2"
                                      style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">

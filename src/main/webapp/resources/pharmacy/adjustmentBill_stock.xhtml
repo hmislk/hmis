@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacypos.css" />
+
+        <style>
+            @media print {
+                .stock-adjustment-receipt {
+                    margin: 0;
+                    padding: 0;
+                }
+            }
+
+            .stock-adjustment-receipt {
+                font-family: 'Segoe UI', 'Arial', sans-serif;
+                max-width: 100%;
+                margin: 0 auto;
+                padding: 20px;
+                background: white;
+                color: #333;
+                page-break-after: always;
+            }
+
+            .stock-receipt-header {
+                text-align: center;
+                border-bottom: 3px double #333;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+
+            .stock-receipt-title {
+                font-size: 20px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin: 0;
+                color: #222;
+            }
+
+            .stock-receipt-subtitle {
+                font-size: 11px;
+                color: #666;
+                margin-top: 5px;
+            }
+
+            .stock-receipt-info {
+                display: table;
+                width: 100%;
+                margin-bottom: 20px;
+                border-spacing: 0;
+            }
+
+            .stock-info-row {
+                display: table-row;
+            }
+
+            .stock-info-label {
+                display: table-cell;
+                font-weight: 600;
+                padding: 6px 10px 6px 0;
+                white-space: nowrap;
+                width: 22%;
+                color: #555;
+                font-size: 12px;
+            }
+
+            .stock-info-separator {
+                display: table-cell;
+                padding: 6px 8px;
+                width: 10px;
+                color: #999;
+            }
+
+            .stock-info-value {
+                display: table-cell;
+                padding: 6px 0;
+                color: #333;
+                font-size: 12px;
+            }
+
+            .stock-info-spacer {
+                display: table-cell;
+                width: 30px;
+            }
+
+            .stock-items-section {
+                margin: 25px 0;
+            }
+
+            .stock-items-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+            }
+
+            .stock-items-table thead th {
+                background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+                padding: 10px 8px;
+                text-align: left;
+                font-weight: 700;
+                border-bottom: 2px solid #333;
+                border-top: 1px solid #dee2e6;
+                text-transform: uppercase;
+                font-size: 10px;
+                letter-spacing: 0.5px;
+                color: #495057;
+            }
+
+            .stock-items-table thead th.text-right {
+                text-align: right;
+            }
+
+            .stock-items-table tbody td {
+                padding: 10px 8px;
+                border-bottom: 1px solid #dee2e6;
+                vertical-align: middle;
+            }
+
+            .stock-items-table tbody td.text-right {
+                text-align: right;
+                font-weight: 500;
+            }
+
+            .stock-items-table tbody tr:nth-child(even) {
+                background-color: #f8f9fa;
+            }
+
+            .stock-items-table tbody tr:hover {
+                background-color: #e7f1ff;
+            }
+
+            .stock-item-name {
+                font-weight: 500;
+                color: #222;
+            }
+
+            .stock-qty-column {
+                font-family: 'Courier New', monospace;
+                font-weight: 600;
+            }
+
+            .stock-comments-cell {
+                font-size: 11px;
+                color: #666;
+                font-style: italic;
+            }
+
+            .stock-receipt-footer {
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 1px dashed #999;
+                text-align: center;
+                font-size: 10px;
+                color: #666;
+            }
+        </style>
+
+        <div class="stock-adjustment-receipt">
+            <!-- Header -->
+            <div class="stock-receipt-header">
+                <div class="stock-receipt-title">Stock Adjustment Bill</div>
+                <div class="stock-receipt-subtitle">Stock Verification Document</div>
+            </div>
+
+            <!-- Receipt Information -->
+            <div class="stock-receipt-info">
+                <div class="stock-info-row">
+                    <div class="stock-info-label">Bill No</div>
+                    <div class="stock-info-separator">:</div>
+                    <div class="stock-info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </div>
+                    <div class="stock-info-spacer"></div>
+                    <div class="stock-info-label">Adjusted At</div>
+                    <div class="stock-info-separator">:</div>
+                    <div class="stock-info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </div>
+                </div>
+
+                <div class="stock-info-row">
+                    <div class="stock-info-label">Adjusted By</div>
+                    <div class="stock-info-separator">:</div>
+                    <div class="stock-info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/>
+                    </div>
+                    <div class="stock-info-spacer"></div>
+                    <div class="stock-info-label">Department</div>
+                    <div class="stock-info-separator">:</div>
+                    <div class="stock-info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                    </div>
+                </div>
+
+                <h:panelGroup rendered="#{not empty cc.attrs.bill.comments}">
+                    <div class="stock-info-row">
+                        <div class="stock-info-label">Comments</div>
+                        <div class="stock-info-separator">:</div>
+                        <div class="stock-info-value" style="font-style: italic; color: #666;">
+                            <h:outputLabel value="#{cc.attrs.bill.comments}"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </div>
+
+            <!-- Items Table -->
+            <div class="stock-items-section">
+                <table class="stock-items-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th class="text-right">Expiry Date</th>
+                            <th class="text-right">Before Qty</th>
+                            <th class="text-right">Changed Qty</th>
+                            <th class="text-right">After Qty</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
+                            <tr>
+                                <td>
+                                    <span class="stock-item-name">
+                                        <h:outputLabel value="#{bip.item.name}"/>
+                                    </span>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-right stock-qty-column">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue eq 0 ? bip.pharmaceuticalBillItem.stock.stock : bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                                        <f:convertNumber pattern="#,###"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-right stock-qty-column">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,###.##"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-right stock-qty-column">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
+                                        <f:convertNumber pattern="#,###.##"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="stock-comments-cell">
+                                    <h:outputLabel value="#{bip.descreption}"/>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div class="stock-receipt-footer">
+                This is a computer-generated document
+            </div>
+        </div>
+    </cc:implementation>
+</html>

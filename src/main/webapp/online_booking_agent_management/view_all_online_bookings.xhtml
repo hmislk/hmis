@@ -55,8 +55,8 @@
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
-                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="change" process="@this"/>
                             </p:selectOneMenu>
 
@@ -161,7 +161,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient" filterMatchMode="contains" filterBy="#{ob.patientName}">
+                            <p:column width="8em" headerText="Patient" filterMatchMode="contains" filterBy="#{ob.patientName}">
                                 <h:outputText value="#{ob.title}. #{ob.patientName}">
                                 </h:outputText>
                             </p:column>
@@ -215,16 +215,33 @@
                                 <h:outputText value="#{ob.agency.name}">
                                 </h:outputText>
                             </p:column>
+                            
+                            <p:column width="10em" headerText="Remark/Comment">
+                                <h:outputText value="#{ob.comment}">
+                                </h:outputText>
+                            </p:column>
 
                             <p:column headerText="Paid to Hospital">
                                 <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
                                 </h:outputText>
                                 
                                 <p:commandButton 
+                                    title="Mark Uncomplete" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false) and ob.paidToHospitalBill eq null and ob.paidToHospital}"
+                                    icon="fa fa-close"
+                                    class="mx-2 ui-button-danger"
+                                    onclick="return confirm('Are you sure you want to proceed?');"
+                                    action="#{onlineBookingAgentController.markUncompletePaidToHospitalOnlineBooking(ob)}"
+                                    
+                                    ajax="false" >
+                                   
+                                </p:commandButton>
+                                
+                                <p:commandButton 
                                     id="btnViewBill"
                                     ajax="false" 
                                     class="mx-1"
-                                    rendered="#{ob.paidToHospital}"
+                                    rendered="#{ob.paidToHospital and ob.paidToHospitalBill ne null}"
                                     icon="fas fa-file-invoice"
                                     actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(ob.paidToHospitalBill)}"
                                     action="OB_agent_paid_bill_reprint?faces-redirect=true">

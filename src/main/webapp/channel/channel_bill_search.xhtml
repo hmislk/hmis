@@ -167,17 +167,30 @@
                                         width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">
+                                    <p:column width="10em" headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">
                                         <p:outputLabel
-                                            value="#{bill.deptId}" >
+                                            value="#{bill.deptId}" style="font-weight: bold">
 
                                         </p:outputLabel>
+
+                                        <p:tag rendered="#{bill.cancelled}" value="Cancelled - #{bill.cancelledBill.deptId}" severity="danger" ></p:tag>
+                                        <p:tag rendered="#{bill.refunded}" value="Refunded - #{bill.refundedBill.deptId}"  severity="warning" ></p:tag>
+                                        <p:tag rendered="#{bookingControllerViewScope.checkBillClass(bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
+                                        <p:tag rendered="#{bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT' || bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITHOUT_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
                                     </p:column>
                                     <p:column headerText="Consultant"
                                               filterMatchMode="contains"
+                                              width="8em"
                                               filterBy="#{bill.backwardReferenceBill.deptId}">
                                         <p:outputLabel value="#{bill.singleBillSession.sessionInstance.originatingSession.staff.person.nameWithTitle}"/>
                                     </p:column>
+
+                                    <!--                                     <p:column headerText="BTA"
+                                                                                   width="12em"
+                                                                                  filterMatchMode="contains"
+                                                                                  filterBy="#{bill.backwardReferenceBill.deptId}">
+                                                                             <p:outputLabel value="#{bill.billTypeAtomic}"/>
+                                                                        </p:column>-->
 
                                     <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
                                         <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
@@ -214,14 +227,18 @@
                                     </p:column>
                                     <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}"
                                               filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >
-                                        <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
+                                        <h:outputLabel id="insDep" value="#{bill.toInstitution.name}" />
                                     </p:column>
 
                                     <p:column headerText="Billed by"
-                                              sortBy="#{bill.creater.name}"
+
                                               filterMatchMode="contains"
-                                              filterBy="#{bill.creater.name}">
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                                              style="font-weight: bold"
+                                              filterBy="#{bill.creater != null and bill.creater.name != null 
+                                                          ? bill.creater.name 
+                                                          : (bill.creditCompany != null ? bill.creditCompany.name : '')}">
+                                              <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                                        <h:outputLabel style="color: #f39c12" value="#{bill.creditCompany.name}" rendered="#{bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" ></h:outputLabel>
                                         <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
                                             <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
                                             <h:outputLabel value="#{bill.refundedBill.creater.webUserPerson.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
@@ -235,7 +252,8 @@
                                     </p:column>
                                     <p:column
                                         headerText="Serial Number"
-                                        filterMatchMode="contains" >
+                                        filterMatchMode="contains" 
+                                        style="text-align: center; font-weight: bold">
                                         <h:outputLabel value="#{bill.singleBillSession.serialNo}">
                                         </h:outputLabel>
                                     </p:column>
@@ -243,20 +261,32 @@
                                         headerText="Client"
                                         filterMatchMode="contains"
                                         sortBy="#{bill.patient.person.name}"
-                                        filterBy="#{bill.patient.person.name}" >
-                                        <h:panelGroup id="pt">
+                                        filterBy="#{bill.patient != null ? bill.patient.person.name : bill.referenceBill != null ? bill.referenceBill.onlineBooking.patientName : bill.billedBill.referenceBill.onlineBooking.patientName}" >
+                                        <h:panelGroup id="pt" rendered="#{bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bill.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
                                             <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                                 <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
                                             <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
                                         </h:panelGroup>
+                                        <h:outputLabel rendered="#{bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}"
+                                                       value="#{bill.referenceBill.onlineBooking.patientName}"
+                                                       >
+
+                                        </h:outputLabel>
+
+                                        <h:outputLabel rendered="#{bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"
+                                                       value="#{bill.billedBill.referenceBill.onlineBooking.patientName}"
+                                                       >
+
+                                        </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Remarks" >
                                         <h:panelGroup id="remark">
-                                            <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
-                                            <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="OB" severity="warning" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="OB Cancel" severity="warning" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bill.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="System" severity="success" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
 
                                         <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >
@@ -308,6 +338,7 @@
 
                                     <p:column headerText="Actions">
                                         <p:commandLink
+                                            disabled="#{bill.referenceBill ne null}"
                                             ajax="false"
                                             value="View BillSession"
                                             action="#{bookingControllerViewScope.navigateToViewBillSession(bill.singleBillSession)}">

@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,137 +15,277 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacypos.css" />
-        <div style="font-family: sans-serif!important;
-             font-size: 11px!important;
-             position: relative!important;
-             margin: 0px auto!important;
-             width: 95%;
-             height: 95%;
-             padding: 0px;
-             font-size: 100%;
-             page-break-after: always;" >
 
+        <style>
+            @media print {
+                .adjustment-receipt {
+                    margin: 0;
+                    padding: 0;
+                }
+            }
 
-            <div style=" margin-top: 10px; text-align: center;font-weight: bold;font-size: 13pt">
-                <h:outputLabel value="Stock Adjustment Note" style="text-decoration: underline;"/>                           
+            .adjustment-receipt {
+                font-family: 'Segoe UI', 'Arial', sans-serif;
+                max-width: 100%;
+                margin: 0 auto;
+                padding: 20px;
+                background: white;
+                color: #333;
+                page-break-after: always;
+            }
+
+            .receipt-header {
+                text-align: center;
+                border-bottom: 3px double #333;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+
+            .receipt-title {
+                font-size: 20px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin: 0;
+                color: #222;
+            }
+
+            .receipt-subtitle {
+                font-size: 11px;
+                color: #666;
+                margin-top: 5px;
+            }
+
+            .receipt-info {
+                display: table;
+                width: 100%;
+                margin-bottom: 20px;
+                border-spacing: 0;
+            }
+
+            .info-row {
+                display: table-row;
+            }
+
+            .info-label {
+                display: table-cell;
+                font-weight: 600;
+                padding: 6px 10px 6px 0;
+                white-space: nowrap;
+                width: 22%;
+                color: #555;
+                font-size: 12px;
+            }
+
+            .info-separator {
+                display: table-cell;
+                padding: 6px 8px;
+                width: 10px;
+                color: #999;
+            }
+
+            .info-value {
+                display: table-cell;
+                padding: 6px 0;
+                color: #333;
+                font-size: 12px;
+            }
+
+            .info-spacer {
+                display: table-cell;
+                width: 30px;
+            }
+
+            .items-section {
+                margin: 25px 0;
+            }
+
+            .items-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+            }
+
+            .items-table thead th {
+                background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+                padding: 10px 8px;
+                text-align: left;
+                font-weight: 700;
+                border-bottom: 2px solid #333;
+                border-top: 1px solid #dee2e6;
+                text-transform: uppercase;
+                font-size: 10px;
+                letter-spacing: 0.5px;
+                color: #495057;
+            }
+
+            .items-table thead th.text-right {
+                text-align: right;
+            }
+
+            .items-table tbody td {
+                padding: 10px 8px;
+                border-bottom: 1px solid #dee2e6;
+                vertical-align: middle;
+            }
+
+            .items-table tbody td.text-right {
+                text-align: right;
+                font-weight: 500;
+            }
+
+            .items-table tbody tr:nth-child(even) {
+                background-color: #f8f9fa;
+            }
+
+            .items-table tbody tr:hover {
+                background-color: #e7f1ff;
+            }
+
+            .item-name {
+                font-weight: 500;
+                color: #222;
+            }
+
+            .qty-column {
+                font-family: 'Courier New', monospace;
+                font-weight: 600;
+            }
+
+            .comments-section {
+                margin-top: 25px;
+                padding: 15px;
+                background: #f8f9fa;
+                border-left: 4px solid #007bff;
+                border-radius: 3px;
+            }
+
+            .comments-label {
+                font-weight: 700;
+                color: #495057;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 8px;
+            }
+
+            .comments-text {
+                color: #333;
+                font-size: 12px;
+                line-height: 1.6;
+                white-space: pre-wrap;
+            }
+
+            .receipt-footer {
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 1px dashed #999;
+                text-align: center;
+                font-size: 10px;
+                color: #666;
+            }
+        </style>
+
+        <div class="adjustment-receipt">
+            <!-- Header -->
+            <div class="receipt-header">
+                <div class="receipt-title">Stock Adjustment Note</div>
+                <div class="receipt-subtitle">Inventory Control Document</div>
             </div>
 
-            <div class="billDetailsFiveFive" style="margin-top: 20px;">
-                <table style="width: 99%!important;" >
+            <!-- Receipt Information -->
+            <div class="receipt-info">
+                <div class="info-row">
+                    <div class="info-label">Adjustment No</div>
+                    <div class="info-separator">:</div>
+                    <div class="info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </div>
+                    <div class="info-spacer"></div>
+                    <div class="info-label">Adjusted At</div>
+                    <div class="info-separator">:</div>
+                    <div class="info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </div>
+                </div>
 
-                    <tr>
-                        <td style="text-align: left;" >
-                            <h:outputLabel value="Adj No "/>
-                        </td>
-                        <td style="width: 10px;"/>
-                        <td >:</td>
-                        <td style="width: 5px;"/>
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"/> 
+                <div class="info-row">
+                    <div class="info-label">Adjusted By</div>
+                    <div class="info-separator">:</div>
+                    <div class="info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"/>
+                    </div>
+                    <div class="info-spacer"></div>
+                    <div class="info-label">Department</div>
+                    <div class="info-separator">:</div>
+                    <div class="info-value">
+                        <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                    </div>
+                </div>
+            </div>
 
-                        </td>
-                        <td style="width: 50px;"/>
-                        <td>
-                            <h:outputLabel value="Adjusted At  "/>
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" />
-                        </td>
-
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputLabel >
-                        </td>
-
-                    </tr>
-
-                    <tr>
-                        <td style="text-align: left;" >
-                            <h:outputLabel value="Adjusted By  "/>
-                        </td>
-                        <td style="width: 10px;"/>
-                        <td >:</td>
-                        <td style="width: 5px;"/>
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}">
-                            </h:outputLabel>
-
-                        </td>
-                        <td style="width: 50px;"/>
-                        <td>
-                            <h:outputLabel value="Department "/>
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" />
-                        </td>
-
-                        <td>
-                            <h:outputLabel value="#{cc.attrs.bill.department.name}">
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+            <!-- Items Table -->
+            <div class="items-section">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th class="text-right">Expiry Date</th>
+                            <th class="text-right">Before Qty</th>
+                            <th class="text-right">Changed Qty</th>
+                            <th class="text-right">After Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
+                            <tr>
+                                <td>
+                                    <span class="item-name">
+                                        <h:outputLabel value="#{bip.item.name}"/>
+                                    </span>
+                                </td>
+                                <td class="text-right">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-right qty-column">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue eq 0 ? bip.pharmaceuticalBillItem.stock.stock : bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                                        <f:convertNumber pattern="#,###"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-right qty-column">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,###.##"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-right qty-column">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
+                                        <f:convertNumber pattern="#,###.##"/>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
                 </table>
             </div>
 
+            <!-- Comments Section -->
+            <h:panelGroup rendered="#{not empty cc.attrs.bill.comments}">
+                <div class="comments-section">
+                    <div class="comments-label">Comments</div>
+                    <div class="comments-text">
+                        <h:outputLabel value="#{cc.attrs.bill.comments}"/>
+                    </div>
+                </div>
+            </h:panelGroup>
 
-
-
-            <div >
-                <p:spacer height="15px"/>
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" 
-                             value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" style=" text-align: center;">                                     
-                    <p:column style="text-align: left!important;"  >
-                        <f:facet name="header">
-                            <h:outputLabel value="Item" style="font-weight: bold!important; " />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.item.name}"/>
-                    </p:column>
-                    <p:column rendered="false" style="width: 60px;text-align: right!important;" >
-                        <f:facet name="header">
-                            <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputLabel>
-                    </p:column>                                  
-
-                    <p:column style="text-align: right!important;"> 
-                        <f:facet name="header">                           
-                            <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue eq 0 ? bip.pharmaceuticalBillItem.stock.stock : bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
-                            <f:convertNumber pattern="#,###"/>
-                        </h:outputLabel>
-                    </p:column>                  
-
-                    <p:column style="text-align: right!important;"> 
-                        <f:facet name="header">                           
-                            <h:outputLabel value="Changed Qty" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber pattern="#,###.##"/>
-                        </h:outputLabel>
-                    </p:column>
-
-
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
-                            <f:convertNumber pattern="#,###.##"/>
-                        </h:outputLabel>
-                    </p:column>
-
-                </p:dataTable>
+            <!-- Footer -->
+            <div class="receipt-footer">
+                This is a computer-generated document
             </div>
-
-            <h:panelGrid columns="2" style="min-width: 100%;" class="billDetailsFiveFive">
-                <h:outputLabel value="Comment" />
-                <h:outputLabel value="#{cc.attrs.bill.comments}" >
-                </h:outputLabel>
-            </h:panelGrid>
         </div>
     </cc:implementation>
 </html>

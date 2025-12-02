@@ -16,7 +16,7 @@
                         <h:form>
 
                             <h:panelGrid columns="5" class="w-100">
-                                
+
                                 <p:outputLabel value="Speciality" for="acSpeciality" />
                                 <p:autoComplete 
                                     id="acSpeciality"
@@ -30,12 +30,12 @@
                                     itemValue="#{mysp}">
                                     <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff" />
                                 </p:autoComplete>
-                                
+
                                 <p:spacer 
                                     width="50" >
                                 </p:spacer>
-                                
-                               
+
+
                                 <p:outputLabel value="Staff" for="scStaff" />
                                 <p:autoComplete  
                                     id="scStaff"
@@ -50,7 +50,7 @@
                                     <p:ajax event="itemSelect" update="lstSelect" process="scStaff" listener="#{channelStaffPaymentBillController.fillSessions}" />
                                 </p:autoComplete>
 
-                                
+
                                 <p:outputLabel value="Consider Date" for="chkConsiderDate" />
                                 <p:selectBooleanCheckbox 
                                     id="chkConsiderDate"
@@ -61,10 +61,10 @@
                                 <h:outputText value="" />
                                 <h:outputText value="" />
                                 <h:outputText value="" />
-                                
-                                
 
-                                
+
+
+
                                 <p:outputLabel value="From Date" for="fDate" />
                                 <p:calendar 
                                     id="fDate"
@@ -74,7 +74,7 @@
                                     disabled="#{!channelStaffPaymentBillController.considerDate}" 
                                     navigator="false" 
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                
+
                                 <p:spacer 
                                     width="50" >
                                 </p:spacer>
@@ -89,7 +89,7 @@
                                     navigator="false" 
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                
+
                                 <p:outputLabel value="Session" for="lstSelect" />
                                 <p:selectOneMenu  
                                     id="lstSelect"
@@ -101,7 +101,7 @@
                                                    itemValue="#{ses}" 
                                                    itemLabel="#{ses.name} - #{ses.dayString}" />
                                 </p:selectOneMenu>
-                                
+
                                 <p:spacer 
                                     width="50" >
                                 </p:spacer>
@@ -161,25 +161,32 @@
                                 <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                          render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
-                                <p:column selectionBox="true" ></p:column>
+                                <p:column selectionBox="true" width="1em"></p:column>
 
-                                <p:column headerText="No">
+                                <p:column headerText="No" width="2em">
                                     <h:outputLabel value="#{i+1}">
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Bill ID">
+                                <p:column headerText="Bill ID" style="text-align: center">
                                     <h:outputLabel value="#{bf.bill.deptId}">
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Appoinment No">
-                                    <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
+                                <p:column headerText="Appoinment No" style="text-align: center">
+                                    <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}" style="font-weight: bold">
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Patient">
-                                    <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
-                                    <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
+                                <p:column headerText="Patient" width="10em">
+                                    <h:panelGroup rendered="#{bf.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
+                                        <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
+                                        <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>   
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bf.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
+                                        <h:outputLabel value="#{bf.bill.referenceBill.onlineBooking.title}. #{bf.bill.referenceBill.onlineBooking.patientName}" />                                    
+                                          
+                                    </h:panelGroup>
+
                                 </p:column>
 
                                 <p:column headerText="Booked on" rendered="false">
@@ -244,9 +251,9 @@
                                     <h:outputLabel id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying }" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>  
-                                    
+
                                 </h:panelGrid>
-                                
+
                             </p:panel>      
 
                             <div class="w-50" >
@@ -263,9 +270,9 @@
                         </h:form>
 
                     </p:panel>
-                    
+
                 </h:panelGroup>
-                
+
                 <h:form>
                     <p:panel id="pnlprintBill" rendered="#{channelStaffPaymentBillController.printPreview}">
 
@@ -300,13 +307,13 @@
                         </h:panelGroup>
 
                     </p:panel>
-                    
+
                 </h:form>
-                
+
             </ui:define>
 
         </ui:composition>
 
     </h:body>
-    
+
 </html>

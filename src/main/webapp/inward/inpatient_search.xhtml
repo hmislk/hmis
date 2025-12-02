@@ -13,9 +13,9 @@
 
             <ui:define name="content">
                 <h:form id="form">
-                    <p:panel header="Admissions" style="height: 100vh" >
+                    <p:panel header="Admissions">
                         <div class="row">
-                            <div class="col-3">
+                            <div class="col-2">
                                 <p:outputLabel value="From Date"></p:outputLabel>
                                 <p:datePicker
                                     value="#{admissionController.fromDate}"
@@ -35,7 +35,7 @@
                                     timeInput="true"
                                     inputStyleClass="form-control"
                                     value="#{admissionController.toDate}"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                                 </p:datePicker>
 
                                 <p:commandButton
@@ -56,6 +56,12 @@
                                 <p:inputText
                                     class="w-100"
                                     value="#{admissionController.patientNameForSearch}" >
+                                </p:inputText>
+
+                                <p:outputLabel value="MRN / PHN No" ></p:outputLabel>
+                                <p:inputText
+                                    class="w-100"
+                                    value="#{admissionController.patientNumberForSearch}" >
                                 </p:inputText>
 
                                 <p:outputLabel value="Patient Phone" ></p:outputLabel>
@@ -150,7 +156,7 @@
 
 
                             </div>
-                            <div class="col-9">
+                            <div class="col-10">
                                 <div class="p-1" >
                                     <p:dataTable id="tblBills"
                                                  value="#{admissionController.items}"
@@ -165,8 +171,6 @@
                                                  currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                                  rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                                  >
-
-
                                         <p:column headerText="BHT No" >
                                             <h:outputText value="#{a.bhtNo}"></h:outputText>
                                         </p:column>
@@ -229,27 +233,30 @@
                                         </p:column>
                                         <p:column headerText="Actions" >
                                             <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                            <p:commandButton ajax="false"
-                                                             class="m-1"
-                                                             icon="fa fa-fw fa-bed"
-                                                             action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-fw fa-bed"
+                                                action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 
-                                            <p:commandButton ajax="false"
-                                                             class="m-1"
-                                                             icon="fa fa-user-md"
-                                                             action="#{patientController.navigateToOpdPatientProfile()}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-user-md"
+                                                action="#{patientController.navigateToOpdPatientProfile()}">
                                                 <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
                                             </p:commandButton>
 
-                                            <p:commandButton ajax="false"
-                                                             class="m-1"
-                                                             icon="fa fa-repeat"
-                                                             title="Convert"
-                                                             action="#{patientController.navigateToConvertNonBhtToBht(a)}"
-                                                             rendered="#{a.currentPatientRoom eq null and configOptionApplicationController.getBooleanValueByKey('Enable Button to Convert Admissions to new Admission',false)}"
-                                                             disabled="#{a.convertedToAnotherEncounter}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-repeat"
+                                                title="Convert"
+                                                action="#{patientController.navigateToConvertNonBhtToBht(a)}"
+                                                rendered="#{a.currentPatientRoom eq null and configOptionApplicationController.getBooleanValueByKey('Enable Button to Convert Admissions to new Admission',false)}"
+                                                disabled="#{a.convertedToAnotherEncounter}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 

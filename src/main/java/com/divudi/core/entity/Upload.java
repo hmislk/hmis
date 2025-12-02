@@ -102,8 +102,12 @@ public class Upload implements Serializable {
     private PatientInvestigation patientInvestigation;
     @ManyToOne
     private PatientReport patientReport;
+    @ManyToOne
+    private HistoricalRecord historicalRecord;
 
 
+    
+    
     public String getIdStr() {
         if (this.id == null) {
             return null;
@@ -327,6 +331,14 @@ public class Upload implements Serializable {
 
     public void setPatientReport(PatientReport patientReport) {
         this.patientReport = patientReport;
+    }
+
+    public HistoricalRecord getHistoricalRecord() {
+        return historicalRecord;
+    }
+
+    public void setHistoricalRecord(HistoricalRecord historicalRecord) {
+        this.historicalRecord = historicalRecord;
     }
 
 }

@@ -56,6 +56,24 @@ public class InwardReportController implements Serializable {
     public InwardReportController() {
     }
 
+    @EJB
+    PatientEncounterFacade peFacade;
+    @EJB
+    AdmissionTypeFacade admissionTypeFacade;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
+
+    @Inject
+    SessionController sessionController;
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
+    @Inject
+    BhtSummeryController bhtSummeryController;
+
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
     Institution institution;
@@ -68,23 +86,16 @@ public class InwardReportController implements Serializable {
     boolean withFooter;
     String invoceNo;
     String vatRegNo;
+    Bill bill;
+    private String patientCode;
 
     List<IncomeByCategoryRecord> incomeByCategoryRecords;
     List<IndividualBhtIncomeByCategoryRecord> individualBhtIncomeByCategoryRecord;
-
     List<AdmissionType> admissionty;
-
     private List<AdmissionType> admissionTypes;
-
-    @EJB
-    PatientEncounterFacade peFacade;
-    @EJB
-    AdmissionTypeFacade admissionTypeFacade;
-    @EJB
-    PatientInvestigationFacade patientInvestigationFacade;
     List<PatientEncounter> patientEncounters;
+    List<BillItem> billItems;
 
-    Bill bill;
     List<BillItem> billedBill;
     List<BillItem> cancelledBill;
     List<BillItem> refundBill;
@@ -92,13 +103,7 @@ public class InwardReportController implements Serializable {
     double totalBilledBill;
     double totalCancelledBill;
     double totalRefundBill;
-    @Inject
-    SessionController sessionController;
-    List<BillItem> billItems;
-    @EJB
-    BillFacade billFacade;
-    @EJB
-    BillItemFacade billItemFacade;
+
     // for disscharge book
     boolean dischargeDate = true;
     boolean bhtNo = true;
@@ -220,9 +225,6 @@ public class InwardReportController implements Serializable {
         calTtoal(patientEncounters);
     }
 
-    @Inject
-    BhtSummeryController bhtSummeryController;
-
     private void calTtoal() {
         if (patientEncounters == null) {
             return;
@@ -281,9 +283,6 @@ public class InwardReportController implements Serializable {
     double calTotal;
     double totalVat;
     double totalVatCalculatedValue;
-
-    @Inject
-    InwardReportControllerBht inwardReportControllerBht;
 
     public void fillDischargeBook() {
         Map m = new HashMap();
@@ -748,8 +747,12 @@ public class InwardReportController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
+        
+        if (getPatientCode() != null && !getPatientCode().trim().equals("")) {
+            sql += " and  (((pi.billItem.bill.patientEncounter.patient.code) =:number ) or ((pi.billItem.bill..patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getPatientCode().trim().toUpperCase());
+        }
 //
-
         sql += " order by pi.id desc  ";
 //
 
@@ -1408,6 +1411,14 @@ public class InwardReportController implements Serializable {
                 + "where ad.retired=false "
                 + "order by ad.name";
         admissionTypes = admissionTypeFacade.findByJpql(jpql);
+    }
+
+    public String getPatientCode() {
+        return patientCode;
+    }
+
+    public void setPatientCode(String patientCode) {
+        this.patientCode = patientCode;
     }
 
     public class IncomeByCategoryRecord {

@@ -90,6 +90,12 @@
                                             autocomplete="off"
                                             class="w-100"
                                             value="#{searchController.searchKeyword.billNo}" />
+                                        
+                                        <p:inputText
+                                            placeholder="MRN No"
+                                            class="form-control my-1"
+                                            autocomplete="off"
+                                            value="#{searchController.searchKeyword.code}" />
 
                                         <p:inputText
                                             placeholder="Name"
@@ -366,6 +372,11 @@
                                                 </h:panelGroup>
                                             </h:panelGrid>
                                         </p:tooltip>
+                                        
+                                        <h:panelGroup rendered="#{bill.currentRequest ne null}">
+                                            <p:badge value="#{bill.currentRequest.status.label}" severity="warning" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
+                                        
                                     </p:column>
 
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}"

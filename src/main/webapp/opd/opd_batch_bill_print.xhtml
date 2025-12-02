@@ -227,14 +227,23 @@
                                     <f:facet name="header">
                                         <div class="d-flex justify-content-between align-items-center w-100">
                                             <h:outputLabel value="Batch Bill Details" style="font-size: 18px; font-weight: 800;"/>
-                                            <div class="d-flex">
+                                            <div class="d-flex gap-3">
+                                                
+                                                <h:panelGroup rendered="#{opdBillController.batchBill.currentRequest ne null}">
+                                                    <p:badge 
+                                                        value="#{opdBillController.batchBill.currentRequest.requestType.displayName} Request - #{opdBillController.batchBill.currentRequest.status.label}" 
+                                                        severity="warning"
+                                                        styleClass="mr-2 mt-2">
+                                                    </p:badge>
+                                                </h:panelGroup>
+
                                                 <p:commandButton 
                                                     ajax="false" 
                                                     icon="fa fa-ban" 
                                                     value="To Cancel Batch Bill"
                                                     disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
                                                     action="#{billController.navigateToCancelOpdBatchBill()}" 
-                                                    styleClass="m-1 ui-button-danger">
+                                                    styleClass="ui-button-danger">
                                                     <f:setPropertyActionListener 
                                                         value="#{opdBillController.batchBill}" 
                                                         target="#{billController.batchBill}" />
@@ -342,7 +351,7 @@
 
                                     </p:column>
                                 </p:dataTable>
-                                
+
                                 <p:dataTable
                                     rendered="#{billSearch.viewingPatientInvestigations.size() > 0}"
                                     value="#{billSearch.viewingPatientInvestigations}"
@@ -364,10 +373,10 @@
                                             class="ui-button-warning m-1"
                                             icon="fa fa-file-invoice"
                                             disabled="#{!pi.investigation.bypassSampleWorkflow}"
-                                            action="#{patientInvestigationController.navigateToCreatePatientReportBypassSampleProcess()}">
+                                            action="#{patientInvestigationController.navigateToCreatePatientReportBypassingSampleProcess()}">
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"/>
                                         </p:commandButton>
-                                        
+
                                     </p:column>
                                 </p:dataTable>
 

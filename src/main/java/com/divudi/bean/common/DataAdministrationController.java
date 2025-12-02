@@ -6,7 +6,9 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
+import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -86,7 +88,9 @@ import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.LogFileService;
+import com.divudi.service.BillService;
 import java.sql.SQLSyntaxErrorException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,6 +121,7 @@ import java.io.Serializable;
 import java.nio.file.*;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import org.primefaces.model.StreamedContent;
@@ -214,6 +219,8 @@ public class DataAdministrationController implements Serializable {
     InstitutionController institutionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.service.CacheAdminService cacheAdminService;
 
     @EJB
     ItemFacade itemFacade;
@@ -255,6 +262,8 @@ public class DataAdministrationController implements Serializable {
 
     @EJB
     private LogFileService logService;
+    @EJB
+    private BillService billService;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -402,6 +411,8 @@ public class DataAdministrationController implements Serializable {
 
     @Inject
     InvestigationController investigationController;
+    @Inject
+    BillController billController;
 
     public void addInstitutionToInvestigationsWithoutInstitution() {
         List<Investigation> lst = investigationController.getItems();
@@ -410,6 +421,981 @@ public class DataAdministrationController implements Serializable {
                 ix.setInstitution(ix.getDepartment().getInstitution());
                 itemFacade.edit(ix);
             }
+        }
+    }
+
+    public void assignPharmacyDepartmentTypeToPharmaceuticalItems() {
+        billController.setOutput(""); // Reset output
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            String jpql = "SELECT p FROM PharmaceuticalItem p WHERE p.departmentType IS NULL AND p.retired = false";
+            List<PharmaceuticalItem> items = pharmaceuticalItemFacade.findByJpql(jpql, params);
+
+            billController.setOutput("Found " + items.size() + " PharmaceuticalItem(s) without department type.\n");
+
+            int updatedCount = 0;
+            for (PharmaceuticalItem item : items) {
+                item.setDepartmentType(DepartmentType.Pharmacy);
+                pharmaceuticalItemFacade.edit(item);
+                updatedCount++;
+            }
+
+            billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
+        } catch (Exception e) {
+            billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void correctCancellationAndRefundPaymentValues() {
+        billController.setOutput("");
+
+        StringBuilder output = new StringBuilder();
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("types", Arrays.asList(BillClassType.CancelledBill, BillClassType.RefundBill));
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billClassType IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                billController.setOutput("No cancellation or refund bills found for payment correction.");
+                return;
+            }
+
+            int billsUpdated = 0;
+            int paymentsCorrected = 0;
+
+            for (Bill candidate : billsToProcess) {
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                List<Payment> payments = billService.fetchBillPayments(bill);
+                if (payments == null || payments.isEmpty()) {
+                    continue;
+                }
+
+                boolean billHadCorrections = false;
+                for (Payment payment : payments) {
+                    if (payment == null || payment.isRetired()) {
+                        continue;
+                    }
+
+                    double paidValue = payment.getPaidValue();
+                    if (paidValue > 0d) {
+                        payment.setPaidValue(-Math.abs(paidValue));
+                        paymentFacade.edit(payment);
+                        paymentsCorrected++;
+                        billHadCorrections = true;
+                    }
+                }
+
+                if (billHadCorrections) {
+                    billsUpdated++;
+                }
+            }
+
+            output.append("Processed ").append(billsToProcess.size()).append(" cancellation/refund bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Filtered by createdAt ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Updated ").append(billsUpdated).append(" bills and corrected ")
+                    .append(paymentsCorrected).append(" payment value(s).");
+            billController.setOutput(output.toString());
+        } catch (Exception e) {
+            billController.setOutput("Error correcting payment values: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Corrects the sign of BillFinanceDetails totals (totalPurchaseValue, totalCostValue, totalRetailSaleValue)
+     * for specific bill types. This method applies sign corrections based on bill type logic:
+     * - PHARMACY_GRN_RETURN: Values should be negative (stock moving out/returning to supplier)
+     *
+     * Future bill types can be added with their specific sign correction logic.
+     */
+    public void correctBillFinanceDetailsSigns() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            // Start with PHARMACY_GRN_RETURN, can add more types later
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN_RETURN
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No bills found for the selected bill types and date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // Apply sign correction based on bill type
+                if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN) {
+                    // GRN Returns: Values should be NEGATIVE (stock moving out)
+                    billWasCorrected = correctToNegative(bfd);
+                }
+                // Future: Add more bill types here with different correction logic
+                // Example:
+                // else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+                //     // GRN: Values should be POSITIVE (stock moving in)
+                //     billWasCorrected = correctToPositive(bfd);
+                // }
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed ").append(billsProcessed).append(" bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Date range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Corrected ").append(billsCorrected).append(" bills with incorrect signs in BillFinanceDetails.");
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting bill finance details signs: " + e.getMessage();
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Updates historical StockHistory records with missing rate and value data
+     * from their associated ItemBatch records.
+     *
+     * Fills in:
+     * - purchaseRate, retailRate, costRate from ItemBatch
+     * - stockPurchaseValue, stockSaleValue, stockCostValue (calculated from rates * stockQty)
+     *
+     * Only updates fields when existing values are null or zero (does not overwrite curated data).
+     * Only persists to database when changes are actually made.
+     * Uses the date range filter (fromDate/toDate) based on record creation timestamp.
+     */
+    public void updateHistoricalStockData() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            // Build JPQL query with JOIN FETCH to prevent N+1 queries
+            // Filter on createdAt (audit timestamp)
+            // Pre-filter to only records with missing data
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            StringBuilder jpql = new StringBuilder(
+                "SELECT sh FROM StockHistory sh JOIN FETCH sh.itemBatch ib WHERE sh.retired = :ret"
+            );
+
+            if (fromDate != null) {
+                jpql.append(" AND sh.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND sh.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            // Only fetch records where at least one target field needs updating
+            jpql.append(" AND (sh.purchaseRate IS NULL OR sh.purchaseRate <= 0")
+                .append(" OR sh.retailRate IS NULL OR sh.retailRate <= 0")
+                .append(" OR sh.costRate IS NULL OR sh.costRate <= 0")
+                .append(" OR sh.stockPurchaseValue IS NULL OR sh.stockPurchaseValue <= 0")
+                .append(" OR sh.stockSaleValue IS NULL OR sh.stockSaleValue <= 0")
+                .append(" OR sh.stockCostValue IS NULL OR sh.stockCostValue <= 0)");
+
+            List<StockHistory> stockHistories = stockHistoryFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (stockHistories == null || stockHistories.isEmpty()) {
+                executionFeedback = "No stock history records found for the selected date range.";
+                return;
+            }
+
+            int recordsProcessed = 0;
+            int recordsUpdated = 0;
+            int recordsSkipped = 0;
+
+            for (StockHistory sh : stockHistories) {
+                if (sh == null) {
+                    continue;
+                }
+
+                recordsProcessed++;
+
+                // Get the referenced ItemBatch
+                ItemBatch ib = sh.getItemBatch();
+                if (ib == null) {
+                    recordsSkipped++;
+                    continue;
+                }
+
+                // Check if any fields need updating and apply changes
+                boolean changed = markIfChanged(sh, ib);
+
+                // Only persist if changes were made
+                if (changed) {
+                    stockHistoryFacade.edit(sh);
+                    recordsUpdated++;
+                }
+            }
+
+            output.append("Historical Stock Data Update Results:\n");
+            output.append("Total records processed: ").append(recordsProcessed).append("\n");
+            output.append("Records updated: ").append(recordsUpdated).append("\n");
+            output.append("Records skipped (no ItemBatch): ").append(recordsSkipped).append("\n");
+
+            if (fromDate != null || toDate != null) {
+                output.append("\nDate range: ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+            }
+
+            executionFeedback = output.toString();
+
+        } catch (Exception e) {
+            executionFeedback = "Error updating historical stock data: " + e.getMessage();
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to check if a numeric field should be updated.
+     * Returns true if the existing value is null or <= 0.
+     *
+     * @param existing The current value in the database
+     * @param candidate The new value from ItemBatch (not used in check, but kept for API clarity)
+     * @return true if the field needs updating
+     */
+    private boolean shouldUpdate(Number existing, Number candidate) {
+        if (existing == null) {
+            return true;
+        }
+        double value = existing.doubleValue();
+        return value <= 0.0;
+    }
+
+    /**
+     * Applies selective updates to StockHistory from ItemBatch.
+     * Only updates fields when existing values are null or zero.
+     * Recomputes stock values only when underlying rates or stockQty changed.
+     *
+     * @param sh The StockHistory record to potentially update
+     * @param ib The ItemBatch containing source data
+     * @return true if any changes were made, false otherwise
+     */
+    private boolean markIfChanged(StockHistory sh, ItemBatch ib) {
+        boolean changed = false;
+
+        // Track if rates were updated (will trigger value recalculation)
+        boolean ratesUpdated = false;
+
+        // Update purchaseRate if missing
+        if (shouldUpdate(sh.getPurchaseRate(), ib.getPurcahseRate())) {
+            sh.setPurchaseRate(ib.getPurcahseRate());  // Note: typo in ItemBatch field name
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Update retailRate if missing
+        if (shouldUpdate(sh.getRetailRate(), ib.getRetailsaleRate())) {
+            sh.setRetailRate(ib.getRetailsaleRate());
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Update costRate if missing (handle null properly)
+        if (shouldUpdate(sh.getCostRate(), null)) {
+            Double costRate = ib.getCostRate();
+            sh.setCostRate(costRate != null ? costRate : 0.0);
+            changed = true;
+            ratesUpdated = true;
+        }
+
+        // Recalculate stock values only if rates were updated or values are missing
+        double stockQty = sh.getStockQty();
+
+        if (ratesUpdated || shouldUpdate(sh.getStockPurchaseValue(), null)) {
+            sh.setStockPurchaseValue(sh.getPurchaseRate() * stockQty);
+            changed = true;
+        }
+
+        if (ratesUpdated || shouldUpdate(sh.getStockSaleValue(), null)) {
+            sh.setStockSaleValue(sh.getRetailRate() * stockQty);
+            changed = true;
+        }
+
+        if (ratesUpdated || shouldUpdate(sh.getStockCostValue(), null)) {
+            sh.setStockCostValue(sh.getCostRate() * stockQty);
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    public void addCompletedStateToBills() {
+        billController.setOutput("");
+
+        StringBuilder output = new StringBuilder();
+        try {
+            List<BillTypeAtomic> pharmacyBillTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_WITHOUT_STOCKS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_PRE,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK_BATCH_BILL,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK,
+                    BillTypeAtomic.PHARMACY_WHOLESALE,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                    BillTypeAtomic.PHARMACY_ORDER,
+                    BillTypeAtomic.PHARMACY_ORDER_PRE,
+                    BillTypeAtomic.PHARMACY_ORDER_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL,
+                    BillTypeAtomic.PHARMACY_ORDER_APPROVAL_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+                    BillTypeAtomic.PHARMACY_GRN_PAYMENT,
+                    BillTypeAtomic.PHARMACY_GRN_PAYMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
+                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE,
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE,
+                    BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_RECEIVE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_PRE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED,
+                    BillTypeAtomic.MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL,
+                    BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION,
+                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT,
+                    BillTypeAtomic.PHARMACY_SNAPSHOT_GENERATION,
+                    BillTypeAtomic.PHARMACY_PHYSICAL_COUNT_ENTRY,
+                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                    BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+            params.put("completed", false);
+            params.put("types", pharmacyBillTypes);
+
+            StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b WHERE b.retired = :ret AND b.completed = :completed AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                billController.setOutput("No pharmacy bills found with completed=false for the given date range.");
+                return;
+            }
+
+            int billsUpdated = 0;
+            Date now = new Date();
+            WebUser currentUser = sessionController.getLoggedUser();
+
+            for (Bill candidate : billsToProcess) {
+                Bill bill = billService.reloadBill(candidate);
+                if (bill == null) {
+                    continue;
+                }
+
+                bill.setCompleted(true);
+                bill.setCompletedAt(now);
+                bill.setCompletedBy(currentUser);
+                billFacade.edit(bill);
+                billsUpdated++;
+            }
+
+            output.append("Processed ").append(billsToProcess.size()).append(" pharmacy bills.\n");
+            if (fromDate != null || toDate != null) {
+                output.append("Filtered by createdAt ");
+                if (fromDate != null) {
+                    output.append("from ").append(fromDate);
+                }
+                if (fromDate != null && toDate != null) {
+                    output.append(" to ");
+                }
+                if (toDate != null) {
+                    if (fromDate == null) {
+                        output.append("up to ");
+                    }
+                    output.append(toDate);
+                }
+                output.append(".\n");
+            }
+            output.append("Updated ").append(billsUpdated).append(" bills to completed=true.");
+            billController.setOutput(output.toString());
+        } catch (Exception e) {
+            billController.setOutput("Error adding completed state to bills: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to NEGATIVE
+     * Returns true if any correction was made
+     */
+    private boolean correctToNegative(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) > 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
+    /**
+     * Helper method to correct BillFinanceDetails values to POSITIVE
+     * Returns true if any correction was made
+     * (Reserved for future use - e.g., for GRN bills)
+     */
+    private boolean correctToPositive(BillFinanceDetails bfd) {
+        boolean corrected = false;
+
+        if (bfd.getTotalPurchaseValue() != null && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalCostValue() != null && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalCostValue(bfd.getTotalCostValue().abs());
+            corrected = true;
+        }
+
+        if (bfd.getTotalRetailSaleValue() != null && bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) < 0) {
+            bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs());
+            corrected = true;
+        }
+
+        return corrected;
+    }
+
+    public void correctPharmacyDisbursementSigns() {
+        executionFeedback = "";
+        StringBuilder out = new StringBuilder();
+        try {
+            List<BillTypeAtomic> targetTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_ISSUE,
+                    BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                    BillTypeAtomic.PHARMACY_RECEIVE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_PRE,
+                    BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
+            );
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", targetTypes);
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types");
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fd");
+                params.put("fd", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :td");
+                params.put("td", toDate);
+            }
+
+            List<Bill> billsToFix = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            int updatedBills = 0;
+            int updatedItems = 0;
+
+            for (Bill b : billsToFix) {
+                Bill bill = billService.reloadBill(b);
+                if (bill == null) {
+                    continue;
+                }
+                BillTypeAtomic bta = bill.getBillTypeAtomic();
+                if (bta == null) {
+                    continue;
+                }
+
+                // Fix BillFinanceDetails totals for purchase/retail/wholesale values
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+                if (bfd != null) {
+                    boolean financeValueShouldBeNegative = isFinanceValueNegative(bta);
+                    // Purchase values
+                    bfd.setTotalPurchaseValue(applySign(bfd.getTotalPurchaseValue(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueFree(applySign(bfd.getTotalPurchaseValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalPurchaseValueNonFree(applySign(bfd.getTotalPurchaseValueNonFree(), financeValueShouldBeNegative));
+                    // Free item values
+                    bfd.setTotalOfFreeItemValues(applySign(bfd.getTotalOfFreeItemValues(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesFree(applySign(bfd.getTotalOfFreeItemValuesFree(), financeValueShouldBeNegative));
+                    bfd.setTotalOfFreeItemValuesNonFree(applySign(bfd.getTotalOfFreeItemValuesNonFree(), financeValueShouldBeNegative));
+                    // Retail values
+                    bfd.setTotalRetailSaleValue(applySign(bfd.getTotalRetailSaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueFree(applySign(bfd.getTotalRetailSaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalRetailSaleValueNonFree(applySign(bfd.getTotalRetailSaleValueNonFree(), financeValueShouldBeNegative));
+                    // Wholesale values
+                    bfd.setTotalWholesaleValue(applySign(bfd.getTotalWholesaleValue(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueFree(applySign(bfd.getTotalWholesaleValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalWholesaleValueNonFree(applySign(bfd.getTotalWholesaleValueNonFree(), financeValueShouldBeNegative));
+
+                    // Keep all gross/net totals positive
+                    bfd.setLineGrossTotal(applySign(bfd.getLineGrossTotal(), false));
+                    bfd.setBillGrossTotal(applySign(bfd.getBillGrossTotal(), false));
+                    bfd.setGrossTotal(applySign(bfd.getGrossTotal(), false));
+                    bfd.setLineNetTotal(applySign(bfd.getLineNetTotal(), false));
+                    bfd.setBillNetTotal(applySign(bfd.getBillNetTotal(), false));
+                    bfd.setNetTotal(applySign(bfd.getNetTotal(), false));
+                }
+
+                // Fix Bill totals
+                boolean billTotalsPositive = isBillAndItemTotalsPositive(bta);
+                bill.setTotal(applySign(bill.getTotal(), !billTotalsPositive));
+                bill.setNetTotal(applySign(bill.getNetTotal(), !billTotalsPositive));
+                bill.setBillTotal(applySign(bill.getBillTotal(), !billTotalsPositive));
+                bill.setGrantTotal(applySign(bill.getGrantTotal(), !billTotalsPositive));
+                bill.setGrnNetTotal(applySign(bill.getGrnNetTotal(), !billTotalsPositive));
+
+                // Fix items and related finance details/pharmaceutical values
+                List<BillItem> items = billService.fetchBillItems(bill);
+                if (items != null) {
+                    for (BillItem bi : items) {
+                        // BillItem values
+                        boolean itemTotalsPositive = isBillAndItemTotalsPositive(bta);
+                        bi.setNetRate(applySign(bi.getNetRate(), !itemTotalsPositive));
+                        bi.setGrossValue(applySign(bi.getGrossValue(), !itemTotalsPositive));
+                        bi.setNetValue(applySign(bi.getNetValue(), !itemTotalsPositive));
+
+                        // BillItemFinanceDetails totals
+                        BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                        if (bifd != null) {
+                            bifd.setLineGrossTotal(applySign(bifd.getLineGrossTotal(), !itemTotalsPositive));
+                            bifd.setBillGrossTotal(applySign(bifd.getBillGrossTotal(), !itemTotalsPositive));
+                            bifd.setGrossTotal(applySign(bifd.getGrossTotal(), !itemTotalsPositive));
+                            bifd.setLineNetTotal(applySign(bifd.getLineNetTotal(), !itemTotalsPositive));
+                            bifd.setBillNetTotal(applySign(bifd.getBillNetTotal(), !itemTotalsPositive));
+                            bifd.setNetTotal(applySign(bifd.getNetTotal(), !itemTotalsPositive));
+                        }
+
+                        // Pharmaceutical Bill Item values
+                        com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                        if (pbi != null) {
+                            boolean financeValueNegative = isFinanceValueNegative(bta);
+                            pbi.setPurchaseValue(applySign(pbi.getPurchaseValue(), financeValueNegative));
+                            pbi.setRetailValue(applySign(pbi.getRetailValue(), financeValueNegative));
+                            pbi.setCostValue(applySign(pbi.getCostValue(), financeValueNegative));
+                            pharmaceuticalBillItemFacade.edit(pbi);
+                        }
+
+                        billItemFacade.edit(bi);
+                        updatedItems++;
+                    }
+                }
+
+                billFacade.edit(bill);
+                updatedBills++;
+            }
+
+            out.append("Processed Bills: ").append(billsToFix.size()).append("\n");
+            out.append("Updated Bills: ").append(updatedBills).append("\n");
+            out.append("Updated Bill Items: ").append(updatedItems).append("\n");
+        } catch (Exception e) {
+            out.append("Error: ").append(e.getMessage());
+        }
+        executionFeedback = out.toString();
+    }
+
+    private boolean isFinanceValueNegative(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Stock out flows negative for finance values
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Positive
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Cancel receive => negative
+            default:
+                return false;
+        }
+    }
+
+    private boolean isBillAndItemTotalsPositive(BillTypeAtomic bta) {
+        switch (bta) {
+            case PHARMACY_ISSUE:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE:
+                return true; // Positive totals on issues
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_ISSUE_RETURN:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_RECEIVE:
+            case PHARMACY_RECEIVE_PRE:
+                return false; // Negative for returns/receives
+            case PHARMACY_RECEIVE_CANCELLED:
+                return true; // Positive on cancel receive
+            default:
+                return true;
+        }
+    }
+
+    private BigDecimal applySign(BigDecimal v, boolean negative) {
+        if (v == null) {
+            return null;
+        }
+        BigDecimal abs = v.abs();
+        return negative ? abs.negate() : abs;
+    }
+
+    private double applySign(double v, boolean negative) {
+        double abs = Math.abs(v);
+        return negative ? -abs : abs;
+    }
+
+    /**
+     * Migrates existing pharmacy transfer bills to populate
+     * BillItemFinanceDetails.lineNetTotal from BillItem.netValue for proper
+     * reporting when transfer rate configurations are used.
+     *
+     * This addresses issue #13419 where disbursement reports show incorrect
+     * purchase rates when "Pharmacy Transfer is by Retail Rate" option is
+     * enabled.
+     */
+    public void migrateTransferBillItemFinanceDetails() {
+        executionFeedback = ""; // Reset output
+
+        try {
+            StringBuilder result = new StringBuilder();
+            int processedCount = 0;
+            int updatedCount = 0;
+
+            // Process PharmacyTransferIssue and PharmacyTransferReceive bills
+            Map<String, Object> params = new HashMap<>();
+            List<BillType> billTypes = Arrays.asList(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+            params.put("billTypes", billTypes);
+
+            StringBuilder jpqlBuilder = new StringBuilder();
+            jpqlBuilder.append("SELECT DISTINCT bi.bill FROM BillItem bi WHERE ");
+            jpqlBuilder.append("bi.bill.billType IN :billTypes AND bi.retired = false ");
+
+            // Add date filtering if fromDate and toDate are provided
+            if (fromDate != null && toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate AND bi.bill.createdAt <= :toDate");
+                params.put("fromDate", fromDate);
+                params.put("toDate", toDate);
+                result.append("Filtering by date range: ").append(fromDate).append(" to ").append(toDate).append("\n\n");
+            } else if (fromDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+                result.append("Filtering from date: ").append(fromDate).append("\n\n");
+            } else if (toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt <= :toDate");
+                params.put("toDate", toDate);
+                result.append("Filtering to date: ").append(toDate).append("\n\n");
+            }
+
+            String jpql = jpqlBuilder.toString();
+
+            List<Bill> fixingBills = billItemFacade.findObjects(jpql, params, TemporalType.TIMESTAMP)
+                    .stream()
+                    .map(o -> (Bill) o)
+                    .collect(Collectors.toList());
+
+            result.append("Found ").append(fixingBills.size()).append(" transfer bills to migrate.\n\n");
+
+            // Process in batches of 100 to avoid memory issues
+            int batchSize = 100;
+            for (int i = 0; i < fixingBills.size(); i += batchSize) {
+                int endIndex = Math.min(i + batchSize, fixingBills.size());
+                List<Bill> fixingBillBatch = fixingBills.subList(i, endIndex);
+
+                for (Bill fixingBill : fixingBillBatch) {
+                    try {
+
+                        // A new BillFinanceDetails is created if it is null
+                        BigDecimal totalNetValue = BigDecimal.ZERO;
+                        BigDecimal totalGrossValue = BigDecimal.ZERO;
+                        BigDecimal totalCostValue = BigDecimal.ZERO;
+                        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+                        BigDecimal totalRetailValue = BigDecimal.ZERO;
+
+                        for (BillItem bi : fixingBill.getBillItems()) {
+                            processedCount++;
+                            if (bi.getBillItemFinanceDetails() == null) {
+                                bi.setBillItemFinanceDetails(new BillItemFinanceDetails());
+                                bi.getBillItemFinanceDetails().setBillItem(bi);
+                            }
+
+                            
+
+                            if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0)
+                                    && bi.getPharmaceuticalBillItem() != null
+                                    && bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+
+                                ItemBatch itemBatch = bi.getPharmaceuticalBillItem().getItemBatch();
+                                double qty = bi.getPharmaceuticalBillItem().getQty();
+                                BigDecimal qtyBD = BigDecimal.valueOf(qty);
+
+                                BigDecimal purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+                                BigDecimal retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+                                BigDecimal costRate = BigDecimal.valueOf(itemBatch.getCostRate());
+                                BigDecimal transferValue = BigDecimal.valueOf(bi.getNetValue());
+                                BigDecimal grossValue = BigDecimal.valueOf(bi.getGrossValue());
+                                
+                                if(bi.getPharmaceuticalBillItem().getRetailValue()==0.0){
+                                    bi.getPharmaceuticalBillItem().setRetailValue(bi.getPharmaceuticalBillItem().getRetailRate() * bi.getQty() * bi.getBillItemFinanceDetails().getUnitsPerPack().doubleValue());
+                                }
+
+                                if(bi.getNetRate()==0.0){
+                                    bi.setNetRate(bi.getRate());
+                                }
+                                if(bi.getGrossValue()==0.0){
+                                    bi.setGrossValue(bi.getNetValue());
+                                }
+                                
+                                // Populate BillItemFinanceDetails
+                                if (bi.getBillItemFinanceDetails().getQuantity() == null || bi.getBillItemFinanceDetails().getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantity(qtyBD);
+                                }
+                                if (bi.getBillItemFinanceDetails().getQuantityByUnits() == null || bi.getBillItemFinanceDetails().getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setQuantityByUnits(qtyBD); // if no pack-unit conversion available
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetRate() == null || bi.getBillItemFinanceDetails().getLineNetRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetRate(BigDecimal.valueOf(bi.getNetRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossRate() == null || bi.getBillItemFinanceDetails().getLineGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossRate() == null || bi.getBillItemFinanceDetails().getGrossRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossRate(BigDecimal.valueOf(bi.getRate()));
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineNetTotal() == null || bi.getBillItemFinanceDetails().getLineNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getNetTotal() == null || bi.getBillItemFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setNetTotal(transferValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineGrossTotal() == null || bi.getBillItemFinanceDetails().getLineGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getGrossTotal() == null || bi.getBillItemFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setGrossTotal(grossValue);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCostRate() == null || bi.getBillItemFinanceDetails().getLineCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCostRate(costRate);
+                                }
+                                if (bi.getBillItemFinanceDetails().getLineCost() == null || bi.getBillItemFinanceDetails().getLineCost().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setLineCost(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtCostRate() == null || bi.getBillItemFinanceDetails().getValueAtCostRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtCostRate(costRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtPurchaseRate() == null || bi.getBillItemFinanceDetails().getValueAtPurchaseRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getValueAtRetailRate() == null || bi.getBillItemFinanceDetails().getValueAtRetailRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(qtyBD));
+                                }
+                                if (bi.getBillItemFinanceDetails().getRetailSaleRate() == null || bi.getBillItemFinanceDetails().getRetailSaleRate().compareTo(BigDecimal.ZERO) == 0) {
+                                    bi.getBillItemFinanceDetails().setRetailSaleRate(retailRate);
+                                }
+
+                                billItemFacade.edit(bi);
+
+                                // Aggregate totals for BillFinanceDetails
+                                totalNetValue = totalNetValue.add(transferValue);
+                                totalGrossValue = totalGrossValue.add(grossValue);
+                                totalCostValue = totalCostValue.add(costRate.multiply(qtyBD));
+                                totalPurchaseValue = totalPurchaseValue.add(purchaseRate.multiply(qtyBD));
+                                totalRetailValue = totalRetailValue.add(retailRate.multiply(qtyBD));
+
+                                updatedCount++;
+
+                                if (updatedCount % 50 == 0) {
+                                    result.append("Updated ").append(updatedCount).append(" items so far...\n");
+                                }
+                            }
+                        }
+
+                        if (fixingBill.getBillFinanceDetails().getNetTotal() == null || fixingBill.getBillFinanceDetails().getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setNetTotal(totalNetValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getGrossTotal() == null || fixingBill.getBillFinanceDetails().getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setGrossTotal(totalGrossValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalCostValue() == null || fixingBill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalPurchaseValue() == null || fixingBill.getBillFinanceDetails().getTotalPurchaseValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
+                        }
+                        if (fixingBill.getBillFinanceDetails().getTotalRetailSaleValue() == null || fixingBill.getBillFinanceDetails().getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) == 0) {
+                            fixingBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
+                        }
+
+                        billFacade.edit(fixingBill);
+
+                    } catch (Exception itemEx) {
+                        result.append("Error processing bill ID ").append(fixingBill.getId())
+                                .append(": ").append(itemEx.getMessage()).append("\n");
+                    }
+                }
+
+                // Log batch progress
+                result.append("Processed batch ").append((i / batchSize) + 1)
+                        .append(" of ").append((fixingBills.size() + batchSize - 1) / batchSize).append("\n");
+            }
+
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Total bills processed: ").append(processedCount).append("\n");
+            result.append("Items updated: ").append(updatedCount).append("\n");
+            result.append("Items skipped (already had valid data): ").append(processedCount - updatedCount).append("\n");
+
+            if (updatedCount > 0) {
+                result.append("\nMigration completed successfully! ")
+                        .append("Transfer disbursement reports should now show correct rates.\n");
+            } else {
+                result.append("\nNo items needed migration. All transfer bill items already have proper financial details.\n");
+            }
+
+            executionFeedback = result.toString();
+
+        } catch (Exception e) {
+            String errorMsg = "Error during transfer bill finance details migration: " + e.getMessage();
+            executionFeedback = errorMsg;
+            e.printStackTrace();
         }
     }
 
@@ -1735,29 +2721,17 @@ public class DataAdministrationController implements Serializable {
     public void createCodeSelectedCategory() {
         Map m = new HashMap();
         String sql = "select c from Amp c "
-                + " where c.retired=false"
-                + " and (c.departmentType is null "
-                + " or c.departmentType=:dep) ";
-
-        m.put("dep", DepartmentType.Pharmacy);
+                + " where c.retired=false";
+        if (departmentType != null) {
+            sql += " and c.departmentType=:dep ";
+            m.put("dep", departmentType);
+        }
         if (itemCategory != null) {
             sql += " and c.category=:cat ";
             m.put("cat", itemCategory);
         }
         sql += " order by c.name";
-
         items = itemFacade.findByJpql(sql, m);
-
-        int j = 1;
-
-//        for (Item i : items) {
-//            DecimalFormat df = new DecimalFormat("0000");
-////            df=new DecimalFormat("####");
-////            //System.out.println("df = " + df.format(j));
-//            i.setCode(itemCategory.getDescription() + df.format(j));
-//            itemFacade.edit(i);
-//            j++;
-//        }
     }
 
     public void createremoveAllCodes() {
@@ -2303,6 +3277,26 @@ public class DataAdministrationController implements Serializable {
         this.departmentType = departmentType;
     }
 
+    public List<DepartmentType> completeDepartmentType(String qry) {
+        List<DepartmentType> filteredTypes = new ArrayList<>();
+        if (qry == null || qry.trim().isEmpty()) {
+            return Arrays.asList(DepartmentType.values());
+        }
+
+        String query = qry.toLowerCase().trim();
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.getLabel().toLowerCase().contains(query) ||
+                type.name().toLowerCase().contains(query)) {
+                filteredTypes.add(type);
+            }
+        }
+        return filteredTypes;
+    }
+
+    public List<DepartmentType> getDepartmentTypeList() {
+        return Arrays.asList(DepartmentType.values());
+    }
+
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfMonth(new Date());
@@ -2384,6 +3378,17 @@ public class DataAdministrationController implements Serializable {
 
     public String navigateToAdminDataAdministration() {
         return "/dataAdmin/admin_data_administration?faces-redirect=true";
+    }
+
+    public void clearAllJpaCaches() {
+        try {
+            if (cacheAdminService != null) {
+                cacheAdminService.clearAll();
+            }
+            JsfUtil.addSuccessMessage("Cleared JPA shared caches.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to clear caches: " + e.getMessage());
+        }
     }
 
     public String getErrors() {

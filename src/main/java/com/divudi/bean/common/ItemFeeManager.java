@@ -14,9 +14,12 @@ import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.dto.CollectingCentreItemFeeCountDTO;
+import com.divudi.core.data.dto.CollectingCentreFeeAssignmentDTO;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Institution;
 import java.io.IOException;
@@ -77,6 +80,8 @@ public class ItemFeeManager implements Serializable {
     DepartmentFacade departmentFacade;
     @EJB
     StaffFacade staffFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
 
     @Inject
     SessionController sessionController;
@@ -110,8 +115,8 @@ public class ItemFeeManager implements Serializable {
         return "/dataAdmin/bulk_update_itemsFees?faces-redirect=true";
     }
 
-    public String navigateToUploadItemFees() {
-        return "/admin/pricing/item_fee_upload?faces-redirect=true";
+    public String navigateToUploadAndReplaceItemFees() {
+        return "/admin/pricing/item_fee_upload_to_replace?faces-redirect=true";
     }
 
     public String navigateToDownloadBaseItemFees() {
@@ -163,8 +168,8 @@ public class ItemFeeManager implements Serializable {
         return "/admin/pricing/upload_changed_item_fees?faces-redirect=true";
     }
 
-    public String navigateToUploadFeeListType() {
-        return "/admin/pricing/feelist_type_upload?faces-redirect=true";
+    public String navigateToUploadAndReplaceListFees() {
+        return "/admin/pricing/feelist_type_upload_to_replace?faces-redirect=true";
     }
 
     public String navigateToUploadInstitutionItemFees() {
@@ -634,6 +639,18 @@ public class ItemFeeManager implements Serializable {
                 .sum();
         feeValueController.updateFeeValue(ti, dept, tlf, tfff);
     }
+    
+    public void updateDepartmentFeeValues(Item item, Department dept, List<ItemFee> tfs) {
+        double localFeeTotal = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double foreignerFeeTotal = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(item, dept, localFeeTotal, foreignerFeeTotal);
+    }
 
     public void updateCcFeeValues(Item ti, Institution cc) {
         List<ItemFee> tfs = fillFees(ti, cc);
@@ -818,6 +835,7 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         itemFees = fetchForDepartmentFees(item, forDepartment);
+        updateDepartmentFeeValues(item, forDepartment, itemFees);
     }
 
     public void fillForDepartmentFees() {
@@ -892,8 +910,6 @@ public class ItemFeeManager implements Serializable {
     }
 
     public List<ItemFee> fillCollectingCentreSpecificFees(Institution cc) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + cc);
         String jpql = "select f "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";
@@ -909,14 +925,11 @@ public class ItemFeeManager implements Serializable {
         }
         jpql += " and f.forCategory is null";
 
-        System.out.println("m = " + m);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
 
     public List<ItemLight> fillItemLightsForSite(Institution forInstitution) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + forInstitution);
         String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
@@ -944,14 +957,11 @@ public class ItemFeeManager implements Serializable {
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
 
-        System.out.println("m = " + m);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
 
     public List<ItemLight> fillItemLightsForCc(Institution cc) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + cc);
         String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
@@ -975,7 +985,6 @@ public class ItemFeeManager implements Serializable {
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
 
-        System.out.println("m = " + m);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
@@ -1012,15 +1021,9 @@ public class ItemFeeManager implements Serializable {
 //                return;
 //            }
 //        }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Fees with a value of zero are allowed. Previous versions prevented
+        // saving such fees, but this validation has been removed to support
+        // zero-priced services.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         itemFeeFacade.create(itemFee);
@@ -1064,15 +1067,8 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Zero value fees are valid for collecting centres as well. Earlier
+        // the system rejected such entries. This check has been removed.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(collectingCentre);
@@ -1114,15 +1110,8 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Validation no longer rejects zero value fees for site specific
+        // settings.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(forSite);
@@ -1159,15 +1148,8 @@ public class ItemFeeManager implements Serializable {
             return;
         }
 
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Department level fees can also be zero. Previous checks preventing
+        // saving when the value was 0 have been removed.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForDepartment(forDepartment);
@@ -1210,15 +1192,8 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Fee list entries may legitimately be zero. Validation allowing such
+        // values ensures the dialog can save fees without charges.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(null);
@@ -1392,6 +1367,246 @@ public class ItemFeeManager implements Serializable {
 
     public void setForDepartment(Department forDepartment) {
         this.forDepartment = forDepartment;
+    }
+    
+    public void onFeeListChange() {
+        fillFeeListItemFees();
+    }
+
+    public void retireAllCollectingCentreItemFees() {
+        String jpql = "select f from ItemFee f where f.retired=:ret and f.forInstitution.institutionType=:ccType";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ccType", InstitutionType.CollectingCentre);
+        
+        List<ItemFee> ccItemFees = itemFeeFacade.findByJpql(jpql, m);
+        
+        if (ccItemFees == null || ccItemFees.isEmpty()) {
+            JsfUtil.addErrorMessage("No active item fees found for collecting centres");
+            return;
+        }
+        
+        int retiredCount = 0;
+        for (ItemFee fee : ccItemFees) {
+            fee.setRetired(true);
+            fee.setRetiredAt(new Date());
+            fee.setRetirer(sessionController.getLoggedUser());
+            fee.setRetireComments("Bulk retirement of all collecting centre item fees");
+            itemFeeFacade.edit(fee);
+            retiredCount++;
+        }
+        
+        JsfUtil.addSuccessMessage("Successfully retired " + retiredCount + " collecting centre item fees");
+        
+        // Refresh the count after retirement
+        loadCollectingCentreItemFeeCounts();
+    }
+
+    public String navigateToRetireAllCollectingCentreItemFees() {
+        return "/admin/pricing/retire_all_collecting_centre_item_fees?faces-redirect=true";
+    }
+
+    private List<CollectingCentreItemFeeCountDTO> collectingCentreItemFeeCounts;
+    private Long totalActiveCollectingCentreItemFeesCount;
+    
+    // Fee Assignment functionality
+    private List<CollectingCentreFeeAssignmentDTO> collectingCentresForFeeAssignment;
+    private List<CollectingCentreFeeAssignmentDTO> filteredCollectingCentres;
+    private List<CollectingCentreFeeAssignmentDTO> selectedCollectingCentres;
+    private String globalFilterValue;
+    private Category selectedFeeListForAssignment;
+
+    public void loadCollectingCentreItemFeeCounts() {
+        String jpql = "SELECT new com.divudi.core.data.dto.CollectingCentreItemFeeCountDTO("
+                + "f.forInstitution.id, "
+                + "f.forInstitution.name, "
+                + "f.forInstitution.code, "
+                + "count(f)) "
+                + "FROM ItemFee f "
+                + "WHERE f.retired = :ret "
+                + "AND f.forInstitution.institutionType = :ccType "
+                + "GROUP BY f.forInstitution.id, f.forInstitution.name, f.forInstitution.code "
+                + "ORDER BY f.forInstitution.name";
+        
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ccType", InstitutionType.CollectingCentre);
+        
+        collectingCentreItemFeeCounts =  (List<CollectingCentreItemFeeCountDTO>) itemFeeFacade.findLightsByJpql(jpql, m);
+        
+        // Calculate total count
+        totalActiveCollectingCentreItemFeesCount = 0L;
+        if (collectingCentreItemFeeCounts != null) {
+            for (CollectingCentreItemFeeCountDTO dto : collectingCentreItemFeeCounts) {
+                totalActiveCollectingCentreItemFeesCount += dto.getActiveItemFeesCount();
+            }
+        }
+        
+        if (totalActiveCollectingCentreItemFeesCount == 0) {
+            JsfUtil.addSuccessMessage("No active item fees found for collecting centres");
+        } else {
+            JsfUtil.addSuccessMessage("Found " + totalActiveCollectingCentreItemFeesCount + " active item fees across " + collectingCentreItemFeeCounts.size() + " collecting centres");
+        }
+    }
+
+    public List<CollectingCentreItemFeeCountDTO> getCollectingCentreItemFeeCounts() {
+        return collectingCentreItemFeeCounts;
+    }
+
+    public void setCollectingCentreItemFeeCounts(List<CollectingCentreItemFeeCountDTO> collectingCentreItemFeeCounts) {
+        this.collectingCentreItemFeeCounts = collectingCentreItemFeeCounts;
+    }
+
+    public Long getTotalActiveCollectingCentreItemFeesCount() {
+        return totalActiveCollectingCentreItemFeesCount;
+    }
+
+    public void setTotalActiveCollectingCentreItemFeesCount(Long totalActiveCollectingCentreItemFeesCount) {
+        this.totalActiveCollectingCentreItemFeesCount = totalActiveCollectingCentreItemFeesCount;
+    }
+
+    public String navigateToAssignFeeListsToCollectingCentres() {
+        return "/admin/pricing/assign_fee_lists_to_collecting_centres?faces-redirect=true";
+    }
+
+    public void loadCollectingCentresForFeeAssignment() {
+        String jpql = "SELECT new com.divudi.core.data.dto.CollectingCentreFeeAssignmentDTO("
+                + "i.id, "
+                + "i.name, "
+                + "i.code, "
+                + "i.feeListType) "
+                + "FROM Institution i "
+                + "WHERE i.retired = :ret "
+                + "AND i.institutionType = :ccType "
+                + "ORDER BY i.name";
+        
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ccType", InstitutionType.CollectingCentre);
+        
+        try {
+            collectingCentresForFeeAssignment = (List<CollectingCentreFeeAssignmentDTO>) institutionFacade.findLightsByJpql(jpql, m);
+            
+            // Clear previous selections
+            selectedCollectingCentres = new ArrayList<>();
+            filteredCollectingCentres = null;
+            globalFilterValue = null;
+            selectedFeeListForAssignment = null;
+            
+            if (collectingCentresForFeeAssignment == null || collectingCentresForFeeAssignment.isEmpty()) {
+                JsfUtil.addErrorMessage("No collecting centres found in the system");
+            } else {
+                int withoutFeeList = countCentresWithoutFeeList();
+                JsfUtil.addSuccessMessage("Loaded " + collectingCentresForFeeAssignment.size() + " collecting centres. " + withoutFeeList + " centres without fee lists.");
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading collecting centres: " + e.getMessage());
+            e.printStackTrace();
+            collectingCentresForFeeAssignment = new ArrayList<>();
+        }
+    }
+
+    public int countCentresWithoutFeeList() {
+        if (collectingCentresForFeeAssignment == null) {
+            return 0;
+        }
+        int count = 0;
+        for (CollectingCentreFeeAssignmentDTO dto : collectingCentresForFeeAssignment) {
+            if (dto.getCurrentFeeListType() == null) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public void assignFeeListToSelectedCentres() {
+        if (selectedFeeListForAssignment == null) {
+            JsfUtil.addErrorMessage("Please select a fee list to assign");
+            return;
+        }
+        
+        if (selectedCollectingCentres == null || selectedCollectingCentres.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select at least one collecting centre");
+            return;
+        }
+        
+        int totalUpdatedCount = 0;
+        
+        // Use performant bulk update for each selected centre
+        String jpql = "UPDATE Institution i SET i.feeListType = :feeList, i.editer = :user, i.editedAt = :date WHERE i.id = :id";
+        
+        for (CollectingCentreFeeAssignmentDTO dto : selectedCollectingCentres) {
+            try {
+                Map<String, Object> params = new HashMap<>();
+                params.put("feeList", selectedFeeListForAssignment);
+                params.put("user", sessionController.getLoggedUser());
+                params.put("date", new Date());
+                params.put("id", dto.getInstitutionId());
+                
+                // Use the new performant update method from AbstractFacade
+                int updatedCount = institutionFacade.updateByJpql(jpql, params);
+                
+                if (updatedCount > 0) {
+                    // Update the DTO to reflect the change
+                    dto.setCurrentFeeListType(selectedFeeListForAssignment);
+                    totalUpdatedCount += updatedCount;
+                } else {
+                    JsfUtil.addErrorMessage("Institution not found or could not be updated: " + dto.getInstitutionName());
+                }
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage("Failed to update " + dto.getInstitutionName() + ": " + e.getMessage());
+            }
+        }
+        
+        if (totalUpdatedCount > 0) {
+            JsfUtil.addSuccessMessage("Successfully assigned fee list '" + selectedFeeListForAssignment.getName() + "' to " + totalUpdatedCount + " collecting centre(s)");
+            // Clear selections
+            selectedCollectingCentres = new ArrayList<>();
+        } else {
+            JsfUtil.addErrorMessage("No collecting centres were updated");
+        }
+    }
+
+    // Getters and setters for fee assignment functionality
+    
+    public List<CollectingCentreFeeAssignmentDTO> getCollectingCentresForFeeAssignment() {
+        return collectingCentresForFeeAssignment;
+    }
+
+    public void setCollectingCentresForFeeAssignment(List<CollectingCentreFeeAssignmentDTO> collectingCentresForFeeAssignment) {
+        this.collectingCentresForFeeAssignment = collectingCentresForFeeAssignment;
+    }
+
+    public List<CollectingCentreFeeAssignmentDTO> getFilteredCollectingCentres() {
+        return filteredCollectingCentres;
+    }
+
+    public void setFilteredCollectingCentres(List<CollectingCentreFeeAssignmentDTO> filteredCollectingCentres) {
+        this.filteredCollectingCentres = filteredCollectingCentres;
+    }
+
+    public List<CollectingCentreFeeAssignmentDTO> getSelectedCollectingCentres() {
+        return selectedCollectingCentres;
+    }
+
+    public void setSelectedCollectingCentres(List<CollectingCentreFeeAssignmentDTO> selectedCollectingCentres) {
+        this.selectedCollectingCentres = selectedCollectingCentres;
+    }
+
+    public String getGlobalFilterValue() {
+        return globalFilterValue;
+    }
+
+    public void setGlobalFilterValue(String globalFilterValue) {
+        this.globalFilterValue = globalFilterValue;
+    }
+
+    public Category getSelectedFeeListForAssignment() {
+        return selectedFeeListForAssignment;
+    }
+
+    public void setSelectedFeeListForAssignment(Category selectedFeeListForAssignment) {
+        this.selectedFeeListForAssignment = selectedFeeListForAssignment;
     }
 
 }

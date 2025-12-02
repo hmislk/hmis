@@ -14,67 +14,163 @@
         <h:form>
             <p:panel header="Guardian Room Change" rendered="#{roomChangeController.current eq null}">
                 <f:facet name="header">
-                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
-                    <p:outputLabel value="Guardian Room Change" class="m-2"/>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                            <p:outputLabel value="Guardian Room Change" class="m-2"/>
+                        </div>
+                        <div>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                <p:commandButton 
+                                    value="Back to WorkBench" 
+                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                    ajax="false"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </h:panelGroup>
+                        </div>
+                    </div>
                 </f:facet>
+
                 <h:panelGrid id="gpSelectText" columns="4" >
 
                     <h:outputLabel value="Type Patinet Name or BHT"/>
-                    <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                     value="#{roomChangeController.current}"
-                                     completeMethod="#{admissionController.completePatient}" 
-                                     var="myItem" itemValue="#{myItem}" 
-                                     itemLabel="#{myItem.bhtNo}" 
-                                     size="30"  required="true" requiredMessage="Please Select the patient" class="mx-3"> 
-                        <!--                            <f:ajax execute="acPt" render="@all" event="itemSelect" 
-                                                            listener="#{roomChangeController.createGuardianRoom()}"/>-->
-                        <p:column>
+                    <p:autoComplete  
+                        widgetVar="aPt" 
+                        id="acPt" 
+                        forceSelection="true" 
+                        value="#{roomChangeController.current}"
+                        completeMethod="#{admissionController.completePatient}" 
+                        var="myItem" 
+                        itemValue="#{myItem}" 
+                        itemLabel="#{myItem.bhtNo}" 
+                        size="30"  
+                        required="true" 
+                        requiredMessage="Please Select the patient" 
+                        class="mx-3"> 
+                        <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{myItem.patient.phn}"/>
+                        </p:column>
+                        <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
                             <h:outputLabel value="#{myItem.bhtNo}"/>
                         </p:column>
-                        <p:column>
+                        <p:column headerText="Patient" style="padding: 6px; width: 400px;">
                             <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
                         </p:column>
-                    </p:autoComplete>   
-                    <p:commandButton value="Select"  class="mx-3" ajax="false"   />
+                        <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                        </p:column>
+                        <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
+                            <div class="d-flex justify-content-center">
+                                <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                    #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                </span>
+                            </div>
+                        </p:column>
+                    </p:autoComplete> 
+
+                    <p:commandButton 
+                        value="Select"  
+                        class="mx-3" 
+                        ajax="false">
+                    </p:commandButton>
+
+                    <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
+
                 </h:panelGrid>
 
             </p:panel>
 
             <p:panel rendered="#{roomChangeController.current ne null}">
                 <f:facet name="header">
-                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
-                    <p:outputLabel value="Guardian Room Change" class="m-2"/>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                            <p:outputLabel value="Guardian Room Change" class="m-2"/>
+                        </div>
+                        <div>
+                            <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Patient Lookup"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning " 
+                                        action="#{patientController.navigateToSearchPatients()}" 
+                                        >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Patient Profile"
+                                        icon="fa fa-user"
+                                        class="ui-button-warning" 
+                                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                                        >
+                                        <f:setPropertyActionListener 
+                                            value="#{admissionController.current.patient}" 
+                                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Inpatient Dashboard"
+                                        ajax="false"
+                                        icon="fa-solid fa-address-card "
+                                        class="ui-button-secondary " 
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                        >
+                                        <f:setPropertyActionListener 
+                                            value="#{roomChangeController.current}" 
+                                            target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                <p:commandButton 
+                                    value="Back to WorkBench" 
+                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                    ajax="false"
+                                    class="ui-button-operating-theatre"
+                                    icon="fa fa-arrow-left">
+                                </p:commandButton>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     <div class="d-flex" style="float: right;">
-                        <p:commandButton 
-                            ajax="false"
-                            value="Patient Lookup"
-                            icon="fa fa-search"
-                            class="ui-button-warning " 
-                            action="#{patientController.navigateToSearchPatients()}" 
-                            >
-                        </p:commandButton>
-                        <p:commandButton 
-                            ajax="false"
-                            value="Patient Profile"
-                            icon="fa fa-user"
-                            class="ui-button-warning mx-1" 
-                            action="#{patientController.navigateToOpdPatientProfile()}" 
-                            >
-                            <f:setPropertyActionListener 
-                                value="#{admissionController.current.patient}" 
-                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Inpatient Dashboard"
-                            ajax="false"
-                            icon="fa-solid fa-address-card "
-                            class="ui-button-secondary " 
-                            action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                            >
-                            <f:setPropertyActionListener 
-                                value="#{roomChangeController.current}" 
-                                target="#{admissionController.current}" ></f:setPropertyActionListener>
-                        </p:commandButton>
+
                     </div>
                 </f:facet>
 
@@ -110,12 +206,12 @@
 
                                         <h:outputLabel value="Change at"/>
                                         <p:datePicker id="changeAt"
-                                                    value="#{roomChangeController.changeAt}" 
-                                                    pattern="dd MMM yyyy HH:mm:ss"
-                                                    class="m-2" 
-                                                    showTime="true"
-                                                    showButtonBar="true"
-                                                    timeInput="true">
+                                                      value="#{roomChangeController.changeAt}" 
+                                                      pattern="dd MMM yyyy HH:mm:ss"
+                                                      class="m-2" 
+                                                      showTime="true"
+                                                      showButtonBar="true"
+                                                      timeInput="true">
                                             <f:ajax event="dateSelect"  render="changeAt"  />
                                         </p:datePicker>
 

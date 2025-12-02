@@ -1,7 +1,6 @@
 package com.divudi.bean.pharmacy;
 
 // <editor-fold defaultstate="collapsed" desc="Import Statements">
-
 import com.divudi.bean.common.*;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
@@ -29,6 +28,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.core.data.BillCategory;
 
@@ -78,10 +78,15 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
 import com.divudi.service.HistoricalRecordService;
+import com.divudi.core.facade.HistoricalRecordFacade;
+import com.divudi.service.PharmacyAsyncReportService;
+import com.divudi.core.data.HistoricalRecordType;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.service.StockHistoryService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import com.divudi.core.util.BigDecimalUtil;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,6 +103,10 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 import org.primefaces.model.file.UploadedFile;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.facade.UploadFacade;
+import java.io.ByteArrayInputStream;
+import org.primefaces.model.DefaultStreamedContent;
 
 import org.primefaces.model.StreamedContent;
 // </editor-fold>
@@ -127,6 +136,8 @@ public class PharmacySummaryReportController implements Serializable {
     @EJB
     private StockFacade stockFacade;
     @EJB
+    private StockHistoryFacade stockHistoryFacade;
+    @EJB
     private PatientFacade patientFacade;
     @EJB
     private DrawerFacade drawerFacade;
@@ -137,7 +148,13 @@ public class PharmacySummaryReportController implements Serializable {
     @EJB
     HistoricalRecordService historicalRecordService;
     @EJB
+    HistoricalRecordFacade historicalRecordFacade;
+    @EJB
+    PharmacyAsyncReportService pharmacyAsyncReportService;
+    @EJB
     PharmacyService pharmacyService;
+    @EJB
+    UploadFacade uploadFacade;
 
     // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -187,6 +204,8 @@ public class PharmacySummaryReportController implements Serializable {
     private EnumController enumController;
     @Inject
     BillController billController;
+    @Inject
+    DataAdministrationController dataAdministrationController;
     // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
@@ -263,11 +282,20 @@ public class PharmacySummaryReportController implements Serializable {
     // Numeric variables
     private int maxResult = 50;
 
+    private List<HistoricalRecord> historicalRecords;
+
     //transferOuts;
     //adjustments;
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        );
+        reportViewType = ReportViewType.BY_BILL;
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
 
@@ -296,11 +324,24 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public String navigateToDailyStockValuesReport() {
+        if(institution==null){
+            institution = sessionController.getInstitution();
+        }
+        if(site==null){
+            site = sessionController.getLoggedSite();
+        }
+        if(department==null){
+            department=sessionController.getDepartment();
+        }
         return "/pharmacy/reports/summary_reports/daily_stock_values_report?faces-redirect=true";
     }
 
     public String navigateToBillTypeIncome() {
         return "/pharmacy/reports/summary_reports/bill_type_income?faces-redirect=true";
+    }
+
+    public String navigateToAllItemMovementSummary() {
+        return "/pharmacy/reports/summary_reports/all_item_movement_summary?faces-redirect=true";
     }
 
     public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
@@ -312,6 +353,12 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void processDailyStockBalanceReport() {
+        System.out.println(">>> OLD REPORT processDailyStockBalanceReport START <<<");
+        System.out.println("OLD REPORT - From Date: " + fromDate);
+        System.out.println("OLD REPORT - Department: " + department);
+        System.out.println("OLD REPORT - Department ID: " + (department != null ? department.getId() : "null"));
+        System.out.println("OLD REPORT - Department Name: " + (department != null ? department.getName() : "null"));
+
 //        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
@@ -321,20 +368,23 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        Date today = new Date();
-        if (!fromDate.before(today)) {
-            JsfUtil.addErrorMessage("Selected date must be earlier than today");
-            return;
-        }
+
+//        Report can be generated for today as well
+//        Date today = new Date();
+//        if (!fromDate.before(today)) {
+//            JsfUtil.addErrorMessage("Selected date must be earlier than today");
+//            return;
+//        }
 
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, fromDate);
-        if (openingBalance != null) {
-            dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
-        }
+        // Calculate Opening Stock Value at Retail Rate
+        System.out.println("OLD REPORT - Calculating opening stock...");
+        double openingStockValueAtRetailRate = calculateStockValueAtRetailRate(fromDate, department);
+        System.out.println("OLD REPORT - Opening stock value: " + openingStockValueAtRetailRate);
+        dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
         // Calculate toDate as fromDate + 1 day
         Calendar cal = Calendar.getInstance();
@@ -342,26 +392,126 @@ public class PharmacySummaryReportController implements Serializable {
         cal.add(Calendar.DATE, 1);
         toDate = cal.getTime();
 
-        Date startOfTheDay = CommonFunctions.getStartOfBeforeDay(fromDate);
+        Date startOfTheDay = CommonFunctions.getStartOfDay(fromDate);
         Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
 
         PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
-        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
 
-        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
 
-        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+        PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillTypeDto(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
-        HistoricalRecord closingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, toDate);
-        if (closingBalance != null) {
-            dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
-        }
+        // Calculate Closing Stock Value at Retail Rate
+        double closingStockValueAtRetailRate = calculateStockValueAtRetailRate(toDate, department);
+        dailyStockBalanceReport.setClosingStockValue(closingStockValueAtRetailRate);
 //        }, SummaryReports.DAILY_STOCK_BALANCE_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Calculates the stock value at retail rate for a given date and department.
+     * This method queries the StockHistory to find the latest stock quantities
+     * before the specified date and multiplies them by the retail sale rate.
+     *
+     * @param date The date for which to calculate stock value
+     * @param dept The department for which to calculate stock value
+     * @return The total stock value at retail rate, or 0.0 if calculation fails
+     */
+    private double calculateStockValueAtRetailRate(Date date, Department dept) {
+        try {
+            Map<String, Object> params = new HashMap<>();
+            StringBuilder jpql = new StringBuilder();
+
+            // Query to calculate total retail value of stock
+            jpql.append("SELECT SUM(sh.stockQty * COALESCE(sh.itemBatch.retailsaleRate, 0.0)) ")
+                .append("FROM StockHistory sh ")
+                .append("WHERE sh.retired = :ret ")
+                .append("AND sh.id IN (")
+                .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                .append("WHERE sh2.retired = :ret ")
+                .append("AND sh2.createdAt < :et ");
+
+            params.put("ret", false);
+            params.put("et", date);
+
+            // Add department filter to subquery
+            if (dept != null) {
+                jpql.append("AND sh2.department = :dep ");
+                params.put("dep", dept);
+            }
+
+            jpql.append("GROUP BY sh2.department, sh2.itemBatch ")
+                .append("HAVING MAX(sh2.id) IN (")
+                .append("SELECT sh3.id FROM StockHistory sh3 ")
+                .append("WHERE sh3.retired = :ret ");
+
+            // Add department filter to innermost query
+            if (dept != null) {
+                jpql.append("AND sh3.department = :dep2 ");
+                params.put("dep2", dept);
+            }
+
+            jpql.append("AND sh3.createdAt < :et2)) ");
+            params.put("et2", date);
+
+            // Add department filter to main query
+            if (dept != null) {
+                jpql.append("AND sh.department = :dep3 ");
+                params.put("dep3", dept);
+            }
+
+            // Filter to include only items with positive stock quantities
+            jpql.append("AND sh.itemBatch.item.id IN (")
+                .append("SELECT sh4.itemBatch.item.id FROM StockHistory sh4 ")
+                .append("WHERE sh4.retired = :ret ")
+                .append("AND sh4.id IN (")
+                .append("SELECT MAX(sh5.id) FROM StockHistory sh5 ")
+                .append("WHERE sh5.retired = :ret ")
+                .append("AND sh5.createdAt < :et3 ");
+
+            params.put("et3", date);
+
+            // Add department filter to item filtering subqueries
+            if (dept != null) {
+                jpql.append("AND sh5.department = :dep4 ");
+                params.put("dep4", dept);
+            }
+
+            jpql.append("GROUP BY sh5.department, sh5.itemBatch) ");
+
+            if (dept != null) {
+                jpql.append("AND sh4.department = :dep5 ");
+                params.put("dep5", dept);
+            }
+
+            jpql.append("GROUP BY sh4.itemBatch.item.id ")
+                .append("HAVING SUM(sh4.stockQty) > 0)");
+
+            // Execute the query
+            List<Object[]> results = stockHistoryFacade.findRawResultsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                Object result = results.get(0);
+                // Since we're selecting a single SUM value, it comes as a single Object, not an array
+                if (result instanceof Object[]) {
+                    Object[] resultArray = (Object[]) result;
+                    return resultArray[0] != null ? ((Number) resultArray[0]).doubleValue() : 0.0;
+                } else {
+                    return result != null ? ((Number) result).doubleValue() : 0.0;
+                }
+            } else {
+                return 0.0;
+            }
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock value at retail rate for date: " + date);
+            return 0.0;
+        }
     }
 
     public void listBillTypes() {
@@ -415,7 +565,7 @@ public class PharmacySummaryReportController implements Serializable {
 
             if (site != null) {
                 params.put("site", site);
-                jpql.append(" and b.department = :site ");
+                jpql.append(" and b.department.site = :site ");
             }
 
             if (webUser != null) {
@@ -621,6 +771,79 @@ public class PharmacySummaryReportController implements Serializable {
         List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
         pharmacyBundle = new PharmacyBundle(bills);
         pharmacyBundle.generateProcurementForBills();
+    }
+
+    public void generateAllItemMovementReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from and to dates");
+            return;
+        }
+        if (fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("From date must be before or equal to to date");
+            return;
+        }
+
+        HistoricalRecord hr = new HistoricalRecord();
+        hr.setHistoricalRecordType(HistoricalRecordType.ASYNC_REPORT);
+        hr.setVariableName("AllItemMovementSummary");
+        hr.setFromDateTime(fromDate);
+        hr.setToDateTime(toDate);
+        hr.setInstitution(institution);
+        hr.setSite(site);
+        hr.setDepartment(department);
+        hr.setCreatedAt(new Date());
+        hr.setCreatedBy(sessionController.getLoggedUser());
+        historicalRecordFacade.create(hr);
+        pharmacyAsyncReportService.generateAllItemMovementReport(hr, sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        JsfUtil.addSuccessMessage("Async report generation request added");
+        viewAlreadyAvailableAllItemMovementSummaryReports();
+    }
+
+    public void viewAlreadyAvailableAllItemMovementSummaryReports() {
+        StringBuilder jpql = new StringBuilder("select hr from HistoricalRecord hr "
+                + "where hr.retired=false "
+                + "and hr.historicalRecordType=:type "
+                + "and hr.variableName=:vn ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", HistoricalRecordType.ASYNC_REPORT);
+        params.put("vn", "AllItemMovementSummary");
+
+        if (institution != null) {
+            jpql.append(" and hr.institution=:ins ");
+            params.put("ins", institution);
+        } else {
+            jpql.append(" and hr.institution is null ");
+        }
+
+        if (site != null) {
+            jpql.append(" and hr.site=:site ");
+            params.put("site", site);
+        } else {
+            jpql.append(" and hr.site is null ");
+        }
+
+        if (department != null) {
+            jpql.append(" and hr.department=:dep ");
+            params.put("dep", department);
+        } else {
+            jpql.append(" and hr.department is null ");
+        }
+
+        if (fromDate != null) {
+            jpql.append(" and hr.fromDateTime = :fd ");
+            params.put("fd", fromDate);
+        }
+
+        if (toDate != null) {
+            jpql.append(" and hr.toDateTime = :td ");
+            params.put("td", toDate);
+        }
+
+        jpql.append(" order by hr.fromDateTime desc");
+
+        historicalRecords = historicalRecordFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     public void processPharmacyIncomeReportByBillType() {
@@ -853,7 +1076,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBillItem() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemDTOs(
+        List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemWithCostRateDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new IncomeBundle(dtos);
         bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
@@ -886,12 +1109,16 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
+
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
 
+
         bundle = new IncomeBundle(dtos);
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
+
     }
 
     /**
@@ -978,13 +1205,13 @@ public class PharmacySummaryReportController implements Serializable {
                 ? BigDecimal.valueOf(pbi.getFreeQtyPacks())
                 : BigDecimal.valueOf(pbi.getFreeQty());
 
-        // Total quantity = qty + free
-        BigDecimal totalQty = qty.add(freeQty);
+        // Total quantity = qty + free (using null-safe operations)
+        BigDecimal totalQty = BigDecimalUtil.add(qty, freeQty);
 
-        // Convert quantities to atomic units
-        BigDecimal qtyInUnits = qty.multiply(unitsPerPack);
-        BigDecimal freeQtyInUnits = freeQty.multiply(unitsPerPack);
-        BigDecimal totalQtyInUnits = qtyInUnits.add(freeQtyInUnits);
+        // Convert quantities to atomic units (using null-safe operations)
+        BigDecimal qtyInUnits = BigDecimalUtil.multiply(qty, unitsPerPack);
+        BigDecimal freeQtyInUnits = BigDecimalUtil.multiply(freeQty, unitsPerPack);
+        BigDecimal totalQtyInUnits = BigDecimalUtil.add(qtyInUnits, freeQtyInUnits);
 
         // Assign quantity values to bifd
         bifd.setUnitsPerPack(unitsPerPack);
@@ -1015,45 +1242,45 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setTotalCostRate(lineCostRate);
 
         // Assign cost values
-        bifd.setLineCost(lineCostRate.multiply(totalQtyInUnits));
+        bifd.setLineCost(BigDecimalUtil.multiply(lineCostRate, totalQtyInUnits));
         bifd.setBillCost(BigDecimal.ZERO);
         bifd.setTotalCost(bifd.getLineCost());
 
         // Assign gross rate (sale rate)
         BigDecimal lineGrossRate = BigDecimal.valueOf(bi.getRate());
         bifd.setRetailSaleRate(lineGrossRate);
-        bifd.setRetailSaleRatePerUnit(lineGrossRate.multiply(unitsPerPack));
+        bifd.setRetailSaleRatePerUnit(BigDecimalUtil.multiply(lineGrossRate, unitsPerPack));
 
         // Calculate discount, tax, and expense from bill using proportion
-        BigDecimal discountPortionFromBill = BigDecimal.valueOf(bill.getDiscount()).multiply(proportion);
-        BigDecimal taxPortionFromBill = BigDecimal.valueOf(bill.getTax()).multiply(proportion);
-        BigDecimal expensePortionFromBill = BigDecimal.valueOf(bill.getExpenseTotal()).multiply(proportion);
+        BigDecimal discountPortionFromBill = BigDecimalUtil.multiply(BigDecimal.valueOf(bill.getDiscount()), proportion);
+        BigDecimal taxPortionFromBill = BigDecimalUtil.multiply(BigDecimal.valueOf(bill.getTax()), proportion);
+        BigDecimal expensePortionFromBill = BigDecimalUtil.multiply(BigDecimal.valueOf(bill.getExpenseTotal()), proportion);
 
-        // Calculate the difference between gross and net as gap
-        BigDecimal gapPortionFromBillNetTotalFromBillGrossTotal = taxPortionFromBill
-                .add(expensePortionFromBill)
-                .subtract(discountPortionFromBill);
+        // Calculate the difference between gross and net as gap (using null-safe operations)
+        BigDecimal gapPortionFromBillNetTotalFromBillGrossTotal = BigDecimalUtil.subtract(
+                BigDecimalUtil.add(taxPortionFromBill, expensePortionFromBill),
+                discountPortionFromBill);
 
         // Assign gross and net totals
         BigDecimal lineGrossTotal = BigDecimal.valueOf(bi.getGrossValue());
         BigDecimal billGrossTotal = BigDecimal.ZERO;
-        BigDecimal grossTotal = lineGrossTotal.add(billGrossTotal);
+        BigDecimal grossTotal = BigDecimalUtil.add(lineGrossTotal, billGrossTotal);
 
         BigDecimal lineNetTotal = BigDecimal.valueOf(bi.getNetValue());
         BigDecimal billNetTotal = gapPortionFromBillNetTotalFromBillGrossTotal;
-        BigDecimal netTotal = lineNetTotal.add(billNetTotal);
+        BigDecimal netTotal = BigDecimalUtil.add(lineNetTotal, billNetTotal);
 
         BigDecimal lineDiscountTotal = BigDecimal.valueOf(bi.getDiscount());
         BigDecimal billDiscountTotal = discountPortionFromBill;
-        BigDecimal discountTotal = lineDiscountTotal.add(billDiscountTotal);
+        BigDecimal discountTotal = BigDecimalUtil.add(lineDiscountTotal, billDiscountTotal);
 
         BigDecimal lineExpenseTotal = BigDecimal.ZERO;
         BigDecimal billExpenseTotal = expensePortionFromBill;
-        BigDecimal expenseTotal = lineExpenseTotal.add(billExpenseTotal); // ✅ fixed typo
+        BigDecimal expenseTotal = BigDecimalUtil.add(lineExpenseTotal, billExpenseTotal);
 
         BigDecimal lineTaxTotal = BigDecimal.ZERO;
         BigDecimal billTaxTotal = taxPortionFromBill;
-        BigDecimal taxTotal = lineTaxTotal.add(billTaxTotal);
+        BigDecimal taxTotal = BigDecimalUtil.add(lineTaxTotal, billTaxTotal);
 
         // Assign gross totals
         bifd.setLineGrossTotal(lineGrossTotal);
@@ -1233,10 +1460,18 @@ public class PharmacySummaryReportController implements Serializable {
 
     }
 
+// Contributed with ChatGPT assistance
+    // Contributed with ChatGPT assistance
     public void addFinancialDetailsForPharmacySaleBillsFromBillItemData() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<Bill> pbis = billService.fetchBills(billController.getFromDate(), billController.getToDate(),
-                null, null, null, null, billTypeAtomics, null, null);
+        List<Bill> pbis = billService.fetchBills(
+                dataAdministrationController.getFromDate(),
+                dataAdministrationController.getToDate(),
+                null, null, null, null,
+                billTypeAtomics,
+                null, null
+        );
+
         for (Bill b : pbis) {
             if (b == null) {
                 continue;
@@ -1247,7 +1482,7 @@ public class PharmacySummaryReportController implements Serializable {
                     .map(Bill::getBillTypeAtomic)
                     .orElse(null);
             if (bta == null || bta.getBillCategory() == null) {
-                continue; // unable to categorise safely
+                continue;
             }
             BillCategory bc = bta.getBillCategory();
 
@@ -1256,13 +1491,11 @@ public class PharmacySummaryReportController implements Serializable {
             double costValue = 0.0;
 
             for (BillItem bi : b.getBillItems()) {
-                // Step 1: Add missing finance data
                 addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(bi);
-                billItemFacade.edit(bi);
+                
 
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-                if (pbi == null) {
-                    System.out.println("Skipped BillItem: No PharmaceuticalBillItem.");
+                if (pbi == null || pbi.getItemBatch() == null) {
                     continue;
                 }
 
@@ -1273,7 +1506,6 @@ public class PharmacySummaryReportController implements Serializable {
 
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     retailRate = Math.abs(bi.getNetRate());
-                    System.out.println("Using NetRate instead of RetailRate due to return: NetRate = " + retailRate);
                 }
 
                 double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
@@ -1282,23 +1514,52 @@ public class PharmacySummaryReportController implements Serializable {
                 double itemPurchaseValue = factor * purchaseRate * qty;
                 double itemCostValue = factor * cRate * qty;
 
-                // Add to totals
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                if (bifd == null) {
+                    bifd = new BillItemFinanceDetails();
+                    bifd.setBillItem(bi);
+                    bi.setBillItemFinanceDetails(bifd);
+                }
+
+                // Fill basic values if missing
+                if (bifd.getGrossRate() == null) {
+                    bifd.setGrossRate(BigDecimal.valueOf(retailRate));
+                }
+                if (bifd.getQuantityByUnits() == null) {
+                    bifd.setQuantityByUnits(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getValueAtCostRate() == null) {
+                    bifd.setValueAtCostRate(BigDecimal.valueOf(itemCostValue));
+                }
+                if (bifd.getValueAtPurchaseRate() == null) {
+                    bifd.setValueAtPurchaseRate(BigDecimal.valueOf(itemPurchaseValue));
+                }
+                if (bifd.getValueAtRetailRate() == null) {
+                    bifd.setValueAtRetailRate(BigDecimal.valueOf(itemSaleValue));
+                }
+
+                // Set Line Gross Rate & Total based on config
+                boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+                boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+                double txRate;
+                if (txByCr) {
+                    txRate = cRate;
+                } else if (txByPr) {
+                    txRate = purchaseRate;
+                } else {
+                    txRate = retailRate;
+                }
+
+                // Assign lineGrossRate and lineGrossTotal using the chosen transfer rate
+                bifd.setLineGrossRate(BigDecimal.valueOf(txRate));
+                bifd.setLineGrossTotal(BigDecimal.valueOf(txRate * qty * factor));
+
+                // Totals
                 saleValue += itemSaleValue;
                 purchaseValue += itemPurchaseValue;
                 costValue += itemCostValue;
-
-                // Print debug info
-                System.out.println("---- BillItem Debug ----");
-                System.out.println("Item: " + bi.getItem().getName());
-                System.out.println("Qty: " + qty);
-                System.out.println("Retail Rate: " + retailRate);
-                System.out.println("Purchase Rate: " + purchaseRate);
-                System.out.println("Cost Rate: " + cRate);
-                System.out.println("Factor: " + factor);
-                System.out.println("Item Sale Value: " + itemSaleValue);
-                System.out.println("Item Purchase Value: " + itemPurchaseValue);
-                System.out.println("Item Cost Value: " + itemCostValue);
-                System.out.println("------------------------");
+                billItemFacade.edit(bi);
             }
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();
@@ -1307,16 +1568,467 @@ public class PharmacySummaryReportController implements Serializable {
                 b.setBillFinanceDetails(bfd);
             }
 
-            StockBill sb = b.getStockBill();
-            sb.setStockValueAsSaleRate(saleValue);
-            sb.setStockValueAtPurchaseRates(purchaseValue);
-            sb.setStockValueAsCostRate(costValue);
-
+            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
             bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
             bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
-            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
+
+            StockBill sb = b.getStockBill();
+            if (sb != null) {
+                sb.setStockValueAsSaleRate(saleValue);
+                sb.setStockValueAtPurchaseRates(purchaseValue);
+                sb.setStockValueAsCostRate(costValue);
+            }
+
+            // Bill Gross Total based on config
+            boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+            boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+            if (txByCr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(costValue));
+            } else if (txByPr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(purchaseValue));
+            } else {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(saleValue));
+            }
+
             getBillFacade().edit(b);
         }
+    }
+
+    public List<BillTypeAtomic> getPharmacyPurchaseOrderBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_ORDER,
+                BillTypeAtomic.PHARMACY_ORDER_PRE,
+                BillTypeAtomic.PHARMACY_ORDER_CANCELLED,
+                BillTypeAtomic.PHARMACY_ORDER_APPROVAL,
+                BillTypeAtomic.PHARMACY_ORDER_APPROVAL_CANCELLED
+        );
+    }
+
+    public void addFinancialDetailsForPharmacyPurchaseOrdersFromBillItemData() {
+        System.out.println("=== Starting Purchase Order Financial Details Correction ===");
+        System.out.println("Date Range: " + dataAdministrationController.getFromDate() + " to " + dataAdministrationController.getToDate());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseOrderBillTypes();
+        List<Bill> bills = billService.fetchBills(
+                dataAdministrationController.getFromDate(),
+                dataAdministrationController.getToDate(),
+                null, null, null, null,
+                billTypeAtomics,
+                null, null
+        );
+
+        System.out.println("Found " + bills.size() + " Purchase Order bills to process");
+
+        int processedBills = 0;
+        int skippedBills = 0;
+        int processedItems = 0;
+        int skippedItems = 0;
+
+        for (Bill b : bills) {
+            if (b == null) {
+                System.out.println("Skipping null bill");
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("\nProcessing Bill: " + b.getInsId() + " (ID: " + b.getId() + ")");
+
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                System.out.println("  Skipping - No BillTypeAtomic or BillCategory");
+                skippedBills++;
+                continue;
+            }
+            BillCategory bc = bta.getBillCategory();
+            System.out.println("  Bill Type: " + bta + ", Category: " + bc);
+
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                System.out.println("  No bill items found for this bill");
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("  Bill has " + b.getBillItems().size() + " items");
+
+            double saleValue = 0.0;
+            double purchaseValue = 0.0;
+            double costValue = 0.0;
+
+            for (BillItem bi : b.getBillItems()) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi == null) {
+                    System.out.println("    Skipping item - No PharmaceuticalBillItem");
+                    skippedItems++;
+                    continue;
+                }
+
+                // For POs, get data from PBI and BillItem (no ItemBatch yet)
+                double qty = Math.abs(pbi.getQty());
+                double freeQty = Math.abs(pbi.getFreeQty());
+
+                // Get rates from BillItem since no ItemBatch exists for POs
+                double rate = Math.abs(bi.getRate());  // This is the purchase rate from supplier
+                double grossValue = Math.abs(bi.getGrossValue());
+                double netValue = Math.abs(bi.getNetValue());
+
+                System.out.println("    PO Item: " + bi.getItem().getName());
+                System.out.println("      pbi.qty: " + pbi.getQty() + ", pbi.freeQty: " + pbi.getFreeQty());
+                System.out.println("      bi.rate: " + bi.getRate() + ", bi.grossValue: " + bi.getGrossValue() + ", bi.netValue: " + bi.getNetValue());
+
+                double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
+
+                // For POs, use the rate from BillItem for all rate types
+                double itemValue = factor * rate * qty;
+
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                if (bifd == null) {
+                    bifd = new BillItemFinanceDetails();
+                    bifd.setBillItem(bi);
+                    bi.setBillItemFinanceDetails(bifd);
+                }
+
+                // Fill basic values if missing - using BillItem data
+                if (bifd.getGrossRate() == null) {
+                    bifd.setGrossRate(BigDecimal.valueOf(rate));
+                }
+                if (bifd.getQuantityByUnits() == null) {
+                    bifd.setQuantityByUnits(BigDecimal.valueOf(qty));
+                }
+                // For POs, set all value types to the same since we don't have batch data
+                if (bifd.getValueAtCostRate() == null) {
+                    bifd.setValueAtCostRate(BigDecimal.valueOf(itemValue));
+                }
+                if (bifd.getValueAtPurchaseRate() == null) {
+                    bifd.setValueAtPurchaseRate(BigDecimal.valueOf(itemValue));
+                }
+                if (bifd.getValueAtRetailRate() == null) {
+                    bifd.setValueAtRetailRate(BigDecimal.valueOf(itemValue));
+                }
+
+                // Set quantity and freeQuantity from PBI
+                if (bifd.getQuantity() == null) {
+                    bifd.setQuantity(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getFreeQuantity() == null) {
+                    bifd.setFreeQuantity(BigDecimal.valueOf(freeQty));
+                }
+
+                // Set lineGrossRate and lineGrossTotal from BillItem
+                if (bifd.getLineGrossRate() == null) {
+                    bifd.setLineGrossRate(BigDecimal.valueOf(rate));
+                }
+                if (bifd.getLineGrossTotal() == null) {
+                    // Use grossValue from BillItem if available, otherwise calculate
+                    double lineTotal = (grossValue > 0) ? factor * grossValue : factor * rate * qty;
+                    bifd.setLineGrossTotal(BigDecimal.valueOf(lineTotal));
+                }
+
+                // Debug output for Purchase Orders
+                System.out.println("      BIFD values set:");
+                System.out.println("      lineGrossRate: " + bifd.getLineGrossRate());
+                System.out.println("      quantity: " + bifd.getQuantity());
+                System.out.println("      freeQuantity: " + bifd.getFreeQuantity());
+                System.out.println("      lineGrossTotal: " + bifd.getLineGrossTotal());
+
+                // Totals
+                saleValue += itemValue;
+                purchaseValue += itemValue;
+                costValue += itemValue;
+                billItemFacade.edit(bi);
+                processedItems++;
+            }
+
+            System.out.println("  Completed bill with totals - Sale: " + saleValue + ", Purchase: " + purchaseValue + ", Cost: " + costValue);
+
+            BillFinanceDetails bfd = b.getBillFinanceDetails();
+            if (bfd == null) {
+                bfd = new BillFinanceDetails(b);
+                b.setBillFinanceDetails(bfd);
+            }
+
+            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
+            bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+            bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+
+            StockBill sb = b.getStockBill();
+            if (sb != null) {
+                sb.setStockValueAsSaleRate(saleValue);
+                sb.setStockValueAtPurchaseRates(purchaseValue);
+                sb.setStockValueAsCostRate(costValue);
+            }
+
+            // Bill Gross Total based on config
+            boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+            boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+            if (txByCr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(costValue));
+            } else if (txByPr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(purchaseValue));
+            } else {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(saleValue));
+            }
+
+            getBillFacade().edit(b);
+            processedBills++;
+        }
+
+        System.out.println("\n=== Purchase Order Financial Details Correction Complete ===");
+        System.out.println("Total bills found: " + bills.size());
+        System.out.println("Bills processed: " + processedBills);
+        System.out.println("Bills skipped: " + skippedBills);
+        System.out.println("Items processed: " + processedItems);
+        System.out.println("Items skipped: " + skippedItems);
+    }
+
+    public void addFinancialDetailsForPharmacyGRNsFromBillItemData() {
+        System.out.println("=== Starting GRN Financial Details Correction ===");
+        System.out.println("Date Range: " + dataAdministrationController.getFromDate() + " to " + dataAdministrationController.getToDate());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyProcurementBillTypes();
+        List<Bill> bills = billService.fetchBills(
+                dataAdministrationController.getFromDate(),
+                dataAdministrationController.getToDate(),
+                null, null, null, null,
+                billTypeAtomics,
+                null, null
+        );
+
+        System.out.println("Found " + bills.size() + " GRN bills to process");
+
+        int processedBills = 0;
+        int skippedBills = 0;
+        int processedItems = 0;
+        int skippedItems = 0;
+
+        for (Bill b : bills) {
+            if (b == null) {
+                System.out.println("Skipping null bill");
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("\nProcessing Bill: " + b.getInsId() + " (ID: " + b.getId() + ")");
+
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                System.out.println("  Skipping - No BillTypeAtomic or BillCategory");
+                skippedBills++;
+                continue;
+            }
+            BillCategory bc = bta.getBillCategory();
+            System.out.println("  Bill Type: " + bta + ", Category: " + bc);
+
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                System.out.println("  No bill items found for this bill");
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("  Bill has " + b.getBillItems().size() + " items");
+
+            double saleValue = 0.0;
+            double purchaseValue = 0.0;
+            double costValue = 0.0;
+
+            for (BillItem bi : b.getBillItems()) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi == null) {
+                    System.out.println("    Skipping item - No PharmaceuticalBillItem");
+                    skippedItems++;
+                    continue;
+                }
+                if (pbi.getItemBatch() == null) {
+                    System.out.println("    Skipping item " + bi.getItem().getName() + " - No ItemBatch");
+                    skippedItems++;
+                    continue;
+                }
+
+                // Get quantities from PBI (always positive)
+                double qty = Math.abs(pbi.getQty());
+                double freeQty = Math.abs(pbi.getFreeQty());
+                double totalQty = qty + freeQty;
+
+                // Get rates from ItemBatch and PBI (always positive)
+                double retailRate = Math.abs(pbi.getRetailRate());
+                double purchaseRate = Math.abs(pbi.getItemBatch().getPurcahseRate());
+                double cRate = Math.abs(pbi.getItemBatch().getCostRate());
+
+                // Get values from BillItem - preserve original sign for netValue
+                double lineDiscount = Math.abs(bi.getDiscount());
+                double biGrossValue = bi.getGrossValue();  // Keep original sign
+                double biNetValue = bi.getNetValue();      // Keep original sign
+                double biRate = bi.getRate();              // Keep original sign
+
+                System.out.println("    GRN Item: " + bi.getItem().getName());
+                System.out.println("      pbi - qty: " + pbi.getQty() + ", freeQty: " + pbi.getFreeQty() + ", retailRate: " + pbi.getRetailRate());
+                System.out.println("      itemBatch - purchaseRate: " + pbi.getItemBatch().getPurcahseRate() + ", costRate: " + pbi.getItemBatch().getCostRate());
+                System.out.println("      bi - rate: " + bi.getRate() + ", discount: " + bi.getDiscount() + ", grossValue: " + bi.getGrossValue() + ", netValue: " + bi.getNetValue());
+
+                // For GRNs: BillCategory.BILL means expense (negative), REFUND means money back (positive)
+                // This is opposite of sales, so we need to account for it
+                double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? 1 : -1;
+
+                double itemSaleValue = factor * retailRate * qty;
+                double itemPurchaseValue = factor * purchaseRate * qty;
+                double itemCostValue = factor * cRate * totalQty;  // Cost includes free qty
+
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                if (bifd == null) {
+                    bifd = new BillItemFinanceDetails();
+                    bifd.setBillItem(bi);
+                    bi.setBillItemFinanceDetails(bifd);
+                }
+
+                // Fill basic values if missing
+                if (bifd.getGrossRate() == null) {
+                    bifd.setGrossRate(BigDecimal.valueOf(purchaseRate));  // Use purchase rate as gross rate for GRN
+                }
+                if (bifd.getQuantityByUnits() == null) {
+                    bifd.setQuantityByUnits(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getValueAtCostRate() == null) {
+                    bifd.setValueAtCostRate(BigDecimal.valueOf(itemCostValue));
+                }
+                if (bifd.getValueAtPurchaseRate() == null) {
+                    bifd.setValueAtPurchaseRate(BigDecimal.valueOf(itemPurchaseValue));
+                }
+                if (bifd.getValueAtRetailRate() == null) {
+                    bifd.setValueAtRetailRate(BigDecimal.valueOf(itemSaleValue));
+                }
+
+                // Set quantity and freeQuantity from PBI
+                if (bifd.getQuantity() == null) {
+                    bifd.setQuantity(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getFreeQuantity() == null) {
+                    bifd.setFreeQuantity(BigDecimal.valueOf(freeQty));
+                }
+                if (bifd.getTotalQuantityByUnits() == null) {
+                    bifd.setTotalQuantityByUnits(BigDecimal.valueOf(totalQty));
+                }
+
+                // Set lineGrossRate (Purchase Rate from ItemBatch)
+                if (bifd.getLineGrossRate() == null) {
+                    bifd.setLineGrossRate(BigDecimal.valueOf(purchaseRate));
+                }
+
+                // Set lineDiscountRate (discount per unit)
+                if (bifd.getLineDiscountRate() == null) {
+                    double discountRate = (qty > 0) ? lineDiscount / qty : 0;
+                    bifd.setLineDiscountRate(BigDecimal.valueOf(discountRate));
+                }
+
+                // Set retailSaleRate and retailSaleRatePerUnit
+                if (bifd.getRetailSaleRate() == null) {
+                    bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+                }
+                if (bifd.getRetailSaleRatePerUnit() == null) {
+                    bifd.setRetailSaleRatePerUnit(BigDecimal.valueOf(retailRate));  // Assuming units, not packs
+                }
+
+                // Set lineGrossTotal (from BillItem grossValue or calculate from purchase rate)
+                if (bifd.getLineGrossTotal() == null) {
+                    double lineTotal;
+                    if (Math.abs(biGrossValue) > 0.01) {
+                        // Use existing value from BillItem if available
+                        lineTotal = biGrossValue;
+                    } else {
+                        // Calculate: for GRN (factor=-1), this will be negative
+                        lineTotal = factor * purchaseRate * qty;
+                    }
+                    bifd.setLineGrossTotal(BigDecimal.valueOf(lineTotal));
+                }
+
+                // Set lineNetTotal (from BillItem netValue or calculate)
+                if (bifd.getLineNetTotal() == null) {
+                    double lineNet;
+                    if (Math.abs(biNetValue) > 0.01) {
+                        // Use existing value from BillItem if available
+                        lineNet = biNetValue;
+                    } else {
+                        // Calculate: purchase rate * qty with factor
+                        lineNet = factor * purchaseRate * qty;
+                    }
+                    bifd.setLineNetTotal(BigDecimal.valueOf(lineNet));
+                }
+
+                // Set totalCost (cost for total qty including free - always positive)
+                if (bifd.getTotalCost() == null) {
+                    bifd.setTotalCost(BigDecimal.valueOf(Math.abs(itemCostValue)));
+                }
+
+                // Debug output for GRNs
+                System.out.println("      Calculated values:");
+                System.out.println("        factor: " + factor + " (bc: " + bc + ")");
+                System.out.println("        itemSaleValue: " + itemSaleValue);
+                System.out.println("        itemPurchaseValue: " + itemPurchaseValue);
+                System.out.println("        itemCostValue: " + itemCostValue);
+                System.out.println("      BIFD values set:");
+                System.out.println("        lineGrossRate: " + bifd.getLineGrossRate());
+                System.out.println("        quantity: " + bifd.getQuantity());
+                System.out.println("        freeQuantity: " + bifd.getFreeQuantity());
+                System.out.println("        totalQuantityByUnits: " + bifd.getTotalQuantityByUnits());
+                System.out.println("        lineGrossTotal: " + bifd.getLineGrossTotal());
+                System.out.println("        lineDiscountRate: " + bifd.getLineDiscountRate());
+                System.out.println("        retailSaleRate: " + bifd.getRetailSaleRate());
+                System.out.println("        lineNetTotal: " + bifd.getLineNetTotal());
+                System.out.println("        totalCost: " + bifd.getTotalCost());
+
+                // Totals - for GRNs, all totals are positive (inventory values)
+                saleValue += Math.abs(itemSaleValue);
+                purchaseValue += Math.abs(itemPurchaseValue);
+                costValue += Math.abs(itemCostValue);
+                billItemFacade.edit(bi);
+                processedItems++;
+            }
+
+            System.out.println("  Completed bill with totals - Sale: " + saleValue + ", Purchase: " + purchaseValue + ", Cost: " + costValue);
+
+            BillFinanceDetails bfd = b.getBillFinanceDetails();
+            if (bfd == null) {
+                bfd = new BillFinanceDetails(b);
+                b.setBillFinanceDetails(bfd);
+            }
+
+            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
+            bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+            bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+
+            StockBill sb = b.getStockBill();
+            if (sb != null) {
+                sb.setStockValueAsSaleRate(saleValue);
+                sb.setStockValueAtPurchaseRates(purchaseValue);
+                sb.setStockValueAsCostRate(costValue);
+            }
+
+            // Bill Gross Total based on config
+            boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+            boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+            if (txByCr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(costValue));
+            } else if (txByPr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(purchaseValue));
+            } else {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(saleValue));
+            }
+
+            getBillFacade().edit(b);
+            processedBills++;
+        }
+
+        System.out.println("\n=== GRN Financial Details Correction Complete ===");
+        System.out.println("Total bills found: " + bills.size());
+        System.out.println("Bills processed: " + processedBills);
+        System.out.println("Bills skipped: " + skippedBills);
+        System.out.println("Items processed: " + processedItems);
+        System.out.println("Items skipped: " + skippedItems);
     }
 
     public void calPharmacyIncomeAndCostReportByBill() {
@@ -1328,9 +2040,13 @@ public class PharmacySummaryReportController implements Serializable {
         Map<Long, Double> purchaseTotals = new HashMap<>();
 
         for (PharmacyIncomeBillItemDTO b : dtos) {
-            if (b == null || b.getBillId() == null || b.getBillTypeAtomic() == null) continue;
+            if (b == null || b.getBillId() == null || b.getBillTypeAtomic() == null) {
+                continue;
+            }
             BillCategory bc = b.getBillTypeAtomic().getBillCategory();
-            if (bc == null || b.getQty() == null || b.getRetailRate() == null || b.getPurchaseRate() == null) continue;
+            if (bc == null || b.getQty() == null || b.getRetailRate() == null || b.getPurchaseRate() == null) {
+                continue;
+            }
 
             double qty = Math.abs(b.getQty());
             double retail = Math.abs(b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS ? b.getNetRate() : b.getRetailRate());
@@ -1361,7 +2077,9 @@ public class PharmacySummaryReportController implements Serializable {
 
         for (IncomeRow bundle : this.bundle.getRows()) {
             Bill bill = bundle.getBill();
-            if (bill == null || bill.getId() == null) continue;
+            if (bill == null || bill.getId() == null) {
+                continue;
+            }
 
             double sale = saleTotals.getOrDefault(bill.getId(), 0.0);
             double purchase = purchaseTotals.getOrDefault(bill.getId(), 0.0);
@@ -1675,7 +2393,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     /**
      * @param configOptionApplicationController the
-     *                                          configOptionApplicationController to set
+     * configOptionApplicationController to set
      */
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
@@ -2429,6 +3147,59 @@ public class PharmacySummaryReportController implements Serializable {
             }
             pr.setStockQty(stockController.findStock(institution, site, department, pr.getItem()));
         }
+    }
+
+    public StreamedContent downloadHistoricalRecordFile(HistoricalRecord hr) {
+        if (hr == null) {
+            return null;
+        }
+        String jpql = "select u from Upload u where u.retired=false and u.historicalRecord=:hr order by u.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("hr", hr);
+        Upload u = uploadFacade.findFirstByJpql(jpql, params);
+        if (u == null || u.getBaImage() == null) {
+            return null;
+        }
+        return DefaultStreamedContent.builder()
+                .name(u.getFileName())
+                .contentType(u.getFileType())
+                .stream(() -> new ByteArrayInputStream(u.getBaImage()))
+                .build();
+    }
+
+    public List<HistoricalRecord> getHistoricalRecords() {
+        return historicalRecords;
+    }
+
+    public void setHistoricalRecords(List<HistoricalRecord> historicalRecords) {
+        this.historicalRecords = historicalRecords;
+    }
+
+    public void retireHistoricalRecord(HistoricalRecord hr) {
+        if (hr == null) {
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return;
+        }
+        hr.setRetired(true);
+        hr.setRetiredAt(new Date());
+        hr.setRetiredBy(sessionController.getLoggedUser());
+        historicalRecordFacade.edit(hr);
+
+        String jpql = "select u from Upload u where u.retired=false and u.historicalRecord=:hr";
+        Map<String, Object> params = new HashMap<>();
+        params.put("hr", hr);
+        List<Upload> uploads = uploadFacade.findByJpql(jpql, params);
+        if (uploads != null) {
+            for (Upload u : uploads) {
+                u.setRetired(true);
+                u.setRetiredAt(new Date());
+                u.setRetirer(sessionController.getLoggedUser());
+                uploadFacade.edit(u);
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Deleted");
+        viewAlreadyAvailableAllItemMovementSummaryReports();
     }
 
 }

@@ -27,17 +27,13 @@ public class HistoricalRecord implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    /**
-     * @deprecated use {@link #historicalRecordType} instead.
-     */
-    @Deprecated
+
     @Size(max = 255)
     private String variableName;
 
     @Enumerated(EnumType.STRING)
     private HistoricalRecordType historicalRecordType;
 
-    @NotNull
     private Double recordValue;
 
     @ManyToOne
@@ -61,6 +57,12 @@ public class HistoricalRecord implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date recordDateTime;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromDateTime;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toDateTime;
+
     private Boolean retired = false;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -75,8 +77,14 @@ public class HistoricalRecord implements Serializable {
     @ManyToOne
     private WebUser retiredBy;
 
-    
-    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date startedAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date completedAt;
+
+    private boolean completed;
+
     public Long getId() {
         return id;
     }
@@ -237,5 +245,48 @@ public class HistoricalRecord implements Serializable {
     public void setRecordDateTime(Date recordDateTime) {
         this.recordDateTime = recordDateTime;
     }
+
+
+    public Date getFromDateTime() {
+        return fromDateTime;
+    }
+
+    public void setFromDateTime(Date fromDateTime) {
+        this.fromDateTime = fromDateTime;
+    }
+
+    public Date getToDateTime() {
+        return toDateTime;
+    }
+
+    public void setToDateTime(Date toDateTime) {
+        this.toDateTime = toDateTime;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public Date getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(Date startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+    
+    
 
 }

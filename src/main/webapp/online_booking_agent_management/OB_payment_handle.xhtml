@@ -57,8 +57,8 @@
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
-                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
 
@@ -78,10 +78,19 @@
 
                             <p:commandButton  
                                 value="Settle Payment" 
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
                                 update="dialogContentForPayment onlineBookingsToPay cmbPs cashValue totalToPay txtNetTotal" 
                                 process="@this onlineBookings cmbPs"
                                 oncomplete="PF('payementSettle').show()"
                                 actionListener="#{onlineBookingAgentController.createTotalAmountToPay()}"
+                                class="ui-button-success" icon="fas fa-cogs">
+                            </p:commandButton>
+                            
+                            <p:commandButton  
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
+                                value="Mark Complete" 
+                                ajax="false"
+                                action="#{onlineBookingAgentController.markCompletePaidToHospitalOnlineBookings}"
                                 class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
 
@@ -209,7 +218,7 @@
                                             <h:outputText value="Ref No" ></h:outputText>
                                         </f:facet>
                                         <div class="d-flex align-items-center gap-2">
-                                            <h:outputText value="#{ob.referenceNo}" /> 
+                                            <h:outputText value="#{ob.referenceNo}" style="font-weight: bold"/> 
                                         </div>
                                     </p:column>
 
@@ -262,10 +271,11 @@
                             <p:column headerText="OB ID">
                                 <h:outputText value="#{ob.id}">
                                 </h:outputText>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Cancelled" rendered="#{ob.canceled}"/>
                             </p:column>
 
                             <p:column headerText="Ref No">
-                                <h:outputText value="#{ob.referenceNo}">
+                                <h:outputText value="#{ob.referenceNo}" style="font-weight: bold">
                                 </h:outputText>
                             </p:column>
 

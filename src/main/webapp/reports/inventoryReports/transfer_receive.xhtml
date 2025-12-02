@@ -162,6 +162,13 @@
 
                         <div class="d-flex align-items-center mt-5">
                             <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
+                            <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
@@ -212,7 +219,9 @@
 
 
                             <p:column headerText="Date">
-                                <h:outputText value="#{f.bill.createdAt}" />
+                                <h:outputText value="#{f.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Net Amount" />
                                 </f:facet>
@@ -230,14 +239,14 @@
                                     <f:setPropertyActionListener value="#{f.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Refrance Doument No(Issue Doc No)">
+                            <p:column headerText="Reference Doument No(Issue Doc No)">
                                 <p:commandLink 
-                                    value="#{f.bill.referenceBill.deptId}"
+                                    value="#{empty f.bill.backwardReferenceBill ? f.bill.referenceBill.deptId : f.bill.backwardReferenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
-                                    <f:setPropertyActionListener value="#{f.bill.referenceBill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{empty f.bill.backwardReferenceBill ? f.bill.referenceBill : f.bill.backwardReferenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Issue Department">
@@ -251,7 +260,17 @@
                                     <f:convertNumber pattern="#,##0"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Rate">
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Sale Rate">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

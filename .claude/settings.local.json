@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(git push:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo set-default:*)",
+      "Bash(git config:*)",
+      "Bash(mysql:*)",
+      "Bash(find:*)",
+      "Bash(gh api:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr close:*)",
+      "Bash(gh pr reopen:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr list:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(./detect-maven.sh:*)",
+      "Bash(nul)",
+      "WebSearch",
+      "WebFetch(domain:www.primefaces.org)",
+      "WebFetch(domain:www.concretepage.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(gh issue view:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "D:\\Development"
+    ]
+  }
+}

@@ -86,6 +86,11 @@
 
                                     <p:tab title="Medicines Management - Multiple">
                                         <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToAmpMultiple()}" />
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -101,11 +106,7 @@
                                                 ajax="false" 
                                                 value="VMPs" 
                                                 action="#{pharmacyController.navigateToVmpMultiple()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="AMPs" 
-                                                action="#{pharmacyController.navigateToAmpMultiple()}" />
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -159,8 +160,7 @@
                                                 action="#{dataUploadController.toUploadAmpsMin()}"  ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Update Bulk Categery" 
                                                              action="/pharmacy/pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Update Bulk Discount Allowed" 
-                                                             action="/pharmacy/pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                           
                                             <p:commandButton class="w-100" ajax="false" value="Stock Item List" 
                                                              action="/pharmacy/pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
 
@@ -185,30 +185,22 @@
                                             <p:commandButton   class="w-100" ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Major Stock Adjustment">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Stock Variant Report (Before)" icon="fa fa-chart-bar" action="#{pharmacyController.navigateToVariantCategoryStockByItem()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Stock Variant Adjustment (After)" icon="fa fa-adjust" action="#{pharmacyController.navigateToVariantAdjustmentPreList()}" />
-
-                                        </div>
-                                    </p:tab>
                                     <p:tab title="Set up">
                                         <div class="d-grid gap-2">
-                                            
-                                            <p:commandButton class="w-100" ajax="false" value="Check Item Differences with other Database" icon="fa fa-database" action="#{pharmacyController.navigateToItemMismatchReport()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Import from Excel" icon="fa fa-file-excel" action="#{pharmacyController.navigateToItemImport()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Import from Excel With Stock" icon="fa fa-boxes" action="#{pharmacyController.navigateToItemImportWithStock()}" />
+
+                                            <p:commandButton class="w-100" ajax="false" value="Import Items (AMPs)" icon="fa fa-file-excel" action="#{pharmacyController.navigateToItemImport()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Import Stocks" icon="fa fa-boxes" action="#{pharmacyController.navigateToItemImportWithStock()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Import from Excel With Stock with barcode" icon="fa fa-barcode" action="#{pharmacyController.navigateToItemImportByBarcode()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Import from Excel With Stock with name" icon="fa fa-tags" action="#{pharmacyController.navigateToItemImportStocksByName()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Purchase Opening Stock" icon="fa fa-truck-loading" action="#{pharmacyController.navigateToPurchaseOpeningStock()}" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" />
-                                            
+
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
-                                                value="Import Bills from Excel" 
+                                                value="Import Bills from JSON" 
                                                 icon="fa fa-boxes"
                                                 action="#{pharmacyBillSearch.navigateToImportBillsFromJson()}" />
-                                            
+
                                             <p:commandButton class="w-100" ajax="false" value="Fix Categories from Excel" icon="fa fa-sitemap" action="#{pharmacyController.navigateToImporterCategory()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Fix Codes and Barcodes" icon="fa fa-barcode" action="#{pharmacyController.navigateToItemImportBarcode()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Error Correction" icon="fa fa-tools" action="#{pharmacyController.navigateToErrorCorrection()}" />
@@ -217,14 +209,16 @@
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Barcode" icon="fa fa-barcode" action="#{pharmacyController.navigateToItemNameFromBarcode()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Barcode" icon="fa fa-barcode" action="#{pharmacyController.navigateToItemNamesMissing()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Correct Name by Snapshot" icon="fa fa-camera" action="#{pharmacyController.navigateToItemNamesCorrectionBySnapshot()}" />
-
+                                            <p:commandButton class="w-100" ajax="false" value="Import Pharmaceuticals" icon="fa fa-pills" action="#{pharmacyController.navigateToItemImportWithoutStock()}" />
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="Add Item Name to All Stocks"
                                                 icon="fa fa-database"
                                                 action="#{stockController.addItemNamesToAllStocks()}" />
-                                            
+                                            <p:commandButton class="w-100" ajax="false" value="Check Item Differences with other Database" icon="fa fa-database" action="#{pharmacyController.navigateToItemMismatchReport()}" />
+
+
                                         </div>
                                     </p:tab> 
                                 </p:accordionPanel>

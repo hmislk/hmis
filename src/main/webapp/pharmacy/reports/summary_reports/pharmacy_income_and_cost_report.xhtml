@@ -290,7 +290,7 @@
                             <p:column headerText="Cost Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalPurchaseValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalCostValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -436,12 +436,12 @@
                             <p:column headerText="Cost Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.pharmaceuticalBillItem.purchaseRate * row.pharmaceuticalBillItem.qty)}">
+                                        value="#{commonFunctionsProxy.abs(row.pharmaceuticalBillItem.itemBatch.costRate * row.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText
-                                            value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.purchaseValue)}"
+                                            value="#{commonFunctionsProxy.abs(pharmacySummaryReportController.bundle.costValue)}"
                                             style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -451,7 +451,7 @@
                             <p:column headerText="Gross Profit" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs((row.pharmaceuticalBillItem.retailRate - row.pharmaceuticalBillItem.purchaseRate) * row.pharmaceuticalBillItem.qty)}">
+                                        value="#{commonFunctionsProxy.abs((row.pharmaceuticalBillItem.retailRate - row.pharmaceuticalBillItem.itemBatch.costRate) * row.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -525,7 +525,7 @@
                             </p:column>
 
                             <p:column headerText="Cost Value" width="12em" class="text-end">
-                                <h:outputText value="#{row.purchaseValue}">
+                                <h:outputText value="#{row.totalCostValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">

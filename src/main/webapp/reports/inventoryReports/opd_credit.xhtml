@@ -162,6 +162,13 @@
 
                         <div class="d-flex align-items-center mt-5">
                             <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
+                            <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
@@ -215,7 +222,9 @@
 
 
                             <p:column headerText="Date">
-                                <h:outputText value="#{f.bill.createdAt}" />
+                                <h:outputText value="#{f.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
@@ -243,28 +252,79 @@
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="#{f.qty}" />
+                                <h:outputText value="#{f.qty}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Rate">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate}" />
+                                <h:outputText value="#{f.rate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Total">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" />
-                            </p:column>
-                            <p:column headerText="Net Total">
-                                <h:outputText value="#{f.bill.netTotal}" />
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
-                                </f:facet>                            
+                            <p:column headerText="Gross Value">
+                                <h:outputText value="#{f.grossValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Discount">
-                                <h:outputText value="#{f.bill.discount}" />
+                                <h:outputText value="#{f.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Value">
+                                <h:outputText value="#{f.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <!--                            <p:column headerText="Total">
+                                                            <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </p:column>-->
+                            <p:column headerText="Bill Net Total">
+                                <h:outputText value="#{f.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>                            
+                            </p:column>
+                            <p:column headerText="Bill Discount">
+                                <h:outputText value="#{f.bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Rate">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column id="colCostValue" headerText="Cost Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Sale Rate">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Sale Value">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
+                            <p:column id="colSaleValue" headerText="Sale Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalSaleValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>                            
 
                         </p:dataTable>

@@ -12,15 +12,28 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form >
-                    <p:panel 
+                    <p:panel
                         rendered="#{!pharmacyPreSettleController.billPreview}"
                         class="w-100 m-1">
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel> 
-                            <p:commandButton 
+                            <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel>
+
+                            <!-- Config Button (Admin Only) -->
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                <p:commandButton
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_pre_settle')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ms-5">
+                                </p:commandButton>
+                            </h:panelGroup>
+
+                            <p:commandButton
                                 icon="fa fa-undo"
                                 style="float: right;"
-                                ajax="false" 
+                                ajax="false"
                                 value="Back To Search"
                                 action="pharmacy_search_pre_bill"/>
                         </f:facet>
@@ -47,8 +60,9 @@
                                             style="float:right;"
                                             class="ui-button-success mx-1"
                                             icon="fa-solid fa-check"                                                             
-                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?')) return false;"
-                                            action="#{pharmacyPreSettleController.settleBillWithPay2}" />
+                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;"
+                                            action="#{pharmacyPreSettleController.settlePaymentAndNavigateToPrint}" />
 
                                         <p:defaultCommand target="settle"/>
 
@@ -106,39 +120,7 @@
                                                     layout="block" 
                                                     rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Credit'}"
                                                     >
-                                                    <div class="my-1" >
-                                                        <div class="row">
-                                                            <div class="col-12 d-flex ">
-                                                                <p:autoComplete 
-                                                                    id="creditCompany" 
-                                                                    class="w-100 -mx-2"
-                                                                    inputStyleClass="form-control"
-                                                                    forceSelection="true"
-                                                                    value="#{pharmacyPreSettleController.toInstitution}"  
-                                                                    completeMethod="#{institutionController.completeCreditCompany}" 
-                                                                    var="ix"
-                                                                    minQueryLength="2"
-                                                                    placeholder="Company (Type at least 4 letters to search)"
-                                                                    itemLabel="#{ix.name}" 
-                                                                    itemValue="#{ix}" 
-                                                                    size="10"  >
-                                                                    <f:ajax  
-                                                                        event="itemSelect" 
-                                                                        listener="#{pharmacyPreSettleController.updateTotals()}"
-                                                                        execute="@this" 
-                                                                        render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
-                                                                </p:autoComplete> 
-                                                                <p:commandLink 
-                                                                    id="btnAddNewCreditCom" 
-                                                                    value="(+)"
-                                                                    class="mx-3 mt-1"
-                                                                    title="Add New Credit Company"
-                                                                    ajax="false" 
-                                                                    action="#{navigationController.navigateToCreditCompany()}"
-                                                                    actionListener="#{creditCompanyController.prepareAdd()}" />  
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <pa:creditDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
                                                 <h:panelGroup id="creditCard" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Card'}">
@@ -151,11 +133,12 @@
                                                     <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="staff_welfare" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}">
-                                                    <pa:staff_welfare_asOnlyPayment
-                                                        controllerWithMultiplePayments="#{pharmacyPreSettleController}"
-                                                        paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                <h:panelGroup id="staff_welfare" >
+                                                    <h:panelGroup  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}">
+                                                        <pa:staff_welfare_asOnlyPayment
+                                                            controllerWithMultiplePayments="#{pharmacyPreSettleController}"
+                                                            paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}" />
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
 
                                                 <h:panelGroup id="cheque" class="w-100" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
@@ -173,12 +156,19 @@
                                                     <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                                 </h:panelGroup>
 
+                                                <h:panelGroup id="patientDeposit" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'PatientDeposit'}">
+                                                    <pa:patient_deposit paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
                                                 <h:panelGroup
                                                     class="row my-2 w-100"
-                                                    layout="block" 
-                                                    id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                    layout="block"
+                                                    id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.PaymentMethodsForPharmacyRetailSale()}" class="w-100"/>
+                                                    <pa:multiple_payment_methods 
+                                                        controller="#{pharmacyPreSettleController}" 
+                                                        paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}" class="w-100"/>
                                                     <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
                                                 </h:panelGroup>
 
@@ -219,7 +209,7 @@
                                             <h:outputLabel id="balance" value="#{-pharmacyPreSettleController.checkAndUpdateBalance()}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
-                                            
+
                                         </h:panelGrid>
 
                                         <div style="height: 115px">
@@ -257,16 +247,16 @@
                                             <h:outputLabel value="Comments " ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.preBill.comments}" ></h:outputLabel>
-                                            
+
                                         </h:panelGrid>
-                                        
-                                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+
+                                        <h:panelGroup rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                             <div style="height: 105px">
 
                                             </div>
                                         </h:panelGroup>
-                                        
-                                        <h:panelGrid rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
+
+                                        <h:panelGrid rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
                                             <h:outputLabel value="Token" ></h:outputLabel>
                                             <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
                                             <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenNumber}" ></h:outputLabel>
@@ -362,46 +352,48 @@
                     </p:panel>
 
 
-                    <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                
-                                <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
-                                    <p:printer target="gpBillPreview" />
-                                </p:commandButton>
-                            </div>
-                            <div>
-                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning mx-2" value="Back to token bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill">
-                                    <f:actionListener rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
-                                    <f:actionListener rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"></f:actionListener>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    value="New Pharmacy Token"
-                                    ajax="false" 
-                                    action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
-                                </p:commandButton>
-                            </div>
-                        </div>
-                        <h:panelGroup id="gpBillPreview" >
-                            
-                            <h:panelGroup   id="gpBillWithItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
-                                <div style="page-break-inside: avoid;">
-                                    <ph:saleBill bill="#{pharmacyPreSettleController.bill}"></ph:saleBill>
-                                </div>
-                            </h:panelGroup>
-                            
-                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
-                                <div>
-                                    <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyPreSettleController.bill}"/>
-                                </div>
-                            </h:panelGroup>
-                            
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper',true)}">
-                                <ph:saleBill_Header bill="#{pharmacyPreSettleController.bill}"></ph:saleBill_Header>
-                            </h:panelGroup>
-                            
-                        </h:panelGroup>
-                    </p:panel>
+                    <!--                    
+                                        <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    
+                                                    <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
+                                                        <p:printer target="gpBillPreview" />
+                                                    </p:commandButton>
+                                                </div>
+                                                <div>
+                                                    <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning mx-2" value="Back to token bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill">
+                                                        <f:actionListener rendered="#{!configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
+                                                        <f:actionListener rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"></f:actionListener>
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        value="New Pharmacy Token"
+                                                        ajax="false" 
+                                                        action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                            <h:panelGroup id="gpBillPreview" >
+                                                
+                                                <h:panelGroup   id="gpBillWithItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
+                                                    <div style="page-break-inside: avoid;">
+                                                        <ph:saleBill bill="#{pharmacyPreSettleController.bill}"></ph:saleBill>
+                                                    </div>
+                                                </h:panelGroup>
+                                                
+                                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                                                    <div>
+                                                        <ph:sale_for_cashier_bill_five_five_custom_3 bill="#{pharmacyPreSettleController.bill}"/>
+                                                    </div>
+                                                </h:panelGroup>
+                                                
+                                                <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper',true)}">
+                                                    <ph:saleBill_Header bill="#{pharmacyPreSettleController.bill}"></ph:saleBill_Header>
+                                                </h:panelGroup>
+                                                
+                                            </h:panelGroup>
+                                        </p:panel>
+                    -->
 
                 </h:form>
             </ui:define>

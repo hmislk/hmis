@@ -1,12 +1,27 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/pharmacy/disbursement_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
+        <!-- Admin Config Button (Admin Only) -->
+        <div class="d-flex justify-content-start mb-2">
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                <p:commandButton
+                    value="Config"
+                    icon="fa fa-cog"
+                    title="Page Configuration Management"
+                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_issued_list')}"
+                    ajax="false"
+                    styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                    style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                </p:commandButton>
+            </h:panelGroup>
+        </div>
+
         <h:form>
             <p:panel>
 
@@ -27,11 +42,11 @@
                             value="Search" 
                             icon="fas fa-search"
                             class="ui-button-warning w-100 my-1"
-                            action="#{searchController.createIssueTable()}"/> 
+                            action="#{searchController.listTransferIssuesToReceiveForLoggedDepartment()}"/> 
                         <h:outputLabel value="Issue No"/>   
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>  
                         <h:outputLabel value="From Deprtment"/> 
-                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" class="w-100"/> 
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.fromDepartment}" class="w-100"/> 
                         <h:outputLabel value="Staff "/>
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" class="w-100"/>  
                     </div>
@@ -86,10 +101,12 @@
                                 </p:commandButton>
 
                                 <p:commandButton 
+                                    id="btnToReceive"
                                     ajax="false"
                                     value="Receive"
                                     class="ui-button-warning mx-2"
-                                    action="#{transferReceiveController.navigateToRecieveRequest()}">
+                                    action="#{transferReceiveController.navigateToRecieveRequest()}"
+                                    disabled="#{p.cancelled or p.fullyIssued}">
                                     <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
                                 </p:commandButton>
 
@@ -123,7 +140,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup> 
                                     </p:column>                                                     
-                                    <p:column >
+                                    <p:column rendered="#{webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                         <h:outputLabel value="#{b.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  

@@ -157,10 +157,36 @@
                             </h:panelGroup>
 
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-pills mr-2" />
+                                <p:outputLabel value="Item" for="phmItem" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                id="phmItem"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{pharmacyReportController.item}"
+                                completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                var="itm"
+                                itemLabel="#{itm.name}"
+                                itemValue="#{itm}"
+                                maxResults="20"
+                                minQueryLength="3"
+                                placeholder="Select an Item">
+                            </p:autoComplete>
+
 
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center mt-5">
+                            <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
                             <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
@@ -211,61 +237,132 @@
                                      rows="10" 
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                     emptyMessage="No purchase return records found"
+                                     rowHover="true"
+                                     styleClass="w-100">
 
 
-                            <p:column headerText="Date" width="5em">
-                                <h:outputText value="#{f.bill.createdAt}" />
+                            <p:column headerText="Transaction At" styleClass="text-center"  >
+                                <h:outputText value="#{f.bill.createdAt}" styleClass="text-center">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Item Name" width="5em">
+                            <p:column headerText="ID" styleClass="text-wrap" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <h:outputText value="#{f.id}" />
+                                <br/>
+                                <h:outputText value="#{f.bill.completed?'Completed':'Not Completed'}" />
+                            </p:column>
+                            <p:column headerText="Item" styleClass="text-wrap">
                                 <h:outputText value="#{f.item.name}" />
                             </p:column>
-                            <p:column headerText="Batch Code" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                            <p:column headerText="Code" styleClass="text-center" >
+                                <h:outputText value="#{f.item.code}" />
                             </p:column>
-                            <p:column headerText="Doc No" width="5em">
+                            <p:column headerText="Expiry"  styleClass="text-center">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch ne null ? f.pharmaceuticalBillItem.itemBatch.dateOfExpire : null}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Batch" styleClass="text-center" >
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch ne null ? f.pharmaceuticalBillItem.itemBatch.batchNo : '-'}" />
+                            </p:column>
+                            <p:column headerText="Bill No." styleClass="text-center" >
                                 <p:commandLink 
                                     value="#{f.bill.deptId}" 
-                                    class="m-1 ui-button-info"
-                                    style="width: 100px;"
+                                    styleClass="ui-button-info ui-button-outlined px-3 py-1"
+                                    title="View purchase return bill"
                                     action="/pharmacy/pharmacy_reprint_purchase_return" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.bill}" target="#{pharmacyBillSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Ref Doc No (Original bill No)" width="5em">
+                            <p:column headerText="Ref Bill No." styleClass="text-center" >
                                 <p:commandLink 
+                                    rendered="#{f.pharmaceuticalBillItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'}"
                                     value="#{f.bill.referenceBill.deptId}" 
-                                    class="m-1 ui-button-info"
-                                    style="width: 100px;"
+                                    styleClass="ui-button-info ui-button-outlined px-3 py-1"
+                                    title="View reference bill"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{f.bill.referenceBill}"  target="#{billSearch.bill}" />
                                 </p:commandLink>
+                                <p:commandLink 
+                                    rendered="#{f.pharmaceuticalBillItem.billItem.bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'}"
+                                    value="#{f.pharmaceuticalBillItem.billItem.bill.billedBill.deptId}"
+                                    styleClass="ui-button-info ui-button-outlined px-3 py-1"
+                                    title="View original bill"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.pharmaceuticalBillItem.billItem.bill.billedBill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
-                            <p:column headerText="QTY" width="5em">
-                                <h:outputText value="#{f.qty}" />
+                            <p:column headerText="Quantity"  styleClass="text-end" >
+                                <h:outputText value="#{f.billItemFinanceDetails.totalQuantity}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Code" width="5em">
-                                <h:outputText value="#{f.item.code}" />
+
+                            <p:column headerText="Purchase Rate"  styleClass="text-end" >
+                                <h:outputText value="#{f.billItemFinanceDetails.purchaseRate}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Rate" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate}" />
-                            </p:column>
-                            <p:column headerText="Value" width="5em">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" />
-                            </p:column>
-                            <p:column headerText="Net Total" width="5em">
-                                <h:outputText value="#{f.bill.netTotal}" />
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                            <p:column headerText="Purchase Value"  styleClass="text-end" >
+                                <h:outputText value="#{f.billItemFinanceDetails.valueAtPurchaseRate}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                 <f:facet name="footer">
+                                     <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" styleClass="fw-semibold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Remarks" width="5em">
-                                <h:outputText value="#{f.bill.comments}" />
+                            <p:column headerText="Cost Rate"  styleClass="text-end" >
+                                <h:outputText value="#{f.billItemFinanceDetails.costRate}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Cost Value"  styleClass="text-end" >
+                                <h:outputText value="#{f.billItemFinanceDetails.valueAtCostRate}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" styleClass="fw-semibold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Retail Rate"  styleClass="text-end" >
+                                <h:outputText value="#{f.billItemFinanceDetails.retailSaleRate}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Retail Value"  styleClass="text-end" >
+                                <h:outputText value="#{f.billItemFinanceDetails.valueAtRetailRate}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" styleClass="fw-semibold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Net Total"  styleClass="text-end" >
+                                <h:outputText value="#{f.bill.netTotal}" styleClass="text-end">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" styleClass="fw-semibold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Remarks" styleClass="text-wrap">
+                                <h:outputText value="#{empty f.bill.comments ? '-' : f.bill.comments}" />
                             </p:column>
 
                         </p:dataTable>

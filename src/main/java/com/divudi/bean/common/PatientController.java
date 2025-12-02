@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
+
 import com.divudi.bean.optician.OpticianRepairBillController;
 import com.divudi.bean.optician.OpticianSaleController;
 import org.apache.poi.ss.usermodel.*;
@@ -9,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.clinical.PracticeBookingController;
@@ -91,6 +93,7 @@ import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
@@ -230,6 +233,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     ReportKeyWord reportKeyWord;
 
     private String searchText;
+    private String searchMembershipCardNo;
+    private String searchPatientAddress;
 
     private String searchName;
     private String searchPhone;
@@ -267,6 +272,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
+    private String blacklistComment;
+
+    public String getBlacklistComment() {
+        return blacklistComment;
+    }
+
+    public void setBlacklistComment(String blacklistComment) {
+        this.blacklistComment = blacklistComment;
+    }
 
     /**
      *
@@ -763,7 +777,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return "/emr/patient_profile?faces-redirect=true";
     }
 
-//    public String toEmrPatientProfile() {
+    //    public String toEmrPatientProfile() {
 //        if (current == null) {
 //            JsfUtil.addErrorMessage("No patient selected");
 //            return "";
@@ -858,6 +872,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setPrintPreview(false);
         admissionController.setAdmittingProcessStarted(false);
         admissionController.setPatientRoom(new PatientRoom());
+        quickSearchPhoneNumber = null;
+        admissionController.setPatientAllergies(null);
         return "/inward/inward_admission?faces-redirect=true";
 
     }
@@ -2138,7 +2154,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Membership Updated");
     }
 
-//    @Deprecated
+    //    @Deprecated
 //    public String toAddAFamily() {
 //        currentFamily = new Family();
 //        return "/membership/add_family";
@@ -2176,7 +2192,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Family is Selected");
             return null;
         }
-        currentFamily=family;
+        currentFamily = family;
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
         return "/membership/family_membership_manage?faces-redirect=true";
     }
@@ -2195,7 +2211,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String deleteFamilyMembershipAndMembers() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family is Selected");
-            return null ;
+            return null;
         }
         membershipService.deleteFamilyAndMembers(currentFamily, sessionController.getLoggedUser());
         families = null;
@@ -2231,11 +2247,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map params = new HashMap();
         Long mcn;
         try {
-            mcn = Long.parseLong(searchText);
+            mcn = Long.parseLong(searchMembershipCardNo);
         } catch (Exception e) {
             mcn = 0L;
         }
-        params.put("pn", searchText);
+        params.put("pn", searchMembershipCardNo);
         params.put("mcn", mcn);
         List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
         if (fs == null || fs.isEmpty()) {
@@ -2243,11 +2259,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
-            searchText = "";
+            searchMembershipCardNo = "";
             return navigateToManageFamilyMembership();
         } else {
             families = fs;
-            searchText = "";
+            searchMembershipCardNo = "";
             return null;
         }
     }
@@ -2287,6 +2303,77 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
     }
+
+    public String searchFamilyByNIC() {
+        if (searchNic == null) {
+            JsfUtil.addErrorMessage("No NIC provided");
+            return null;
+        }
+        if (searchNic.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No NIC provided");
+            return null;
+        }
+
+        families = null;
+        String jpql = "Select f "
+                + " from Family f "
+                + " where f.retired=false "
+                + " and f.chiefHouseHolder.person.nic like :nic "
+                + " order by f.chiefHouseHolder.person.name";
+        Map params = new HashMap();
+        params.put("nic", "%" + searchNic.trim().toUpperCase() + "%");
+
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamily = fs.get(0);
+            searchNic = "";
+            return navigateToManageFamilyMembership();
+        } else {
+            families = fs;
+            searchNic = "";
+            return null;
+        }
+    }
+
+    public String searchFamilyByAddress() {
+        if (searchPatientAddress == null) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchPatientAddress.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No Search Text");
+            return null;
+        }
+        if (searchPatientAddress.trim().length() < 4) {
+            JsfUtil.addErrorMessage("Enter at least 4 characters");
+            return null;
+        }
+        families = null;
+        String jpql = "Select f "
+                + " from Family f "
+                + " where f.retired=false "
+                + " and f.chiefHouseHolder.person.address like :address "
+                + " order by f.chiefHouseHolder.person.name";
+        Map params = new HashMap();
+        params.put("address", "%" + searchPatientAddress + "%");
+        List<Family> fs = getFamilyFacade().findByJpql(jpql, params);
+        if (fs == null || fs.isEmpty()) {
+            JsfUtil.addErrorMessage("No matching families found");
+            return "";
+        } else if (fs.size() == 1) {
+            currentFamily = fs.get(0);
+            searchPatientAddress = "";
+            return navigateToManageFamilyMembership();
+        } else {
+            families = fs;
+            searchPatientAddress = "";
+            return null;
+        }
+    }
+
 
     public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
         if (paramMembershipNumber == null) {
@@ -2480,7 +2567,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToAddNewFamilyMembership();
     }
 
-//    public String saveAndClearForNewFamily() {
+    //    public String saveAndClearForNewFamily() {
 //        saveFamily();
 //        currentFamily = new Family();
 //        return navigateToAddNewFamilyMembership();
@@ -2504,7 +2591,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return navigateToAddNewIndividualMembership();
     }
 
-//    public String toAddNewFamily() {
+    //    public String toAddNewFamily() {
 //        currentFamily = new Family();
 //        return toFamily();
 //    }
@@ -2876,6 +2963,55 @@ public class PatientController implements Serializable, ControllerWithPatient {
         saveSelectedPatient();
         return toViewPatient();
     }
+    
+    public void toggleBlacklistPatient( boolean blacklist){
+        Patient patient = this.current;
+        if(patient == null || patient.getId() == null){
+            return;   
+        }
+
+        if(blacklist && !patient.isBlacklisted()){
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
+                return;
+            }
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(true);
+            newb.setBlacklistedAt(new Date());
+            getFacade().edit(newb);
+            newb.setBlacklistedBy(sessionController.getLoggedUser());
+            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment  : blacklistComment);
+//            getFacade().edit(patient);
+
+            getFacade().editAndCommit(newb);
+            this.current = getFacade().findWithoutCache(newb.getId());
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient is blacklisted.");
+            
+        }else if(!blacklist && patient.isBlacklisted()){
+            if(blacklistComment == null || blacklistComment.isEmpty()){
+                JsfUtil.addErrorMessage("Please provide a reason for revert blacklisting. ");
+                return;
+            }
+
+            Patient newb = getFacade().find(patient.getId());
+            newb.setBlacklisted(false);
+            getFacade().edit(newb);
+            newb.setReasonForBlacklist(patient.getReasonForBlacklist() +" at " 
+                    + newb.getBlacklistedAt() + " by " 
+                    + newb.getBlacklistedBy() 
+                    + " / revert by " + sessionController.getWebUser() 
+                    + " at "+new Date() + " revert comment - " + blacklistComment);
+            
+            newb.setBlacklistedAt(null);
+            newb.setBlacklistedBy(null);
+
+            getFacade().editAndCommit(newb);
+
+            blacklistComment = null;
+            JsfUtil.addSuccessMessage("Patient blacklist is reverted.");
+        }
+    }
 
     public String deletePatient() {
         if (current != null) {
@@ -2984,6 +3120,30 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return str;
     }
 
+    /**
+     * Applies patient name capitalization based on configuration settings
+     *
+     * @param patient Patient whose name should be capitalized
+     */
+    public void applyPatientNameCapitalization(Patient patient) {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+
+        boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
+        boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+        String personName = patient.getPerson().getName();
+
+        if (personName != null) {
+            if (capitalizeAll) {
+                personName = personName.toUpperCase();
+            } else if (capitalizeEach) {
+                personName = CommonFunctions.capitalizeFirstLetter(personName);
+            }
+            patient.getPerson().setName(personName);
+        }
+    }
+
     public boolean saveSelected() {
         return saveSelected(current);
     }
@@ -3059,17 +3219,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         }
 
-        boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
-        boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
-        String personName = p.getPerson().getName();
-        if (personName != null) {
-            if (capitalizeAll) {
-                personName = personName.toUpperCase();
-            } else if (capitalizeEach) {
-                personName = CommonFunctions.capitalizeFirstLetter(personName);
-            }
-            p.getPerson().setName(personName);
-        }
+        //applyPatientNameCapitalization(p);
 //        if (p.getPerson().getId() == null) {
 //            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
 //            p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3162,6 +3312,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
 
+        //applyPatientNameCapitalization(p);
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3229,6 +3381,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void saveSelectedPatient() {
+        //applyPatientNameCapitalization(getCurrent());
+
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
@@ -4408,6 +4562,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getSearchMembershipCardNo() {
+        return searchMembershipCardNo;
+    }
+
+    public void setSearchMembershipCardNo(String searchMembershipCardNo) {
+        this.searchMembershipCardNo = searchMembershipCardNo;
+    }
+
+    public String getSearchPatientAddress() {
+        return searchPatientAddress;
+    }
+
+    public void setSearchPatientAddress(String searchPatientAddress) {
+        this.searchPatientAddress = searchPatientAddress;
     }
 
     /**

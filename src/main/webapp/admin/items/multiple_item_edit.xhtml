@@ -20,83 +20,107 @@
                     <h:panelGrid columns="1" styleClass="alignTop" >
                         <h:panelGrid columns="4" >
                             <!-- Make Selected Items' Fees Changeable at Billing -->
-                            <p:commandButton ajax="false" 
-                                             value="Make Selected Items' Fees Changable at Billing"
-                                             action="#{itemController.markSelectedItemsFeesChangableAtBilling}"
-                                             icon="pi pi-check-circle" 
-                                             styleClass="ui-button-success">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Make Selected Items' Fees Changable at Billing"
+                                action="#{itemController.markSelectedItemsFeesChangableAtBilling}"
+                                icon="pi pi-check-circle" 
+                                styleClass="ui-button-success">
                             </p:commandButton>
 
                             <!-- Unmark Selected Items' Fees Changable at Billing -->
-                            <p:commandButton ajax="false" 
-                                             value="Unmark Selected Items' Fees Changable at Billing"
-                                             action="#{itemController.unmarkSelectedItemsFeesChangableAtBilling}"
-                                             icon="pi pi-times-circle" 
-                                             styleClass="ui-button-danger">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark Selected Items' Fees Changable at Billing"
+                                action="#{itemController.unmarkSelectedItemsFeesChangableAtBilling}"
+                                icon="pi pi-times-circle" 
+                                styleClass="ui-button-danger">
                             </p:commandButton>
 
                             <!-- Make Selected Items Discountable at Billing -->
-                            <p:commandButton ajax="false" 
-                                             value="Make Selected Items Discountable at Billing"
-                                             action="#{itemController.markSelectedItemsAsDiscountableAtBilling}"
-                                             icon="pi pi-check-square" 
-                                             styleClass="ui-button-success">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Make Selected Items Discountable at Billing"
+                                action="#{itemController.markSelectedItemsAsDiscountableAtBilling}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
                             </p:commandButton>
 
                             <!-- Unmark Selected Items Discountable at Billing -->
-                            <p:commandButton ajax="false" 
-                                             value="Unmark Selected Items Discountable at Billing"
-                                             action="#{itemController.unmarkSelectedItemsAsDiscountableAtBilling}"
-                                             icon="pi pi-times-circle" 
-                                             styleClass="ui-button-danger">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark Selected Items Discountable at Billing"
+                                action="#{itemController.unmarkSelectedItemsAsDiscountableAtBilling}"
+                                icon="pi pi-times-circle" 
+                                styleClass="ui-button-danger">
                             </p:commandButton>
 
 
                             <!-- Make Selected Items Discountable at Billing -->
-                            <p:commandButton ajax="false" 
-                                             value="Make Selected Items To Print Session Numbers"
-                                             action="#{itemController.markSelectedItemsAsPrintSessionNumber}"
-                                             icon="pi pi-check-square" 
-                                             styleClass="ui-button-success">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Make Selected Items To Print Session Numbers"
+                                action="#{itemController.markSelectedItemsAsPrintSessionNumber}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
                             </p:commandButton>
 
                             <!-- Unmark Selected Items Discountable at Billing -->
-                            <p:commandButton ajax="false" 
-                                             value="Unmark Selected Items Not to Print SessionNumbers"
-                                             action="#{itemController.unmarkSelectedItemsAsNotToPrintSessionNumber}"
-                                             icon="pi pi-times-circle" 
-                                             styleClass="ui-button-danger">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark Selected Items Not to Print SessionNumbers"
+                                action="#{itemController.unmarkSelectedItemsAsNotToPrintSessionNumber}"
+                                icon="pi pi-times-circle" 
+                                styleClass="ui-button-danger">
                             </p:commandButton>
 
-
-                            <p:commandButton ajax="false" 
-                                             value="Mark Selected Items for Print Separate Fees"
-                                             action="#{itemController.markSelectedItemsForPrintSeparateFees()}"
-                                             icon="pi pi-check-square" 
-                                             styleClass="ui-button-success">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark Selected Items for Print Separate Fees"
+                                action="#{itemController.markSelectedItemsForPrintSeparateFees()}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" 
-                                             value="Unmark Selected Items for Print Separate Fees"
-                                             action="#{itemController.unMarkSelectedItemsForPrintSeparateFees()}"
-                                             icon="pi pi-times-circle"  
-                                             styleClass="ui-button-danger">
-                            </p:commandButton>
-                            
-                            <p:commandButton ajax="false" 
-                                             value="Mark Selected Items for Request for Quantity"
-                                             action="#{itemController.markSelectedItemsForRequestForQuentity()}"
-                                             icon="pi pi-check-square" 
-                                             styleClass="ui-button-success">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark Selected Items for Print Separate Fees"
+                                action="#{itemController.unMarkSelectedItemsForPrintSeparateFees()}"
+                                icon="pi pi-times-circle"  
+                                styleClass="ui-button-danger">
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" 
-                                             value="Unmark Selected Items for Request for Quantity"
-                                             action="#{itemController.unMarkSelectedItemsForRequestForQuentity()}"
-                                             icon="pi pi-times-circle"  
-                                             styleClass="ui-button-danger">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark Selected Items for Request for Quantity"
+                                action="#{itemController.markSelectedItemsForRequestForQuentity()}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
                             </p:commandButton>
 
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark Selected Items for Request for Quantity"
+                                action="#{itemController.unMarkSelectedItemsForRequestForQuentity()}"
+                                icon="pi pi-times-circle"  
+                                styleClass="ui-button-danger">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark Selected Items for Rates visible during Inward Billing"
+                                action="#{itemController.markSelectedItemsForRatesvisibleduringInwardBilling()}"
+                                icon="pi pi-check-square" 
+                                styleClass="ui-button-success">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Unmark Selected Items for Rates visible during Inward Billing"
+                                action="#{itemController.unMarkSelectedItemsForRatesvisibleduringInwardBilling()}"
+                                icon="pi pi-times-circle"  
+                                styleClass="ui-button-danger">
+                            </p:commandButton>
 
                             <p:commandButton 
                                 ajax="false" 
@@ -105,9 +129,6 @@
                                 icon="pi pi-times-circle"  
                                 styleClass="ui-button-danger">
                             </p:commandButton>
-
-
-
 
                         </h:panelGrid>
 
@@ -141,13 +162,12 @@
                                 var="i"   
                                 rowKey="#{i.id}" 
                                 rowIndexVar="s"
-                                rows="20"
+                                rows="50"
                                 selectionMode="multiple"
                                 paginator="true"
                                 selection="#{itemController.selectedList}"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="20,50,100,500,1000,1500"
-                                >
+                                rowsPerPageTemplate="50,100,250,500,1000">
 
                                 <p:column selectionBox="true"  exportable="false" style="width: 10px;"> 
                                 </p:column>
@@ -161,7 +181,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.id}"/>
                                 </p:column>
-                                
+
                                 <p:column  
                                     sortBy="#{i.code}" width="80"
                                     filterMatchMode="contains" filterBy="#{i.code}" >  
@@ -247,7 +267,7 @@
                                     <h:outputLabel value="#{i.printFeesForBills?'Yes':'No'}" >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column sortBy="#{i.requestForQuentity}" width="10"
                                           filterMatchMode="contains" filterBy="#{i.requestForQuentity}">
                                     <f:facet name="header">
@@ -268,9 +288,15 @@
                                     </h:outputLabel>
                                 </p:column>
 
-
-
-
+                                <p:column sortBy="#{i.chargesVisibleForInward}" width="10"
+                                          filterMatchMode="contains" filterBy="#{i.chargesVisibleForInward}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Rates visible during Inward Billing" >
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.chargesVisibleForInward ?'Yes':'No'}" >
+                                    </h:outputLabel>
+                                </p:column>
 
                             </p:dataTable>
                         </p:panel>

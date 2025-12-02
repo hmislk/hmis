@@ -117,7 +117,7 @@ public class StockHistoryController implements Serializable {
         jpql = "select distinct(s.createdAt) from StockHistory s "
                 + " where s.historyType=:ht"
                 + " and s.createdAt between :fd and :td "
-                + " order by s.createdAt desc ";
+                + " order by s.id desc ";
 
 //        List<StockHistory> historys=facade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
 //        for (StockHistory history : historys) {
@@ -162,19 +162,26 @@ public class StockHistoryController implements Serializable {
 
     /**
      * Returns lightweight DTOs for the bin card view to reduce memory usage.
+     * This method includes the stockQty and batchNo fields needed for hotfix compatibility.
      */
     public List<PharmacyBinCardDTO> findBinCardDTOs(Date fd, Date td, HistoryType ht, Department dep, Item i) {
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.PharmacyBinCardDTO(")
-                .append("s.id, s.createdAt, ")
+                .append("s.id, s.pbItem.billItem.bill.id, s.createdAt, ")
                 .append("s.pbItem.billItem.bill.billType, ")
                 .append("s.pbItem.billItem.bill.billTypeAtomic, ")
                 .append("s.pbItem.billItem.item.name, ")
                 .append("s.pbItem.qty, s.pbItem.freeQty, ")
                 .append("s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, ")
-                .append("s.pbItem.billItem.item.dblValue, s.itemStock")
+                .append("s.pbItem.billItem.item.dblValue, s.itemStock, ")
+                .append("s.stockQty, s.pbItem.itemBatch.batchNo")
                 .append(") from StockHistory s ")
-                .append("where s.createdAt between :fd and :td ");
+                .append("where s.createdAt between :fd and :td ")
+                .append("and s.pbItem is not null ")
+                .append("and s.pbItem.billItem is not null ")
+                .append("and s.pbItem.billItem.bill is not null ")
+                .append("and s.pbItem.billItem.item is not null ")
+                .append("and s.pbItem.itemBatch is not null ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("fd", fd);

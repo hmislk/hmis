@@ -20,7 +20,7 @@
                     <na:not_authorize />
                 </h:panelGroup>
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
-                    <h:form >
+                    <h:form id="mainForm">
                         <p:panel>
                             <f:facet name="header">
                                 <p:outputLabel value="Patient Profile" class="my-2"/>
@@ -124,6 +124,11 @@
                                         <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
+                                        
+                                        <p:outputLabel value="Patient Active Status:" />
+                                        <p:outputLabel value="#{patientController.current.blacklisted eq true ? 'Blacklist Patient' : 'Active Patient'}" style="color: #{patientController.current.blacklisted eq true ? 'red' : 'green'}; font-weight: bold" >
+                                           
+                                        </p:outputLabel>
 
 <!--                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
                                         <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />-->
@@ -153,11 +158,17 @@
                                                 <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 10px;" rendered="#{patientController.current.person.nic ne null}"/>
                                                 <h:outputText value="#{patientController.current.person.nic}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
                                             </div>
+                                            <div class="w-100">
+                                                <h:outputText value="#{patientController.current.person.phone}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                            </div>
                                         </div>
                                     </h:panelGroup>
 
                                 </div>
-                                <div class="col-md-4 d-flex flex-column gap-2">
+
+                                <div id="test" class="col-md-4 d-flex flex-column gap-2">
+
+
                                     <p:commandButton 
                                         value="Clinical Dashboard" 
                                         action="#{patientController.toEmrPatientProfile}" 
@@ -247,6 +258,95 @@
                                         <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
                                     </p:commandButton>
                                     <p:commandButton 
+                                        value="Blacklist Patient"
+                                        ajax="true"
+                                        rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
+                                        styleClass="mx-2 ui-button-danger"
+                                        icon="fa fa-ban"
+                                        onclick="PF('blacklistModal').show()">
+                                   
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        value="Revert Blacklist Patient"
+                                        ajax="true"
+                                        rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
+                                        styleClass="mx-2 ui-button-danger"
+                                        icon="fa fa-ban"
+                                        onclick="PF('blacklistModal').show();">
+                                       
+                                    </p:commandButton>
+
+                                    <p:dialog 
+                                        header="Blacklist Patient" 
+                                        widgetVar="blacklistModal" 
+                                        id="blacklistDlg"
+                                        minHeight="100" 
+                                        width="400" 
+                                        showEffect="fade" 
+                                        modal="true" 
+                                        
+                                        closeOnEscape="true">
+
+
+                                        <h:panelGrid id="test2" columns="2" columnClasses="label, value" styleClass="p-fluid" cellpadding="5">
+
+                                            <!-- Date -->
+                                            <h:outputLabel for="blacklistby" value="Process By:" />
+                                            <p:outputLabel id="blacklistby" 
+                                                           value="#{sessionController.loggedUser.name}" 
+                                                           />
+
+                                            <!-- Comment -->
+                                            <h:outputLabel for="blacklistComment" value="Comment:" />
+                                            <p:inputTextarea id="blacklistComment" 
+                                                             value="#{patientController.blacklistComment}" 
+                                                             rows="4" 
+                                                             
+                                                             autoResize="false" 
+                                                             maxlength="500" 
+                                                             placeholder="Enter reason" />
+                                        </h:panelGrid>
+
+                                        <p:separator/>
+
+                                        <!-- Action Buttons -->
+                                        <p:commandButton 
+                                            value="Blacklist" 
+                                            icon="pi pi-ban" 
+                                            class="ui-button-danger"
+                                            rendered="#{!patientController.current.blacklisted}"
+                                            process="blacklistDlg"
+                                            oncomplete="PF('blacklistModal').hide(); "
+                                            action="#{patientController.toggleBlacklistPatient(true)}" 
+                                            update="@form msg"
+
+                                            />
+
+                                        <p:commandButton 
+                                            value="Revert" 
+                                            class="ui-button-danger"
+                                            icon="pi pi-ban"
+                                            rendered="#{patientController.current.blacklisted}"
+                                            process="blacklistDlg"
+                                            oncomplete="PF('blacklistModal').hide(); "
+                                            action="#{patientController.toggleBlacklistPatient(false)}" 
+                                            update="@form msg"
+
+                                            />
+
+                                        <p:commandButton 
+                                            value="Cancel" 
+                                            icon="pi pi-times" 
+                                            class="mx-4 ui-button-secondary"
+                                            onclick="PF('blacklistModal').hide()" 
+                                            type="button" 
+                                            />
+
+
+                                    </p:dialog>
+
+                                    <p:commandButton 
                                         value="Delete Patient"
                                         action="#{patientController.deletePatient()}"
                                         ajax="false"
@@ -254,9 +354,11 @@
                                         icon="pi pi-trash"
                                         onclick="return confirm('Are you sure you want to delete this patient?');">
                                     </p:commandButton>
-
-                                    <p:messages></p:messages>
+                                    <p:growl id="msg" showDetail="false" showSummary="true"></p:growl>
+                                    
                                 </div>
+                            
+
                             </div>  
 
                         </p:panel>

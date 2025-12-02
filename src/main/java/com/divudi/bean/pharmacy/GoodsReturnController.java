@@ -274,7 +274,7 @@ public class GoodsReturnController implements Serializable {
     }
 
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
-        double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getSessionController().getDepartment());
+        double stockQty = getPharmacyBean().getBatchStockQty(pharmaceuticalBillItem.getItemBatch(), getSessionController().getDepartment());
 
         if (pharmaceuticalBillItem.getQtyInUnit() + pharmaceuticalBillItem.getFreeQtyInUnit() > stockQty) {
             return true;
@@ -465,7 +465,7 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("No Bill get selected");
             return "";
         }
-        return "/pharmacy/pharmacy_return_good";
+        return "/pharmacy/pharmacy_return_good?faces-redirect=true";
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {

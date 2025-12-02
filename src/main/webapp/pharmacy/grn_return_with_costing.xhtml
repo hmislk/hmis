@@ -66,13 +66,13 @@
                                     headerText="Already Returned Qty" >
                                     <h:outputLabel
                                         id="lblAlreadyReturnedQty"
-                                        value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
+                                        value="#{grnReturnWithCostingController.getAlreadyReturnedQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column 
                                     width="5em" 
                                     headerText="Already Returned Free Qty" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnFreeQuantity}" />
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                    <h:outputLabel  value="#{grnReturnWithCostingController.getAlreadyReturnedFreeQuantity(ph.referanceBillItem)}" />
                                 </p:column>
                                 <p:column
                                     width="5em" 
@@ -80,16 +80,16 @@
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
-                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />
                                         </h:outputText>
                                         <p:inputText
                                             id="txtReturnRate"
                                             class="w-100 text-end"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                            <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{grnReturnWithCostingController.onReturnRateChange(ph)}" />
+                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue @form" listener="#{grnReturnWithCostingController.onReturnRateChange(ph)}" />
                                         </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
@@ -98,55 +98,61 @@
                                 <p:column 
                                     width="5em" 
                                     headerText="Returning Total Qty"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity')}">
-                                    <p:inputText
-                                        id="txtReturningTotalQty"
-                                        autocomplete="off"
-                                        class="w-100 text-end"
-                                        onfocus="this.select()"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
-                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                        <p:ajax 
-                                            event="keyup" 
-                                            process="txtReturningTotalQty"
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId}" 
-                                            listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
-                                    </p:inputText>
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
+                                <p:inputText
+                                    id="txtReturningTotalQty"
+                                    autocomplete="off"
+                                    class="w-100 text-end"
+                                    onfocus="this.select()"
+                                    value="#{ph.billItemFinanceDetails.quantity}">
+                                    <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
+                                    <p:ajax 
+                                        event="blur" 
+                                        process="@this" 
+                                        update="txtLineReturnValue @form" 
+                                        listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                 </p:column>
 
                                 <p:column
                                     width="5em" 
                                     headerText="Returning Qty"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <p:inputText
-                                        id="txtReturningQty"
-                                        autocomplete="off"
-                                        onfocus="this.select()"
-                                        class="w-100 text-end"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
-                                        <p:ajax 
-                                            process="@this"
-                                            event="keyup" 
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
-                                            listener="#{grnReturnWithCostingController.onReturningQtyChange(ph)}" 
-                                            />
-                                    </p:inputText>
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                <p:inputText
+                                    id="txtReturningQty"
+                                    autocomplete="off"
+                                    onfocus="this.select()"
+                                    class="w-100 text-end"
+                                    value="#{ph.billItemFinanceDetails.quantity}">
+                                    <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                    <p:ajax 
+                                        process="@this"
+                                        event="blur" 
+                                        update="txtLineReturnValue @form" 
+                                        listener="#{grnReturnWithCostingController.onReturningQtyChange(ph)}" 
+                                        />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column
                                     headerText="Returning Free Qty"
                                     width="5em" 
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <p:inputText
-                                        class="w-100 text-end"
-                                        id="txtReturningFreeQty"
-                                        autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
-                                        <p:ajax
-                                            event="blur" 
-                                            process="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
-                                            listener="#{grnReturnWithCostingController.onReturningFreeQtyChange(ph)}" />
-                                    </p:inputText>
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
+                                <p:inputText
+                                    class="w-100 text-end"
+                                    id="txtReturningFreeQty"
+                                    autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                    <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
+                                    <p:ajax
+                                        event="blur" 
+                                        process="@this" 
+                                        update="txtLineReturnValue @form"
+                                        listener="#{grnReturnWithCostingController.onReturningFreeQtyChange(ph)}" />
+                                </p:inputText>
+                                <p:keyFilter for="txtReturningFreeQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column>
 
                                 <p:column headerText="Return Value" width="5em" >
@@ -174,13 +180,15 @@
                                     </p:commandButton>
                                 </f:facet>
 
+                                <p:messages id="messages" showDetail="true" closable="true" />
+
                                 <p:panelGrid 
                                     columns="2"
                                     id="panelReturnBillDetails"
                                     layout="tabular"
                                     class="w-100">
-                                    <h:outputLabel value="Supplier : " />
-                                    <h:outputLabel value="#{grnReturnWithCostingController.bill.fromInstitution.name}" />
+                                    <p:outputLabel value="Supplier : " />
+                                    <p:outputLabel value="#{grnReturnWithCostingController.bill.fromInstitution.name}" />
                                     <p:outputLabel  value="Receivable Amount : " />
                                     <p:outputLabel 
                                         id="returnTotal" 
@@ -189,11 +197,25 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
 
-                                    <h:outputLabel value="Payment Received as : " />
+                                    <p:outputLabel value="Payment Received as : " />
                                     <p:selectOneMenu id="cmbPs" value="#{grnReturnWithCostingController.returnBill.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethods}"/>
                                         <p:ajax process="cmbPs"  event="change" />
                                     </p:selectOneMenu>
+
+                                    <p:outputLabel
+                                        for="txtReturnComments"
+                                        value="Return Comments: " />
+                                    <h:panelGroup>
+                                        <p:inputTextarea 
+                                            id="txtReturnComments"
+                                            class="w-100"
+                                            value="#{grnReturnWithCostingController.returnBill.comments}" 
+                                            required="true"
+                                            requiredMessage="Please enter a comment"
+                                            ></p:inputTextarea>
+                                        <p:message for="txtReturnComments" />
+                                    </h:panelGroup>
                                 </p:panelGrid>
 
 

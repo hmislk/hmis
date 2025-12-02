@@ -76,6 +76,7 @@
                                         columns="2" 
                                         columnClasses="w-25 , w-75"
                                         class="w-100">
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                         <h:outputText
                                             id="lblName" 
                                             value="Pack Name" ></h:outputText>
@@ -85,6 +86,7 @@
                                             value="#{amppController.current.name}"
                                             class="w-100"
                                             disabled="#{!amppController.editable}"></p:inputText>
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                         <h:outputText 
                                             value="Select AMP" ></h:outputText>
                                         <p:autoComplete
@@ -112,6 +114,8 @@
                                         <p:selectOneMenu
                                             value="#{amppController.packUnit}"
                                             class="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
                                             disabled="#{!amppController.editable}">
                                             <f:selectItem 
                                                 itemLabel="Select pack"/>
@@ -121,17 +125,36 @@
                                                 itemLabel="#{s.name}" 
                                                 itemValue="#{s}" ></f:selectItems>
                                         </p:selectOneMenu>
+
+                                        <h:outputText value="Type" />
+                                        <p:selectOneMenu  
+                                            value="#{amppController.current.departmentType}" 
+                                            class="w-100"
+                                            filter="true"
+                                            disabled="#{!amppController.editable}"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
+                                        </p:selectOneMenu>
+
                                         <p:outputLabel 
                                             for="txtComments" 
                                             value="Description" 
                                             class="form-label"></p:outputLabel>
                                         <h:inputTextarea
                                             id="txtComments"
--value="#{ampController.current.comments}"
-+value="#{amppController.current.comments}"
+                                            value="#{amppController.current.comments}"
                                             required="false"
                                             class="form-control"
                                             disabled="#{!amppController.editable}" ></h:inputTextarea>
+
+                                        <h:outputText value="Allow Fractions" />
+                                        <p:selectBooleanButton
+                                            value="#{amppController.current.allowFractions}"
+                                            onLabel="Yes"
+                                            offLabel="No"
+                                            class="w-100"
+                                            disabled="#{!amppController.editable}" />
                                     </p:panelGrid>
 
                                     <h:panelGroup layout="block" class="text-end">

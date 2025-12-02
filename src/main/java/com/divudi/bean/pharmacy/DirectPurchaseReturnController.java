@@ -33,6 +33,7 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.service.pharmacy.PharmacyCostingService;
+import com.divudi.core.util.BigDecimalUtil;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -133,7 +134,7 @@ public class DirectPurchaseReturnController implements Serializable {
     private PharmacyCalculation pharmacyRecieveBean;
 
     private double getRemainingQty(BillItem bilItem) {
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
             double originalQty = bilItem.getQty();
             double originalFreeQty = 0.0;
             if (bilItem.getPharmaceuticalBillItem() != null) {
@@ -201,27 +202,27 @@ public class DirectPurchaseReturnController implements Serializable {
         if (returnedValues != null) {
             alreadyReturnQuentity = returnedValues[0] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[0].toString());
             alreadyReturnedFreeQuentity = returnedValues[1] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[1].toString());
-            allreadyReturnedTotalQuentity = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
+            allreadyReturnedTotalQuentity = BigDecimalUtil.add(alreadyReturnQuentity, alreadyReturnedFreeQuentity);
         }
 
         bifdOriginal.setReturnQuantity(alreadyReturnQuentity);
         bifdOriginal.setReturnFreeQuantity(alreadyReturnedFreeQuentity);
 
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
             // Returning free quantity is not tracked separately.
             // The total return covers both original quantity and free quantity.
             // Here, free quantity being returned is considered zero.
             // Need to subtract already returned total (qty + free) from original total (qty + free)
-            BigDecimal originalTotal = bifdOriginal.getQuantity().add(bifdOriginal.getFreeQuantity());
-            BigDecimal returnedTotal = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
-            BigDecimal remaining = originalTotal.subtract(returnedTotal);
+            BigDecimal originalTotal = BigDecimalUtil.add(BigDecimalUtil.valueOrZero(bifdOriginal.getQuantity()), BigDecimalUtil.valueOrZero(bifdOriginal.getFreeQuantity()));
+            BigDecimal returnedTotal = BigDecimalUtil.add(alreadyReturnQuentity, alreadyReturnedFreeQuentity);
+            BigDecimal remaining = BigDecimalUtil.subtract(originalTotal, returnedTotal);
             bifdReturning.setQuantity(remaining);
             bifdReturning.setFreeQuantity(BigDecimal.ZERO);
         } else {
             // Returning quantity and free quantity are managed separately.
             // Subtract already returned quantity and free quantity from respective originals.
-            bifdReturning.setQuantity(bifdOriginal.getQuantity().subtract(alreadyReturnQuentity));
-            bifdReturning.setFreeQuantity(bifdOriginal.getFreeQuantity().subtract(alreadyReturnedFreeQuentity));
+            bifdReturning.setQuantity(BigDecimalUtil.subtract(BigDecimalUtil.valueOrZero(bifdOriginal.getQuantity()), alreadyReturnQuentity));
+            bifdReturning.setFreeQuantity(BigDecimalUtil.subtract(BigDecimalUtil.valueOrZero(bifdOriginal.getFreeQuantity()), alreadyReturnedFreeQuentity));
         }
 
         returningRate = getReturnRate(originalBillItem);
@@ -256,12 +257,17 @@ public class DirectPurchaseReturnController implements Serializable {
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
             double remainFree = getRemainingFreeQty(tmp.getReferanceBillItem());
             if (tmp.getPharmaceuticalBillItem().getFreeQty() > remainFree) {
                 tmp.getPharmaceuticalBillItem().setFreeQty(remainFree);
                 JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
             }
+        }
+
+        // Check for zero quantity returns
+        if (hasZeroQuantityForBillItem(tmp)) {
+            JsfUtil.addErrorMessage("Cannot return items with zero quantity. Item: " + tmp.getItem().getName());
         }
 
         calculateBillItemDetails(tmp);
@@ -284,9 +290,41 @@ public class DirectPurchaseReturnController implements Serializable {
         getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else {
+            // Use existing method for backward compatibility
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        }
+
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Direct Purchase Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Preserve old behavior: reuse deptId for insId to avoid consuming counter twice
+                insId = deptId;
+            }
+        }
+
         getReturnBill().setDeptId(deptId);
-        getReturnBill().setInsId(deptId); // for insId also dept Id is used intentionally
+        getReturnBill().setInsId(insId);
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());
@@ -307,29 +345,22 @@ public class DirectPurchaseReturnController implements Serializable {
         }
 
         BigDecimal rate = fd.getGrossRate();
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)
                 && fd.getLineCostRate() != null) {
             rate = fd.getLineCostRate();
-        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
                 && fd.getTotalCostRate() != null) {
             rate = fd.getTotalCostRate();
-        }
-
-        if (originalBillItem.getItem() instanceof Ampp) {
-            BigDecimal upp = Optional.ofNullable(fd.getUnitsPerPack()).orElse(BigDecimal.ONE);
-            if (upp.compareTo(BigDecimal.ZERO) > 0) {
-                rate = rate.multiply(upp);
-            }
         }
 
         return rate;
     }
 
     public String getReturnRateLabel() {
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Line Cost Rate", false)) {
             return "Line Cost Rate";
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)) {
             return "Total Cost Rate";
         }
         return "Purchase Rate";
@@ -489,6 +520,12 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     public void settle() {
+        // Server-side validation for return comments
+        if (returnBill == null || returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return comments are required.");
+            return;
+        }
+        
         fillData();
         applyPendingReturnTotals();
         if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {
@@ -501,10 +538,21 @@ public class DirectPurchaseReturnController implements Serializable {
             JsfUtil.addErrorMessage("Returning more than purchased.");
             return;
         }
+        if (hasZeroQuantityReturns()) {
+            revertPendingReturnTotals();
+            JsfUtil.addErrorMessage("Cannot return items with zero quantity. Please check the returning quantities.");
+            return;
+        }
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         saveReturnBill();
         saveBillItems();
-        Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        Payment p = null;
+        if (generatePayments) {
+            p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+        }
 
         getBillFacade().edit(getReturnBill());
         getBillFacade().edit(getBill());
@@ -611,7 +659,7 @@ public class DirectPurchaseReturnController implements Serializable {
             double originalQty = pbiOfBilledBill.getQty();
             double originalFreeQty = pbiOfBilledBill.getFreeQty();
 
-            if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false)) {
                 double returnedTotal = getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(pbiOfBilledBill.getBillItem(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
                 newPharmaceuticalBillItemInReturnBill.setQty(originalQty + originalFreeQty - Math.abs(returnedTotal));
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
@@ -672,6 +720,8 @@ public class DirectPurchaseReturnController implements Serializable {
             getBillItems().add(newBillItemInReturnBill);
             calculateBillItemDetails(newBillItemInReturnBill);
         }
+        
+        callculateBillDetails();
     }
 
     private void calculateBillItemDetails(BillItem returningBillItem) {
@@ -942,6 +992,60 @@ public class DirectPurchaseReturnController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    /**
+     * Checks if any bill item has zero quantity returns
+     * @return true if any item has zero quantity, false otherwise
+     */
+    private boolean hasZeroQuantityReturns() {
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            return false;
+        }
+        
+        for (BillItem billItem : getBillItems()) {
+            if (hasZeroQuantityForBillItem(billItem)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Checks if a specific bill item has zero quantity return
+     * @param billItem the bill item to check
+     * @return true if the item has zero quantity, false otherwise
+     */
+    private boolean hasZeroQuantityForBillItem(BillItem billItem) {
+        if (billItem == null) {
+            return false;
+        }
+        
+        BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
+        if (fd == null) {
+            return false;
+        }
+        
+        boolean totalQuantityMode = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
+        boolean quantityAndFreeQuantityMode = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", false);
+        
+        if (totalQuantityMode) {
+            // In total quantity mode, check if the total quantity is zero or negative
+            BigDecimal totalQty = BigDecimalUtil.add(
+                BigDecimalUtil.valueOrZero(fd.getQuantity()),
+                BigDecimalUtil.valueOrZero(fd.getFreeQuantity())
+            );
+            return BigDecimalUtil.isZeroOrNegative(totalQty);
+        } else if (quantityAndFreeQuantityMode) {
+            // In quantity and free quantity mode, check if both quantity and free quantity are zero
+            BigDecimal qty = BigDecimalUtil.valueOrZero(fd.getQuantity());
+            BigDecimal freeQty = BigDecimalUtil.valueOrZero(fd.getFreeQuantity());
+            return BigDecimalUtil.isZeroOrNegative(qty) && BigDecimalUtil.isZeroOrNegative(freeQty);
+        } else {
+            // Default mode: check if quantity is zero or negative
+            BigDecimal qty = BigDecimalUtil.valueOrZero(fd.getQuantity());
+            return BigDecimalUtil.isZeroOrNegative(qty);
+        }
     }
 
 }

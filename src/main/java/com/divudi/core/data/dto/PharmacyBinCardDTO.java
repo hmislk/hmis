@@ -12,6 +12,7 @@ import java.util.Date;
 public class PharmacyBinCardDTO implements Serializable {
 
     private Long id;
+    private Long billId;
     private Date createdAt;
     private BillType billType;
     private BillTypeAtomic billTypeAtomic;
@@ -23,6 +24,36 @@ public class PharmacyBinCardDTO implements Serializable {
     private Double freeQtyPacks;
     private Double itemDblValue;
     private Double itemStock;
+    private Double stockQty;
+    private String batchNo;
+
+    public PharmacyBinCardDTO(Long id,
+            Date createdAt,
+            BillType billType,
+            BillTypeAtomic billTypeAtomic,
+            String itemName,
+            Double qty,
+            Double freeQty,
+            Double qtyPacks,
+            Double freeQtyPacks,
+            Double itemDblValue,
+            Double itemStock,
+            Double stockQty,
+            String batchNo) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.billType = billType;
+        this.billTypeAtomic = billTypeAtomic;
+        this.itemName = itemName;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.qtyPacks = qtyPacks;
+        this.freeQtyPacks = freeQtyPacks;
+        this.itemDblValue = itemDblValue;
+        this.itemStock = itemStock;
+        this.stockQty = stockQty;
+        this.batchNo = batchNo;
+    }
 
     public PharmacyBinCardDTO(Long id,
             Date createdAt,
@@ -48,6 +79,36 @@ public class PharmacyBinCardDTO implements Serializable {
         this.itemStock = itemStock;
     }
 
+    public PharmacyBinCardDTO(Long id,
+            Long billId,
+            Date createdAt,
+            BillType billType,
+            BillTypeAtomic billTypeAtomic,
+            String itemName,
+            Double qty,
+            Double freeQty,
+            Double qtyPacks,
+            Double freeQtyPacks,
+            Double itemDblValue,
+            Double itemStock,
+            Double stockQty,
+            String batchNo) {
+        this.id = id;
+        this.billId = billId;
+        this.createdAt = createdAt;
+        this.billType = billType;
+        this.billTypeAtomic = billTypeAtomic;
+        this.itemName = itemName;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.qtyPacks = qtyPacks;
+        this.freeQtyPacks = freeQtyPacks;
+        this.itemDblValue = itemDblValue;
+        this.itemStock = itemStock;
+        this.stockQty = stockQty;
+        this.batchNo = batchNo;
+    }
+
     public PharmacyBinCardDTO() {
     }
 
@@ -57,6 +118,14 @@ public class PharmacyBinCardDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     public Date getCreatedAt() {
@@ -145,6 +214,22 @@ public class PharmacyBinCardDTO implements Serializable {
 
     public void setItemStock(Double itemStock) {
         this.itemStock = itemStock;
+    }
+
+    public Double getStockQty() {
+        return stockQty;
+    }
+
+    public void setStockQty(Double stockQty) {
+        this.stockQty = stockQty;
+    }
+
+    public String getBatchNo() {
+        return batchNo;
+    }
+
+    public void setBatchNo(String batchNo) {
+        this.batchNo = batchNo;
     }
 
     // Derived helper properties

@@ -156,10 +156,12 @@
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <thead>
                                     <tr>
-                                        <th style="text-align: center; width: 25%">Category</th>
-                                        <th style="text-align: center; width: 25%">Item</th>
-                                        <th style="text-align: center; width: 25%">Code</th>
-                                        <th style="text-align: center; width: 25%">Current Stock</th>
+                                        <th style="text-align: center; width: 20%">Category</th>
+                                        <th style="text-align: center; width: 20%">Item</th>
+                                        <th style="text-align: center; width: 12%">Code</th>
+                                        <th style="text-align: center; width: 12%">Current Stock</th>
+                                        <th style="text-align: center; width: 18%">Expiry</th>
+                                        <th style="text-align: center; width: 18%">Sale Value</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -172,6 +174,16 @@
                                                 <h:outputLabel value="#{i.stock}">
                                                     <f:convertNumber pattern="#,###"/>
                                                 </h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{i.itemBatch.dateOfExpire}">
+                                                    <f:convertDateTime pattern="dd MM yy"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{i.itemBatch.retailsaleRate * i.stock}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
                                             </td>
                                         </tr>
                                     </ui:repeat>

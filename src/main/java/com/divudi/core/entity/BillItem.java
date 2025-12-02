@@ -63,9 +63,10 @@ public class BillItem implements Serializable, RetirableEntity {
     @ManyToOne
     PriceMatrix priceMatrix;
     double remainingQty;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Prescription prescription;
 
+    //Kown Typo, can not correct because of backword compatability issues
     double Rate;
     double discountRate;
     double marginRate;
@@ -87,7 +88,9 @@ public class BillItem implements Serializable, RetirableEntity {
     private double otherFee;
     private double reagentFee;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+              fetch = FetchType.EAGER,
+              orphanRemoval = true)
     private BillItemFinanceDetails billItemFinanceDetails;
 
 //    private double dblValue;
@@ -156,6 +159,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private Department peformedDepartment;
     @Lob
     private String instructions;
+    
+    private boolean consideredForCosting = true;
 
 //    @Transient
     int searialNo;
@@ -279,10 +284,11 @@ public class BillItem implements Serializable, RetirableEntity {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
         //  referanceBillItem=billItem.getReferanceBillItem();
-        // Copy BillItemFinanceDetails if present
-        if (billItem.getBillItemFinanceDetails() != null) {
-            BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
+        // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
+        if (billItem.billItemFinanceDetails != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.billItemFinanceDetails.clone();
             clonedFinanceDetails.setBillItem(this);
             this.setBillItemFinanceDetails(clonedFinanceDetails);
         }
@@ -320,10 +326,14 @@ public class BillItem implements Serializable, RetirableEntity {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
 
-        BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
-        clonedFinanceDetails.setBillItem(this);
-        this.setBillItemFinanceDetails(clonedFinanceDetails);
+        // Access field directly to avoid auto-creation, then use getter for cloning
+        if (billItem.billItemFinanceDetails != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.billItemFinanceDetails.clone();
+            clonedFinanceDetails.setBillItem(this);
+            this.setBillItemFinanceDetails(clonedFinanceDetails);
+        }
         
         PharmaceuticalBillItem clonedPharmaceuticalBillItem = new PharmaceuticalBillItem();
         clonedPharmaceuticalBillItem.copy(billItem.getPharmaceuticalBillItem());
@@ -348,6 +358,7 @@ public class BillItem implements Serializable, RetirableEntity {
 //        marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
+        consideredForCosting = billItem.isConsideredForCosting();
     }
 
     public void resetValue() {
@@ -385,10 +396,11 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItem.getQty() != null) {
             qty = 0 - billItem.getQty();
         }
-        Rate = 0 - billItem.getRate();
+        // Rates should remain positive - they are unit prices, not values
+        Rate = billItem.getRate();
         discount = 0 - billItem.getDiscount();
-        netRate = 0 - billItem.getNetRate();
-        marginRate = 0 - billItem.getMarginRate();
+        netRate = billItem.getNetRate();
+        marginRate = billItem.getMarginRate();
         grossValue = 0 - billItem.getGrossValue();
         marginValue = 0 - billItem.getMarginValue();
         netValue = 0 - billItem.getNetValue();
@@ -407,9 +419,10 @@ public class BillItem implements Serializable, RetirableEntity {
         if (getQty() != null) {
             qty = 0 - getQty();
         }
-        Rate = 0 - getRate();
+        // Rates should remain positive - they are unit prices, not values
+        // Rate = 0 - getRate(); // Do not invert rates
         discount = 0 - getDiscount();
-        netRate = 0 - getNetRate();
+        // netRate = 0 - getNetRate(); // Do not invert rates
         grossValue = 0 - getGrossValue();
         marginValue = 0 - getMarginValue();
         netValue = 0 - getNetValue();
@@ -1174,12 +1187,33 @@ public class BillItem implements Serializable, RetirableEntity {
         this.reagentFee = reagentFee;
     }
 
+    /**
+     * TODO: MIGRATION NEEDED - Replace all callers with initializeBillItemFinanceDetails()
+     * This getter currently auto-creates to maintain compatibility, but this causes
+     * potential duplicate creation issues. Once all callers are migrated to use
+     * the explicit initializeBillItemFinanceDetails() method, change this to:
+     * return billItemFinanceDetails;
+     */
     public BillItemFinanceDetails getBillItemFinanceDetails() {
         if (billItemFinanceDetails == null) {
             billItemFinanceDetails = new BillItemFinanceDetails();
             billItemFinanceDetails.setBillItem(this);
+            billItemFinanceDetails.setCreatedAt(new Date());
         }
         return billItemFinanceDetails;
+    }
+
+    /**
+     * Explicit method to initialize BillItemFinanceDetails.
+     * Use this instead of relying on getter auto-creation to prevent duplicates.
+     * PREFERRED: Use this method for new code and migrate existing callers here.
+     */
+    public void initializeBillItemFinanceDetails() {
+        if (billItemFinanceDetails == null) {
+            billItemFinanceDetails = new BillItemFinanceDetails();
+            billItemFinanceDetails.setBillItem(this);
+            billItemFinanceDetails.setCreatedAt(new Date());
+        }
     }
 
     public void setBillItemFinanceDetails(BillItemFinanceDetails billItemFinanceDetails) {
@@ -1187,6 +1221,14 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItemFinanceDetails != null && billItemFinanceDetails.getBillItem() != this) {
             billItemFinanceDetails.setBillItem(this);
         }
+    }
+
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
+
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
     }
 
 }

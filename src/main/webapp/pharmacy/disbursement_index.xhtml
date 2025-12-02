@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="content">
+
+        <div class="row">
+            <div class="col-12">
+                <p:messages id="messages" showDetail="true" closable="true" />
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-2">
+                <h:form>
+                    <p:accordionPanel activeIndex="#{searchController.activeIndexForDisbursement}" >
+                        <p:ajax event="tabChange" process="@this"/>
+                        <p:tab title="Transfer Requests" >
+                            <p:panelGrid columns="1" >
+                                <p:commandButton
+                                    value="Create Request"
+                                    ajax="false"
+                                    action="#{transferRequestController.navigateToCreateANewTransferRequest()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-hand-holding-medical"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" />
+                                <p:commandButton
+                                    value="Finalize Requests"
+                                    ajax="false"
+                                    action="#{searchController.navigateToTransferRequestFinalize}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-tasks"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
+                                <p:commandButton
+                                    value="Approve Requests"
+                                    ajax="false"
+                                    action="#{searchController.navigateToTransferRequestApprove()}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
+                                <p:commandButton
+                                    value="Approved Requests"
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_transfer_request_list_approved?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-secondary w-100"
+                                    icon="fas fa-check-double"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}" />
+                            </p:panelGrid>
+                        </p:tab>
+                        <p:tab title="Issues" >
+                            <p:panelGrid columns="1" >
+                                <p:commandButton
+                                    value="Issue for Requests"
+                                    ajax="false"
+                                    action="#{transferIssueController.navigateToListPharmacyIssueRequests}"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-prescription-bottle-alt"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}" />
+                                <p:commandButton
+                                    value="Direct Issue"
+                                    ajax="false"
+                                    action="#{transferIssueDirectController.navigateToDirectPharmacyIssue}"
+                                    actionListener="#{transferIssueController.makeNull()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-pills"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" />
+                            </p:panelGrid>
+                        </p:tab>
+                        <p:tab title="Receive" >
+                            <p:panelGrid columns="1" >
+                                <p:commandButton
+                                    value="Receive Issued Items"
+                                    ajax="false"
+                                    action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    class="ui-button-success w-100"
+                                    icon="fas fa-truck-loading"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}" />
+                            </p:panelGrid>
+                        </p:tab>
+                        <p:tab title="Reports" >
+                            <p:panelGrid columns="1">
+                                <p:commandButton
+                                    value="Transfer Reports"
+                                    ajax="false"
+                                    action="#{reportsTransfer.navigateToPharmacyTransferReports()}"
+                                    class="ui-button-info w-100"
+                                    icon="fas fa-file-alt"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementReports')}" />
+                            </p:panelGrid>
+                        </p:tab>
+                    </p:accordionPanel>
+                </h:form>
+            </div>
+            <div class="col-10">
+                <ui:insert name="subcontent">
+                    <p:panel header="Disbursement Management">
+                        <div class="text-center p-5">
+                            <h3>Welcome to Disbursement Management</h3>
+                            <p class="mt-3">
+                                Please select a function from the left menu to get started.
+                            </p>
+                            <div class="mt-4">
+                                <p:panelGrid columns="2" styleClass="mx-auto" style="max-width: 600px;">
+                                    <h:outputText value="Transfer Requests" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Create, finalize, and approve transfer requests"/>
+
+                                    <h:outputText value="Issues" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Issue items for requests or direct issues"/>
+
+                                    <h:outputText value="Receive" styleClass="font-weight-bold"/>
+                                    <h:outputText value="Receive issued items"/>
+
+                                    <h:outputText value="Reports" styleClass="font-weight-bold"/>
+                                    <h:outputText value="View transfer and disbursement reports"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                    </p:panel>
+                </ui:insert>
+            </div>
+        </div>
+
+
+    </ui:define>
+
+</ui:composition>

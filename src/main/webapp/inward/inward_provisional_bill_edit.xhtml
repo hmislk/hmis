@@ -149,7 +149,7 @@
                                             <div class="col-md-6">
                                                 <p:inputText value="#{inwardSearch.bill.discount}" style="float: right;" >
                                                     <p:ajax process="@this" update="@all"
-                                                            event="blur"
+                                                            event="change"
                                                             listener="#{inwardSearch.updateTotal()}"/>
                                                 </p:inputText>
                                             </div>
@@ -259,7 +259,7 @@
                                                 </f:facet>
                                                 <p:inputText value="#{bip.adjustedValue}" disabled="#{bip.inwardChargeType eq 'ProfessionalCharge'}" >
                                                     <p:ajax process="@this" update="@all"
-                                                            event="blur"
+                                                            event="change"
                                                             listener="#{inwardSearch.updateTotal()}"/>
 <!--                                                    <p:ajax process="@this" event="keyup"
                                                             update="@all"
@@ -286,7 +286,7 @@
                                                         </f:facet>
                                                         <p:inputText value="#{fe.feeAdjusted ne 0 ? fe.feeAdjusted : fe.feeValue}" >
                                                             <p:ajax process="@this" update="@all"
-                                                                    event="blur"
+                                                                    event="change"
                                                                     listener="#{inwardSearch.updateProTotal(bip)}"/>
 <!--                                                            <p:ajax process="@this" event="keyup"
                                                                     update="@all"

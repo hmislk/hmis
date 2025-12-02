@@ -23,6 +23,7 @@ public enum PaymentMethod {
     PatientPoints("Patient Points", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
     OnlineSettlement("Online Settlement", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS),
     None("None", PaymentType.NONE, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS),
+    OnlineBookingAgent("OnlineBooking Agent", PaymentType.NONE, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS),
     @Deprecated
     YouOweMe("You Owe Me", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS); // Assuming deprecated
 
@@ -73,6 +74,18 @@ public enum PaymentMethod {
         return Arrays.stream(PaymentMethod.values())
                 .filter(pm -> !isDeprecated(pm))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns all non-credit payment methods (excludes Credit and Staff payment methods)
+     * @return List of PaymentMethod with PaymentType.NON_CREDIT
+     */
+    public static List<PaymentMethod> getNonCreditPaymentMethods() {
+        return getMethodsByType(PaymentType.NON_CREDIT);
+    }
+    
+    public static List<PaymentMethod> getCreditPaymentMethods() {
+        return getMethodsByType(PaymentType.CREDIT);
     }
 
     public String getInHandLabel() {

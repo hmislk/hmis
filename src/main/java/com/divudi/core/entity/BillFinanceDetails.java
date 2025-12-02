@@ -27,140 +27,166 @@ public class BillFinanceDetails implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // Inverse side of the relationship - Bill entity owns the FK BILLFINANCEDETAILS_ID
     @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 
     // ------------------ DISCOUNTS ------------------
     // Discount applied directly to the Bill (not tied to specific lines)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal billDiscount = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billDiscount;
 
     // Total of all line-level discounts (sum of discounts on individual BillItems)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal lineDiscount = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal lineDiscount;
 
     // Total discount (bill-level + all line-level)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalDiscount = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalDiscount;
 
     // ------------------ EXPENSES ------------------
     // Expense applied to the Bill itself (e.g., delivery fee, service charge)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal billExpense = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billExpense;
 
     // Total of all expenses from individual BillItems
-    @Column(precision = 18, scale = 4)
-    private BigDecimal lineExpense = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal lineExpense;
 
     // Total expense (bill-level + all line-level)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalExpense = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalExpense;
+
+    // Expenses considered for costing calculation
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billExpensesConsideredForCosting;
+
+    // Expenses not considered for costing calculation
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billExpensesNotConsideredForCosting;
 
     // ------------------ COST ------------------
     // Cost incurred for the Bill as a whole (not specific to lines)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal billCostValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billCostValue;
 
     // Sum of cost values from each BillItem
-    @Column(precision = 18, scale = 4)
-    private BigDecimal lineCostValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal lineCostValue;
 
     // Total cost value for all BillItems (excluding discounts/taxes)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalCostValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalCostValue;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalCostValueFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalCostValueFree;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalCostValueNonFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalCostValueNonFree;
 
     // ------------------ TAXES ------------------
     // Tax applied to the whole Bill (e.g., VAT)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal billTaxValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billTaxValue;
 
     // Total of tax amounts from all BillItems
-    @Column(precision = 18, scale = 4)
-    private BigDecimal itemTaxValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal itemTaxValue;
 
     // Total tax (bill-level + all line-level)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalTaxValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalTaxValue;
 
-    // ------------------ VALUES ------------------
+    // ------------------ STOCK VALUATIONS START------------------
     // Total purchase value for all BillItems (excluding discounts/taxes)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalPurchaseValue;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalPurchaseValueFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalPurchaseValueFree;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalPurchaseValueNonFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalPurchaseValueNonFree;
 
     // Estimated value of items given free of charge
-    @Column(precision = 18, scale = 4)
+    @Column(precision = 18, scale = 4, nullable = true)
     @Deprecated // User 
-    private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+    private BigDecimal totalOfFreeItemValues;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalOfFreeItemValuesFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalOfFreeItemValuesFree;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalOfFreeItemValuesNonFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalOfFreeItemValuesNonFree;
 
     // Expected total if all items sold at retail rate
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalRetailSaleValue;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalRetailSaleValueFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalRetailSaleValueFree;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalRetailSaleValueNonFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalRetailSaleValueNonFree;
 
     // Expected total if all items sold at wholesale rate
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalWholesaleValue;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalWholesaleValueFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalWholesaleValueFree;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalWholesaleValueNonFree = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalWholesaleValueNonFree;
+
+    // Totals for purchase rate adjustments
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalBeforeAdjustmentValue;
+
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalAfterAdjustmentValue;
+    // ------------------ STOCK VALUATIONS END------------------
 
     // ------------------ QUANTITIES ------------------
     // Total quantity of all BillItems (excluding free)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalQuantity = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalQuantity;
 
     // Total of free quantities across BillItems
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalFreeQuantity;
 
     // Quantity in atomic units (e.g., tablets instead of boxes)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalQuantityInAtomicUnitOfMeasurement;
 
     // Free quantity in atomic units
-    @Column(precision = 18, scale = 4)
-    private BigDecimal totalFreeQuantityInAtomicUnitOfMeasurement = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalFreeQuantityInAtomicUnitOfMeasurement;
 
-    @Column(precision = 18, scale = 4)
-    private BigDecimal lineGrossTotal = BigDecimal.ZERO;
-    @Column(precision = 18, scale = 4)
-    private BigDecimal billGrossTotal = BigDecimal.ZERO;
-    @Column(precision = 18, scale = 4)
-    private BigDecimal grossTotal = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal lineGrossTotal;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billGrossTotal;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal grossTotal;
 
     // Value after deductions
-    @Column(precision = 18, scale = 4)
-    private BigDecimal lineNetTotal = BigDecimal.ZERO;
-    @Column(precision = 18, scale = 4)
-    private BigDecimal billNetTotal = BigDecimal.ZERO;
-    @Column(precision = 18, scale = 4)
-    private BigDecimal netTotal = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal lineNetTotal;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal billNetTotal;
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal netTotal;
+
+    // Actual physical net value (entered by user during GRN return)
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal actualNetValue;
+
+    // Adjustment between calculated net total and actual physical net value
+    // netValueAdjustment = actualNetValue - netTotal
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal netValueAdjustment;
 
 //    // Payment method totals
 //    private BigDecimal totalPaidAsCash = BigDecimal.ZERO;
@@ -204,6 +230,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setBillExpense(this.billExpense);
         clone.setLineExpense(this.lineExpense);
         clone.setTotalExpense(this.totalExpense);
+        clone.setBillExpensesConsideredForCosting(this.billExpensesConsideredForCosting);
+        clone.setBillExpensesNotConsideredForCosting(this.billExpensesNotConsideredForCosting);
 
         // ------------------ COST ------------------
         clone.setBillCostValue(this.billCostValue);
@@ -230,6 +258,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setTotalWholesaleValue(this.totalWholesaleValue);
         clone.setTotalWholesaleValueFree(this.totalWholesaleValueFree);
         clone.setTotalWholesaleValueNonFree(this.totalWholesaleValueNonFree);
+        clone.setTotalBeforeAdjustmentValue(this.totalBeforeAdjustmentValue);
+        clone.setTotalAfterAdjustmentValue(this.totalAfterAdjustmentValue);
 
         // ------------------ QUANTITIES ------------------
         clone.setTotalQuantity(this.totalQuantity);
@@ -244,6 +274,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setLineNetTotal(this.lineNetTotal);
         clone.setBillNetTotal(this.billNetTotal);
         clone.setNetTotal(this.netTotal);
+        clone.setActualNetValue(this.actualNetValue);
+        clone.setNetValueAdjustment(this.netValueAdjustment);
 
 //        // ------------------ PAYMENT METHODS ------------------
 //        clone.setTotalPaidAsCash(this.totalPaidAsCash);
@@ -494,6 +526,22 @@ public class BillFinanceDetails implements Serializable {
         this.totalWholesaleValueNonFree = totalWholesaleValueNonFree;
     }
 
+    public BigDecimal getTotalBeforeAdjustmentValue() {
+        return totalBeforeAdjustmentValue;
+    }
+
+    public void setTotalBeforeAdjustmentValue(BigDecimal totalBeforeAdjustmentValue) {
+        this.totalBeforeAdjustmentValue = totalBeforeAdjustmentValue;
+    }
+
+    public BigDecimal getTotalAfterAdjustmentValue() {
+        return totalAfterAdjustmentValue;
+    }
+
+    public void setTotalAfterAdjustmentValue(BigDecimal totalAfterAdjustmentValue) {
+        this.totalAfterAdjustmentValue = totalAfterAdjustmentValue;
+    }
+
     public BigDecimal getTotalQuantityInAtomicUnitOfMeasurement() {
         return totalQuantityInAtomicUnitOfMeasurement;
     }
@@ -622,7 +670,36 @@ public class BillFinanceDetails implements Serializable {
         this.createdBy = createdBy;
     }
 
+    public BigDecimal getBillExpensesConsideredForCosting() {
+        return billExpensesConsideredForCosting;
+    }
 
-    
-    
+    public void setBillExpensesConsideredForCosting(BigDecimal billExpensesConsideredForCosting) {
+        this.billExpensesConsideredForCosting = billExpensesConsideredForCosting;
+    }
+
+    public BigDecimal getBillExpensesNotConsideredForCosting() {
+        return billExpensesNotConsideredForCosting;
+    }
+
+    public void setBillExpensesNotConsideredForCosting(BigDecimal billExpensesNotConsideredForCosting) {
+        this.billExpensesNotConsideredForCosting = billExpensesNotConsideredForCosting;
+    }
+
+    public BigDecimal getActualNetValue() {
+        return actualNetValue;
+    }
+
+    public void setActualNetValue(BigDecimal actualNetValue) {
+        this.actualNetValue = actualNetValue;
+    }
+
+    public BigDecimal getNetValueAdjustment() {
+        return netValueAdjustment;
+    }
+
+    public void setNetValueAdjustment(BigDecimal netValueAdjustment) {
+        this.netValueAdjustment = netValueAdjustment;
+    }
+
 }

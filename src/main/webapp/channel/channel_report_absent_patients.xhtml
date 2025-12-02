@@ -13,14 +13,14 @@
     <ui:define name="subContent">
         <h:panelGroup rendered="true" >
             <h:form>
-                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <h:outputStylesheet library="css" name="printing.css"/>
                 <p:panel  header="Patient Absent Report">
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="frmDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" />
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  ></p:calendar>
+                        <p:calendar id="toDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  />
 
                         <h:outputLabel value="Consultant"/>
                         <au:completeConsultant  value="#{channelReportController.staff}"/>
@@ -37,11 +37,10 @@
                     <h:panelGrid columns="4" class="my-2"> 
                         <p:commandButton ajax="false" id="btnRefresh" value="View List" action="#{channelReportController.createAbsentPatientTable}" class="m-1 ui-button-danger" icon="fas fa-list">
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Print Table" style="float: right; margin-left: 10px; margin-right: 10px " class="m-1 ui-button-primary" icon="fas fa-print" >
-                            <p:printer target="billFeeReport"  />
+                        <p:commandButton ajax="false" value="Print Table" style="float: right; margin-left: 10px; margin-right: 10px " class="m-1 ui-button-primary" icon="fas fa-print" action="channel_report_absent_patients_print?faces-redirect=true" >
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Export to Excel" class="m-1 ui-button-success" icon="fas fa-file-excel" style="float: right;" >
-                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_all_List"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="Patient Absent Report"  />
                         </p:commandButton>
                     </h:panelGrid>
 
@@ -61,15 +60,30 @@
                     </f:facet>
 
                     <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" >
-                        <f:facet name="header" >
-                            <p:outputLabel value="Billed Bill" />                                
-                        </f:facet>
 
-                        <p:column style="text-align: left;" >
+                        <p:column style="text-align: left;" width="10em">
                             <f:facet name="header" >
-                                <p:outputLabel value="Channel Reciept No" />
+                                <p:outputLabel value="Channel Receipt No" />
                             </f:facet>
-                            <p:outputLabel value="#{b.deptId}" />                                    
+
+                            <p:commandLink
+                                id="billNo"
+                                disabled ="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                             or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                             or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                             or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                                       }"
+                                ajax="false"
+                                style="font-weight: bold"
+                                value="#{b.deptId}"
+                                action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(b))}">
+                            </p:commandLink>
+
+
+                            <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledBill.deptId}" severity="danger" />
+                            <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedBill.deptId}"  severity="warning" />
+                            <p:tag rendered="#{bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'}" value="Refund Bill"  severity="warning" />
+                            <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
                         </p:column>
 
                         <p:column style="text-align: center;" >
@@ -78,13 +92,24 @@
                             </f:facet>
                             <p:outputLabel value="#{b.singleBillSession.serviceSession.name}" />                                    
                         </p:column>
-                        
-                        <p:column style="text-align: center;" >
-                            <f:facet name="header" >
+
+                        <p:column style="text-align: center;" filterMatchMode="contains" 
+                                  filterBy="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' 
+                                              or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING' ? 
+                                              'Online Booking' : 'System Booking'}"
+                                  >
+                            <f:facet name="header">
                                 <p:outputLabel value="Booking Type" />
                             </f:facet>
                             <p:outputLabel value="Online Booking" style="font-weight: bold" rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>   
                             <p:outputLabel value="System Booking" style="font-weight: bold" rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and b.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
+                        </p:column>
+
+                        <p:column style="text-align: center;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Appinment No" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.singleBillSession.serialNo}" style="font-weight: bold"/>                                    
                         </p:column>
 
                         <p:column style="text-align: center;" >
@@ -108,59 +133,89 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Doctor Name" />
                             </f:facet>
-                            <p:outputLabel value="#{b.staff.person.name}" />                                    
+                            <p:outputLabel value="#{b.staff.person.name}" />    
+
+                            <f:facet name="footer">
+                                <h:outputText  value="Totals">
+
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Doctor Fee" />
                             </f:facet>
-                            <p:outputLabel value="#{b.staffFee}" >
+                            <p:outputLabel styleClass="staffFee" value="#{b.staffFee}" >
                                 <f:convertNumber pattern="#,##0.00"/>
-                            </p:outputLabel>                                    
+                            </p:outputLabel>   
+
+                            <f:facet name="footer">
+                                <h:outputText styleClass="staffFeeTotal" value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Hospital Fee" />
                             </f:facet>
-                            <p:outputLabel value="#{b.hospitalFee}">
+                            <p:outputLabel styleClass="hosFee" value="#{b.hospitalFee}">
                                 <f:convertNumber pattern="#,##0.00"/>
-                            </p:outputLabel>                                    
+                            </p:outputLabel>   
+
+                            <f:facet name="footer">
+                                <h:outputText styleClass="hosFeeTotal" value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Net Total" />
                             </f:facet>
-                            <p:outputLabel value="#{b.netTotal}" >
+                            <p:outputLabel styleClass="netFee" value="#{b.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00"/>
-                            </p:outputLabel>                                    
+                            </p:outputLabel> 
+
+                            <f:facet name="footer">
+                                <h:outputText styleClass="netFeeTotal" value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
 
-                        <p:columnGroup type="footer">
-
-                            <p:row>
-                                <p:column colspan="3"/>
-                                <p:column footerText="Total" style=" text-align: left;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="Total"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column footerText="#{channelReportController.doctorFeeBilledTotal}" style=" text-align: right">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportController.doctorFeeTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-
-                            </p:row>
-
-                        </p:columnGroup>
 
                     </p:dataTable>
+
+                    <script>
+                        function calculateTotals(selector, targeter) {
+                            const values = Array.from(document.querySelectorAll(selector));
+                            const totalValue = values
+                                    .map(value => {
+                                        const cleanValue = value.innerText.replace(/,/g, "");
+                                        return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                    })
+                                    .reduce((total, value) => total + value, 0);
+
+                            const targetElement = document.querySelector(targeter);
+                            if (targetElement) {
+                                targetElement.innerText = totalValue.toFixed(2);
+                            }
+
+                        }
+
+                        function updateTotals() {
+                            calculateTotals('.netFee', '.netFeeTotal');
+                            calculateTotals('.staffFee', '.staffFeeTotal');
+                            calculateTotals('.hosFee', '.hosFeeTotal');
+                        }
+
+                        setTimeout(updateTotals, 500);
+                    </script>
 
                 </p:panel>
 

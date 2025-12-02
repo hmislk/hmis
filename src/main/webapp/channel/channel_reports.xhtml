@@ -1,199 +1,329 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
-    <h:body>
+<h:body>
 
-        <ui:composition template="/resources/template/template.xhtml" >
+    <ui:composition template="/resources/template/template.xhtml">
 
-            <ui:define name="content">
+        <ui:define name="content">
 
-                <h:panelGroup rendered="#{!webUserController.hasPrivilege('ChannelReports')}" >
-                    <na:not_authorize />
-                </h:panelGroup>
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('ChannelReports')}">
+                <na:not_authorize/>
+            </h:panelGroup>
 
-                <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannelReports')}">
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('ChannelReports')}">
 
 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <h:form>
-                                <p:panel header="Channel Reports">
-                                    <p:accordionPanel activeIndex="#{channelReportController.channelReportMenuIndex}">
-                                        <p:ajax process="@this"></p:ajax>
-                                        <p:tab title="Summary Reports">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton 
-                                                    class="w-100"
-                                                    value="Session Counts" 
+                <div class="row">
+                    <div class="col-md-3">
+                        <h:form>
+                            <p:panel header="Channel Reports">
+                                <p:accordionPanel activeIndex="#{channelReportController.channelReportMenuIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+                                    <p:tab title="Summary Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                    class="w-100 ui-button-warning"
+                                                    value="Session Counts"
 
-                                                    action="#{channelReportTemplateController.navigateToChannlingSessionCount}" 
+                                                    action="#{channelReportTemplateController.navigateToChannlingSessionCount}"
                                                     ajax="false"/>
 
-                                                <p:commandButton 
-                                                    class="w-100" 
-                                                    ajax="false" 
-                                                    value="Doctor Counts" 
+                                            <p:commandButton
+                                                    class="w-100 ui-button-warning"
+                                                    ajax="false"
+                                                    value="Doctor Counts"
                                                     action="#{channelReportTemplateController.navigateToChannlingDoctorCount}"/>
-                                                <p:commandButton 
-                                                    class="w-100" 
+                                            <p:commandButton
+                                                    class="w-100 ui-button-warning"
                                                     value="Category Counts"
                                                     action="#{channelReportTemplateController.navigateToCategorySessionCount}"
-                                                    ajax="false" />
-                                                <p:commandButton 
-                                                    class="w-100" 
+                                                    ajax="false"/>
+                                            <p:commandButton
+                                                    class="w-100"
                                                     value="Online Bookings"
-                                                    action="#{channelReportTemplateController.navigateToOnlineBookings}" ajax="false"/>
-                                                <p:commandButton 
-                                                    class="w-100" 
+                                                    action="#{channelReportTemplateController.navigateToOnlineBookings}"
+                                                    ajax="false"/>
+                                            <p:commandButton
+                                                    class="w-100 ui-button-warning"
                                                     value="Category Counts"
-                                                    action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                                    action="/channel/channel_report_patient_count_income" ajax="false"
+                                                    actionListener="#{channelReportTemplateController.clearAll}"/>
 
-                                                <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                            </div>
-                                        </p:tab>
+                                            <p:commandButton class="w-100 ui-button-warning" value="Channel Hospital Income With Doc Fee"
+                                                             action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true"
+                                                             ajax="false"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                        </div>
+                                    </p:tab>
 
-                                        <p:tab title="Income Reports">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" value="Channel Income" action="/channel/channel_income?faces-redirect=true" ajax="false"/>
-                                                <p:commandButton class="w-100" value="Income With Agent Bookings" action="/channel/income_with_agent_bookings?faces-redirect=true" ajax="false"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                                <p:commandButton class="w-100" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                                <p:commandButton class="w-100" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true" ajax="false" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="Bill Reports">
-                                            <div class="d-grid gap-2">
-                                                <!--<p:commandButton class="w-100" ajax="false" value="All Channel Bill List" action="/channel/channel_report_by_bill_class_all" actionListener="#{channelReportTemplateController.clearAll}"/>-->
-                                                <p:commandButton class="w-100" ajax="false" value="Bill Session" action="/channel/channel_report_bill_session_1?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Bill Fees" action="/channel/channel_report_by_fee?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Bill Fees with Fee Types" action="/channel/report_cashier_summery_with_fee-type?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Bill Summary()" action="/channel/channel_report_all_booking?faces-redirect=true" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Bill Summary(Special)" action="/channel/channel_report_all_booking_special?faces-redirect=true" actionListener="#{channelReportTemplateController.clearAll}" />
-                                                <p:commandButton class="w-100" ajax="false" value="Bill Detail Summary()" action="/channel/channel_report_by_bill_class?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="All Department Bill Summary" action="/channel/channel_report_department_wise_bills?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat_1?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count?faces-redirect=true" />
-                                                <p:commandButton class="w-100" ajax="false" value="Card Summary Report" action="/channel/channel_card_summery_report?faces-redirect=true" actionListener="#{channelReportTemplateController.clearAll}"/>
+                                    <p:tab title="Income Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" value="Channel Income"
+                                                             action="/channel/channel_income?faces-redirect=true"
+                                                             ajax="false"/>
+                                            <p:commandButton class="w-100" value="Channel Income Daily Summery"
+                                                             action="#{channelReportController.navigateToFutureIncomeForChanneling()}"
+                                                             ajax="false"/>
+                                            <p:commandButton class="w-100" value="Income With Agent Bookings"
+                                                             action="#{channelReportController.navigateToIncomeForAgentBookings()}"
+                                                             ajax="false"/>
+                                            <p:commandButton class="w-100" value="Income For Scanning Session"
+                                                             action="#{channelReportController.navigateToIncomeForScanning()}"
+                                                             ajax="false"/>
+                                            <p:commandButton class="w-100" value="Income From Card Payments"
+                                                             action="/channel/income_from_card_payments?faces-redirect=true"
+                                                             ajax="false"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Income By FeeType By Sessoin Date"
+                                                             action="/channel/channel_report_by_fee_1?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" value="Channel Patient Counts(34)"
+                                                             action="/channel/channel_report_patient_count?faces-redirect=true"
+                                                             ajax="false"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" value="Channel Hospital Income"
+                                                             action="/channel/channel_report_patient_count_income?faces-redirect=true"
+                                                             ajax="false"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" value="Channel Hospital Income With Doc Fee"
+                                                             action="/channel/channel_report_patient_count_income_with_doc?faces-redirect=true"
+                                                             ajax="false"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Bill Reports">
+                                        <div class="d-grid gap-2">
+                                            <!--<p:commandButton class="w-100" ajax="false" value="All Channel Bill List" action="/channel/channel_report_by_bill_class_all" actionListener="#{channelReportTemplateController.clearAll}"/>-->
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Bill Session"
+                                                             action="/channel/channel_report_bill_session_1?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Bill Fees"
+                                                             action="/channel/channel_report_by_fee?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Bill Fees with Fee Types"
+                                                             action="/channel/report_cashier_summery_with_fee-type?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Bill Summary()"
+                                                             action="/channel/channel_report_all_booking?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Bill Summary(Special)"
+                                                             action="/channel/channel_report_all_booking_special?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Bill Detail Summary()"
+                                                             action="/channel/channel_report_by_bill_class?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="All Department Bill Summary"
+                                                             action="/channel/channel_report_department_wise_bills?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="All Channel Bills"
+                                                             action="/channel/channel_report_all_bills?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="All Channel Bill With Vat"
+                                                             action="/channel/channel_report_all_bills_for_vat_1?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Area Wise Count Report"
+                                                             action="/channel/channel_report_area_with_count?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Card Summary Report"
+                                                             action="/channel/channel_card_summery_report?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
 
-                                            </div>
+                                        </div>
 
-                                        </p:tab>
+                                    </p:tab>
 
-                                        <p:tab title="Agent Reports"> 
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Channel Bookings" action="/channel/agent_channel_bookings?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent History" action="/channel/channel_report_agent_history?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent History(Credit Limit Update)" action="/channel/channel_report_agent_history_2?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Statement(27)" action="/channel/channel_report_agent_history_1?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Balance(32)" action="/channel/channel_report_agent_balance?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Deposit(36)" action="/channel/channel_report_agent_payment_bill?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Wise Channel Appoinment Total And Count(29 &amp; 30)" action="/channel/channel_report_agent_wise_channel_total?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Wise Channel Appoinment Count Summary" action="/channel/channel_report_agent_wise_channel_total_summery?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Channel Books Report()"  action="/channel/channel_report_agent_referece_book?faces-redirect=true" />
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Channel Bills For Book"  action="/channel/channel_report_agent_referece_book_1?faces-redirect=true" />
-                                                <p:commandButton class="w-100" ajax="false" value="Agent Details()" action="/channel/channel_report_agent_details?faces-redirect=true"/>
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="Counts">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" ajax="false" value="Count Report By Doctor(24)" action="/channel/channel_report_by_consultant?faces-redirect=true"/>                                        
-                                                <p:commandButton class="w-100" ajax="false" value="Daily Count for Doctors" action="/channel/channel_report_by_counts_for_doctors_daily?faces-redirect=true"/>                                        
-                                                <p:commandButton class="w-100" ajax="false" value="Count for Doctors by Date of Week" action="/channel/channel_report_by_counts_for_doctors_ordered?faces-redirect=true"/>                                        
+                                    <p:tab title="Agent Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Agent Channel Bookings"
+                                                             action="/channel/agent_channel_bookings?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Agent History"
+                                                             action="/channel/channel_report_agent_history?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Agent History(Credit Limit Update)"
+                                                             action="/channel/channel_report_agent_history_2?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Agent Statement(27)"
+                                                             action="/channel/channel_report_agent_history_1?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Agent Balance(32)"
+                                                             action="/channel/channel_report_agent_balance?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Agent Deposit(36)"
+                                                             action="/channel/channel_report_agent_payment_bill?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Agent Wise Channel Appoinment Total And Count(29 &amp; 30)"
+                                                             action="/channel/channel_report_agent_wise_channel_total?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Agent Wise Channel Appoinment Count Summary"
+                                                             action="/channel/channel_report_agent_wise_channel_total_summery?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Agent Channel Books Report()"
+                                                             action="/channel/channel_report_agent_referece_book?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Agent Channel Bills For Book"
+                                                             action="/channel/channel_report_agent_referece_book_1?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Agent Details()"
+                                                             action="/channel/channel_report_agent_details?faces-redirect=true"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Counts">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Count Report By Doctor(24)"
+                                                             action="/channel/channel_report_by_consultant?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Daily Count for Doctors"
+                                                             action="/channel/channel_report_by_counts_for_doctors_daily?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Count for Doctors by Date of Week"
+                                                             action="/channel/channel_report_by_counts_for_doctors_ordered?faces-redirect=true"/>
 
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="Consultant Reports">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Leave Report()" action="/channel/channel_report_doctor_leave?faces-redirect=true"/>  
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)" action="/channel/channel_report_consultant_month_count?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)(New)" action="/channel/channel_report_consultant_month_count_1?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Specility Wise Channel Appoinment Total And Count(10 &amp; 11)" action="/channel/channel_report_specility_month_count?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Channel &amp; Scan Count(41)" action="/channel/channel_report_scan_channel_count?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Wise Patient Count()" action="/channel/channel_report_staff_wise_patient_count?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="BTT" action="/channel/channel_doctor_view_today_all?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="BTT By Percentage" action="/channel/channel_doctor_view_today_all_1?faces-redirect=true" actionListener="#{channelReportTemplateController.clearWithDefultValue}"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Specility Wise Channel Appoinment count" action="/channel/channel_report_speciality_wise?faces-redirect=true" />
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Consultant Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Doctor Leave Report()"
+                                                             action="/channel/channel_report_doctor_leave?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Doctor Wise Channel Appoinment Total And Count(12)"
+                                                             action="/channel/channel_report_consultant_month_count?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Doctor Wise Channel Appoinment Total And Count(12)(New)"
+                                                             action="/channel/channel_report_consultant_month_count_1?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Specility Wise Channel Appoinment Total And Count(10 &amp; 11)"
+                                                             action="/channel/channel_report_specility_month_count?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Channel &amp; Scan Count(41)"
+                                                             action="/channel/channel_report_scan_channel_count?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Doctor Wise Patient Count()"
+                                                             action="/channel/channel_report_staff_wise_patient_count?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="BTT"
+                                                             action="/channel/channel_doctor_view_today_all?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="BTT By Percentage"
+                                                             action="/channel/channel_doctor_view_today_all_1?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.clearWithDefultValue}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Specility Wise Channel Appoinment count"
+                                                             action="/channel/channel_report_speciality_wise?faces-redirect=true"/>
 
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="Payment Report">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Payment Report" action="/channel/channel_payment_report?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Payment Report By Session" action="/channel/channel_payment_report_by_session?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Payment Report By Session Date" action="/channel/channel_payment_report_by_date?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Doctor Un-Paid Report" action="/channel/channel_unpaid_report?faces-redirect=true"/>
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="Absent Report">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" ajax="false" value="Patient Absent Report" action="/channel/channel_report_absent_patients?faces-redirect=true"/>                                        
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="Session Report">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" ajax="false" 
-                                                                 value="Entered Shedule Report" action="/channel/channel_report_channel_shedule?faces-redirect=true" 
-                                                                 actionListener="#{channelScheduleController.makeNull()}" />                                        
-                                                <p:commandButton class="w-100" ajax="false" 
-                                                                 value="Entered Shedule Report Summary" action="/channel/channel_report_channel_shedule_sumery?faces-redirect=true" 
-                                                                 actionListener="#{channelScheduleController.makeNull()}" />                                        
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="New Channel Reports">
-                                            <div class="d-grid gap-2">
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Payment Report">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Doctor Payment Report"
+                                                             action="/channel/channel_payment_report?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Doctor Payment Report By Session"
+                                                             action="/channel/channel_payment_report_by_session?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Doctor Payment Report By Session Date"
+                                                             action="/channel/channel_payment_report_by_date?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Doctor Un-Paid Report"
+                                                             action="/channel/channel_unpaid_report?faces-redirect=true"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Absent Report">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Patient Absent Report"
+                                                             action="/channel/channel_report_absent_patients?faces-redirect=true"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Session Report">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Entered Shedule Report"
+                                                             action="/channel/channel_report_channel_shedule?faces-redirect=true"
+                                                             actionListener="#{channelScheduleController.makeNull()}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Entered Shedule Report Summary"
+                                                             action="/channel/channel_report_channel_shedule_sumery?faces-redirect=true"
+                                                             actionListener="#{channelScheduleController.makeNull()}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="New Channel Reports">
+                                        <div class="d-grid gap-2">
 
-                                                <p:commandButton class="w-100" ajax="false" value="All My Booking Detail List" action="/channel/channel_report_by_bill_class_by_user?faces-redirect=true" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                                <p:commandButton class="w-100" ajax="false" value="All Agent Booking Detail List" action="/channel/channel_report_agent_channels?faces-redirect=true" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summary" action="/channel/channel_report_cashier_summery_date?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Today All My Booking Summary(Created Date)" action="/channel/channel_report_cashier_summery_date_created?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Today All Cashier Summary(Created Date)" action="/channel/channel_report_cashier_summery_date_created_summery?faces-redirect=true"/>
-                                                <p:commandButton class="w-100" ajax="false" value="All Bill Detail By Payment Methord" action="/channel/channel_report_by_bill_class_by_user_by_payment_methord?faces-redirect=true" actionListener="#{channelReportTemplateController.clearAll}"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Channel Count By Users" action="/channel/report_cashier_vise_count?faces-redirect=true" />
-                                                <p:commandButton class="w-100" ajax="false" value="Channel Count By Users(By Appoinment Date)" action="/channel/report_cashier_vise_count_1?faces-redirect=true" />
-                                                <p:commandButton class="w-100" ajax="false" value="Monthly All Vat report" action="/channel/channel_report_monthly_all_vat?faces-redirect=true" />
-                                                <!--<p:commandButton class="w-100" ajax="false" value="Dashboard" action="/channel/channel_report_dailyChannelAndScanCount_barChart?faces-redirect=true" />-->
-                                                <p:commandButton class="w-100" ajax="false" value="Cancelled and Refund Bill report" action="/channel/daily_refund_bill_report?faces-redirect=true" />
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="All My Booking Detail List"
+                                                             action="/channel/channel_report_by_bill_class_by_user?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="All Agent Booking Detail List"
+                                                             action="/channel/channel_report_agent_channels?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Today All My Booking Summary"
+                                                             action="/channel/channel_report_cashier_summery_date?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Today All My Booking Summary(Created Date)"
+                                                             action="/channel/channel_report_cashier_summery_date_created?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Today All Cashier Summary(Created Date)"
+                                                             action="/channel/channel_report_cashier_summery_date_created_summery?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="All Bill Detail By Payment Methord"
+                                                             action="/channel/channel_report_by_bill_class_by_user_by_payment_methord?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.clearAll}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Channel Count By Users"
+                                                             action="/channel/report_cashier_vise_count?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Channel Count By Users(By Appoinment Date)"
+                                                             action="/channel/report_cashier_vise_count_1?faces-redirect=true"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false" value="Monthly All Vat report"
+                                                             action="/channel/channel_report_monthly_all_vat?faces-redirect=true"/>
+                                            <!--<p:commandButton class="w-100" ajax="false" value="Dashboard" action="/channel/channel_report_dailyChannelAndScanCount_barChart?faces-redirect=true" />-->
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Cancelled and Refund Bill report"
+                                                             action="/channel/daily_refund_bill_report?faces-redirect=true"/>
 
-                                            </div>
-                                        </p:tab>
-                                        <p:tab title="Channel Reports (Staff)">
-                                            <div class="d-grid gap-2">
-                                                <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Detail Report" action="/channel/channel_report_staff_booking_detai?faces-redirect=true" actionListener="#{channelReportTemplateController.makeNull()}"/>
-                                                <p:commandButton class="w-100" ajax="false" value="Chanel Staff Booking Summary Report" action="/channel/channel_report_staff_booking_summery?faces-redirect=true" actionListener="#{channelReportTemplateController.makeNull}"/>
-                                            </div>
-                                        </p:tab>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Channel Reports (Staff)">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Chanel Staff Booking Detail Report"
+                                                             action="/channel/channel_report_staff_booking_detai?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.makeNull()}"/>
+                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
+                                                             value="Chanel Staff Booking Summary Report"
+                                                             action="/channel/channel_report_staff_booking_summery?faces-redirect=true"
+                                                             actionListener="#{channelReportTemplateController.makeNull}"/>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="New Channel Analytic Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false"
+                                                             value="Doctor Arrival Report"
+                                                             />
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false" 
+                                                             value="All Doctor View"
+                                                             />
+                                            <p:commandButton class="w-100 ui-button-success" ajax="false"
+                                                             value="Doctor Leave"
+                                                             />
+
+                                        </div>
+                                    </p:tab>
 
 
+                                </p:accordionPanel>
 
 
-                                    </p:accordionPanel>
+                            </p:panel>
 
-
-
-                                </p:panel>
-
-                            </h:form>
-                        </div>
-
-                        <div class="col-md-9">
-                            <ui:insert name="subContent" >
-
-                            </ui:insert>
-                        </div>
+                        </h:form>
                     </div>
 
-                </h:panelGroup>
+                    <div class="col-md-9">
+                        <ui:insert name="subContent">
 
-            </ui:define>
+                        </ui:insert>
+                    </div>
+                </div>
 
-        </ui:composition>
+            </h:panelGroup>
 
-    </h:body>
+        </ui:define>
+
+    </ui:composition>
+
+</h:body>
 </html>

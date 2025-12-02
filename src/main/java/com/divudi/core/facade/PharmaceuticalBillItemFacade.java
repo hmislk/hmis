@@ -6,11 +6,16 @@ package com.divudi.core.facade;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.data.dto.ItemMovementSummaryDTO;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -44,6 +49,18 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
         List<PharmaceuticalBillItem> btm = findByJpql(sql, hm);
 //        System.out.println("btm = " + btm.size());
         return btm;
+    }
+
+    public List<ItemMovementSummaryDTO> findItemMovementSummaryDTOs(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        TypedQuery<ItemMovementSummaryDTO> qry = getEntityManager().createQuery(jpql, ItemMovementSummaryDTO.class);
+        for (Map.Entry<String, Object> e : parameters.entrySet()) {
+            if (e.getValue() instanceof Date) {
+                qry.setParameter(e.getKey(), (Date) e.getValue(), tt);
+            } else {
+                qry.setParameter(e.getKey(), e.getValue());
+            }
+        }
+        return qry.getResultList();
     }
 
 }

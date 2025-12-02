@@ -97,7 +97,7 @@
                                         <h:outputLabel value="Payment Method" class="mb-2"/>
                                         <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method" />
-                                            <f:selectItems value="#{enumController.paymentMethodsForPharmacyPurchase}" />
+                                            <f:selectItems value="#{enumController.paymentMethodsForGrn}" />
                                             <p:ajax event="change" process="cmbPs" update="paymentMethodDetails" ></p:ajax>
                                         </p:selectOneMenu>
 
@@ -157,7 +157,7 @@
                                         id="acItem"
                                         value="#{pharmacyPurchaseController.currentBillItem.item}"
                                         forceSelection="true"
-                                        completeMethod="#{itemController.completeAmpAndAmppItem}"
+                                        completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
                                         var="vt"
                                         maxResults="20"
                                         itemLabel="#{vt.name}"
@@ -294,7 +294,7 @@
                                     id="exItem"
                                     value="#{pharmacyPurchaseController.currentBillItem.item}"
                                     forceSelection="true"
-                                    completeMethod="#{itemController.completeAmpItem}"
+                                    completeMethod="#{itemController.completeAmpItemForLoggedDepartment}"
                                     var="vt"
                                     itemLabel="#{vt.name}"
                                     itemValue="#{vt}" >

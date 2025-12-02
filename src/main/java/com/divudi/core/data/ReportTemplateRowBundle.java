@@ -152,6 +152,15 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private boolean patientDepositsAreConsideredInHandingover = true;
 
+    private double cashierGrandTotal;
+    private double cashierCollectionTotal;
+    private double cashierExcludedTotal;
+    private boolean cashierGrandTotalComputed;
+    private boolean cashierCollectionTotalComputed;
+    private boolean cashierExcludedTotalComputed;
+    private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
+    private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
     }
@@ -239,6 +248,17 @@ public class ReportTemplateRowBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+
+        resetCashierTotalsAndFlags();
+    }
+
+    private void resetCashierTotalsAndFlags() {
+        cashierGrandTotal = 0.0;
+        cashierCollectionTotal = 0.0;
+        cashierExcludedTotal = 0.0;
+        cashierGrandTotalComputed = false;
+        cashierCollectionTotalComputed = false;
+        cashierExcludedTotalComputed = false;
     }
 
     public void collectDepartments() {
@@ -1871,6 +1891,8 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     private void resetTotalsAndFlags() {
+        resetCashierTotalsAndFlags();
+
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
@@ -2852,6 +2874,86 @@ public class ReportTemplateRowBundle implements Serializable {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
     }
 
+    public double getCashierGrandTotal() {
+        return cashierGrandTotal;
+    }
+
+    public void setCashierGrandTotal(double cashierGrandTotal) {
+        this.cashierGrandTotal = cashierGrandTotal;
+        this.cashierGrandTotalComputed = true;
+    }
+
+    public double getCashierCollectionTotal() {
+        return cashierCollectionTotal;
+    }
+
+    public void setCashierCollectionTotal(double cashierCollectionTotal) {
+        this.cashierCollectionTotal = cashierCollectionTotal;
+        this.cashierCollectionTotalComputed = true;
+    }
+
+    public double getCashierExcludedTotal() {
+        return cashierExcludedTotal;
+    }
+
+    public void setCashierExcludedTotal(double cashierExcludedTotal) {
+        this.cashierExcludedTotal = cashierExcludedTotal;
+        this.cashierExcludedTotalComputed = true;
+    }
+
+    public boolean isCashierGrandTotalComputed() {
+        return cashierGrandTotalComputed;
+    }
+
+    public void setCashierGrandTotalComputed(boolean cashierGrandTotalComputed) {
+        this.cashierGrandTotalComputed = cashierGrandTotalComputed;
+        if (!cashierGrandTotalComputed) {
+            this.cashierGrandTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierCollectionTotalComputed() {
+        return cashierCollectionTotalComputed;
+    }
+
+    public void setCashierCollectionTotalComputed(boolean cashierCollectionTotalComputed) {
+        this.cashierCollectionTotalComputed = cashierCollectionTotalComputed;
+        if (!cashierCollectionTotalComputed) {
+            this.cashierCollectionTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierExcludedTotalComputed() {
+        return cashierExcludedTotalComputed;
+    }
+
+    public void setCashierExcludedTotalComputed(boolean cashierExcludedTotalComputed) {
+        this.cashierExcludedTotalComputed = cashierExcludedTotalComputed;
+        if (!cashierExcludedTotalComputed) {
+            this.cashierExcludedTotal = 0.0;
+        }
+    }
+
+    public List<PaymentMethod> getCashierCollectionPaymentMethods() {
+        return cashierCollectionPaymentMethods;
+    }
+
+    public void setCashierCollectionPaymentMethods(List<PaymentMethod> cashierCollectionPaymentMethods) {
+        this.cashierCollectionPaymentMethods = cashierCollectionPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierCollectionPaymentMethods);
+    }
+
+    public List<PaymentMethod> getCashierExcludedPaymentMethods() {
+        return cashierExcludedPaymentMethods;
+    }
+
+    public void setCashierExcludedPaymentMethods(List<PaymentMethod> cashierExcludedPaymentMethods) {
+        this.cashierExcludedPaymentMethods = cashierExcludedPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierExcludedPaymentMethods);
+    }
+
     //    public SessionController getSessionController() {
 //        return sessionController;
 //    }
@@ -3038,6 +3140,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void seteWalletHandoverValue(double eWalletHandoverValue) {
         this.eWalletHandoverValue = eWalletHandoverValue;
+    }
+
+    public double getEWalletValue() {
+        return eWalletValue;
+    }
+    
+     public void setEWalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
     }
 
 }

@@ -1767,7 +1767,18 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             // Convert the map values to a list to be used in the JSF page
             reportList = new ArrayList<>(categoryReports.values());
+
+            calculateTotalTestCount();
         }, LaboratoryReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void calculateTotalTestCount() {
+        totalCount = 0L;
+        if (reportList != null) {
+            for (CategoryCount categoryCount : reportList) {
+                totalCount += categoryCount.getTotal();
+            }
+        }
     }
 
     public void filterOpdServiceCountBySelectedService(Long selectedItemId) {
@@ -1986,6 +1997,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             m.put("td", toDate);
             m.put("ht", HistoryType.CollectingCentreBalanceUpdateBill);
 
+            jpql += " and ah.bill.retired = false ";
+
             if (collectingCentre != null) {
                 jpql += " and ah.agency = :cc ";
                 m.put("cc", collectingCentre);
@@ -2010,15 +2023,34 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         if (histories != null) {
             for (AgentHistory current : histories) {
+                // Check for balance calculation errors within the current transaction
+                double balanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
+                double transactionValue = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getTransactionValue());
+                double balanceAfter = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceAfterTransaction());
+                double expectedBalanceAfter = balanceBefore + transactionValue;
+
+                double transactionDiff = Math.abs(expectedBalanceAfter - balanceAfter);
+
+                if (transactionDiff > 0.01) { // Transaction calculation error
+                    if (!errors.contains(current)) {
+                        errors.add(current);
+                    }
+                }
+
+                // Check for balance continuation errors between transactions
                 if (previous != null) {
                     double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
                     double actualBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
 
-                    double diff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
+                    double continuationDiff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
 
-                    if (diff > 1.0) { // Significant error
-                        errors.add(previous);
-                        errors.add(current);
+                    if (continuationDiff > 0.01) { // Balance continuation error
+                        if (!errors.contains(previous)) {
+                            errors.add(previous);
+                        }
+                        if (!errors.contains(current)) {
+                            errors.add(current);
+                        }
                     }
                 }
                 previous = current;
@@ -2032,9 +2064,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         String jpql = "select ah "
                 + " from AgentHistory ah "
                 + " where ah.retired = false "
+                + " and ah.bill.retired = false "
                 + " and ah.createdAt between :fd and :td "
                 + " and ah.agency = :cc "
-                + " order by ah.bill.id";
+                + " order by ah.createdAt, ah.bill.id";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -2059,6 +2092,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         String jpql = "select distinct ah.agency "
                 + " from AgentHistory ah "
                 + " where ah.retired = false "
+                + " and ah.bill.retired = false "
                 + " and ah.agency is not null ";
 
         Map<String, Object> params = new HashMap<>();
@@ -2776,6 +2810,23 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         reportType = "Summary";
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
+    
+   
+
+    public String navigateToOtRoomWiseSergeryCount(){
+        
+        return "/reports/managementReports/ot_room_wise_surgery_count?faces-redirect=true";
+    }
+    
+    public String navigateToRoomOccupancyReport(){
+        return "/reports/managementReports/room_occupancy_report?faces-redirect=true";
+        
+    }
+
+    public String navigateToSugeryStatus(){
+       return "/reports/managementReports/surgery_status";
+
+    }
 
     public String navigateToReferringDoctorWiseRevenue() {
 
@@ -2791,12 +2842,48 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/managementReports/surgery_count_doctor_wise?faces-redirect=true";
     }
+    
+    public String navigateToSurgeryCountTypeWise(){
+        
+        return "/reports/managementReports/surgery_count_type?faces-redirect=true";
+    }
+    
+    public String navigateToAdmissionCountConsultationWise(){
+       
+        return "/reports/managementReports/admission_count_consultant_wise?faces-redirect=true";
+    }
+    
+    
+    public String navigateToAdmissionCountPaymentTypeWise(){
+        
+        return "/reports/managementReports/admission_count_payment_type_wise?faces-redirect=true"; 
+    }
+    
+    public String navigateToManagementHospitalCensusReport(){
+        
+        return "/reports/managementReports/hospital_census?faces-redirect=true"; 
+    }
+    
+    public String navigateToROOMOCCUPANCY(){
+        
+        return "/reports/managementReports/ROOM_OCCUPANCY?faces-redirect=true";
+    }
 
     public String navigateToOpdWeeklyReport() {
 
         return "/reports/managementReports/opd_weekly?faces-redirect=true";
     }
+    
+    public String navigateToSpecialityDoctorWiseIncome() {
 
+        return "/reports/managementReports/specility_doctor_wise_income_report?faces-redirect=true";
+    }
+    
+    public String navigateToSpecialityWiseDemograhicData(){
+        
+        return "/reports/statisticsReports/speciality_wise_demographic_data?faces-redirect=true";
+    }
+    
     public String navigateToLeaveReport() {
 
         return "/reports/HRReports/leave_report?faces-redirect=true";
@@ -2956,6 +3043,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/HRReports/online_form_status?faces-redirect=true";
     }
+    
+    public String navigateToPatientJourney() {
+
+        return "/reports/stastistic_reports/patient_journey?faces-redirect=true";
+    }
 
     public String navigateToAdmissionDischargeReport() {
 
@@ -2970,6 +3062,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToGrnReport() {
 
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
+    }
+
+    public String navigateToGrnReturnVarianceReport() {
+
+        return "/reports/inventoryReports/grn_return_variance_report?faces-redirect=true";
     }
 
     public String navigateToSlowFastNoneMovement() {
@@ -3022,9 +3119,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         switch (reportTemplateFileIndexName) {
             case "Stock Correction":
                 return "/reports/inventoryReports/stock_correction?faces-redirect=true";
-            case "GRN Cash Total":
+            case "GRN Cash":
                 return "/reports/inventoryReports/grn_cash?faces-redirect=true";
-            case "GRN Credit Total":
+            case "GRN Credit":
                 return "/reports/inventoryReports/grn_credit?faces-redirect=true";
             case "Drug Return IP":
                 return "/reports/inventoryReports/ip_drug_return?faces-redirect=true";
@@ -3034,21 +3131,25 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
             case "Purchase Return":
                 return "/reports/inventoryReports/purchase_return?faces-redirect=true";
-            case "Transfer Issue Value":
+            case "Stock Adjustment Receive":
+                return "/reports/inventoryReports/stock_adjustment_receive?faces-redirect=true";
+            case "Stock Adjustment Issue":
+                return "/reports/inventoryReports/stock_adjustment_issue?faces-redirect=true";
+            case "Transfer Issue":
                 return "/reports/inventoryReports/transfer_issue?faces-redirect=true";
-            case "Transfer Receive Value":
+            case "Transfer Receive":
                 return "/reports/inventoryReports/transfer_receive?faces-redirect=true";
-            case "Sale Credit Value":
+            case "Sale Credit":
                 return "/reports/inventoryReports/opd_credit?faces-redirect=true";
-            case "BHT Issue Value":
+            case "BHT Issue":
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
-            case "Sale Credit Card":
+            case "Sale ":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
-            case "Closing Stock Value":
-            case "Opening Stock Value":
+            case "Add to Stock Bills":
+                return "/reports/inventoryReports/add_to_stock_bills?faces-redirect=true";
+            case "Closing Stock":
+            case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
-            case "Sale Cash":
-                return "/reports/inventoryReports/opd_sale_cash?faces-redirect=true";
             case "Variance":
             case "Calculated Closing Stock Value":
                 JsfUtil.addErrorMessage("No Given Report Template");
@@ -3075,6 +3176,20 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
     }
+    
+    public String navigateToAdmissionReport(){
+        return "/reports/inpatientReports/ip_admission_report?faces-redirect=true";
+    }
+    
+    public String navigateToIpServiceReport(){
+        return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
+    }
+    
+
+    public String navigateToHospitalCensusReport(){
+        return "/reports/inpatientReports/hospital_census_report?faces-redirect=true";
+    }
+    
 
     public String navigateToIncomeBillCountReport() {
         reportViewTypes = new ArrayList<>();
@@ -3118,6 +3233,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/financialReports/cash_inward_excess_age?faces-redirect=true";
     }
+    
+//    public String navigateToOutsideBillServiceReport(){
+//    
+//        return "/reports/financialReports/outside_bill_service_report?faces-redirect=true";
+//    }
 
     public String navigateToOutsidePayment() {
 

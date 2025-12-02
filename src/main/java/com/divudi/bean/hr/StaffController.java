@@ -854,6 +854,7 @@ public class StaffController implements Serializable {
             sql = "select p from Staff p where p.retired=false  and"
                     + " ((p.person.name) like :q or  "
                     + " (p.staffCode) like :q or "
+                    + " (p.code) like :q or "
                     + " (p.epfNo) like :q ) "
                     + " order by p.person.name";
             //////System.out.println(sql);
@@ -863,7 +864,7 @@ public class StaffController implements Serializable {
         }
 
         return suggestions;
-    }
+    }  
     Roster roster;
 
     public List<Staff> getSuggestions() {
@@ -923,11 +924,13 @@ public class StaffController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Staff p where p.retired=false and "
-                    + "((p.person.name) like '%" + query.toUpperCase() + "%' or "
-                    + " (p.code) like '%" + query.toUpperCase() + "%' ) and type(p) != Doctor"
+                    + "((p.person.name) like :q or "
+                    + " (p.code) like :q or "
+                    + " (p.staffCode) like :q ) and type(p) != Doctor"
                     + " order by p.person.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql, 20);
+            HashMap hm = new HashMap();
+            hm.put("q", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
     }

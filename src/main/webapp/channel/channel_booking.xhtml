@@ -332,12 +332,12 @@
                                     <p:ajax
                                         event="change"
                                         process="@this" 
-                                        update="acBookings scStaff acSessions pnlArrived"
+                                        update="acBookings scStaff acSessions pnlArrived moreInfo"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
                                     <p:ajax
                                         event="click"
                                         process="@this" 
-                                        update="acBookings scStaff acSessions pnlArrived"
+                                        update="acBookings scStaff acSessions pnlArrived moreInfo"
                                         listener="#{bookingController.listnerStaffListForRowSelect}"/> 
 
                                     <f:selectItem itemLabel="All" ></f:selectItem>
@@ -366,13 +366,13 @@
                                 <p:ajax  
                                     event="change"
                                     process="@this" 
-                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
+                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId} moreInfo"  
                                     listener="#{bookingController.generateSessions}"/>
 
                                 <p:ajax  
                                     event="click"
                                     process="@this" 
-                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"  
+                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId} moreInfo"  
                                     listener="#{bookingController.generateSessions}"/>
 
                                 <f:selectItems value="#{bookingController.consultants}"
@@ -393,7 +393,7 @@
                             value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
-
+                            
                             <f:selectItems 
                                 value="#{bookingController.sessionInstances}" 
                                 var="ses" 
@@ -406,29 +406,24 @@
                                     <h:outputText value="Name" ></h:outputText>
                                 </f:facet>
                                 <div class="d-flex align-items-center gap-2">
-                                    <h:outputText value="#{s.name}" />
+                                    <h:outputText id="name" value="#{s.name}" />
                                     <p:tag severity="warning" value="Scanning" rendered="#{s.originatingSession.category eq 'Scanning'}"></p:tag>
                                     <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
 
                                 </div>
-
-
                             </p:column>
+
                             <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{s.sessionDate}">
                                     <f:convertDateTime pattern="dd MMM"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Start" style="width: 40px!important; text-align: center;">
+                            <p:column headerText="Start" style="width: 70px!important; text-align: left;">
                                 <h:outputText value="#{s.startingTime}">
                                     <f:convertDateTime pattern="hh:mm a"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Max" style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                    <f:convertNumber pattern="00" />
-                                </h:outputText>
-                            </p:column>
+
                             <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booked Details on Channel Booking')}" headerText="Booked" style="width: 20px!important; text-align: center;">
                                 <h:outputText value="#{s.bookedPatientCount}" rendered="#{s.bookedPatientCount ne null}">
                                     <f:convertNumber pattern="00" />
@@ -445,6 +440,7 @@
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
+
                             <p:column headerText="Status" style="width: 40px!important; text-align: center;">
                                 <p:badge value="Cancelled" severity="danger" style="width: 60px;" rendered="#{s.cancelled}"></p:badge>
                                 <p:badge class="px-1" value="Arrived" severity="info" rendered="#{s.arrived and !s.started}"/>
@@ -455,18 +451,56 @@
                             <p:ajax 
                                 event="change" 
                                 process="@this"
-                                update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
+                                update="pnlArrived acBookings acSessions btnAddBooking manageBookingId moreInfo"
                                 listener="#{bookingController.fillBillSessions}" />
 
                             <p:ajax 
                                 event="click" 
                                 process="@this"
-                                update="pnlArrived acBookings acSessions btnAddBooking manageBookingId"
+                                update="pnlArrived acBookings acSessions btnAddBooking manageBookingId moreInfo"
                                 listener="#{bookingController.fillBillSessions}" />
+
                         </p:selectOneListbox>
                     </div>
 
                     <div class="col-4" >
+                        <p:accordionPanel multiple="true" 
+                                          id="moreInfo"
+                                          rendered="#{not empty bookingController.selectedSessionInstance}"
+                                          style="width:100%;">
+
+                            <p:tab title="More Info">
+                                <h:panelGrid columns="3" cellpadding="5">
+                                    <h:outputText value="Institution" />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{bookingController.selectedSessionInstance.institution.name} " />
+
+                                    <h:outputText value="Max No " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{bookingController.selectedSessionInstance.maxNo} " />
+
+                                    <h:outputText value="Room No " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{bookingController.selectedSessionInstance.roomNo} " rendered="#{bookingController.selectedSessionInstance.roomNo ne 0}"/>
+                                    <h:outputText value="Not Specified Yet " rendered="#{bookingController.selectedSessionInstance.roomNo eq 0}"/>
+
+                                    <h:outputText value="End Time" />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{bookingController.selectedSessionInstance.endingTime}">
+                                        <f:convertDateTime pattern="hh:mm a"/>
+                                    </h:outputText>
+
+                                    <h:outputText value="Booked Patient Count " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{bookingController.selectedSessionInstance.bookedPatientCount != null ? bookingController.selectedSessionInstance.bookedPatientCount : ' '}" />
+
+                                    <h:outputText value="Note " rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" />
+                                    <h:outputText value=":" rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}"/>
+                                    <h:outputText value="#{bookingController.selectedSessionInstance.specialNoticeSessionInstance} | #{bookingController.selectedSessionInstance.originatingSession.specialNotice}" 
+                                                  rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" style="color: red"/>
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:accordionPanel>
 
                         <p:selectOneListbox
                             id="acBookings" 
@@ -475,16 +509,17 @@
                             filterMatchMode="contains"
                             var="bs"
                             class="w-100 fullHeightListbox">
+
                             <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" itemLabel="#{item.bill.patient.person.nameWithTitle}" />
                             <p:ajax process="acBookings" update="test manageBookingId"></p:ajax>
 
                             <p:column style="width: 5px!important;">
-                                <h:outputText value="#{bs.serialNo}" />
+                                <h:outputText value="#{bs.serialNo}" style="font-weight: bold"/>
                             </p:column>
 
                             <p:column style="width: 50px!important;">
-                                <h:outputText rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" />
-                                <h:outputText rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" />
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-weight: bold"/>
+                                <h:outputText rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}" style="font-weight: bold"/>
                             </p:column>
 
                             <p:column style="width: 20px!important;" rendered="#{bookingController.selectedSessionInstance.started}">
@@ -498,11 +533,11 @@
                                 <p:outputLabel value="-On Call" rendered="#{!bs.bill.billPaymentCompletelySettled and bs.bill.paymentMethod eq 'OnCall'}" style="color: red;"/>
 
                                 <p:outputLabel value="Paid" rendered="#{bs.bill.billPaymentCompletelySettled}" style="color: green;"/>-->
-                                <p:outputLabel value="OnCall - " rendered="#{bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green;"/>
-                                <p:outputLabel value="Card " rendered="#{bs.bill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green;"/>
-                                <p:outputLabel value="Cash " rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green;"/>
-                                <p:outputLabel value="MultiplePayments" rendered="#{bs.bill.paymentMethod eq 'MultiplePaymentMethods' or bs.bill.paidBill.paymentMethod eq 'MultiplePaymentMethods'}" style="color: green;"/>
-                                <p:outputLabel value="Agent " rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paidBill.paymentMethod eq 'Agent'}" style="color: green;"/>
+                                <p:outputLabel value="OnCall - " rendered="#{bs.bill.paymentMethod eq 'OnCall'}" style="margin-left: 5px; color: green; font-weight: bold"/>
+                                <p:outputLabel value="Card " rendered="#{bs.bill.paymentMethod eq 'Card' or bs.bill.paidBill.paymentMethod eq 'Card'}" style="color: green; font-weight: bold"/>
+                                <p:outputLabel value="Cash " rendered="#{bs.bill.paymentMethod eq 'Cash' or bs.bill.paidBill.paymentMethod eq 'Cash'}" style="color: green; font-weight: bold"/>
+                                <p:outputLabel value="MultiplePayments" rendered="#{bs.bill.paymentMethod eq 'MultiplePaymentMethods' or bs.bill.paidBill.paymentMethod eq 'MultiplePaymentMethods'}" style="color: green; font-weight: bold"/>
+                                <p:outputLabel value="Agent " rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paidBill.paymentMethod eq 'Agent' and bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" style="color: green; font-weight: bold"/>
                                 <p:outputLabel value="Staff " rendered="#{bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
                                 <p:outputLabel value="OB - #{bs.bill.referenceBill.onlineBooking.referenceNo}" rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" style="color: #000; background: #fbc531; font-weight: bold; padding: 2px"/>
 
@@ -519,9 +554,9 @@
                             </p:column>
 
                             <p:column style="width: 5px!important;">
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType eq 'ChannelAgent'}" value="#{bs.bill.creditCompany.institutionCode}"/>
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType ne 'ChannelAgent'}" value="System Booking"/>
-                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType eq 'ChannelAgent'}" value="Ref-#{bs.bill.agentRefNo}" title="Agent - #{bs.bill.creditCompany.name}" style="font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and bs.bill.billType ne 'ChannelAgent'}" value="System Booking" style="font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.agency.name}" style="font-weight: bold"/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">
@@ -550,11 +585,11 @@
                                 const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
                                 const pathName = window.location.pathname;
                                 const contextPath = pathName.split('/')[1];
-                                const wsUrl = protocol + "//" + window.location.host + "/"+ contextPath + "/ws/notify";
+                                const wsUrl = protocol + "//" + window.location.host + "/" + contextPath + "/ws/notify";
 
                                 let socket = new WebSocket(wsUrl);
-
                                 return socket;
+
                             }
 
                             const socket = initializeWebSocket();
@@ -577,6 +612,9 @@
                                         if (sendMessage === "Online Booking Completed") {
                                             const notify = document.getElementById('global-notification');
                                             notify.style.display = 'block';
+
+//                                            playAudio();
+
                                             setTimeout(() => {
                                                 notify.style.display = 'none';
                                                 notify.style.transition = 'all 0.6s ease';
@@ -612,7 +650,7 @@
                                          styleClass="ws-trigger"
                                          update="acBookings "
                                          style="display:none"/>
-<!--                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>-->
+                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
                     </div>
                 </div>
 

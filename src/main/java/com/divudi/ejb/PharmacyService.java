@@ -17,11 +17,13 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Atm;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,44 +76,117 @@ public class PharmacyService {
     }
 
     public boolean isAllergyForPatient(Patient patient, BillItem billItem, List<ClinicalFindingValue> allergyListOfPatient) {
+        return !getAllergyMessageForPatient(patient, billItem, allergyListOfPatient).isEmpty();
+    }
+
+    /**
+     * Build a human readable warning if the bill item matches any recorded
+     * allergies. Checks the Amp, Atm, Vmp, and Vtm hierarchy for conflicts.
+     *
+     * @param patient patient whose allergies are evaluated
+     */
+    public String getAllergyMessageForPatient(Patient patient, BillItem billItem, List<ClinicalFindingValue> allergyListOfPatient) {
+
+        if (billItem == null) {
+            return "";
+        }
 
         if (allergyListOfPatient == null || allergyListOfPatient.isEmpty()) {
             allergyListOfPatient = getAllergyListForPatient(patient);
         }
 
         if (allergyListOfPatient.isEmpty()) {
-            return false;
+            return "";
+        }
+
+        Item item = null;
+        if (billItem.getPharmaceuticalBillItem() != null && billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
+            item = billItem.getPharmaceuticalBillItem().getItemBatch().getItem();
+        }
+        if (item == null) {
+            item = billItem.getItem();
+        }
+        if (item == null) {
+            return "";
+        }
+
+        Amp amp = null;
+        Vmp vmp = null;
+        if (item instanceof Ampp) {
+            amp = ((Ampp) item).getAmp();
+        } else if (item instanceof Amp) {
+            amp = (Amp) item;
+        } else if (item instanceof Vmp) {
+            vmp = (Vmp) item;
+        }
+
+        Atm atm = null;
+        Vtm vtm = null;
+       
+
+        if (amp != null) {
+            atm = amp.getAtm();
+            vmp = amp.getVmp();
+         
+        } else if (amp == null && vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+        }
+
+        if (atm != null && vtm == null) {
+            vtm = (Vtm) atm.getVtm();
+        }
+
+        if (vtm == null && vmp != null) {
+            vtm = (Vtm) vmp.getVtm();
+            System.out.println("line 141"+vtm);
+            // TODO: Temporarily stopped searching for VTM of VMP - need to remember how to get VTM from VMP
+            // vtm = vmp.getVtm(); // Commented out to prevent compilation error
+        }
+        if (vtm == null) {
+            vtm = (Vtm) item.getVtm();
         }
 
         for (ClinicalFindingValue c : allergyListOfPatient) {
-            if (c.getItemValue() != null) {
-                if (billItem.getPharmaceuticalBillItem().getItemBatch() != null) {
-                    if (c.getItemValue().equals(billItem.getPharmaceuticalBillItem().getItemBatch().getItem())) {
-                        return true;
-                    }
-                }
-                if (billItem.getPharmaceuticalBillItem().getItemBatch().getItem() != null) {
-                    if (c.getItemValue().equals(billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getVmp())) {
-                        return true;
-                    }
-                }
+            if (c.getItemValue() == null) {
+                continue;
+            }
+            Item allergyItem = c.getItemValue();
+            Vtm allergyVtm = null;
 
-                if (billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getVmp() != null) {
-                    if (c.getItemValue().equals(billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getVmp().getVtm())) {
-                        return true;
-                    }
+            if (allergyItem instanceof Vtm) {
+                allergyVtm = (Vtm) allergyItem;
+            } else if (allergyItem instanceof Amp) {
+                allergyVtm = allergyItem.getVmp() != null ? (Vtm) allergyItem.getVmp().getVtm() : (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Vmp) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else if (allergyItem instanceof Atm) {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            } else {
+                allergyVtm = (Vtm) allergyItem.getVtm();
+            }
+
+            if (vtm != null && allergyVtm != null) {
+                if (vtm.equals(allergyVtm)) {
+                    return item.getName() + " is not allowed as patient has allergic to " + allergyVtm.getName();
                 }
             }
 
+//            if (a.equals(item)
+//                    || (amp != null && a.equals(amp))
+//                    || (atm != null && a.equals(atm))
+//                    || (vmp != null && a.equals(vmp))
+//                    || (vtm != null && a.equals(vtm))
+//                    || (vtm != null && a.getVtm().equals(vtm))) {
+//                return item.getName() + " is not allowed as patient has allergic to " + a.getName();
+//            }
         }
-        return false;
+
+        return "";
     }
 
     public String isAllergyForPatient(Patient patient, List<BillItem> items, List<ClinicalFindingValue> allergyLisForPatient) {
 
-        boolean hasAllergicMedicines = false;
-        List<Item> allergyItems = new ArrayList<>();
-        StringBuilder allergyMsg = new StringBuilder();
+        List<String> allergyMessages = new ArrayList<>();
 
         if (allergyLisForPatient == null || allergyLisForPatient.isEmpty()) {
             allergyLisForPatient = getAllergyListForPatient(patient);
@@ -122,25 +197,14 @@ public class PharmacyService {
         }
 
         for (BillItem billItem : items) {
-            boolean thisItemIsAllergy = isAllergyForPatient(patient, billItem, allergyLisForPatient);
-
-            if (thisItemIsAllergy) {
-                allergyItems.add(billItem.getItem());
-                hasAllergicMedicines = true;
+            String msg = getAllergyMessageForPatient(patient, billItem, allergyLisForPatient);
+            if (!msg.isEmpty()) {
+                allergyMessages.add(msg);
             }
         }
 
-        if (hasAllergicMedicines) {
-            allergyMsg.append("This patient should be allergy of ");
-
-            for (Item i : allergyItems) {
-                allergyMsg.append(i.getName()).append(" , ");
-            }
-
-            if (allergyMsg.length() > 0) {
-                allergyMsg.setLength(allergyMsg.length() - 2);
-            }
-            return allergyMsg.toString();
+        if (!allergyMessages.isEmpty()) {
+            return String.join(" , ", allergyMessages);
         }
 
         return "";
@@ -148,9 +212,6 @@ public class PharmacyService {
 
     public void addBillItemInstructions(BillItem billItem) {
         if (billItem == null) {
-            return;
-        }
-        if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
         Item item = billItem.getItem();
@@ -292,6 +353,15 @@ public class PharmacyService {
         return bundle;
     }
 
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyTransferValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
@@ -301,12 +371,30 @@ public class PharmacyService {
         return bundle;
     }
 
+    public PharmacyBundle fetchPharmacyTransferValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyAdjustmentValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
         List<Bill> pharmacyIncomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         bundle = new PharmacyBundle(pharmacyIncomeBills);
         bundle.generatePharmacyPurchaseGroupedByBillType();
+        return bundle;
+    }
+
+    public PharmacyBundle fetchPharmacyAdjustmentValueByBillTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyAdjustmentBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetails(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
         return bundle;
     }
 
@@ -343,6 +431,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
                 BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING,
                 BillTypeAtomic.PHARMACY_GRN_RETURN,
                 BillTypeAtomic.PHARMACY_GRN_CANCELLED
         );
@@ -351,12 +440,25 @@ public class PharmacyService {
     public List<BillTypeAtomic> getPharmacyInternalTransferBillTypes() {
         return Arrays.asList(
                 BillTypeAtomic.PHARMACY_ISSUE,
-                BillTypeAtomic.PHARMACY_RECEIVE
+                BillTypeAtomic.PHARMACY_RECEIVE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
         );
     }
 
     public List<BillTypeAtomic> getPharmacyAdjustmentBillTypes() {
         return Arrays.asList(
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );
