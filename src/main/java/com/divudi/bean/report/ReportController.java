@@ -2811,6 +2811,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
     
+   
 
     public String navigateToOtRoomWiseSergeryCount(){
         
@@ -2846,6 +2847,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         
         return "/reports/managementReports/surgery_count_type?faces-redirect=true";
     }
+    
+    public String navigateToAdmissionCountConsultationWise(){
+       
+        return "/reports/managementReports/admission_count_consultant_wise?faces-redirect=true";
+    }
+    
     
     public String navigateToAdmissionCountPaymentTypeWise(){
         
@@ -3138,6 +3145,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
             case "Sale ":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
+            case "Add to Stock Bills":
+                return "/reports/inventoryReports/add_to_stock_bills?faces-redirect=true";
             case "Closing Stock":
             case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";

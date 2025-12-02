@@ -325,6 +325,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill.setNetTotal(dbl);
         batchBill.setTotal(dblTot);
         batchBill.setDiscount(dblTot - dbl);
+
+        // Initialize balance field for credit bills
+        if (paymentMethod == PaymentMethod.Credit) {
+            double totalAmount = Math.abs(batchBill.getNetTotal());
+            if (batchBill.getVat() != 0.0) {
+                totalAmount += Math.abs(batchBill.getVat());
+            }
+            batchBill.setBalance(totalAmount);
+        }
+
         getBillFacade().edit(batchBill);
 
     }
@@ -1170,6 +1180,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         temp.setComments(comment);
 
         if (temp.getId() == null) {
+            // Initialize balance field for credit bills before creating
+            if (paymentMethod == PaymentMethod.Credit) {
+                double totalAmount = Math.abs(temp.getNetTotal());
+                if (temp.getVat() != 0.0) {
+                    totalAmount += Math.abs(temp.getVat());
+                }
+                temp.setBalance(totalAmount);
+            }
             getFacade().create(temp);
         }
         return temp;

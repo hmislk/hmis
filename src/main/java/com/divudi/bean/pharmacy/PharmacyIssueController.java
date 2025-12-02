@@ -256,6 +256,13 @@ public class PharmacyIssueController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE",
+            "Custom suffix to append to pharmacy disposal issue bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount)",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",

@@ -215,6 +215,8 @@
                                 itemValue="#{item}"
                                 ></p:autoComplete>
 
+                            <p:spacer ></p:spacer>
+                            
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-file-alt mr-2" />
                                 <p:outputLabel value="Report Type" for="reportType" class="m-3">
@@ -289,27 +291,34 @@
                                      styleClass="table-sm">
 
 
-                            <p:column headerText="Department" width="12em">
+                            <p:column headerText="Department" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerDepartmentVisible}">
                                 <h:outputText value="#{f.department.name}" />
                             </p:column>
-                            <p:column headerText="Category" width="12em">
+                            <p:column headerText="Category" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerCategoryVisible}">
                                 <h:outputText value="#{empty f.pbItem.billItem.item.amp ? f.pbItem.billItem.item.category.name : f.pbItem.billItem.item.amp.category.name}" />
                             </p:column>
-                            <p:column headerText="Item" width="8em">
+                            <p:column headerText="Item" width="8em"
+                                      rendered="#{userSettingsController.stockLedgerItemCodeVisible}">
                                 <h:outputText value="#{empty f.pbItem.billItem.item.amp ? f.pbItem.billItem.item.code : f.pbItem.billItem.item.amp.code}" />
                             </p:column>
-                            <p:column headerText="Name" width="20em">
+                            <p:column headerText="Name" width="20em"
+                                      rendered="#{userSettingsController.stockLedgerNameVisible}">
                                 <h:outputText value="#{f.pbItem.billItem.item.name}" />
                             </p:column>
-                            <p:column headerText="UOM" width="6em">
+                            <p:column headerText="UOM" width="6em"
+                                      rendered="#{userSettingsController.stockLedgerUomVisible}">
                                 <h:outputText value="#{f.pbItem.billItem.item.measurementUnit.name}" />
                             </p:column>
-                            <p:column headerText="Transaction Type" styleClass="text-center" width="10em">
+                            <p:column headerText="Transaction Type" styleClass="text-center" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerTransactionTypeVisible}">
                                 <h:outputText
                                     value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}"
                                     styleClass="#{f.pbItem.transThisIsStockIn ? 'stock-in-badge' : 'stock-out-badge'}" />
                             </p:column>
-                            <p:column headerText="Bill Number" width="10em">
+                            <p:column headerText="Bill Number" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerBillNumberVisible}">
                                 <p:commandLink
                                     value="#{f.pbItem.billItem.bill.deptId}"
                                     class="m-1 ui-button-info"
@@ -318,12 +327,14 @@
                                     <f:setPropertyActionListener value="#{not empty f.pbItem.billItem.bill ? f.pbItem.billItem.bill : (f.pbItem.billItem.bill.referenceBill or f.pbItem.billItem.bill.backwardReferenceBill or f.pbItem.billItem.bill.forwardReferenceBill)}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Transaction At" width="12em">
+                            <p:column headerText="Transaction At" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerTransactionAtVisible}">
                                 <h:outputText value="#{f.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Referance Bill Number" width="10em">
+                            <p:column headerText="Referance Bill Number" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerReferenceBillVisible}">
                                 <p:commandLink
                                     rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
                                     value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
@@ -342,7 +353,8 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Ref Transaction at" width="12em">
+                            <p:column headerText="Ref Transaction at" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerRefTransactionAtVisible}">
                                 <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
                                               value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
@@ -354,161 +366,203 @@
                                 </h:outputText>
 
                             </p:column>
-                            <p:column headerText="From Store" width="12em">
+                            <p:column headerText="From Store" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerFromStoreVisible}">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
                             </p:column>
-                            <p:column headerText="To Store" width="12em">
+                            <p:column headerText="To Store" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerToStoreVisible}">
                                 <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
                             </p:column>
-                            <p:column headerText="Consumption Department" width="12em">
+                            <p:column headerText="Consumption Department" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerConsumptionDeptVisible}">
                                 <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
                             </p:column>
-                            <p:column headerText="Document Type" width="12em">
+                            <p:column headerText="Document Type" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerDocumentTypeVisible}">
                                 <h:outputText
                                     value="#{not empty f.pbItem.billItem.bill.billTypeAtomic ?
                                              f.pbItem.billItem.bill.billTypeAtomic.label :
                                              f.pbItem.billItem.bill.billType.label}" />
                             </p:column>
-                            <p:column headerText="Stock In Qty in units" styleClass="text-end" width="9em">
+                            <p:column headerText="Stock In Qty in units" styleClass="text-end" width="9em"
+                                      rendered="#{userSettingsController.stockLedgerStockInQtyVisible}">
                                 <h:outputText value="#{f.pbItem.transThisIsStockIn eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Stock Out Qty in units" styleClass="text-end" width="9em">
+                            <p:column headerText="Stock Out Qty in units" styleClass="text-end" width="9em"
+                                      rendered="#{userSettingsController.stockLedgerStockOutQtyVisible}">
                                 <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : ''}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
                             <p:column id="colClosingStock" styleClass="text-end" width="10em">
                                 <f:facet name="header">
-                                    <h:panelGroup>
-                                        <h:outputText value="Closing Stock " />
-                                        <p:badge value="Batch" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}"></p:badge>
-                                        <p:badge value="Item" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}"></p:badge>
-                                    </h:panelGroup>
+                                    <h:outputText value="Closing Stock " />
+                                    <p:badge value="Batch" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}"></p:badge>
+                                    <p:badge value="Item" styleClass="ml-1" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}"></p:badge>
                                 </f:facet>
 
-                                <!-- By Batch Report Type -->
-                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch'}">
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <h:outputText value="#{f.stockQty}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <h:outputText value="#{f.instituionBatchQty}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <h:outputText value="#{f.totalBatchQty}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                <!-- By Batch Report Type - Department Specific -->
+                                <h:outputText value="#{f.stockQty}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
 
-                                <!-- By Item Report Type -->
-                                <h:panelGroup rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem'}">
-                                    <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                        <h:outputText value="#{f.itemStock}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                            <h:outputText value="#{f.institutionItemStock}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                            <h:outputText value="#{f.totalItemStock}" >
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                <!-- By Batch Report Type - Institution Specific -->
+                                <h:outputText value="#{f.instituionBatchQty}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Total -->
+                                <h:outputText value="#{f.totalBatchQty}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Department Specific -->
+                                <h:outputText value="#{f.itemStock}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStock}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Total -->
+                                <h:outputText value="#{f.totalItemStock}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
 
                             </p:column>
-                            <p:column headerText="Rate" styleClass="text-end" width="8em">
+                            <p:column headerText="Rate" styleClass="text-end" width="8em"
+                                      rendered="#{userSettingsController.stockLedgerRateVisible}">
                                 <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                             </p:column>
-                            <p:column headerText="Cost Rate" styleClass="text-end" width="8em">
+                            <p:column headerText="Cost Rate" styleClass="text-end" width="8em"
+                                      rendered="#{userSettingsController.stockLedgerCostRateVisible}">
                                 <h:outputText value="#{f.itemBatch.costRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0.000000" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column id="colValueAtPurchaseRate" headerText="Closing Stock Value at Purchase Rate" styleClass="text-end" width="12em">
-                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                    <h:outputText value="#{f.itemStockValueAtPurchaseRate}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                        <h:outputText value="#{f.institutionItemStockValueAtPurchaseRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                        <h:outputText value="#{f.totalItemStockValueAtPurchaseRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                            <p:column id="colValueAtPurchaseRate" headerText="Closing Stock Value at Purchase Rate" styleClass="text-end" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerValueAtPurchaseRateVisible}">
+
+                                <!-- By Batch Report Type - Department Specific -->
+                                <h:outputText value="#{f.stockPurchaseValue}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionBatchStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Total -->
+                                <h:outputText value="#{f.totalBatchStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Department Specific -->
+                                <h:outputText value="#{f.itemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Total -->
+                                <h:outputText value="#{f.totalItemStockValueAtPurchaseRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
                             </p:column>
-                            <p:column id="colValueAtCostRate" headerText="Closing Stock Value at Cost Rate" styleClass="text-end" width="12em">
-                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                    <h:outputText value="#{f.itemStockValueAtCostRate}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                        <h:outputText value="#{f.institutionItemStockValueAtCostRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                        <h:outputText value="#{f.totalItemStockValueAtCostRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                            <p:column id="colValueAtCostRate" headerText="Closing Stock Value at Cost Rate" styleClass="text-end" width="12em"
+                                      rendered="#{userSettingsController.stockLedgerValueAtCostRateVisible}">
+                                
+                                <!-- By Batch Report Type - Department Specific -->
+                                <h:outputText value="#{f.stockCostValue}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionBatchStockValueAtCostRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Total -->
+                                <h:outputText value="#{f.totalBatchStockValueAtCostRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Department Specific -->
+                                <h:outputText value="#{f.itemStockValueAtCostRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStockValueAtCostRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Total -->
+                                <h:outputText value="#{f.totalItemStockValueAtCostRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                
+                                
+                                
                             </p:column>
-                            <p:column  id="colValueAtRetailSaleRate"  headerText="Closing Stock Value at Retail Rate" styleClass="text-end" width="12em">
-                                <h:panelGroup rendered="#{pharmacyReportController.department ne null}" >
-                                    <h:outputText value="#{f.itemStockValueAtSaleRate}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{pharmacyReportController.department eq null}" >
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution ne null}" >
-                                        <h:outputText value="#{f.institutionItemStockValueAtSaleRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{pharmacyReportController.institution eq null}" >
-                                        <h:outputText value="#{f.totalItemStockValueAtSaleRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                            <p:column  id="colValueAtRetailSaleRate"  headerText="Closing Stock Value at Retail Rate" styleClass="text-end" width="12em"
+                                       rendered="#{userSettingsController.stockLedgerValueAtRetailRateVisible}">
+
+                                <!-- By Batch Report Type - Department Specific -->
+                                <h:outputText value="#{f.stockSaleValue}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionBatchStockValueAtSaleRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Batch Report Type - Total -->
+                                <h:outputText value="#{f.totalBatchStockValueAtSaleRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byBatch' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Department Specific -->
+                                <h:outputText value="#{f.itemStockValueAtSaleRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Institution Specific -->
+                                <h:outputText value="#{f.institutionItemStockValueAtSaleRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution ne null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
+
+                                <!-- By Item Report Type - Total -->
+                                <h:outputText value="#{f.totalItemStockValueAtSaleRate}" rendered="#{pharmacyReportController.stockLedgerReportType eq 'byItem' and pharmacyReportController.department eq null and pharmacyReportController.institution eq null}">
+                                    <f:convertNumber pattern="#,##0.000" />
+                                </h:outputText>
                             </p:column>
                             <!--                            <p:column headerText="Locator" width="8em">
                                                             <h:outputText value="" />
                                                         </p:column>-->
-                            <p:column headerText="Batch Code" width="10em">
+                            <p:column headerText="Batch Code" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerBatchCodeVisible}">
                                 <h:outputText value="#{f.itemBatch.batchNo}" />
                             </p:column>
-                            <p:column headerText="MRP" styleClass="text-end" width="8em">
+                            <p:column headerText="MRP" styleClass="text-end" width="8em"
+                                      rendered="#{userSettingsController.stockLedgerMrpVisible}">
                                 <h:outputText value="#{f.pbItem.retailRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Expiry Date" width="10em">
+                            <p:column headerText="Expiry Date" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerExpiryDateVisible}">
                                 <h:outputText value="#{f.itemBatch.dateOfExpire}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputText>
@@ -518,11 +572,176 @@
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                             </h:outputText>
                                                         </p:column>-->
-                            <p:column headerText="User" width="10em">
+                            <p:column headerText="User" width="10em"
+                                      rendered="#{userSettingsController.stockLedgerUserVisible}">
                                 <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />
                             </p:column>
 
                         </p:dataTable>
+
+                        <!-- Stock Ledger Column Visibility Settings - Subtle placement -->
+                        <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                            <p:panel toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Customize Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkDepartment" value="#{userSettingsController.stockLedgerDepartmentVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkDepartment" value="Department" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCategory" value="#{userSettingsController.stockLedgerCategoryVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCategory" value="Category" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkItemCode" value="#{userSettingsController.stockLedgerItemCodeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkItemCode" value="Item Code" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkName" value="#{userSettingsController.stockLedgerNameVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkName" value="Name" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkUom" value="#{userSettingsController.stockLedgerUomVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkUom" value="UOM" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkTransactionType" value="#{userSettingsController.stockLedgerTransactionTypeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkTransactionType" value="Transaction Type" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkBillNumber" value="#{userSettingsController.stockLedgerBillNumberVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkBillNumber" value="Bill Number" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkTransactionAt" value="#{userSettingsController.stockLedgerTransactionAtVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkTransactionAt" value="Transaction At" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkReferenceBill" value="#{userSettingsController.stockLedgerReferenceBillVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkReferenceBill" value="Reference Bill" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRefTransactionAt" value="#{userSettingsController.stockLedgerRefTransactionAtVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRefTransactionAt" value="Ref Transaction At" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkFromStore" value="#{userSettingsController.stockLedgerFromStoreVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkFromStore" value="From Store" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkToStore" value="#{userSettingsController.stockLedgerToStoreVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkToStore" value="To Store" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkConsumptionDept" value="#{userSettingsController.stockLedgerConsumptionDeptVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkConsumptionDept" value="Consumption Dept" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkDocumentType" value="#{userSettingsController.stockLedgerDocumentTypeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkDocumentType" value="Document Type" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRate" value="#{userSettingsController.stockLedgerRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRate" value="Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCostRate" value="#{userSettingsController.stockLedgerCostRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCostRate" value="Cost Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkValueAtPurchaseRate" value="#{userSettingsController.stockLedgerValueAtPurchaseRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkValueAtPurchaseRate" value="Value at Purchase Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkValueAtCostRate" value="#{userSettingsController.stockLedgerValueAtCostRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkValueAtCostRate" value="Value at Cost Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkValueAtRetailRate" value="#{userSettingsController.stockLedgerValueAtRetailRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkValueAtRetailRate" value="Value at Retail Rate" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkBatchCode" value="#{userSettingsController.stockLedgerBatchCodeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkBatchCode" value="Batch Code" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkMrp" value="#{userSettingsController.stockLedgerMrpVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkMrp" value="MRP" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkExpiryDate" value="#{userSettingsController.stockLedgerExpiryDateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkExpiryDate" value="Expiry Date" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkStockInQty" value="#{userSettingsController.stockLedgerStockInQtyVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkStockInQty" value="Stock In Qty" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkStockOutQty" value="#{userSettingsController.stockLedgerStockOutQtyVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkStockOutQty" value="Stock Out Qty" styleClass="ms-1" />
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkUser" value="#{userSettingsController.stockLedgerUserVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkUser" value="User" styleClass="ms-1" />
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
 
                     </p:panel>
 

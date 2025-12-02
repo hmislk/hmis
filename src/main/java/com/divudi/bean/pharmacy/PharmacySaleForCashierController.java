@@ -97,7 +97,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -109,6 +112,7 @@ import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -1197,6 +1201,37 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         handleSelectAction();
     }
 
+    public void showItemDetailsForSelectedStock() {
+        try {
+            if (stockDto == null) {
+                JsfUtil.addErrorMessage("Please select a stock first");
+                return;
+            }
+
+            Stock selectedStock = convertStockDtoToEntity(stockDto);
+            if (selectedStock == null || selectedStock.getItemBatch() == null || selectedStock.getItemBatch().getItem() == null) {
+                JsfUtil.addErrorMessage("Selected stock does not have valid item information");
+                return;
+            }
+
+            Item selectedItem = selectedStock.getItemBatch().getItem();
+            Long itemId = selectedItem.getId();
+
+            // Construct the URL with the item ID parameter
+            String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
+            String popupUrl = contextPath + "/faces/pharmacy/pharmacy_item_transactions_popup.xhtml?itemId=" + itemId;
+
+            // Execute JavaScript to open the popup
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
+                "Opening item details for: " + selectedItem.getName(), null));
+
+            PrimeFaces.current().executeScript("window.open('" + popupUrl + "', '_blank');");
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error opening item details: " + e.getMessage());
+        }
+    }
+
     //    public void calculateRatesOfSelectedBillItemBeforeAddingToTheList(BillItem bi) {
 //        ////////System.out.println("calculating rates");
 //        if (bi.getPharmaceuticalBillItem().getStock() == null) {
@@ -1948,6 +1983,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     private void savePreBillItemsFinally(List<BillItem> list) {
+        // Initialize the billItems collection if it was set to null
+        if (getPreBill().getBillItems() == null) {
+            getPreBill().setBillItems(new ArrayList<>());
+            System.out.println("Initialized PreBill billItems collection");
+        }
+        System.out.println("savePreBillItemsFinally: Processing " + list.size() + " items");
+
         for (BillItem tbi : list) {
             if (execureOnEditActions(tbi)) {
 //If any issue in Stock Bill Item will not save & not include for total
@@ -1995,8 +2037,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 getBillItemFacade().edit(tbi);
             }
             getPreBill().getBillItems().add(tbi);
+            System.out.println("Added BillItem ID: " + tbi.getId() + " back to PreBill");
         }
 
+        System.out.println("savePreBillItemsFinally: Final PreBill items count: " + getPreBill().getBillItems().size());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateRatesForAllBillItemsInPreBill();
@@ -2388,6 +2432,29 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+
+        // Calculate and record costing values for stock valuation after persistence
+        // Using current bill directly instead of reloading to avoid transaction timing issues
+        System.out.println("=== Using current PreBill directly ===");
+        System.out.println("PreBill ID: " + getPreBill().getId());
+        System.out.println("PreBill items count: " + (getPreBill().getBillItems() != null ? getPreBill().getBillItems().size() : "null"));
+
+        if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {
+            calculateAndRecordCostingValues(getPreBill());
+        } else {
+            System.out.println("WARNING: PreBill has no items, trying to reload...");
+            Bill managedBill = loadBillWithPharmaceuticalItems(getPreBill().getId());
+            if (managedBill != null) {
+                calculateAndRecordCostingValues(managedBill);
+                setPreBill((PreBill) managedBill);
+            } else {
+                // CRITICAL: Log when bill reload fails - possible concurrent delete or data corruption
+                System.out.println("CRITICAL WARNING: Failed to reload Bill with ID: " + getPreBill().getId());
+                System.out.println("Skipping costing calculations - bill may have been deleted or data corrupted");
+                System.out.println("PreBill settlement will complete but without financial details");
+            }
+        }
+
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
             if (getPatient() != null) {
                 Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -4469,6 +4536,294 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             }
             return "";
         }
+    }
+
+    /**
+     * Load bill with all pharmaceutical item associations to avoid lazy loading issues.
+     * This is essential for financial calculations that require pharmaceutical item data.
+     *
+     * @param billId The ID of the bill to load
+     * @return Bill with all pharmaceutical associations loaded
+     */
+    private Bill loadBillWithPharmaceuticalItems(Long billId) {
+        System.out.println("=== loadBillWithPharmaceuticalItems START ===");
+        System.out.println("Loading bill ID: " + billId);
+
+        // First try to get the basic bill
+        Bill bill = getBillFacade().find(billId);
+        System.out.println("Basic bill found: " + (bill != null ? bill.getId() : "null"));
+
+        if (bill != null) {
+            System.out.println("Bill items before JPQL: " + (bill.getBillItems() != null ? bill.getBillItems().size() : "null"));
+        }
+
+        // Now try with JPQL to fetch associations
+        String jpql = "SELECT b FROM Bill b "
+                + "JOIN FETCH b.billItems bi "
+                + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN FETCH pbi.itemBatch "
+                + "WHERE b.id = :billId";
+
+        System.out.println("JPQL query: " + jpql);
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+
+        try {
+            Bill loadedBill = getBillFacade().findFirstByJpql(jpql, params);
+            System.out.println("JPQL result: " + (loadedBill != null ? "Found bill ID " + loadedBill.getId() : "null"));
+
+            if (loadedBill != null && loadedBill.getBillItems() != null) {
+                System.out.println("JPQL loaded bill items count: " + loadedBill.getBillItems().size());
+                for (BillItem bi : loadedBill.getBillItems()) {
+                    System.out.println("  - BillItem ID: " + bi.getId() + ", PharmaItem: " + (bi.getPharmaceuticalBillItem() != null ? "EXISTS" : "NULL"));
+                }
+            } else {
+                System.out.println("ERROR: JPQL returned bill with no items!");
+            }
+
+            return loadedBill;
+        } catch (Exception e) {
+            System.out.println("JPQL ERROR: " + e.getMessage());
+            e.printStackTrace();
+
+            // Check if original bill exists before attempting fallback
+            if (bill == null) {
+                System.out.println("CRITICAL: Original bill is null, cannot use fallback loading");
+                System.out.println("Bill ID " + billId + " may have been deleted or does not exist");
+                return null;
+            }
+
+            // Fallback: Force load collections manually
+            System.out.println("Using fallback manual loading...");
+            if (bill.getBillItems() != null) {
+                System.out.println("Forcing bill items load - count: " + bill.getBillItems().size());
+                for (BillItem bi : bill.getBillItems()) {
+                    // Force lazy loading
+                    if (bi.getPharmaceuticalBillItem() != null) {
+                        System.out.println("Loaded PharmaItem for BillItem ID: " + bi.getId());
+                        // Force load item batch if needed
+                        if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+                            System.out.println("Loaded ItemBatch for BillItem ID: " + bi.getId());
+                        }
+                    }
+                }
+            } else {
+                System.out.println("WARNING: Fallback bill has no items to load");
+            }
+            return bill;
+        }
+    }
+
+    /**
+     * Calculate and record costing values for stock valuation.
+     * Creates BillFinanceDetails and BillItemFinanceDetails with proper financial calculations.
+     *
+     * @param bill The bill for which to calculate costing values
+     */
+        private void calculateAndRecordCostingValues(Bill bill) {
+        System.out.println("=== CALCULATE AND RECORD COSTING VALUES START ===");
+        System.out.println("Bill ID: " + (bill != null ? bill.getId() : "null"));
+        System.out.println("Method call stack trace (first 3 levels):");
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        for (int i = 1; i <= Math.min(4, stack.length - 1); i++) {
+            System.out.println("  " + i + ": " + stack[i].getClassName() + "." + stack[i].getMethodName() + ":" + stack[i].getLineNumber());
+        }
+
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            System.out.println("ERROR: Bill is null or has no items");
+            System.out.println("Bill: " + bill);
+            System.out.println("BillItems: " + (bill != null ? bill.getBillItems() : "bill is null"));
+            return;
+        }
+
+        System.out.println("Bill Items Count: " + bill.getBillItems().size());
+
+        // Initialize bill finance details if not present
+        if (bill.getBillFinanceDetails() == null) {
+            System.out.println("Creating new BillFinanceDetails for bill ID: " + bill.getId());
+            BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
+            billFinanceDetails.setBill(bill);
+            bill.setBillFinanceDetails(billFinanceDetails);
+        } else {
+            System.out.println("BillFinanceDetails already exists for bill ID: " + bill.getId());
+            BillFinanceDetails existingBfd = bill.getBillFinanceDetails();
+
+            // Check if calculations are already done
+            if (existingBfd.getTotalCostValue() != null ||
+                existingBfd.getTotalPurchaseValue() != null ||
+                existingBfd.getTotalRetailSaleValue() != null) {
+                System.out.println("WARNING: Bill finance details already calculated. Existing values:");
+                System.out.println("  TotalCostValue: " + existingBfd.getTotalCostValue());
+                System.out.println("  TotalPurchaseValue: " + existingBfd.getTotalPurchaseValue());
+                System.out.println("  TotalRetailSaleValue: " + existingBfd.getTotalRetailSaleValue());
+                System.out.println("SKIPPING to prevent duplicate calculations");
+                return;
+            }
+        }
+
+        // Initialize aggregated values
+        java.math.BigDecimal totalCostValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalPurchaseValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalRetailSaleValue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalWholesaleValue = java.math.BigDecimal.ZERO;
+
+        // Iterate through bill items and calculate stock valuations
+        int itemIndex = 0;
+        for (BillItem billItem : bill.getBillItems()) {
+            itemIndex++;
+            System.out.println("\n--- Processing Bill Item " + itemIndex + " ---");
+            System.out.println("BillItem ID: " + (billItem != null ? billItem.getId() : "null"));
+
+            if (billItem == null) {
+                System.out.println("SKIP: BillItem is null");
+                continue;
+            }
+
+            System.out.println("BillItem considered for costing: " + billItem.isConsideredForCosting());
+            if (!billItem.isConsideredForCosting()) {
+                System.out.println("SKIP: BillItem not considered for costing");
+                continue;
+            }
+
+            // Check if BillItem already has calculated finance details
+            BillItemFinanceDetails existingDetails = billItem.getBillItemFinanceDetails();
+            if (existingDetails != null) {
+                System.out.println("BillItem ID: " + billItem.getId() + " already has BIFD ID: " + existingDetails.getId());
+                System.out.println("Current BIFD values: costRate=" + existingDetails.getValueAtCostRate()
+                                 + ", purchaseRate=" + existingDetails.getValueAtPurchaseRate()
+                                 + ", retailRate=" + existingDetails.getValueAtRetailRate());
+
+                // Check if values are already set - if so, skip calculation to prevent duplicates
+                if (existingDetails.getValueAtCostRate() != null ||
+                    existingDetails.getValueAtPurchaseRate() != null ||
+                    existingDetails.getValueAtRetailRate() != null) {
+                    System.out.println("SKIP: BillItem ID: " + billItem.getId() + " already has calculated finance details");
+                    continue;
+                }
+            }
+
+            // Initialize BillItemFinanceDetails explicitly (prevents auto-creation duplicates)
+            // NOTE: This is the PREFERRED approach - gradually migrate all callers to this pattern
+            billItem.initializeBillItemFinanceDetails();
+            BillItemFinanceDetails itemFinanceDetails = billItem.getBillItemFinanceDetails();
+
+            // Get quantity - default to 0 if null
+            // NOTE: Consistent with updateRetailSaleFinanceDetails - only billItem.getQty() is used for valuations
+            // Free quantities are tracked separately but NOT included in stock valuation calculations
+            // This is correct behavior - free quantities don't affect cost/purchase/retail valuations
+            java.math.BigDecimal quantity = billItem.getQty() != null
+                    ? java.math.BigDecimal.valueOf(billItem.getQty()) : java.math.BigDecimal.ZERO;
+            System.out.println("BillItem Quantity (excluding free qty - consistent with retail): " + quantity);
+
+            // Calculate stock valuations for this item based on pharmaceutical bill item rates
+            PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "EXISTS" : "NULL"));
+
+            if (pharmaItem != null) {
+                System.out.println("PharmaItem ID: " + pharmaItem.getId());
+                System.out.println("PharmaItem Purchase Rate: " + pharmaItem.getPurchaseRate());
+                System.out.println("PharmaItem Retail Rate: " + pharmaItem.getRetailRate());
+                System.out.println("PharmaItem Wholesale Rate: " + pharmaItem.getWholesaleRate());
+                System.out.println("PharmaItem ItemBatch: " + (pharmaItem.getItemBatch() != null ? "EXISTS" : "NULL"));
+                if (pharmaItem.getItemBatch() != null) {
+                    System.out.println("ItemBatch Cost Rate: " + pharmaItem.getItemBatch().getCostRate());
+                }
+                // Calculate value at cost rate - use actual cost rate from ItemBatch
+                Double costRateValue = null;
+                if (pharmaItem.getItemBatch() != null) {
+                    costRateValue = pharmaItem.getItemBatch().getCostRate();
+                }
+                System.out.println("Initial Cost Rate Value: " + costRateValue);
+
+                if (costRateValue == null || costRateValue <= 0) {
+                    costRateValue = pharmaItem.getPurchaseRate(); // fallback
+                    System.out.println("Using Purchase Rate as fallback: " + costRateValue);
+                }
+
+                if (costRateValue > 0) {
+                    java.math.BigDecimal costRate = java.math.BigDecimal.valueOf(costRateValue);
+                    java.math.BigDecimal valueAtCostRate = quantity.multiply(costRate).negate();
+                    System.out.println("Calculated valueAtCostRate: " + valueAtCostRate);
+                    itemFinanceDetails.setValueAtCostRate(valueAtCostRate);
+                    totalCostValue = totalCostValue.add(valueAtCostRate);
+                    System.out.println("Set valueAtCostRate on itemFinanceDetails");
+                } else {
+                    System.out.println("SKIP: Cost rate is 0 or negative");
+                }
+
+                // Calculate value at purchase rate (same as cost rate for now)
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    java.math.BigDecimal purchaseRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+                    java.math.BigDecimal valueAtPurchaseRate = quantity.multiply(purchaseRate).negate();
+                    System.out.println("Calculated valueAtPurchaseRate: " + valueAtPurchaseRate);
+                    itemFinanceDetails.setValueAtPurchaseRate(valueAtPurchaseRate);
+                    totalPurchaseValue = totalPurchaseValue.add(valueAtPurchaseRate);
+                    System.out.println("Set valueAtPurchaseRate on itemFinanceDetails");
+                } else {
+                    System.out.println("SKIP: Purchase rate is 0 or negative");
+                }
+
+                // Calculate value at retail rate (based on retail rate)
+                if (pharmaItem.getRetailRate() > 0) {
+                    java.math.BigDecimal retailRate = java.math.BigDecimal.valueOf(pharmaItem.getRetailRate());
+                    java.math.BigDecimal valueAtRetailRate = quantity.multiply(retailRate).negate();
+                    System.out.println("Calculated valueAtRetailRate: " + valueAtRetailRate);
+                    itemFinanceDetails.setValueAtRetailRate(valueAtRetailRate);
+                    totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetailRate);
+                    System.out.println("Set valueAtRetailRate on itemFinanceDetails");
+                } else {
+                    System.out.println("SKIP: Retail rate is 0 or negative");
+                }
+
+                // Calculate value at wholesale rate (use retail rate if wholesale rate not available)
+                double wholesaleRate = pharmaItem.getWholesaleRate() > 0
+                        ? pharmaItem.getWholesaleRate()
+                        : (pharmaItem.getRetailRate() > 0 ? pharmaItem.getRetailRate() : 0.0);
+
+                if (wholesaleRate > 0) {
+                    java.math.BigDecimal wholsaleRateBd = java.math.BigDecimal.valueOf(wholesaleRate);
+                    java.math.BigDecimal valueAtWholesaleRate = quantity.multiply(wholsaleRateBd).negate();
+                    itemFinanceDetails.setValueAtWholesaleRate(valueAtWholesaleRate);
+                    totalWholesaleValue = totalWholesaleValue.add(valueAtWholesaleRate);
+                }
+
+                // Set rates in the finance details - use the SAME costRateValue used for calculations
+                if (costRateValue != null && costRateValue > 0) {
+                    // CRITICAL FIX: Store the actual cost rate used in calculations (not always purchaseRate)
+                    itemFinanceDetails.setCostRate(java.math.BigDecimal.valueOf(costRateValue));
+                    itemFinanceDetails.setTotalCostRate(java.math.BigDecimal.valueOf(costRateValue));
+                    itemFinanceDetails.setLineCostRate(java.math.BigDecimal.valueOf(costRateValue));
+                }
+                if (pharmaItem.getPurchaseRate() > 0) {
+                    itemFinanceDetails.setPurchaseRate(java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate()));
+                }
+                if (pharmaItem.getRetailRate() > 0) {
+                    itemFinanceDetails.setRetailSaleRate(java.math.BigDecimal.valueOf(pharmaItem.getRetailRate()));
+                }
+                if (wholesaleRate > 0) {
+                    itemFinanceDetails.setWholesaleRate(java.math.BigDecimal.valueOf(wholesaleRate));
+                }
+            }
+
+            // Set quantity in finance details
+            itemFinanceDetails.setQuantity(quantity);
+            itemFinanceDetails.setTotalQuantity(quantity);
+
+        }
+
+        // Update bill level aggregated values
+        BillFinanceDetails billFinanceDetails = bill.getBillFinanceDetails();
+        billFinanceDetails.setTotalCostValue(totalCostValue);
+        billFinanceDetails.setTotalPurchaseValue(totalPurchaseValue);
+        billFinanceDetails.setTotalRetailSaleValue(totalRetailSaleValue);
+        billFinanceDetails.setTotalWholesaleValue(totalWholesaleValue);
+
+        // NOTE: Removed redundant billItemFacade.edit() calls to prevent duplicate cascades
+        // The bill.save() below will cascade to all billItems and their financeDetails automatically
+
+        // Save the bill with its finance details
+        billFacade.edit(bill);
+        System.out.println("=== CALCULATE AND RECORD COSTING VALUES COMPLETED ===");
     }
 
 }

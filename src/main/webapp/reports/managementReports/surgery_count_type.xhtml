@@ -14,28 +14,38 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="From" for="fromDate" styleClass="m-3"/>
+                                <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:calendar id="fromDate"
-                                        styleClass="w-100"
-                                        inputStyleClass="w-100 form-control"
-                                        pattern="dd/MM/yyyy"
-                                        />
+                            <p:datePicker
+                                id="fromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                             <p:spacer width="40"/>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="To" for="toDate" styleClass="m-3"/>
+                                <p:outputLabel value="To Date" for="toDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:calendar id="toDate"
-                                        styleClass="w-100"
-                                        inputStyleClass="w-100 form-control"
-                                        pattern="dd/MM/yyyy"
-                                        />
+                            <p:datePicker
+                                id="toDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 

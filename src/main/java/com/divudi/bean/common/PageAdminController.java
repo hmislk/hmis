@@ -6,6 +6,9 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -13,6 +16,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.annotation.PostConstruct;
 
 /**
  * Controller for the page administration interface.
@@ -34,6 +38,42 @@ public class PageAdminController implements Serializable {
     private PageMetadata currentMetadata;
 
     public PageAdminController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (metadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("admin/page_configuration_view");
+        metadata.setPageName("Page Configuration Management");
+        metadata.setDescription("Administrative interface for viewing and managing page-specific configuration options and privileges");
+        metadata.setControllerClass("PageAdminController");
+
+        // Configuration Options - Global Bill Number Settings
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add the Institution Code to the Bill Number Generator",
+            "Includes institution code in generated bill numbers across all modules system-wide",
+            "admin/page_configuration_view",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management interface - required to view and manage page metadata, configuration options, and privileges"
+        ));
+
+        metadataRegistry.registerPage(metadata);
     }
 
     /**
@@ -101,6 +141,64 @@ public class PageAdminController implements Serializable {
             return null;
         }
         return "/admin/page_specific_privilege_management?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to department-specific configuration management.
+     * Shows department configuration options for the current page.
+     *
+     * @return Navigation outcome to department configuration page
+     */
+    public String navigateToDepartmentConfigManagement() {
+        if (currentMetadata == null) {
+            JsfUtil.addErrorMessage("No page metadata available");
+            return null;
+        }
+        return "/admin/page_specific_department_config_management?faces-redirect=true";
+    }
+
+    /**
+     * Check if the current page has department-scoped configuration options
+     * @return true if department configs exist for this page
+     */
+    public boolean hasDepartmentConfigOptions() {
+        if (currentMetadata == null || currentMetadata.getConfigOptions() == null) {
+            return false;
+        }
+        return currentMetadata.getConfigOptions().stream()
+            .anyMatch(config -> config.getKey().contains("[Department Name]"));
+    }
+
+    /**
+     * Get department-scoped configuration options for the current page.
+     * These are APPLICATION-scoped options with department names embedded in keys.
+     * @return List of department config options with actual department names
+     */
+    public java.util.List<ConfigOptionInfo> getDepartmentConfigOptions() {
+        if (currentMetadata == null || currentMetadata.getConfigOptions() == null) {
+            return new java.util.ArrayList<>();
+        }
+
+        // Get configs that contain "[Department Name]" placeholder (these are department-specific APPLICATION configs)
+        return currentMetadata.getConfigOptions().stream()
+            .filter(config -> config.getKey().contains("[Department Name]"))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Get pure application-scoped configuration options for the current page.
+     * Excludes department-specific configs with "[Department Name]" placeholders.
+     * @return List of pure application config options
+     */
+    public java.util.List<ConfigOptionInfo> getApplicationConfigOptions() {
+        if (currentMetadata == null || currentMetadata.getConfigOptions() == null) {
+            return new java.util.ArrayList<>();
+        }
+
+        // Get configs that do NOT contain "[Department Name]" placeholder (pure APPLICATION configs)
+        return currentMetadata.getConfigOptions().stream()
+            .filter(config -> !config.getKey().contains("[Department Name]"))
+            .collect(java.util.stream.Collectors.toList());
     }
 
     // Getters and Setters

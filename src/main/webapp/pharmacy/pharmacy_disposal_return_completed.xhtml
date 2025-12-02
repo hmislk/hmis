@@ -183,8 +183,9 @@
                                         icon="fas fa-print"
                                         class="ui-button-info"
                                         value="Print"
-                                        action="#{disposalReturnWorkflowController.navigateToPrintCompletedDisposalReturn(b)}"
+                                        action="/pharmacy/pharmacy_reprint_bill_unit_issue_return?faces-redirect=true"
                                         style="min-width: 90px;">
+                                        <f:setPropertyActionListener target="#{pharmacyIssueController.bill}" value="#{b}"/>
                                     </p:commandButton>
                                 </div>
                                 <h:panelGroup styleClass="d-block mt-1">

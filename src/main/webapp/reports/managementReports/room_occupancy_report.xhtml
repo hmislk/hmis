@@ -19,11 +19,15 @@
                                 <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
 
-                            <p:calendar
+                             <p:datePicker
                                 id="fromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <p:spacer width="20"/>
@@ -33,12 +37,16 @@
                                               styleClass="fa mr-2"/> 
                                 <p:outputLabel value="To" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            <p:calendar
+                            
+                             <p:datePicker
+                                id="toDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                id="toDate"
-                                navigator="false"
-                                pattern="dd/MM/yyyy HH:mm"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -65,6 +73,20 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
                             </p:selectOneMenu>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" for="phmDept" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDept"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
@@ -78,28 +100,19 @@
                                 >
                             </p:autoComplete>
 
-                            <p:spacer width="20"/>
+                            
 
                             <!-- Ward -->
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf2d0;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Ward" for="wardSelect" class="m-3"/>
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Ward/Bed" for="wdbdSelect" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="wardSelect" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="Select Ward"/>
+                            <p:selectOneMenu id="wdbdSelect" styleClass="w-100 form-control" filter="true">
+                                <f:selectItem itemLabel="Select Ward/Bed"/>
                             </p:selectOneMenu>
-
-                            <!-- Bed -->
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf236;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="Bed" for="bedSelect" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="bedSelect" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="Select Bed"/>
-                            </p:selectOneMenu>
-
+                            
                             <p:spacer width="20"/>
-
+                                                        
                             <!-- Room Category -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/>
@@ -108,7 +121,8 @@
                             <p:selectOneMenu id="roomCategorySelect" styleClass="w-100 form-control">
                                 <f:selectItem itemLabel="Select Room Category"/>
                             </p:selectOneMenu>
-
+                            
+                           
                             <!-- Admission Type -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/>
@@ -122,12 +136,12 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf46d;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Summery" for="summeryType" styleClass="m-3"/>
+                                <p:outputLabel value="Summary" for="summeryType" styleClass="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="summeryType" styleClass="w-100">
-                                <f:selectItem itemLabel="Select Summery" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Select Summary" itemValue="" noSelectionOption="true"/>
                                 <f:selectItem itemLabel="By Room Category" itemValue="bar"/>
-                                <f:selectItem itemLabel="By Admmision Type" itemValue="line"/>
+                                <f:selectItem itemLabel="By Admission Type" itemValue="line"/>
                             </p:selectOneMenu>
 
                         </h:panelGrid>
@@ -207,7 +221,7 @@
 
                             <p:column width="8em">
                                 <f:facet name="header">
-                                    <h:outputText value="Disscharge Date" />
+                                    <h:outputText value="Discharge Date" />
                                 </f:facet>
                                 <h:outputText value=""> 
                                 </h:outputText>

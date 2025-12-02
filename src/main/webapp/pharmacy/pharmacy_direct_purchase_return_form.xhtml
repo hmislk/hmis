@@ -297,13 +297,14 @@
                                                 rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null 
                                                             and webUserController.hasPrivilege('CreateDirectPurchaseReturn')}">
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                value="Finalize" 
+                                            <p:commandButton
+                                                value="Finalize"
                                                 action="#{directPurchaseReturnWorkflowController.finalizeRequest}"
                                                 ajax="false"
-                                                icon="pi pi-check" 
+                                                icon="pi pi-check"
+                                                onclick="return confirm('Are you sure you want to finalize this Direct Purchase return? Once finalized, it will require approval to complete.')"
                                                 class="ui-button-warning mx-1"
-                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null 
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy eq null
                                                             and webUserController.hasPrivilege('FinalizeDirectPurchaseReturn')}">
                                             </p:commandButton>
                                             <p:commandButton
@@ -311,10 +312,18 @@
                                                 action="#{directPurchaseReturnWorkflowController.approve}"
                                                 ajax="false"
                                                 icon="fas fa-check-circle"
+                                                onclick="return confirm('Are you sure you want to approve this Direct Purchase return? This will complete the return process.')"
                                                 class="ui-button-success mx-1"
-                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy ne null and (directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}"
-                                                onclick="if (!confirm('Are you sure you want to approve this direct purchase return?'))
-                                                            return false;">
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.checkedBy ne null and (directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null) and webUserController.hasPrivilege('ApproveDirectPurchaseReturn')}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                value="Cancel"
+                                                action="#{directPurchaseReturnWorkflowController.cancelCurrentReturn}"
+                                                ajax="false"
+                                                icon="fas fa-times"
+                                                onclick="return confirm('Are you sure you want to cancel this Direct Purchase return? All unsaved changes will be lost.')"
+                                                class="ui-button-danger mx-1"
+                                                rendered="#{directPurchaseReturnWorkflowController.currentBill.completed eq false or directPurchaseReturnWorkflowController.currentBill.completed eq null}">
                                             </p:commandButton>
                                         </div>
                                     </div>

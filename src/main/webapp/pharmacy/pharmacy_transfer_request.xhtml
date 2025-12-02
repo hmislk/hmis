@@ -41,7 +41,7 @@
                                         itemLabel="#{vt.name}" 
                                         itemValue="#{vt}"
                                         >
-                                        <p:ajax process="@this" update="btn"></p:ajax>
+                                        <p:ajax process="@this" update="btn departmentTypesInfo"></p:ajax>
                                     </p:autoComplete>
                                     <h:panelGroup id="btn">
                                         <p:commandButton
@@ -124,6 +124,7 @@
                                         ajax="false"
                                         icon="pi pi-check"
                                         class="mx-1 ui-button-success"
+                                        onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
                                         />
                                 </div>
                             </div>
@@ -136,6 +137,24 @@
                                     <h:outputLabel styleClass="fas fa-cube" />
                                     <h:outputLabel value="Add Items" class="mx-4" />
                                 </f:facet>
+
+                                <!-- Available Department Types Information Panel -->
+                                <h:panelGroup id="departmentTypesInfo" rendered="#{not empty transferRequestController.availableDepartmentTypesForDisplay}">
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="alert alert-info py-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    <strong>Available Item Types for #{transferRequestController.toDepartment.name}:</strong>
+                                                    <ui:repeat value="#{transferRequestController.availableDepartmentTypesForDisplay}" var="deptType" varStatus="status">
+                                                        <span class="badge bg-primary me-1">#{deptType}</span>
+                                                    </ui:repeat>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
                                 <div class="row">
                                     <div class="col-8">
                                         <p:outputLabel value="Item" for="items"/>
@@ -145,7 +164,7 @@
                                             forceSelection="true"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAmpAmppVmpVmppItemsForLoggedDepartment}"
+                                            completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
                                             itemValue="#{vt}"

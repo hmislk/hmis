@@ -13,7 +13,7 @@
     ],
     "migrationSteps": [
         {
-            "description": "Fix 5 remaining columns that were missed in v2.1.1: TOTALEXPENSE, TOTALOFBILLLINEDISCOUNTS, TOTALOFFREEITEMVALUES, TOTALPAIDASCASH, TOTALTAXVALUE"
+            "description": "Fix 3 remaining columns that were missed in v2.1.1: TOTALEXPENSE, TOTALOFFREEITEMVALUES, TOTALTAXVALUE"
         },
         {
             "description": "Add verification queries to confirm all columns are properly fixed"

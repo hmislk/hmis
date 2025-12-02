@@ -32,6 +32,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
@@ -149,6 +150,13 @@ public class TransferRequestController implements Serializable {
             }
         }
         return false;
+    }
+    
+    @Inject
+    ItemController itemController;
+    
+    public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
+        return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
     }
 
     public String fillHeaderDataOfTransferRequest(String s, Bill b) {
@@ -674,15 +682,8 @@ public class TransferRequestController implements Serializable {
         saveTransferRequestPreBillAndBillItems();
         getTransferRequestBillPre().setEditedAt(new Date());
         getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
-
         getTransferRequestBillPre().setCheckeAt(new Date());
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
-
-//        getTransferRequestBillPre().setApproveAt(new Date());
-//        getTransferRequestBillPre().setApproveUser(sessionController.getLoggedUser());
-//        getTransferRequestBillPre().setCompleted(true);
-//        getTransferRequestBillPre().setCompletedAt(new Date());
-//        getTransferRequestBillPre().setCompletedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
@@ -1368,6 +1369,46 @@ public class TransferRequestController implements Serializable {
         return processTransferRequest();
     }
 
+    /**
+     * Get available department types for the current target department for display purposes
+     * @return List of department type names that are enabled for pharmacy transactions
+     */
+    public List<String> getAvailableDepartmentTypesForDisplay() {
+        List<String> displayTypes = new ArrayList<>();
+
+        if (toDepartment == null) {
+            return displayTypes;
+        }
+
+        // Check each department type configuration option
+        if (configOptionApplicationController.getBooleanValueByKey(
+            "Allow Pharmacy Items In Pharmacy Transactions for " + toDepartment.getName(), true)) {
+            displayTypes.add("Pharmacy");
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey(
+            "Allow Lab Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
+            displayTypes.add("Lab");
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey(
+            "Allow Store Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
+            displayTypes.add("Store");
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey(
+            "Allow Etu Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
+            displayTypes.add("Emergency Treatment Unit (ETU)");
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey(
+            "Allow Theatre Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
+            displayTypes.add("Theatre");
+        }
+
+        return displayTypes;
+    }
+
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
     }
@@ -1452,6 +1493,13 @@ public class TransferRequestController implements Serializable {
         ));
 
         requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+            "Custom suffix to append to pharmacy transfer request bill numbers (used by BillNumberGenerator methods)",
+            "Lines 436, 440, 443 (Controller): Bill number generation method calls",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
             "Pharmacy Transfer is by Purchase Rate",
             "Uses purchase rate for transfer pricing calculations",
             "Line 1328 (Controller): Transfer rate determination",
@@ -1469,6 +1517,43 @@ public class TransferRequestController implements Serializable {
             "Pharmacy Transfer is by Retail Rate",
             "Uses retail rate for transfer pricing calculations",
             "Line 1330 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        // Department Type Configuration Options - Used by ItemController.getAvailableDepartmentTypesForPharmacyTransactions()
+        // These are APPLICATION-scoped with department names embedded in keys
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Pharmacy Items In Pharmacy Transactions for [Department Name]",
+            "Allows pharmacy items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Lab Items In Pharmacy Transactions for [Department Name]",
+            "Allows lab items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Store Items In Pharmacy Transactions for [Department Name]",
+            "Allows store items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Etu Items In Pharmacy Transactions for [Department Name]",
+            "Allows ETU (Emergency Treatment Unit) items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
+            OptionScope.APPLICATION
+        ));
+
+        requestMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Theatre Items In Pharmacy Transactions for [Department Name]",
+            "Allows theatre/operating room items to be included in transfer requests for the specific department",
+            "ItemController.getAvailableDepartmentTypesForPharmacyTransactions(): Department type filtering for item autocomplete",
             OptionScope.APPLICATION
         ));
 
@@ -1518,6 +1603,56 @@ public class TransferRequestController implements Serializable {
             "Pharmacy Transfer Request Receipt is Custom 2",
             "Uses Custom Format 2 for transfer request receipts",
             "Line 183 (XHTML): Receipt format selection",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-DeptCode-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Transfer Request - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Bill numbering format: Prefix-InstCode-DeptCode-Year-Number (inherited from original request)",
+            "Lines 328-329 (Controller): Bill number inherited from pre-bill created with this strategy",
+            OptionScope.APPLICATION
+        ));
+
+        // Note: Bill Number Suffix already registered in pharmacy_transfer_request metadata
+        // approvalMetadata.addConfigOption(new ConfigOptionInfo(
+        //     "Bill Number Suffix for PHARMACY_TRANSFER_REQUEST",
+        //     "Custom suffix to append to pharmacy transfer request bill numbers (inherited from pre-bill)",
+        //     "Lines 328-329 (Controller): Bill number copied from pre-bill",
+        //     OptionScope.APPLICATION
+        // ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Purchase Rate",
+            "Uses purchase rate for transfer pricing calculations when editing transfer rates",
+            "Line 1335 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Cost Rate",
+            "Uses cost rate for transfer pricing calculations when editing transfer rates",
+            "Line 1336 (Controller): Transfer rate determination",
+            OptionScope.APPLICATION
+        ));
+
+        approvalMetadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Transfer is by Retail Rate",
+            "Uses retail rate for transfer pricing calculations when editing transfer rates",
+            "Line 1337 (Controller): Transfer rate determination",
             OptionScope.APPLICATION
         ));
 

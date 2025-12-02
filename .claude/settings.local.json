@@ -16,7 +16,16 @@
       "Bash(gh pr merge:*)",
       "Bash(gh pr list:*)",
       "WebFetch(domain:localhost)",
-      "Bash(./detect-maven.sh:*)"
+      "Bash(./detect-maven.sh:*)",
+      "Bash(nul)",
+      "WebSearch",
+      "WebFetch(domain:www.primefaces.org)",
+      "WebFetch(domain:www.concretepage.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(gh issue view:*)"
     ],
     "deny": [],
     "ask": [],

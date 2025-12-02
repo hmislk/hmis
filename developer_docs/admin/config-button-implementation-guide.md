@@ -297,6 +297,94 @@ private void savePreBill() {
    }
    ```
 
+#### 🚨 MANDATORY: Bill Number Suffix Configuration Registration
+
+**CRITICAL RULE**: If your page calls ANY BillNumberGenerator method, you MUST register the corresponding bill number suffix configuration.
+
+**Why This Matters**: BillNumberGenerator methods automatically look for suffix configurations using this pattern:
+```java
+String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+```
+
+**Step-by-Step Suffix Discovery Process:**
+
+1. **Find ALL BillNumberGenerator Method Calls** in your controller:
+   ```bash
+   # Search for these method patterns
+   billNumberBean.departmentBillNumberGenerator*
+   billNumberBean.institutionBillNumberGenerator*
+   billNumberGenerator.departmentBillNumberGenerator*
+   billNumberGenerator.institutionBillNumberGenerator*
+   generateBillNumber*
+   generateDirectBillNumber*
+   generateInstitutionBillNumber*
+   ```
+
+2. **For EACH Method Call, Identify the BillTypeAtomic Parameter**:
+   ```java
+   // Example method calls - extract the BillTypeAtomic value
+   billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+       sessionController.getDepartment(),
+       BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE  // ← THIS IS THE KEY!
+   );
+
+   billNumberGenerator.institutionBillNumberGeneratorYearlyWithPrefix(
+       sessionController.getInstitution(),
+       BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE  // ← THIS IS THE KEY!
+   );
+   ```
+
+3. **For EACH BillTypeAtomic Found, Register the Suffix Configuration**:
+   ```java
+   // MANDATORY REGISTRATION PATTERN:
+   metadata.addConfigOption(new ConfigOptionInfo(
+       "Bill Number Suffix for " + [BILL_TYPE_ATOMIC_VALUE],  // EXACT PATTERN!
+       "Custom suffix to append to [bill type description] bill numbers (used by BillNumberGenerator.[method_name])",
+       "pharmacy/your_page",
+       OptionScope.APPLICATION
+   ));
+
+   // REAL EXAMPLES:
+   metadata.addConfigOption(new ConfigOptionInfo(
+       "Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE",
+       "Custom suffix to append to pharmacy disposal issue bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount)",
+       "pharmacy/pharmacy_issue",
+       OptionScope.APPLICATION
+   ));
+
+   metadata.addConfigOption(new ConfigOptionInfo(
+       "Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE",
+       "Custom suffix to append to pharmacy retail sale pre bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount)",
+       "pharmacy/pharmacy_sale",
+       OptionScope.APPLICATION
+   ));
+   ```
+
+**🚨 COMMON MISTAKES TO AVOID**:
+
+❌ **WRONG**: Using human-readable names:
+```java
+"Bill Number Suffix for PharmacyIssue"          // WRONG!
+"Bill Number Suffix for Pharmacy Sale"          // WRONG!
+"Bill Number Suffix for OPD Bill"               // WRONG!
+```
+
+✅ **CORRECT**: Using exact BillTypeAtomic enum values:
+```java
+"Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE"     // CORRECT!
+"Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE"    // CORRECT!
+"Bill Number Suffix for OPD_BILL"                    // CORRECT!
+```
+
+**🔍 VERIFICATION CHECKLIST**:
+
+Before proceeding, verify for EACH page:
+- [ ] **All BillNumberGenerator methods identified**: Search completed for all bill generation patterns
+- [ ] **All BillTypeAtomic parameters extracted**: Every method call analyzed for the billType parameter
+- [ ] **All suffix configurations registered**: One configuration per unique BillTypeAtomic value
+- [ ] **Exact key format used**: "Bill Number Suffix for " + exact BillTypeAtomic enum name
+- [ ] **Method names documented**: Clear description of which BillNumberGenerator method uses each suffix
+
 **Example Bill Generation Configurations Found in PharmacySaleController:**
 
 ```java
@@ -1001,6 +1089,13 @@ mvn clean compile
 3. **Null Injection**: PageMetadataRegistry can be null if injection fails
 4. **PostConstruct Timing**: registerPageMetadata() must be called during initialization
 5. **Parameter Order**: ConfigOptionInfo parameter order matters
+6. **🚨 CRITICAL: Bill Number Suffix Keys**: Must use exact BillTypeAtomic enum name, not human-readable names
+   ```java
+   // ❌ WRONG
+   "Bill Number Suffix for PharmacyIssue"
+   // ✅ CORRECT
+   "Bill Number Suffix for PHARMACY_DISPOSAL_ISSUE"
+   ```
 
 ## Example Implementation Files
 
