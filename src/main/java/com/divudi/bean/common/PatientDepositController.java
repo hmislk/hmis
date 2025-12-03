@@ -34,6 +34,7 @@ import com.divudi.core.facade.PatientFacade;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -156,7 +157,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         reportController.setToDate(null);
     }
 
-    public void getPatientDepositOnPatientDepositAdding() {
+    public void getPatientDepositOnPatientDepositAdding() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         patientController.quickSearchPatientLongPhoneNumber(this);
         current = null;
         if (patient == null) {
