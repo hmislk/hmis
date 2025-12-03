@@ -4561,7 +4561,7 @@ public class SearchController implements Serializable {
             params.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        jpql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt asc  ";
 
         // Only set class1, class2, and billType parameters if not using billTypeAtomics
         if (billType != BillType.PharmacyAdjustment) {
