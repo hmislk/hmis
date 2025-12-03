@@ -1053,6 +1053,7 @@ public class LaborataryReportController implements Serializable {
                     + " pi.billItem.bill.patient.person.title, "
                     + " pi.billItem.bill.patient.person.name, "
                     + " pi.billItem.bill.patient.id,"
+                    + " pi.billItem.bill.patient.person.dob, "
                     + " pi.billItem.bill.patient.person.sex) "
                     + " from PatientInvestigation pi "
                     + " where pi.billItem.retired = :ret "
