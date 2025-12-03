@@ -342,6 +342,12 @@ public class PharmacyReportController implements Serializable {
     private double totalRetailValue;
     private double totalSaleValue;
 
+    // Maps to store remaining quantities and values for Good In Transit report
+    private Map<Long, Double> billItemRemainingQuantities = new HashMap<>();
+    private Map<Long, Double> billItemRemainingRetailValues = new HashMap<>();
+    private Map<Long, Double> billItemRemainingPurchaseValues = new HashMap<>();
+    private Map<Long, Double> billItemRemainingCostValues = new HashMap<>();
+
     //Constructor
     public PharmacyReportController() {
     }
@@ -3563,71 +3569,99 @@ public class PharmacyReportController implements Serializable {
 
     public void processGoodInTransistReport() {
         reportTimerController.trackReportExecution(() -> {
-            Map<String, Object> parameters = new HashMap<>();
-            StringBuilder sql = new StringBuilder();
-            sql.append("select bi from BillItem bi"
-                    + " where bi.bill.billType = :bt"
-                    + " and bi.retired = :ret"
-                    + " and bi.bill.billedBill is null "
-                    + " and bi.bill.createdAt between :fd and :td"
-                    + " and bi.bill.toStaff is not null"
-                    + " and bi.bill.fromDepartment is not null");
+            if (reportType != null && reportType.equals("pending")) {
+                // Use BillItem-level logic for pending items (items with remaining quantity in transit)
+                billItems = findPendingGoodInTransitItems();
+            } else if (reportType != null && reportType.equals("accepted")) {
+                // Use BillItem-level logic for accepted items (received items)
+                billItems = findAcceptedGoodInTransitItems();
+            } else {
+                // Use original Bill-level logic for other report types
+                Map<String, Object> parameters = new HashMap<>();
+                StringBuilder sql = new StringBuilder();
+                sql.append("select bi from BillItem bi"
+                        + " where bi.bill.billType = :bt"
+                        + " and bi.retired = :ret"
+                        + " and bi.bill.billedBill is null "
+                        + " and bi.bill.createdAt between :fd and :td"
+                        + " and bi.bill.toStaff is not null"
+                        + " and bi.bill.fromDepartment is not null");
 
-            parameters.put("bt", BillType.PharmacyTransferIssue);
-            parameters.put("ret", false);
-            parameters.put("fd", fromDate);
-            parameters.put("td", toDate);
+                parameters.put("bt", BillType.PharmacyTransferIssue);
+                parameters.put("ret", false);
+                parameters.put("fd", fromDate);
+                parameters.put("td", toDate);
 
-            addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
-            addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
-            addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
-            addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
-            addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
-            addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
-            addFilter(sql, parameters, "bi.item", "item", item);
-            addFilter(sql, parameters, "bi.item.category", "cat", category);
-            addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
+                addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+                addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+                addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+                addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+                addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+                addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+                addFilter(sql, parameters, "bi.item", "item", item);
+                addFilter(sql, parameters, "bi.item.category", "cat", category);
+                addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
 
-            if (reportType != null) {
-                if (reportType.equals("pending")) {
-                    addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
-                } else if (reportType.equals("accepted")) {
-                    addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
-                } else if (reportType.equals("issueCancel")) {
-                    addFilter(sql, "and bi.bill.cancelled = true");
+                if (reportType != null) {
+                    if (reportType.equals("issueCancel")) {
+                        addFilter(sql, "and bi.bill.cancelled = true");
+                    }
+                    // "any" or null - no additional status filtering
                 }
-                // "any" or null - no additional status filtering
+
+                sql.append(" order by bi.bill.id ");
+
+                System.out.println("sql = " + sql);
+                System.out.println("parameters = " + parameters);
+
+                billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             }
 
-            sql.append(" order by bi.bill.id ");
-
-            System.out.println("sql = " + sql);
-            System.out.println("parameters = " + parameters);
-
-            billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
-
-            // Calculate totals for footer using BIFD values
+            // Calculate totals for footer
             totalRetailValue = 0.0;
             totalPurchaseValue = 0.0;
             totalCostValue = 0.0;
 
-            for (BillItem billItem : billItems) {
-                if (billItem.getBillItemFinanceDetails() != null) {
-                    BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            if (reportType != null && (reportType.equals("pending") || reportType.equals("accepted"))) {
+                // For pending and accepted items, use values from maps (remaining for pending, received for accepted)
+                for (BillItem billItem : billItems) {
+                    Long itemId = billItem.getId();
 
-                    // Retail Value calculation using BIFD
-                    if (bifd.getValueAtRetailRate() != null) {
-                        totalRetailValue += Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                    Double remainingRetail = billItemRemainingRetailValues.get(itemId);
+                    if (remainingRetail != null) {
+                        totalRetailValue += remainingRetail;
                     }
 
-                    // Purchase Value calculation using BIFD
-                    if (bifd.getValueAtPurchaseRate() != null) {
-                        totalPurchaseValue += Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                    Double remainingPurchase = billItemRemainingPurchaseValues.get(itemId);
+                    if (remainingPurchase != null) {
+                        totalPurchaseValue += remainingPurchase;
                     }
 
-                    // Cost Value calculation using BIFD
-                    if (bifd.getValueAtCostRate() != null) {
-                        totalCostValue += Math.abs(bifd.getValueAtCostRate().doubleValue());
+                    Double remainingCost = billItemRemainingCostValues.get(itemId);
+                    if (remainingCost != null) {
+                        totalCostValue += remainingCost;
+                    }
+                }
+            } else {
+                // For other report types, use total issued values from BIFD
+                for (BillItem billItem : billItems) {
+                    if (billItem.getBillItemFinanceDetails() != null) {
+                        BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+                        // Retail Value calculation using BIFD
+                        if (bifd.getValueAtRetailRate() != null) {
+                            totalRetailValue += Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                        }
+
+                        // Purchase Value calculation using BIFD
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            totalPurchaseValue += Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                        }
+
+                        // Cost Value calculation using BIFD
+                        if (bifd.getValueAtCostRate() != null) {
+                            totalCostValue += Math.abs(bifd.getValueAtCostRate().doubleValue());
+                        }
                     }
                 }
             }
@@ -3648,6 +3682,356 @@ public class PharmacyReportController implements Serializable {
                 pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
             }
         }, InventoryReports.GOOD_IN_TRANSIT_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Finds pending Good In Transit items using BillItem-level logic.
+     * Uses a two-query approach:
+     * 1. First query: Get all received quantities grouped by issue item ID
+     * 2. Second query: Get issue items and filter in Java for items with remaining quantity
+     *
+     * This approach correctly handles partially delivered items where (issued_qty - received_qty) > 0
+     */
+    /**
+     * Finds accepted Good In Transit items (received items).
+     * Queries receive BillItems (BillType.PharmacyTransferReceive) to show what was actually received/accepted.
+     *
+     * This method:
+     * 1. Queries receive BillItems with billTypeAtomic = PHARMACY_RECEIVE
+     * 2. Shows received quantities and values (positive, as stock comes in)
+     * 3. Applies filters to both receive bills and referenced issue bills
+     * 4. Stores received values in the same maps used for pending items
+     */
+    private List<BillItem> findAcceptedGoodInTransitItems() {
+        try {
+            // Clear previous calculations
+            billItemRemainingQuantities.clear();
+            billItemRemainingRetailValues.clear();
+            billItemRemainingPurchaseValues.clear();
+            billItemRemainingCostValues.clear();
+
+            // Query receive BillItems
+            StringBuilder receiveSql = new StringBuilder();
+            receiveSql.append("SELECT receiveBi ")
+                    .append("FROM BillItem receiveBi ")
+                    .append("WHERE receiveBi.bill.billTypeAtomic = :receiveType ")
+                    .append("AND receiveBi.bill.retired = false ")
+                    .append("AND receiveBi.retired = false ")
+                    .append("AND receiveBi.bill.cancelled = false ")
+                    .append("AND receiveBi.referanceBillItem IS NOT NULL ")
+                    .append("AND receiveBi.pharmaceuticalBillItem IS NOT NULL ")
+                    .append("AND receiveBi.bill.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> receiveParameters = new HashMap<>();
+            receiveParameters.put("receiveType", BillTypeAtomic.PHARMACY_RECEIVE);
+            receiveParameters.put("fromDate", fromDate);
+            receiveParameters.put("toDate", toDate);
+
+            // Apply filters for receive bills (to/destination side)
+            if (toInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.toInstitution = :tIns ");
+                receiveParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment.site = :tSite ");
+                receiveParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment = :tDept ");
+                receiveParameters.put("tDept", toDepartment);
+            }
+
+            // Apply filters for issue bills through referanceBillItem (from/source side)
+            if (fromInstitution != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.fromInstitution = :fIns ");
+                receiveParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.fromDepartment.site = :fSite ");
+                receiveParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.fromDepartment = :fDept ");
+                receiveParameters.put("fDept", fromDepartment);
+            }
+
+            // Apply item/category filters
+            if (item != null) {
+                receiveSql.append("AND receiveBi.item = :item ");
+                receiveParameters.put("item", item);
+            }
+            if (category != null) {
+                receiveSql.append("AND receiveBi.item.category = :cat ");
+                receiveParameters.put("cat", category);
+            }
+
+            // Apply user filter (from issue bill)
+            if (toStaff != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.toStaff = :user ");
+                receiveParameters.put("user", toStaff);
+            }
+
+            receiveSql.append("ORDER BY receiveBi.bill.id");
+
+            System.out.println("findAcceptedGoodInTransitItems SQL = " + receiveSql);
+            System.out.println("findAcceptedGoodInTransitItems parameters = " + receiveParameters);
+
+            List<BillItem> receivedItems = billItemFacade.findByJpql(
+                    receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
+
+            // Store received quantities and values in maps
+            for (BillItem receiveItem : receivedItems) {
+                if (receiveItem.getPharmaceuticalBillItem() == null) {
+                    continue;
+                }
+
+                Double receivedQty = receiveItem.getPharmaceuticalBillItem().getQty();
+                if (receivedQty != null) {
+                    // Received quantities are positive (stock comes in)
+                    double receivedQtyAbs = Math.abs(receivedQty);
+                    billItemRemainingQuantities.put(receiveItem.getId(), receivedQtyAbs);
+                }
+
+                // Store received values from BillItemFinanceDetails
+                BillItemFinanceDetails bifd = receiveItem.getBillItemFinanceDetails();
+                if (bifd != null) {
+                    // Store retail value
+                    if (bifd.getValueAtRetailRate() != null) {
+                        double retailValue = Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                        billItemRemainingRetailValues.put(receiveItem.getId(), retailValue);
+                    }
+
+                    // Store purchase value
+                    if (bifd.getValueAtPurchaseRate() != null) {
+                        double purchaseValue = Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                        billItemRemainingPurchaseValues.put(receiveItem.getId(), purchaseValue);
+                    }
+
+                    // Store cost value
+                    if (bifd.getValueAtCostRate() != null) {
+                        double costValue = Math.abs(bifd.getValueAtCostRate().doubleValue());
+                        billItemRemainingCostValues.put(receiveItem.getId(), costValue);
+                    }
+                }
+            }
+
+            System.out.println("findAcceptedGoodInTransitItems: Found " + receivedItems.size() + " received items");
+
+            return receivedItems;
+
+        } catch (Exception e) {
+            System.err.println("Error in findAcceptedGoodInTransitItems: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    private List<BillItem> findPendingGoodInTransitItems() {
+        try {
+            // Step 1: Get received quantities per issue item ID
+            Map<Long, Double> receivedQuantitiesMap = new HashMap<>();
+
+            StringBuilder receiveSql = new StringBuilder();
+            receiveSql.append("SELECT receiveBi.referanceBillItem.id, SUM(receiveBi.pharmaceuticalBillItem.qty) ")
+                    .append("FROM BillItem receiveBi ")
+                    .append("WHERE receiveBi.bill.billTypeAtomic = :receiveType ")
+                    .append("AND receiveBi.bill.retired = false ")
+                    .append("AND receiveBi.retired = false ")
+                    .append("AND receiveBi.referanceBillItem IS NOT NULL ")
+                    .append("AND receiveBi.pharmaceuticalBillItem IS NOT NULL ")
+                    .append("AND receiveBi.bill.createdAt <= :toDate ");
+
+            Map<String, Object> receiveParameters = new HashMap<>();
+            receiveParameters.put("receiveType", BillTypeAtomic.PHARMACY_RECEIVE);
+            receiveParameters.put("toDate", toDate);
+
+            // Apply filters for receive bills
+            if (fromInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.fromInstitution = :fIns ");
+                receiveParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment.site = :fSite ");
+                receiveParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment = :fDept ");
+                receiveParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.toInstitution = :tIns ");
+                receiveParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment.site = :tSite ");
+                receiveParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment = :tDept ");
+                receiveParameters.put("tDept", toDepartment);
+            }
+
+            receiveSql.append("GROUP BY receiveBi.referanceBillItem.id");
+
+            List<Object[]> receiveResults = billItemFacade.findObjectsArrayByJpql(
+                    receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
+
+            // Populate the map with received quantities
+            for (Object[] result : receiveResults) {
+                Long issueItemId = (Long) result[0];
+                Object receivedQtyObj = result[1];
+                Double receivedQty = null;
+
+                if (receivedQtyObj instanceof BigDecimal) {
+                    receivedQty = ((BigDecimal) receivedQtyObj).doubleValue();
+                } else if (receivedQtyObj instanceof Double) {
+                    receivedQty = (Double) receivedQtyObj;
+                } else if (receivedQtyObj instanceof Number) {
+                    receivedQty = ((Number) receivedQtyObj).doubleValue();
+                }
+
+                if (issueItemId != null && receivedQty != null) {
+                    receivedQuantitiesMap.put(issueItemId, receivedQty);
+                }
+            }
+
+            // Step 2: Get issue items
+            StringBuilder issueSql = new StringBuilder();
+            issueSql.append("SELECT issueBi ")
+                    .append("FROM BillItem issueBi ")
+                    .append("WHERE issueBi.retired = false ")
+                    .append("AND issueBi.bill.retired = false ")
+                    .append("AND issueBi.bill.cancelled = false ")
+                    .append("AND issueBi.bill.billType = :bt ")
+                    .append("AND issueBi.bill.billedBill is null ")
+                    .append("AND issueBi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                    .append("AND issueBi.bill.toStaff is not null ")
+                    .append("AND issueBi.bill.fromDepartment is not null ")
+                    .append("AND issueBi.pharmaceuticalBillItem IS NOT NULL ");
+
+            Map<String, Object> issueParameters = new HashMap<>();
+            issueParameters.put("bt", BillType.PharmacyTransferIssue);
+            issueParameters.put("fromDate", fromDate);
+            issueParameters.put("toDate", toDate);
+
+            // Apply filters for issue bills
+            if (fromInstitution != null) {
+                issueSql.append("AND issueBi.bill.fromInstitution = :fIns ");
+                issueParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment.site = :fSite ");
+                issueParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment = :fDept ");
+                issueParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                issueSql.append("AND issueBi.bill.toInstitution = :tIns ");
+                issueParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                issueSql.append("AND issueBi.bill.toDepartment.site = :tSite ");
+                issueParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                issueSql.append("AND issueBi.bill.toDepartment = :tDept ");
+                issueParameters.put("tDept", toDepartment);
+            }
+            if (item != null) {
+                issueSql.append("AND issueBi.item = :item ");
+                issueParameters.put("item", item);
+            }
+            if (category != null) {
+                issueSql.append("AND issueBi.item.category = :cat ");
+                issueParameters.put("cat", category);
+            }
+            if (toStaff != null) {
+                issueSql.append("AND issueBi.bill.toStaff = :user ");
+                issueParameters.put("user", toStaff);
+            }
+
+            issueSql.append("ORDER BY issueBi.bill.id");
+
+            List<BillItem> allIssueItems = billItemFacade.findByJpql(
+                    issueSql.toString(), issueParameters, TemporalType.TIMESTAMP);
+
+            // Step 3: Filter items with remaining quantity in transit and calculate remaining values
+            List<BillItem> pendingItems = new ArrayList<>();
+
+            // Clear previous calculations
+            billItemRemainingQuantities.clear();
+            billItemRemainingRetailValues.clear();
+            billItemRemainingPurchaseValues.clear();
+            billItemRemainingCostValues.clear();
+
+            for (BillItem issueItem : allIssueItems) {
+                if (issueItem.getPharmaceuticalBillItem() == null) {
+                    continue;
+                }
+
+                Double issuedQty = issueItem.getPharmaceuticalBillItem().getQty();
+                if (issuedQty == null) {
+                    continue;
+                }
+
+                // Get received quantity for this issue item (default to 0 if not received)
+                Double receivedQty = receivedQuantitiesMap.getOrDefault(issueItem.getId(), 0.0);
+
+                // Calculate quantity in transit using absolute values
+                // Issue quantities are negative (stock goes out), receive quantities are positive (stock comes in)
+                double issuedQtyAbs = Math.abs(issuedQty);
+                double receivedQtyAbs = Math.abs(receivedQty);
+                double qtyInTransit = issuedQtyAbs - receivedQtyAbs;
+
+                // Only include if quantity in transit is positive (with tolerance for floating point)
+                if (qtyInTransit > 0.001) {
+                    pendingItems.add(issueItem);
+
+                    // Store remaining quantity
+                    billItemRemainingQuantities.put(issueItem.getId(), qtyInTransit);
+
+                    // Calculate remaining values proportionally
+                    // Formula: remainingValue = (remainingQty / issuedQty) * totalIssuedValue
+                    double proportionRemaining = qtyInTransit / issuedQtyAbs;
+
+                    BillItemFinanceDetails bifd = issueItem.getBillItemFinanceDetails();
+                    if (bifd != null) {
+                        // Calculate remaining retail value
+                        if (bifd.getValueAtRetailRate() != null) {
+                            double totalRetailValue = Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                            double remainingRetailValue = totalRetailValue * proportionRemaining;
+                            billItemRemainingRetailValues.put(issueItem.getId(), remainingRetailValue);
+                        }
+
+                        // Calculate remaining purchase value
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            double totalPurchaseValue = Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                            double remainingPurchaseValue = totalPurchaseValue * proportionRemaining;
+                            billItemRemainingPurchaseValues.put(issueItem.getId(), remainingPurchaseValue);
+                        }
+
+                        // Calculate remaining cost value
+                        if (bifd.getValueAtCostRate() != null) {
+                            double totalCostValue = Math.abs(bifd.getValueAtCostRate().doubleValue());
+                            double remainingCostValue = totalCostValue * proportionRemaining;
+                            billItemRemainingCostValues.put(issueItem.getId(), remainingCostValue);
+                        }
+                    }
+                }
+            }
+
+            System.out.println("findPendingGoodInTransitItems: Found " + allIssueItems.size() +
+                    " issue items, " + pendingItems.size() + " with remaining quantity in transit");
+
+            return pendingItems;
+
+        } catch (Exception e) {
+            System.err.println("Error in findPendingGoodInTransitItems: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     private List<ItemBatch> getItemBatchesByItems(List<Item> items) {
@@ -8107,5 +8491,37 @@ public class PharmacyReportController implements Serializable {
 
     public void setCogsBillDtos(List<CostOfGoodSoldBillDTO> cogsBillDtos) {
         this.cogsBillDtos = cogsBillDtos;
+    }
+
+    public Map<Long, Double> getBillItemRemainingQuantities() {
+        return billItemRemainingQuantities;
+    }
+
+    public void setBillItemRemainingQuantities(Map<Long, Double> billItemRemainingQuantities) {
+        this.billItemRemainingQuantities = billItemRemainingQuantities;
+    }
+
+    public Map<Long, Double> getBillItemRemainingRetailValues() {
+        return billItemRemainingRetailValues;
+    }
+
+    public void setBillItemRemainingRetailValues(Map<Long, Double> billItemRemainingRetailValues) {
+        this.billItemRemainingRetailValues = billItemRemainingRetailValues;
+    }
+
+    public Map<Long, Double> getBillItemRemainingPurchaseValues() {
+        return billItemRemainingPurchaseValues;
+    }
+
+    public void setBillItemRemainingPurchaseValues(Map<Long, Double> billItemRemainingPurchaseValues) {
+        this.billItemRemainingPurchaseValues = billItemRemainingPurchaseValues;
+    }
+
+    public Map<Long, Double> getBillItemRemainingCostValues() {
+        return billItemRemainingCostValues;
+    }
+
+    public void setBillItemRemainingCostValues(Map<Long, Double> billItemRemainingCostValues) {
+        this.billItemRemainingCostValues = billItemRemainingCostValues;
     }
 }

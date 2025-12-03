@@ -16391,7 +16391,9 @@ public class SearchController implements Serializable {
             ReportTemplateRowBundle pharmacyCreditBillList;
             pharmacyCreditBillList = generatePharmacyCreditBillList();
             bundle.getBundles().add(pharmacyCreditBillList);
-            netCollectionPlusCredits += Math.abs(getSafeTotal(pharmacyCreditBillList)); // NOT Deducted from Totals
+            double pharmacyCreditBillListTotal= Math.abs(getSafeTotal(pharmacyCreditBillList)); 
+            System.out.println("pharmacyCreditBillListTotal = " + pharmacyCreditBillListTotal);
+            netCollectionPlusCredits += pharmacyCreditBillListTotal; 
             
             //TODO : Add Pharmacy Credit Cancellations
             
