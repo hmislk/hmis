@@ -70,6 +70,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2020,15 +2022,33 @@ public class PatientController implements Serializable, ControllerWithPatient {
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
     }
+    
+    public boolean checkHasField(Class<?> controller, String fieldName){
+        try{
+            System.out.println("line 2028");
+            controller.getDeclaredField(fieldName);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
+    
+    public boolean checkHasMethod(Class<?> controller, String methodName, Class<?>... parameterTypes){
+        try{
+            System.out.println("line 2038");
+            controller.getMethod(methodName, parameterTypes);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
 
-    public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
+    public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         boolean checkOnlyNumeric = CommonFunctions.checkOnlyNumeric(quickSearchPhoneNumber);
         Patient patientSearched = null;
         boolean usePHN = false;
         String j;
         Map m = new HashMap();
-        
-        admissionController.setPatientAllergies(null);
 
         if (checkOnlyNumeric) {
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
@@ -2068,9 +2088,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
             controller.setPatient(patientSearched);
             controller.setPatientDetailsEditable(false);
 //            controller.setPaymentMethod(null);
-            System.out.println("line 2071"+patientSearched);
-            admissionController.fillCurrentPatientAllergies(patientSearched);//TODO
-            System.out.println("line 2071"+current);
+
+            if(checkHasField(controller.getClass(), "patientAllergies") && checkHasMethod(controller.getClass(), "fillCurrentPatientAllergies", Patient.class)){
+                Method method = controller.getClass().getDeclaredMethod("fillCurrentPatientAllergies", Patient.class);
+                method.setAccessible(true);
+                method.invoke(controller, patientSearched);
+                System.out.println("line 2094");
+            }
+//            admissionController.fillCurrentPatientAllergies(current);//TODO
+
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
             System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
             if (controller.getPatient().getHasAnAccount() != null) {
@@ -2084,7 +2110,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             controller.setPatient(null);
             patientSearched = null;
-            this.current = null;
             controller.setPatientDetailsEditable(false);
             JsfUtil.addErrorMessage("Pleace Select Patient");
         }
