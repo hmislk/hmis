@@ -150,11 +150,25 @@
                                     </f:facet>
 
                                     <h:panelGrid columns="2" class="w-100" rendered="#{admissionPatientChangeController.originalPatient ne null}">
+                                            
                                         <h:outputLabel value="Name:" class="font-weight-bold mx-3"/>
-                                        <h:outputText value="#{admissionPatientChangeController.originalPatient.person.nameWithTitle}"/>
+                                        
+                                        <h:panelGroup class="d-flex">
+
+                                            <p:outputLabel class="ml-4" value="#{admissionPatientChangeController.originalPatient.person.nameWithTitle}" rendered="#{not empty admissionPatientChangeController.originalPatient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty admissionPatientChangeController.originalPatient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{admissionPatientChangeController.originalPatient.specificStatus}" severity="danger">
+                                                <p:outputLabel value="#{admissionPatientChangeController.originalPatient.person.nameWithTitle}" rendered="#{not empty admissionPatientChangeController.originalPatient.person.nameWithTitle}" />
+                                            </p:badge> 
+
+                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{admissionPatientChangeController.originalPatient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{admissionPatientChangeController.originalPatient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                            </p:badge>
+
+                                        </h:panelGroup>
 
                                         <h:outputLabel value="PHN:" class="font-weight-bold mx-3"/>
-                                        <h:outputText value="#{admissionPatientChangeController.originalPatient.phn}"/>
+                                        <h:outputText value="#{empty admissionPatientChangeController.originalPatient.phn ? 'N/A' : admissionPatientChangeController.originalPatient.phn }"/>
 
                                         <h:outputLabel value="Gender:" class="font-weight-bold mx-3"/>
                                         <h:outputText value="#{admissionPatientChangeController.originalPatient.person.sex}"/>
@@ -168,7 +182,7 @@
                                         <h:outputText value="#{admissionPatientChangeController.originalPatient.person.ageAsString}"/>
 
                                         <h:outputLabel value="Mobile:" class="font-weight-bold mx-3"/>
-                                        <h:outputText value="#{admissionPatientChangeController.originalPatient.person.mobile}"/>
+                                        <h:outputText value="#{empty admissionPatientChangeController.originalPatient.person.mobile ? 'N/A' : admissionPatientChangeController.originalPatient.person.mobile}"/>
 
                                         <h:outputLabel value="NIC:" class="font-weight-bold mx-3"/>
                                         <h:outputText value="#{empty admissionPatientChangeController.originalPatient.person.nic ? 'N/A' : admissionPatientChangeController.originalPatient.person.nic}"/>
