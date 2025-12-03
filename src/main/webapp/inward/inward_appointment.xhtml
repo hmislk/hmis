@@ -69,7 +69,7 @@
 
                             </div>
 
-                            <div class="row mt-3">
+                            <div class="row">
                                 <div class="col-md-6">
                                     <h:panelGroup id="panelPatient" >
                                         <p:panel>
@@ -96,8 +96,8 @@
                                                 <p:outputLabel class="mx-4" value=" : "></p:outputLabel>
                                                 <p:selectOneMenu   
                                                     id="cmbPs" 
-                                                    style="width: 20em;"
-                                                    class="mx-0"
+                                                    style="width: 15em;"
+                                                    class="mx-4"
                                                     value="#{appointmentController.currentBill.paymentMethod}">                                                                     
                                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                                     <p:ajax process="cmbPs @this" update="paymentMethods" event="change" />
@@ -134,7 +134,7 @@
                                             <h:outputLabel value="Referring Details" class="mx-4"></h:outputLabel>
                                         </f:facet>
 
-                                        <h:panelGrid columns="2" class="w-100"  id="refferingDr">
+                                        <h:panelGrid columns="2" class="w-100 align-items-center"  id="refferingDr">
                                             <p:outputLabel value="Referring Doctor" 
                                                            class="form-label"/>
                                             <p:autoComplete forceSelection="true"
@@ -160,10 +160,10 @@
                                                 pattern="#{sessionController.applicationPreference.longDateFormat}"
                                                 >                            
                                             </p:datePicker>
-                                            <h:outputLabel value="Amount" ></h:outputLabel>
+                                            <h:outputLabel class="mb-5" value="Amount" ></h:outputLabel>
                                             <p:inputText autocomplete="off"
                                                          id="pBillDetails"
-                                                         class="w-100 my-1"
+                                                         class="w-100 my-1 mb-5"
                                                          value="#{appointmentController.currentBill.total}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:inputText>
@@ -185,7 +185,8 @@
                                     <h:outputLabel value=":"/>
                                     <p:autoComplete  forceSelection="true"  
                                                      id="cmbRspRoom" 
-                                                     class="mx-4 my-2"
+                                                     class="mx-4 my-2 w-50"
+                                                     inputStyleClass="w-100"
                                                      value="#{appointmentController.reservation.room}" 
                                                      completeMethod="#{roomFacilityChargeController.completeRoom}"
                                                      var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
