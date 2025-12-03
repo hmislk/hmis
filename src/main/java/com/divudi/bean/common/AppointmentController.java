@@ -124,7 +124,35 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private PaymentMethod paymentMethod;
     private boolean patientDetailsEditable;
     private Patient patient;
+    
+    private Date fromDate;
+    private Date toDate;
+    private String appointmentNo;
+    private String patientName;
+    private AppointmentStatus appointmentstatus;
+    private Date reserveFrom;
+    private Date reserveTo;
+    
+    public void makeNull(){
+        fromDate = null;
+        toDate = null;
+        appointmentNo = null;
+        patientName = null;
+        appointmentstatus = null;
+        reserveFrom = null;
+        reserveTo = null;
+    }
 
+    public String navigateToSearchAppointmentsListFromMenu(){
+        makeNull();
+        appointmentstatus = AppointmentStatus.PENDING;
+        return "/inward/view_appointment?faces-redirect=true";
+    }
+    
+    public void searchAppointments(){
+        
+    }
+    
     public Title[] getTitle() {
         return Title.values();
     }
@@ -865,6 +893,62 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public String getAppointmentNo() {
+        return appointmentNo;
+    }
+
+    public void setAppointmentNo(String appointmentNo) {
+        this.appointmentNo = appointmentNo;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public AppointmentStatus getAppointmentstatus() {
+        return appointmentstatus;
+    }
+
+    public void setAppointmentstatus(AppointmentStatus appointmentstatus) {
+        this.appointmentstatus = appointmentstatus;
+    }
+
+    public Date getReserveFrom() {
+        return reserveFrom;
+    }
+
+    public void setReserveFrom(Date reserveFrom) {
+        this.reserveFrom = reserveFrom;
+    }
+
+    public Date getReserveTo() {
+        return reserveTo;
+    }
+
+    public void setReserveTo(Date reserveTo) {
+        this.reserveTo = reserveTo;
     }
 
     /**
