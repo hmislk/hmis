@@ -377,6 +377,8 @@
                         <p:menuitem
                             ajax="false"
                             value="Manage Appointment"
+                            actionListener="#{appointmentController.makeNull()}" 
+                            action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}"
                             icon="fa fa-list" >
                         </p:menuitem>
                     </p:submenu>
