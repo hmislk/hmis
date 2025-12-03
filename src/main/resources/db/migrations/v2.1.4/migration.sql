@@ -216,20 +216,214 @@ WHERE us.RETIRED = 0
   AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW();
 
 -- ==========================================
+-- STEP 5: CREATE INDEXES ON USERSTOCKCONTAINER TABLE
+-- ==========================================
+
+SELECT 'Step 5: Creating indexes on USERSTOCKCONTAINER for join optimization...' AS progress;
+
+-- The isStockAvailable() query also filters by userStockContainer.retired
+-- This requires efficient filtering on the USERSTOCKCONTAINER table
+-- With 587,593 retired containers vs only 10 active, this index is critical!
+
+-- Check if USERSTOCKCONTAINER (uppercase) table exists
+SET @usc_table_exists_upper = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'USERSTOCKCONTAINER'
+);
+
+-- Check if userstockcontainer (lowercase) table exists
+SET @usc_table_exists_lower = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'userstockcontainer'
+);
+
+SELECT
+    CASE WHEN @usc_table_exists_upper > 0 OR @usc_table_exists_lower > 0
+         THEN 'UserStockContainer table found - proceeding with index creation'
+         ELSE 'WARNING: UserStockContainer table not found'
+    END AS usc_table_check;
+
+-- Create single column index on RETIRED for uppercase table
+CREATE INDEX idx_userstockcontainer_retired
+ON USERSTOCKCONTAINER(RETIRED);
+
+SELECT 'Index idx_userstockcontainer_retired created on USERSTOCKCONTAINER (if table exists)' AS uppercase_usc_result;
+
+-- Create single column index on RETIRED for lowercase table
+CREATE INDEX idx_userstockcontainer_retired
+ON userstockcontainer(RETIRED);
+
+SELECT 'Index idx_userstockcontainer_retired created on userstockcontainer (if table exists)' AS lowercase_usc_result;
+
+-- Create composite index for potential future optimizations on uppercase table
+CREATE INDEX idx_userstockcontainer_retired_created
+ON USERSTOCKCONTAINER(RETIRED, CREATEDAT, CREATER_ID);
+
+SELECT 'Index idx_userstockcontainer_retired_created created on USERSTOCKCONTAINER (if table exists)' AS uppercase_usc_composite_result;
+
+-- Create composite index for potential future optimizations on lowercase table
+CREATE INDEX idx_userstockcontainer_retired_created
+ON userstockcontainer(RETIRED, CREATEDAT, CREATER_ID);
+
+SELECT 'Index idx_userstockcontainer_retired_created created on userstockcontainer (if table exists)' AS lowercase_usc_composite_result;
+
+-- Create optimized composite index for retiredAllUserStockContainer query on uppercase table
+-- This index optimizes the query: WHERE CREATER_ID = :userId AND RETIRED = 0
+-- Column order: CREATER_ID first (most selective), then RETIRED
+CREATE INDEX idx_userstockcontainer_creater_retired
+ON USERSTOCKCONTAINER(CREATER_ID, RETIRED);
+
+SELECT 'Index idx_userstockcontainer_creater_retired created on USERSTOCKCONTAINER (if table exists)' AS uppercase_usc_creater_retired_result;
+
+-- Create optimized composite index for retiredAllUserStockContainer query on lowercase table
+CREATE INDEX idx_userstockcontainer_creater_retired
+ON userstockcontainer(CREATER_ID, RETIRED);
+
+SELECT 'Index idx_userstockcontainer_creater_retired created on userstockcontainer (if table exists)' AS lowercase_usc_creater_retired_result;
+
+-- ==========================================
+-- STEP 6: CREATE PRICEMATRIX INDEXES FOR SETTLE BUTTON OPTIMIZATION
+-- ==========================================
+
+SELECT 'Step 6: Creating PriceMatrix indexes for discount calculation optimization...' AS progress;
+
+-- The Settle button recalculates discounts for all bill items
+-- These queries look up price matrices by payment scheme, department, category, and retired status
+-- Optimizing these lookups significantly improves settle button performance
+
+-- Create composite index for payment scheme + department + category lookups on uppercase table
+CREATE INDEX idx_pricematrix_payment_dept_category
+ON PRICEMATRIX(PAYMENTSCHEME_ID, DEPARTMENT_ID, CATEGORY_ID, RETIRED);
+
+SELECT 'Index idx_pricematrix_payment_dept_category created on PRICEMATRIX (if table exists)' AS uppercase_pm_payment_dept_category_result;
+
+-- Create composite index for payment scheme + department + category lookups on lowercase table
+CREATE INDEX idx_pricematrix_payment_dept_category
+ON pricematrix(PAYMENTSCHEME_ID, DEPARTMENT_ID, CATEGORY_ID, RETIRED);
+
+SELECT 'Index idx_pricematrix_payment_dept_category created on pricematrix (if table exists)' AS lowercase_pm_payment_dept_category_result;
+
+-- Create composite index for payment scheme + category lookups (without department filter) on uppercase table
+CREATE INDEX idx_pricematrix_payment_category
+ON PRICEMATRIX(PAYMENTSCHEME_ID, CATEGORY_ID, RETIRED);
+
+SELECT 'Index idx_pricematrix_payment_category created on PRICEMATRIX (if table exists)' AS uppercase_pm_payment_category_result;
+
+-- Create composite index for payment scheme + category lookups (without department filter) on lowercase table
+CREATE INDEX idx_pricematrix_payment_category
+ON pricematrix(PAYMENTSCHEME_ID, CATEGORY_ID, RETIRED);
+
+SELECT 'Index idx_pricematrix_payment_category created on pricematrix (if table exists)' AS lowercase_pm_payment_category_result;
+
+-- ==========================================
+-- STEP 7: VERIFY USERSTOCKCONTAINER INDEXES
+-- ==========================================
+
+SELECT 'Step 7: Verifying USERSTOCKCONTAINER indexes...' AS progress;
+
+-- Verify indexes were created successfully
+SET @usc_indexes_created = (
+    SELECT COUNT(DISTINCT INDEX_NAME)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND (TABLE_NAME = 'USERSTOCKCONTAINER' OR TABLE_NAME = 'userstockcontainer')
+      AND INDEX_NAME IN ('idx_userstockcontainer_retired', 'idx_userstockcontainer_retired_created', 'idx_userstockcontainer_creater_retired')
+);
+
+SELECT
+    CASE WHEN @usc_indexes_created >= 3
+         THEN CONCAT('✓ SUCCESS: ', @usc_indexes_created, ' USERSTOCKCONTAINER indexes created')
+         ELSE CONCAT('⚠️ WARNING: Only ', @usc_indexes_created, ' of 3 expected indexes created')
+    END AS usc_index_verification;
+
+-- Show index details for USERSTOCKCONTAINER
+SELECT 'USERSTOCKCONTAINER indexes created:' AS status;
+SELECT DISTINCT INDEX_NAME, INDEX_TYPE, NON_UNIQUE
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND (TABLE_NAME = 'USERSTOCKCONTAINER' OR TABLE_NAME = 'userstockcontainer')
+  AND INDEX_NAME LIKE 'idx_userstockcontainer%'
+ORDER BY INDEX_NAME;
+
+-- ==========================================
+-- STEP 8: VERIFY PRICEMATRIX INDEXES
+-- ==========================================
+
+SELECT 'Step 8: Verifying PRICEMATRIX indexes...' AS progress;
+
+-- Verify indexes were created successfully
+SET @pm_indexes_created = (
+    SELECT COUNT(DISTINCT INDEX_NAME)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND (TABLE_NAME = 'PRICEMATRIX' OR TABLE_NAME = 'pricematrix')
+      AND INDEX_NAME IN ('idx_pricematrix_payment_dept_category', 'idx_pricematrix_payment_category')
+);
+
+SELECT
+    CASE WHEN @pm_indexes_created >= 2
+         THEN CONCAT('✓ SUCCESS: ', @pm_indexes_created, ' PRICEMATRIX indexes created')
+         ELSE CONCAT('⚠️ WARNING: Only ', @pm_indexes_created, ' of 2 expected indexes created')
+    END AS pm_index_verification;
+
+-- Show index details for PRICEMATRIX
+SELECT 'PRICEMATRIX indexes created:' AS status;
+SELECT DISTINCT INDEX_NAME, INDEX_TYPE, NON_UNIQUE
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND (TABLE_NAME = 'PRICEMATRIX' OR TABLE_NAME = 'pricematrix')
+  AND INDEX_NAME LIKE 'idx_pricematrix%'
+ORDER BY INDEX_NAME;
+
+-- ==========================================
+-- STEP 9: VERIFY USER_STOCK INDEX
+-- ==========================================
+
+SELECT 'Step 9: Verifying USER_STOCK index creation and column order...' AS progress;
+
+SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND (TABLE_NAME = 'USER_STOCK' OR TABLE_NAME = 'userstock')
+  AND INDEX_NAME = 'idx_user_stock_fast_lookup'
+ORDER BY SEQ_IN_INDEX;
+
+-- ==========================================
+-- STEP 10: TEST QUERY PERFORMANCE
+-- ==========================================
+
+SELECT 'Step 10: Testing combined query with JOIN to USERSTOCKCONTAINER...' AS progress;
+
+EXPLAIN SELECT SUM(us.UPDATIONQTY)
+FROM userstock us
+JOIN userstockcontainer usc ON us.USERSTOCKCONTAINER_ID = usc.ID
+WHERE us.RETIRED=0
+  AND usc.RETIRED=0
+  AND us.STOCK_ID=1;
+
+-- ==========================================
 -- MIGRATION COMPLETION SUMMARY
 -- ==========================================
 
 SELECT 'Migration v2.1.4 completed successfully!' AS final_status;
-SELECT 'Composite index idx_user_stock_fast_lookup created for performance optimization' AS completion_message;
+SELECT 'Composite indexes created for USER_STOCK, USERSTOCKCONTAINER, and PRICEMATRIX performance optimization' AS completion_message;
 SELECT 'Expected performance improvement: 50-150ms → 5-15ms (10x faster)' AS performance_impact;
 SELECT 'GitHub Issue #16990 performance bottleneck addressed' AS issue_status;
-SELECT 'UserStockController.isStockAvailable() query optimized' AS functional_fix;
+SELECT 'Stock selection, Add button, and Settle button all optimized' AS functional_fix;
 SELECT NOW() AS migration_end_time;
 
 -- Final summary for production monitoring
 SELECT 'PRODUCTION SUMMARY:' AS summary;
-SELECT 'Index covers all WHERE clause columns in optimal order' AS optimization;
+SELECT 'USER_STOCK index covers all WHERE clause columns in optimal order' AS optimization_1;
+SELECT 'USERSTOCKCONTAINER indexes optimize JOIN filtering on RETIRED column' AS optimization_2;
+SELECT 'idx_userstockcontainer_creater_retired optimizes Add button retiredAllUserStockContainer() query' AS optimization_3;
+SELECT 'PRICEMATRIX indexes optimize Settle button discount calculations' AS optimization_4;
 SELECT 'Query selectivity: STOCK_ID → RETIRED → CREATEDAT → CREATER_ID' AS index_strategy;
-SELECT 'Expected reduction in pharmacy retail sale item addition lag' AS user_experience;
+SELECT 'USERSTOCKCONTAINER.RETIRED index critical (587K retired vs 10 active records)' AS join_optimization;
+SELECT 'Add button query (CREATER_ID, RETIRED) now uses dedicated index instead of index_merge' AS add_button_optimization;
+SELECT 'Settle button: Category-based discount lookups now use composite indexes' AS settle_button_optimization;
+SELECT 'Expected reduction in pharmacy retail sale item addition and settlement lag' AS user_experience;
 SELECT 'No data changes - schema modification only (safe to rollback)' AS data_safety;
 SELECT 'Monitor application logs for actual performance improvement' AS monitoring_recommendation;

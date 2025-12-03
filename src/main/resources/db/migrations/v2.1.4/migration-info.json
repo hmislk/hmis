@@ -1,14 +1,14 @@
 {
     "version": "v2.1.4",
-    "description": "Add Composite Index for USER_STOCK Performance Optimization - Pharmacy Retail Sale Speed Improvement",
+    "description": "Add Composite Indexes for USER_STOCK, USERSTOCKCONTAINER, and PRICEMATRIX Performance Optimization - Pharmacy Retail Sale Speed Improvement (Stock Selection, Add Button, and Settle Button)",
     "author": "Dr M H B Ariyaratne",
     "date": "2025-12-03",
     "githubIssue": "16990",
     "branch": "16990-speed-up-the-pharmacy-retail-sale",
-    "estimatedDurationMinutes": 2,
+    "estimatedDurationMinutes": 5,
     "requiresDowntime": false,
-    "affectedTables": ["USER_STOCK", "userstock"],
-    "affectedModules": ["Pharmacy", "Retail Sale", "Stock Management", "User Stock Container"],
+    "affectedTables": ["USER_STOCK", "userstock", "USERSTOCKCONTAINER", "userstockcontainer", "PRICEMATRIX", "pricematrix"],
+    "affectedModules": ["Pharmacy", "Retail Sale", "Stock Management", "User Stock Container", "Discount Management", "Billing"],
     "dependencies": [],
     "preRequisites": [
         "Database backup completed and verified",
@@ -20,7 +20,7 @@
         {
             "step": 1,
             "description": "Pre-migration verification - check table existence and current indexes",
-            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('USER_STOCK', 'userstock')"
+            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('USER_STOCK', 'userstock', 'USERSTOCKCONTAINER', 'userstockcontainer')"
         },
         {
             "step": 2,
@@ -30,53 +30,109 @@
         {
             "step": 3,
             "description": "Create composite index on USER_STOCK (uppercase - production/Ubuntu)",
-            "sql": "CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup ON USER_STOCK(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID)"
+            "sql": "CREATE INDEX idx_user_stock_fast_lookup ON USER_STOCK(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID)"
         },
         {
             "step": 4,
             "description": "Create composite index on userstock (lowercase - development/Windows)",
-            "sql": "CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup ON userstock(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID)"
+            "sql": "CREATE INDEX idx_user_stock_fast_lookup ON userstock(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID)"
         },
         {
             "step": 5,
-            "description": "Verify index creation and column order",
-            "sql": "SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME = 'idx_user_stock_fast_lookup'"
+            "description": "Create RETIRED index on USERSTOCKCONTAINER for JOIN optimization",
+            "sql": "CREATE INDEX idx_userstockcontainer_retired ON USERSTOCKCONTAINER(RETIRED)"
         },
         {
             "step": 6,
-            "description": "Test index usage with EXPLAIN query",
-            "sql": "EXPLAIN SELECT SUM(UPDATIONQTY) FROM USER_STOCK WHERE RETIRED=0 AND STOCK_ID=1 AND CREATEDAT BETWEEN ... "
+            "description": "Create composite index on USERSTOCKCONTAINER for future optimization",
+            "sql": "CREATE INDEX idx_userstockcontainer_retired_created ON USERSTOCKCONTAINER(RETIRED, CREATEDAT, CREATER_ID)"
+        },
+        {
+            "step": 7,
+            "description": "Create composite index on USERSTOCKCONTAINER for Add button retiredAllUserStockContainer query",
+            "sql": "CREATE INDEX idx_userstockcontainer_creater_retired ON USERSTOCKCONTAINER(CREATER_ID, RETIRED)"
+        },
+        {
+            "step": 8,
+            "description": "Create composite index on PRICEMATRIX for Settle button discount calculations (payment+department+category)",
+            "sql": "CREATE INDEX idx_pricematrix_payment_dept_category ON PRICEMATRIX(PAYMENTSCHEME_ID, DEPARTMENT_ID, CATEGORY_ID, RETIRED)"
+        },
+        {
+            "step": 9,
+            "description": "Create composite index on PRICEMATRIX for Settle button discount calculations (payment+category)",
+            "sql": "CREATE INDEX idx_pricematrix_payment_category ON PRICEMATRIX(PAYMENTSCHEME_ID, CATEGORY_ID, RETIRED)"
+        },
+        {
+            "step": 10,
+            "description": "Verify USER_STOCK index creation and column order",
+            "sql": "SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME = 'idx_user_stock_fast_lookup'"
+        },
+        {
+            "step": 11,
+            "description": "Verify USERSTOCKCONTAINER indexes creation",
+            "sql": "SELECT INDEX_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_userstockcontainer%'"
+        },
+        {
+            "step": 12,
+            "description": "Verify PRICEMATRIX indexes creation",
+            "sql": "SELECT INDEX_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_pricematrix%'"
+        },
+        {
+            "step": 13,
+            "description": "Test combined query with JOIN to USERSTOCKCONTAINER",
+            "sql": "EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us JOIN userstockcontainer usc ON us.USERSTOCKCONTAINER_ID = usc.ID WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1"
         }
     ],
     "verificationQueries": [
         "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME = 'idx_user_stock_fast_lookup'",
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_userstockcontainer%'",
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_pricematrix%'",
         "SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX, CARDINALITY FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME IN ('USER_STOCK', 'userstock') AND INDEX_NAME = 'idx_user_stock_fast_lookup' ORDER BY SEQ_IN_INDEX",
-        "EXPLAIN SELECT SUM(UPDATIONQTY) FROM USER_STOCK WHERE RETIRED=0 AND STOCK_ID=1 AND CREATER_ID!=1 AND CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()"
+        "SELECT INDEX_NAME, COLUMN_NAME, CARDINALITY FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME IN ('USERSTOCKCONTAINER', 'userstockcontainer') AND INDEX_NAME LIKE 'idx_userstockcontainer%' ORDER BY INDEX_NAME, SEQ_IN_INDEX",
+        "SELECT INDEX_NAME, COLUMN_NAME, CARDINALITY FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME IN ('PRICEMATRIX', 'pricematrix') AND INDEX_NAME LIKE 'idx_pricematrix%' ORDER BY INDEX_NAME, SEQ_IN_INDEX",
+        "EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us JOIN userstockcontainer usc ON us.USERSTOCKCONTAINER_ID = usc.ID WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1 AND us.CREATER_ID!=1 AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()"
     ],
     "rollbackNotes": [
-        "This migration only adds an index - safe to rollback",
+        "This migration only adds indexes - safe to rollback",
         "No data modifications - schema change only",
-        "Rollback simply drops the index (instant operation)",
-        "Application will continue to work without index (just slower)",
+        "Rollback drops USER_STOCK, USERSTOCKCONTAINER, and PRICEMATRIX indexes (instant operation)",
+        "Application will continue to work without indexes (just slower)",
         "If performance improvement insufficient, rollback and try alternative approaches"
     ],
     "postMigrationVerification": [
         "Monitor UserStockController.isStockAvailable() query execution time in logs",
         "Expected improvement: 50-150ms → 5-15ms per query",
         "Test pharmacy retail sale item addition lag (autocomplete to qty field focus)",
+        "Test Add button performance (should be noticeably faster when adding items)",
+        "Test Settle button performance (discount calculations should be faster)",
         "Verify index is being used: Run EXPLAIN on isStockAvailable query",
+        "Verify idx_userstockcontainer_creater_retired is used: Run EXPLAIN on retiredAllUserStockContainer query",
+        "Verify PRICEMATRIX indexes are used: Run EXPLAIN on discount calculation queries",
         "Check MySQL slow query log for USER_STOCK queries (should decrease significantly)",
         "Monitor database index size increase (minimal impact expected)"
     ],
     "technicalNotes": [
-        "Index column order optimized for query selectivity:",
+        "USER_STOCK index column order optimized for query selectivity:",
         "  1. STOCK_ID - Most selective (specific stock lookup)",
         "  2. RETIRED - Boolean filter (eliminates retired records early)",
         "  3. CREATEDAT - Date range filter (30-minute window)",
         "  4. CREATER_ID - User exclusion (NOT equal condition)",
-        "Query pattern: SELECT sum(UPDATIONQTY) WHERE STOCK_ID=? AND RETIRED=0 AND CREATER_ID!=? AND CREATEDAT BETWEEN ? AND ?",
-        "This index enables index-only scan for covered columns",
-        "Expected cardinality improvement for stock lookups",
+        "USERSTOCKCONTAINER indexes optimize JOIN performance:",
+        "  - RETIRED index critical: 587,593 retired vs 10 active containers (99.998% retired!)",
+        "  - Composite index (RETIRED, CREATEDAT, CREATER_ID) for potential future queries",
+        "  - Composite index (CREATER_ID, RETIRED) optimizes Add button retiredAllUserStockContainer() query",
+        "Query pattern: SELECT sum(us.UPDATIONQTY) FROM UserStock us WHERE us.retired=false AND us.userStockContainer.retired=false AND ...",
+        "Add button query pattern: SELECT us FROM UserStockContainer us WHERE us.retired=false AND us.creater=:wb",
+        "idx_userstockcontainer_creater_retired eliminates index_merge, uses direct index lookup instead",
+        "PRICEMATRIX indexes optimize Settle button discount calculations:",
+        "  - idx_pricematrix_payment_dept_category: For queries filtering by payment scheme, department, and category",
+        "  - idx_pricematrix_payment_category: For queries filtering by payment scheme and category (no department)",
+        "  - Category-based discounts are the primary pattern (not item-based)",
+        "  - Average 3 items per bill, each requiring discount calculation during settlement",
+        "Settle button query pattern: SELECT pm FROM PriceMatrix pm WHERE pm.paymentScheme=:ps AND pm.category=:cat AND pm.retired=false",
+        "All three tables (USER_STOCK, USERSTOCKCONTAINER, PRICEMATRIX) now have optimal indexes",
+        "This enables efficient index scan + JOIN filtering",
+        "Expected cardinality improvement for stock lookups with container validation",
         "Compatible with MySQL InnoDB and MyISAM engines"
     ],
     "performanceMetrics": {

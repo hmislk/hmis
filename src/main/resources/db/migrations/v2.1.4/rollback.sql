@@ -119,18 +119,149 @@ WHERE TABLE_SCHEMA = DATABASE()
 ORDER BY INDEX_NAME;
 
 -- ==========================================
+-- STEP 2: DROP USERSTOCKCONTAINER INDEXES
+-- ==========================================
+
+SELECT 'Step 2: Dropping USERSTOCKCONTAINER indexes...' AS progress;
+
+-- Drop composite index from uppercase table
+SELECT 'Dropping idx_userstockcontainer_retired_created from USERSTOCKCONTAINER...' AS status;
+DROP INDEX IF EXISTS idx_userstockcontainer_retired_created ON USERSTOCKCONTAINER;
+SELECT 'Composite index dropped from USERSTOCKCONTAINER (if existed)' AS uppercase_usc_composite_result;
+
+-- Drop composite index from lowercase table
+DROP INDEX IF EXISTS idx_userstockcontainer_retired_created ON userstockcontainer;
+SELECT 'Composite index dropped from userstockcontainer (if existed)' AS lowercase_usc_composite_result;
+
+-- Drop single column index from uppercase table
+SELECT 'Dropping idx_userstockcontainer_retired from USERSTOCKCONTAINER...' AS status;
+DROP INDEX IF EXISTS idx_userstockcontainer_retired ON USERSTOCKCONTAINER;
+SELECT 'RETIRED index dropped from USERSTOCKCONTAINER (if existed)' AS uppercase_usc_result;
+
+-- Drop single column index from lowercase table
+DROP INDEX IF EXISTS idx_userstockcontainer_retired ON userstockcontainer;
+SELECT 'RETIRED index dropped from userstockcontainer (if existed)' AS lowercase_usc_result;
+
+-- Drop creater-retired composite index from uppercase table
+SELECT 'Dropping idx_userstockcontainer_creater_retired from USERSTOCKCONTAINER...' AS status;
+DROP INDEX IF EXISTS idx_userstockcontainer_creater_retired ON USERSTOCKCONTAINER;
+SELECT 'CREATER_RETIRED index dropped from USERSTOCKCONTAINER (if existed)' AS uppercase_usc_creater_retired_result;
+
+-- Drop creater-retired composite index from lowercase table
+DROP INDEX IF EXISTS idx_userstockcontainer_creater_retired ON userstockcontainer;
+SELECT 'CREATER_RETIRED index dropped from userstockcontainer (if existed)' AS lowercase_usc_creater_retired_result;
+
+-- ==========================================
+-- STEP 3: DROP PRICEMATRIX INDEXES
+-- ==========================================
+
+SELECT 'Step 3: Dropping PRICEMATRIX indexes...' AS progress;
+
+-- Drop payment+department+category composite index from uppercase table
+SELECT 'Dropping idx_pricematrix_payment_dept_category from PRICEMATRIX...' AS status;
+DROP INDEX IF EXISTS idx_pricematrix_payment_dept_category ON PRICEMATRIX;
+SELECT 'Payment+Dept+Category index dropped from PRICEMATRIX (if existed)' AS uppercase_pm_pdc_result;
+
+-- Drop payment+department+category composite index from lowercase table
+DROP INDEX IF EXISTS idx_pricematrix_payment_dept_category ON pricematrix;
+SELECT 'Payment+Dept+Category index dropped from pricematrix (if existed)' AS lowercase_pm_pdc_result;
+
+-- Drop payment+category composite index from uppercase table
+SELECT 'Dropping idx_pricematrix_payment_category from PRICEMATRIX...' AS status;
+DROP INDEX IF EXISTS idx_pricematrix_payment_category ON PRICEMATRIX;
+SELECT 'Payment+Category index dropped from PRICEMATRIX (if existed)' AS uppercase_pm_pc_result;
+
+-- Drop payment+category composite index from lowercase table
+DROP INDEX IF EXISTS idx_pricematrix_payment_category ON pricematrix;
+SELECT 'Payment+Category index dropped from pricematrix (if existed)' AS lowercase_pm_pc_result;
+
+-- ==========================================
+-- STEP 4: VERIFICATION
+-- ==========================================
+
+SELECT 'Step 4: Verifying all indexes removed...' AS progress;
+
+-- Verify USER_STOCK index no longer exists
+SET @index_still_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND (TABLE_NAME = 'USER_STOCK' OR TABLE_NAME = 'userstock')
+      AND INDEX_NAME = 'idx_user_stock_fast_lookup'
+);
+
+SELECT
+    CASE WHEN @index_still_exists = 0
+         THEN '✓ SUCCESS: USER_STOCK index idx_user_stock_fast_lookup successfully removed'
+         ELSE '⚠️ WARNING: USER_STOCK index still exists after rollback attempt'
+    END AS userstock_rollback_verification;
+
+-- Verify USERSTOCKCONTAINER indexes no longer exist
+SET @usc_indexes_still_exist = (
+    SELECT COUNT(DISTINCT INDEX_NAME)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND (TABLE_NAME = 'USERSTOCKCONTAINER' OR TABLE_NAME = 'userstockcontainer')
+      AND INDEX_NAME IN ('idx_userstockcontainer_retired', 'idx_userstockcontainer_retired_created', 'idx_userstockcontainer_creater_retired')
+);
+
+SELECT
+    CASE WHEN @usc_indexes_still_exist = 0
+         THEN '✓ SUCCESS: All USERSTOCKCONTAINER indexes successfully removed'
+         ELSE CONCAT('⚠️ WARNING: ', @usc_indexes_still_exist, ' USERSTOCKCONTAINER indexes still exist')
+    END AS userstockcontainer_rollback_verification;
+
+-- Show remaining indexes after rollback
+SELECT 'Remaining indexes on USER_STOCK after rollback:' AS status;
+SELECT DISTINCT INDEX_NAME, INDEX_TYPE, NON_UNIQUE
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND (TABLE_NAME = 'USER_STOCK' OR TABLE_NAME = 'userstock')
+ORDER BY INDEX_NAME;
+
+SELECT 'Remaining indexes on USERSTOCKCONTAINER after rollback:' AS status;
+SELECT DISTINCT INDEX_NAME, INDEX_TYPE, NON_UNIQUE
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND (TABLE_NAME = 'USERSTOCKCONTAINER' OR TABLE_NAME = 'userstockcontainer')
+ORDER BY INDEX_NAME;
+
+-- Verify PRICEMATRIX indexes no longer exist
+SET @pm_indexes_still_exist = (
+    SELECT COUNT(DISTINCT INDEX_NAME)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND (TABLE_NAME = 'PRICEMATRIX' OR TABLE_NAME = 'pricematrix')
+      AND INDEX_NAME IN ('idx_pricematrix_payment_dept_category', 'idx_pricematrix_payment_category')
+);
+
+SELECT
+    CASE WHEN @pm_indexes_still_exist = 0
+         THEN '✓ SUCCESS: All PRICEMATRIX indexes successfully removed'
+         ELSE CONCAT('⚠️ WARNING: ', @pm_indexes_still_exist, ' PRICEMATRIX indexes still exist')
+    END AS pricematrix_rollback_verification;
+
+-- Show remaining indexes after rollback
+SELECT 'Remaining indexes on PRICEMATRIX after rollback:' AS status;
+SELECT DISTINCT INDEX_NAME, INDEX_TYPE, NON_UNIQUE
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND (TABLE_NAME = 'PRICEMATRIX' OR TABLE_NAME = 'pricematrix')
+ORDER BY INDEX_NAME;
+
+-- ==========================================
 -- ROLLBACK COMPLETION SUMMARY
 -- ==========================================
 
 SELECT 'Rollback v2.1.4 completed successfully!' AS final_status;
-SELECT 'Index idx_user_stock_fast_lookup removed from USER_STOCK' AS completion_message;
+SELECT 'All performance indexes removed from USER_STOCK, USERSTOCKCONTAINER, and PRICEMATRIX' AS completion_message;
 SELECT 'Application will continue to work (with original performance)' AS application_status;
 SELECT 'UserStockController.isStockAvailable() will use original query plan' AS functional_impact;
 SELECT NOW() AS rollback_end_time;
 
 -- Final summary
 SELECT 'ROLLBACK SUMMARY:' AS summary;
-SELECT 'Composite index removed - system restored to pre-migration state' AS result;
+SELECT 'All composite indexes removed - system restored to pre-migration state' AS result;
 SELECT 'Query performance will return to original levels (50-150ms per query)' AS performance_impact;
 SELECT 'No data loss - schema change only' AS data_safety;
 SELECT 'Consider alternative optimization approaches if needed' AS next_steps;
