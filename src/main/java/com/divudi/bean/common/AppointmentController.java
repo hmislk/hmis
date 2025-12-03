@@ -19,6 +19,7 @@ import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.dto.ReservationDTO;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Bill;
@@ -130,17 +131,15 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private String appointmentNo;
     private String patientName;
     private AppointmentStatus appointmentstatus;
-    private Date reserveFrom;
-    private Date reserveTo;
-    
+    private List<ReservationDTO> reservationDTOs;
+
     public void makeNull(){
         fromDate = null;
         toDate = null;
         appointmentNo = null;
         patientName = null;
         appointmentstatus = null;
-        reserveFrom = null;
-        reserveTo = null;
+        reservationDTOs = new ArrayList<>();
     }
 
     public String navigateToSearchAppointmentsListFromMenu(){
@@ -150,7 +149,32 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
     
     public void searchAppointments(){
+        reservationDTOs = new ArrayList<>();
         
+        String jpql = "SELECT new com.divudi.core.data.dto.ReservationDTO("
+                + "  "
+                + " ) "
+                + " FROM Reservation res "
+                + " WHERE res.Room = :room "
+                + " AND res.reservedFrom BETWEEN :today AND :endDate "
+                + " ORDER BY res.reservedFrom";
+
+        Double lookupDays = configOptionApplicationController.getDoubleValueByKey("Inward - Appoiment Lookup Duration (Days)", 30.0);
+
+        Date today = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(today);
+        cal.add(Calendar.DAY_OF_YEAR, lookupDays.intValue());
+        Date endDate = cal.getTime();
+        
+        HashMap hm = new HashMap();
+        hm.put("room", r);
+        hm.put("today", today);
+        hm.put("endDate", endDate);
+        
+        List<Reservation> reservations = reservationFacade.findByJpql(jpql,hm);
+        
+        return reservations;
     }
     
     public Title[] getTitle() {
@@ -935,20 +959,15 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         this.appointmentstatus = appointmentstatus;
     }
 
-    public Date getReserveFrom() {
-        return reserveFrom;
+    public List<ReservationDTO> getReservationDTOs() {
+        if(reservationDTOs == null){
+            reservationDTOs = new ArrayList<>();
+        }
+        return reservationDTOs;
     }
 
-    public void setReserveFrom(Date reserveFrom) {
-        this.reserveFrom = reserveFrom;
-    }
-
-    public Date getReserveTo() {
-        return reserveTo;
-    }
-
-    public void setReserveTo(Date reserveTo) {
-        this.reserveTo = reserveTo;
+    public void setReservationDTOs(List<ReservationDTO> reservationDTOs) {
+        this.reservationDTOs = reservationDTOs;
     }
 
     /**
