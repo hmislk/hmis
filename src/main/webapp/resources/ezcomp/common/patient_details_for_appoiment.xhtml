@@ -379,10 +379,24 @@
                 <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null}" >
+                            
                             <h:outputLabel value="Name " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nameWithTitle}" />
 
+                            <h:panelGroup class="d-flex">
+
+                                <p:outputLabel class="ml-4" value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty cc.attrs.controller.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
+                                    <p:outputLabel value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle}" />
+                                </p:badge> 
+
+                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                </p:badge>
+
+                            </h:panelGroup>
+                         
                             <h:outputLabel value="Gender " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
                             <h:outputText value="#{cc.attrs.controller.patient.person.sex}" />
