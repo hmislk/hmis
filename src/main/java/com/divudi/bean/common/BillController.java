@@ -789,7 +789,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         + " order by c.deptId";
 
                 List<BillTypeAtomic> btas = new ArrayList<>();
-                btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//                btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
                 btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
                 btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
                 hash.put("btas", btas);
@@ -872,7 +872,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " or (c.creditCompany.name) like :q ) "
                     + " order by c.deptId";
             List<BillTypeAtomic> btas = new ArrayList<>();
-            btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             params.put("btas", btas);
