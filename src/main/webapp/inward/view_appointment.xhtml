@@ -46,7 +46,7 @@
                                             class="w-100"
                                             inputStyleClass="form-control">
                                         </p:calendar>
-                                        
+
                                         <hr/>
 
                                         <p:commandButton
@@ -63,23 +63,23 @@
                                             ajax="false"
                                             class="ui-button-warning w-100 mt-2"
                                             value="Download">
-                                            <p:dataExporter fileName="Appointment List" type="xlsx" target="tblBills" ></p:dataExporter>
+                                            <p:dataExporter fileName="Reservation List" type="xlsx" target="reservation" ></p:dataExporter>
                                         </p:commandButton>
 
                                         <hr/>
-                                        
+
                                         <p:inputText
                                             placeholder="Appointment No"
                                             autocomplete="off"
                                             class="w-100"
-                                            value="#{searchAppointments.appointmentNo}" >
+                                            value="#{appointmentController.appointmentNo}" >
                                         </p:inputText>
-                                        
+
                                         <p:inputText
                                             placeholder="Patient Name"
                                             autocomplete="off"
                                             class="w-100 mt-2"
-                                            value="#{searchAppointments.patientName}" >
+                                            value="#{appointmentController.patientName}" >
                                         </p:inputText>
 
                                         <p:selectOneMenu
@@ -97,7 +97,7 @@
                                                 itemValue="#{rs}" >
                                             </f:selectItems>
                                         </p:selectOneMenu>
-                                        
+
                                         <hr/>
                                     </h:panelGroup>
                                 </div>
@@ -106,8 +106,8 @@
                             <div class="col-md-10">
                                 <p:dataTable
                                     rowIndexVar="i"
-                                    id="tblBills"
-                                    value="#{requestController.requests}"
+                                    id="reservation"
+                                    value="#{appointmentController.reservationDTOs}"
                                     var="r"
                                     style="min-width: 100%;"
                                     rows ="10"
@@ -117,74 +117,82 @@
                                     rowsPerPageTemplate="10,25,50"
                                     >
 
-                                    <p:column headerText="Request No" width="16em;">
-                                        <h:outputLabel value="#{r.requestNo}" />
+                                    <p:column headerText="#" width="2em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{i+1}" />
                                     </p:column>
 
-                                    <p:column headerText="Request From">
-                                        <h:outputLabel value="#{r.department.name}" />
+                                    <p:column headerText="Appointment No" width="12em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.appointmentNumber}" />
                                     </p:column>
 
-                                    <p:column headerText="Request At">
-                                        <p:outputLabel value="#{r.createdAt}">
+                                    <p:column headerText="Reserve From" width="13em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.reservedFrom}" >
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                                        </p:outputLabel>
+                                        </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Request by">
-                                        <h:outputLabel value="#{r.creator.webUserPerson.name}" />
+                                    <p:column headerText="Reserve To" width="13em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.reservedTo}" >
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
                                     </p:column>
                                     
-                                    <p:column headerText="Bill No">
-                                        <h:outputLabel value="#{r.bill.deptId}" />
-                                    </p:column>
-                                    
-                                    <p:column headerText="BHT No">
-                                        <h:outputLabel value="N/A" rendered="#{r.bill.patientEncounter eq null}"/>
-                                        <h:outputLabel value="#{r.bill.patientEncounter.bhtNo}" rendered="#{r.bill.patientEncounter ne null}"/>
+                                    <p:column headerText="Room" width="12em;" style="padding: 8px;">
+                                        <h:outputLabel value="N/A" />
                                     </p:column>
 
-                                    <p:column headerText="Request Type" style="width: 12em;" >
-                                        <h:panelGroup id="remark">
-                                            <p:badge rendered="#{r.requestType eq 'BILL_CANCELLATION'}" value="#{r.requestType.displayName}" severity="danger" styleClass="mr-2"></p:badge>
-                                            <p:badge rendered="#{r.requestType eq 'ITEM_REFUND'}" value="#{r.requestType.displayName}"  severity="warning" styleClass="mr-2"></p:badge>
-                                            <p:badge rendered="#{r.requestType eq 'EDIT_REQUEST'}" value="#{r.requestType.displayName}"></p:badge>
+                                    <p:column headerText="Patient" style="padding: 8px;">
+                                        <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
+                                        <h:outputLabel value="#{r.patientNameWithTitle}" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Age / Gender"  width="15em;" style="padding: 8px;">
+                                        <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
+                                        <h:outputLabel value="#{r.patientAge}" />
+                                        <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
+                                        <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
+                                        <h:outputLabel value="#{r.patientGender}" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Mobile"  width="10em;" style="padding: 8px;">
+                                        <h:panelGroup rendered="#{!r.patientMobile.blank}">
+                                            <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                                            <h:outputLabel value="#{r.patientMobile}" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{r.patientMobile.blank}">
+                                             <h:outputLabel value="N/A" />
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 8em;">
+                                    <p:column headerText="Status" width="8em;" style="padding: 8px;">
                                         <p:badge 
-                                            value="#{r.status.label}">
+                                            value="#{r.status.name}">
                                         </p:badge>
                                     </p:column>
 
-                                    <p:column headerText="Actions" style="width: 260px;" >
+                                    <p:column headerText="Actions" width="220px;" style="padding: 8px;" >
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
-                                                value="To Approve"
-                                                rendered="#{webUserController.hasPrivilege('BillCancelRequestApproval')}"
-                                                disabled="#{r.status eq 'CANCELLED'}"
-                                                class="ui-button-success"
-                                                action="#{requestController.navigateToApproveRequest()}" >
-                                                <f:setPropertyActionListener value="#{r}" target="#{requestController.currentRequest}"/>
+                                                value="Admit"
+                                                disabled="#{r.status eq 'CANCEL'}"
+                                                class="ui-button-success" >
                                             </p:commandButton>
 
                                             <p:commandButton
-                                                icon="fa fa-times-circle"
+                                                icon="fa fa-align-justify"
                                                 ajax="false"
-                                                value="To Cancel"
-                                                disabled="#{!(r.status eq 'PENDING')}"
-                                                class="ui-button-danger"
-                                                action="#{requestController.navigateToCancelRequest()}" >
-                                                <f:setPropertyActionListener value="#{r}" target="#{requestController.currentRequest}"/>
+                                                value="Manage"
+                                                action="#{appointmentController.navigateToMangeAppointment(r.id)}"
+                                                disabled="#{(r.status eq 'CANCEL')}"
+                                                class="ui-button-warning">
                                             </p:commandButton>
                                         </div>
                                     </p:column>
-                                    
+
                                 </p:dataTable>
-                                
+
                             </div>
                         </div>
                     </p:panel>
