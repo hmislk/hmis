@@ -57,6 +57,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -132,6 +133,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private String patientName;
     private AppointmentStatus appointmentstatus;
     private List<ReservationDTO> reservationDTOs;
+    
+    private Date reservedFromDate;
+    private Date reservedToDate;
+    private RoomFacilityCharge reservedroom;
 
     public void makeNull(){
         fromDate = null;
@@ -148,58 +153,153 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
     
-    public void searchAppointments(){
-        reservationDTOs = new ArrayList<>();
+    public void updateReservation(){
+        if(reservation == null){
+            JsfUtil.addErrorMessage("No Reservation Found");
+            return ;
+        }
         
-        String jpql = "SELECT new com.divudi.core.data.dto.ReservationDTO("
-                + "  "
-                + " ) "
-                + " FROM Reservation res "
-                + " WHERE res.Room = :room "
-                + " AND res.reservedFrom BETWEEN :today AND :endDate "
-                + " ORDER BY res.reservedFrom";
-
-        Double lookupDays = configOptionApplicationController.getDoubleValueByKey("Inward - Appoiment Lookup Duration (Days)", 30.0);
-
-        Date today = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(today);
-        cal.add(Calendar.DAY_OF_YEAR, lookupDays.intValue());
-        Date endDate = cal.getTime();
+        if(currentAppointment== null){
+            JsfUtil.addErrorMessage("No Appointment Found");
+            return;
+        }
         
-        HashMap hm = new HashMap();
-        hm.put("room", r);
-        hm.put("today", today);
-        hm.put("endDate", endDate);
+        if(reservedroom == null){
+            JsfUtil.addErrorMessage("No Reserved Room Found");
+            return;
+        }
         
-        List<Reservation> reservations = reservationFacade.findByJpql(jpql,hm);
+        if(reservedFromDate.before(new Date())){
+            JsfUtil.addErrorMessage("Reserved From Date not Valid");
+            return;
+        }
         
-        return reservations;
+        if(reservedToDate.before(reservedFromDate)){
+            JsfUtil.addErrorMessage("Reserved To Date not Valid");
+            return;
+        }
+        
+        boolean test =  checkReservationForRoom(reservation,reservedroom,reservedFromDate,reservedToDate);
+        System.out.println("test = " + test);
     }
     
-    public Title[] getTitle() {
-        return Title.values();
-    }
+    public boolean checkReservationForRoom(Reservation res, RoomFacilityCharge room, Date reservedFromDate, Date reservedToDate ) {
+        
+        System.out.println("res = " + res);
+        System.out.println("room = " + room);
+        System.out.println("reservedFromDate = " + reservedFromDate);
+        System.out.println("reservedToDate = " + reservedToDate);
+        
+        String jpql = "SELECT res FROM Reservation res "
+                + " WHERE res.room = :room "
+                + " AND res.reservedFrom BETWEEN :fromDate AND :toDate "
+                + " AND res.id != :resID ";
 
-    public Sex[] getSex() {
-        return Sex.values();
+        HashMap hm = new HashMap();
+        hm.put("room", room);
+        hm.put("fromDate", reservedFromDate);
+        hm.put("toDate", reservedToDate);
+        hm.put("resID", res.getId());
+        
+        System.out.println("jpql = " + jpql);   
+        System.out.println("hm = " + hm);
+        
+        Reservation reservations = reservationFacade.findFirstByJpql(jpql,hm,TemporalType.TIMESTAMP);
+        
+        if(reservations == null){
+            System.out.println("Reservations not Found ");
+            return false;
+        }else{
+            System.out.println("reservations = " + reservations);
+            System.out.println("Reservations Found ");
+            return true;
+        }
     }
+    
+    public String navigateToMangeAppointment(Long reservationId){
+        if(reservationId == null){
+            JsfUtil.addErrorMessage("Error in Reservation");
+            return "";
+        }
+        
+        reservation = reservationFacade.find(reservationId);
+        
+        if(reservation == null){
+            JsfUtil.addErrorMessage("No Reservation Found");
+            return "";
+        }
+        
+        reservedroom = reservation.getRoom();
+        reservedFromDate = reservation.getReservedFrom();
+        reservedToDate = reservation.getReservedTo();
+        
+        currentAppointment = appointmentFacade.find(reservation.getAppointment().getId());
+        
+        if(currentAppointment == null){
+            JsfUtil.addErrorMessage("No Appointment Found");
+            return "";
+        }
+        
+        patient = patientFacade.find(currentAppointment.getPatient().getId());
+        currentBill = billFacade.find(currentAppointment.getBill().getId());
+        
+        return "/inward/inward_appointment_edit?faces-redirect=true";
+    }
+    
+    public void searchAppointments(){
+        reservationDTOs = new ArrayList<>();
 
-//    public List<Bill> completeOpdCreditBill(String qry) {
-//        List<Bill> a = null;
-//        String sql;
-//        HashMap hash = new HashMap();
-//        if (qry != null) {
-//            sql = "select c from BilledBill c where c.paidAmount is null and c.billType= :btp and c.paymentMethod= :pm and c.cancelledBill is null and c.refundedBill is null and c.retired=false and (c.insId) like '%" + qry.toUpperCase() + "%' order by c.creditCompany.name";
-//            hash.put("btp", BillType.OpdBill);
-//            hash.put("pm", PaymentMethod.Credit);
-//            a = getFacade().findByJpql(sql, hash, TemporalType.TIME);
-//        }
-//        if (a == null) {
-//            a = new ArrayList<Bill>();
-//        }
-//        return a;
-//    }
+        HashMap params = new HashMap();
+        
+        String jpql = "SELECT new com.divudi.core.data.dto.ReservationDTO( "
+                + " COALESCE(res.id, 0),"
+                + " res.reservedFrom, "
+                + " res.reservedTo, "
+                + " COALESCE(res.appointment.appointmentNumber, ''),"
+                + " res.createdAt, "
+                + " res.patient.person.title, "
+                + " COALESCE(res.patient.person.name, ''), "
+                + " res.patient.person.dob, "
+                + " COALESCE(res.patient.person.sex, ''), "
+                + " COALESCE(res.patient.person.mobile, ''), "
+                + " res.appointment.status "
+                + " ) "
+                + " FROM Reservation res "
+                + " WHERE res.retired =:ret"
+                + " AND res.reservedFrom BETWEEN :today AND :endDate ";
+
+        if(appointmentstatus != null){
+            jpql += " AND res.appointment.status = :status ";
+            params.put("status", appointmentstatus);
+        }
+        
+        if(appointmentNo != null){
+            jpql += " AND res.appointment.appointmentNumber like :aptNumber ";
+            params.put("aptNumber", "%" + appointmentNo.trim() + "%");
+        }
+        
+        if(patientName != null){
+            jpql += " AND res.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+        
+        jpql += " ORDER BY res.createdAt";
+        
+ 
+        params.put("ret", false);
+        params.put("today", fromDate);
+        params.put("endDate", toDate);
+        
+        System.out.println("jpql = " + jpql);
+        System.out.println("hm = " + params);
+        
+        reservationDTOs = reservationFacade.findLightsByJpqlWithoutCache(jpql,params, TemporalType.TIMESTAMP);
+        
+        System.out.println("reservationDTOs = " + reservationDTOs);
+        System.out.println("reservationDTOs = " + reservationDTOs.size());
+        
+    }
+    
     private Patient savePatient(Patient p) {
 
         if (p == null) {
@@ -278,11 +378,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public void settleBill() {
-        
-        Date startTime = new Date();
-        Date fromDate = new Date();
-        Date toDate = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -509,7 +605,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         //   getCurrentBill().setPatient(tmpPatient);
 //        temp.setPatientEncounter(patientEncounter);
         //   temp.setPaymentScheme(getPaymentScheme());
-
+        getCurrentBill().setCreatedAt(new Date());
         getCurrentBill().setCreatedAt(new Date());
         getCurrentBill().setCreater(sessionController.getLoggedUser());
         getFacade().create(getCurrentBill());
@@ -587,7 +683,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public List<Reservation> checkAppointmentsForRoom(RoomFacilityCharge r) {
         String jpql = "SELECT res FROM Reservation res "
-                + "WHERE res.Room = :room "
+                + "WHERE res.room = :room "
                 + "AND res.reservedFrom BETWEEN :today AND :endDate "
                 + "ORDER BY res.reservedFrom";
 
@@ -607,6 +703,15 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         List<Reservation> reservations = reservationFacade.findByJpql(jpql,hm);
         
         return reservations;
+    }
+    
+        
+    public Title[] getTitle() {
+        return Title.values();
+    }
+
+    public Sex[] getSex() {
+        return Sex.values();
     }
 
     public String prepareNewBill() {
@@ -920,6 +1025,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public Date getFromDate() {
+        if(fromDate == null){
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -928,6 +1036,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public Date getToDate() {
+        if(toDate == null){
+            Double lookupDays = configOptionApplicationController.getDoubleValueByKey("Inward - Appoiment Lookup Duration (Days)", 30.0);
+
+            Date today = getFromDate();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(today);
+            cal.add(Calendar.DAY_OF_YEAR, lookupDays.intValue());
+            toDate = cal.getTime();
+        }
+        
         return toDate;
     }
 
@@ -968,6 +1086,30 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setReservationDTOs(List<ReservationDTO> reservationDTOs) {
         this.reservationDTOs = reservationDTOs;
+    }
+
+    public Date getReservedFromDate() {
+        return reservedFromDate;
+    }
+
+    public void setReservedFromDate(Date reservedFromDate) {
+        this.reservedFromDate = reservedFromDate;
+    }
+
+    public Date getReservedToDate() {
+        return reservedToDate;
+    }
+
+    public void setReservedToDate(Date reservedToDate) {
+        this.reservedToDate = reservedToDate;
+    }
+
+    public RoomFacilityCharge getReservedroom() {
+        return reservedroom;
+    }
+
+    public void setReservedroom(RoomFacilityCharge reservedroom) {
+        this.reservedroom = reservedroom;
     }
 
     /**
