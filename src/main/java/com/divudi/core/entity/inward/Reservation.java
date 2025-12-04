@@ -30,7 +30,7 @@ public class Reservation implements Serializable {
     @ManyToOne
     private Patient patient;
     @ManyToOne
-    private RoomFacilityCharge Room;
+    private RoomFacilityCharge room;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reservedFrom;
@@ -76,11 +76,11 @@ public class Reservation implements Serializable {
     }
 
     public RoomFacilityCharge getRoom() {
-        return Room;
+        return room;
     }
 
-    public void setRoom(RoomFacilityCharge Room) {
-        this.Room = Room;
+    public void setRoom(RoomFacilityCharge room) {
+        this.room = room;
     }
 
     public Date getReservedFrom() {
