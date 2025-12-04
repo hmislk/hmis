@@ -17057,7 +17057,7 @@ public class SearchController implements Serializable {
 //            bundle.getBundles().add(opdCreditRefundBundle);
 //            collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
 // Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
-            // COMMENTED OUT: Duplicate of pharmacy credit bills processing already done at lines 16310-16315
+            // COMMENTED OUT: Duplicate of pharmacy credit bills processing already done at lines 16787-16792
             // This duplicate was causing erroneous total increases
             /*
             List<BillTypeAtomic> pharmacyCreditBillTypes = new ArrayList<>();
@@ -17071,6 +17071,30 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(pharmacyCreditBillsBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditBillsBundle);
              */
+
+            // COMMENTED OUT: Duplicate of pharmacy credit cancellations and refunds processing
+            // These sections are already processed at lines 16794-16806 as:
+            //   - "Pharmacy Cancellations - Credit" (line 16797)
+            //   - "Pharmacy Refunds - Credit" (line 16804)
+            //
+            // PROBLEM IDENTIFIED: Both sections below use the SAME:
+            //   1. Bill types (PHARMACY_RETAIL_SALE_CANCELLED, PHARMACY_RETAIL_SALE_REFUND, etc.)
+            //   2. Payment methods (creditPaymentMethods)
+            //   3. Bundle types ("PharmacyCreditCancel" and "PharmacyCreditRefund")
+            //
+            // IMPACT: This caused double-counting in the Cashier Summary report:
+            //   - Bill 1942879 (-10.00 refund) appeared in BOTH:
+            //     * "Pharmacy Refunds - Credit" (lines 16801-16806)
+            //     * "Pharmacy Credit Refunds" (lines 17070-17081) - DUPLICATE
+            //   - The refund was subtracted from collectionForTheDay TWICE
+            //   - This created a discrepancy between Daily Return (1,474.00)
+            //     and Cashier Summary (1,524.02) when both should match after
+            //     accounting for credit transactions
+            //
+            // FIX: Commenting out lines 17061-17081 to eliminate duplicate processing
+            // The pharmacy credit cancellations and refunds are already correctly
+            // handled in the first occurrence at lines 16794-16806
+            /*
             List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
@@ -17091,6 +17115,7 @@ public class SearchController implements Serializable {
             pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
             bundle.getBundles().add(pharmacyCreditRefundBundle);
             collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
+            */
 
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
