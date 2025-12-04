@@ -15,16 +15,35 @@ public class ReservationDTO implements Serializable {
     private String appointmentNumber;
     private Date createdAt;
     private String roomNo;
+    private String patientNameWithTitle;
     private Title patientTitle;
     private String patientName;
     private Date patientDob;
     private String patientAge;
+    private String patientGender;
+    private String patientMobile;
     private AppointmentStatus status;
-
+    
     public ReservationDTO() {
+        
     }
-
-
+    
+    // Usinng searchAppointments() in AppointmentController
+    public ReservationDTO(Long id, Date reservedFrom, Date reservedTo,String appointmentNumber, Date createdAt,Title patientTitle, String patientName,Date patientDob, String patientGender, String patientMobile, AppointmentStatus status) {
+        this.id = id;
+        this.reservedFrom = reservedFrom;
+        this.reservedTo = reservedTo;
+        this.appointmentNumber = appointmentNumber;
+        this.createdAt = createdAt;
+        this.patientTitle = patientTitle;
+        this.patientName = patientName;
+        this.patientDob = patientDob;
+        this.patientGender = patientGender;
+        this.patientMobile = patientMobile;
+        this.status = status;
+        
+    }
+    
     public Long getId() {
         return id;
     }
@@ -112,6 +131,38 @@ public class ReservationDTO implements Serializable {
 
     public void setPatientAge(String patientAge) {
         this.patientAge = patientAge;
+    }
+
+    public String getPatientNameWithTitle() {
+        String temT;
+        Title t = getPatientTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
+        }
+        patientNameWithTitle = temT + " " + getPatientName();
+        return patientNameWithTitle;
+    }
+
+    public void setPatientNameWithTitle(String patientNameWithTitle) {
+        this.patientNameWithTitle = patientNameWithTitle;
+    }
+
+    public String getPatientMobile() {
+        return patientMobile;
+    }
+
+    public void setPatientMobile(String patientMobile) {
+        this.patientMobile = patientMobile;
+    }
+
+    public String getPatientGender() {
+        return patientGender;
+    }
+
+    public void setPatientGender(String patientGender) {
+        this.patientGender = patientGender;
     }
 
 }
