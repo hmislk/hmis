@@ -2663,7 +2663,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Pre-bill is not persisted; cannot load for printing");
             return;
         }
-        setPrintBill(getBillFacade().find(id));
+//        setPrintBill(getBillFacade().find(id));
+
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
 
             if (getPatient() != null) {
@@ -2688,6 +2689,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         resetAll();
+        setPrintBill(billService.reloadBill(id));
         billPreview = true;
     }
 
