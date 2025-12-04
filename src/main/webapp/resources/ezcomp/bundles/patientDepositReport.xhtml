@@ -2,7 +2,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
-      xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
@@ -14,6 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+
 
         <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
             <table class="table w-100">
@@ -31,7 +31,7 @@
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark" colspan="6">
+                        <th class="text-light bg-dark" colspan="3">
                             <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                         <th class="text-end text-light bg-dark">
@@ -44,43 +44,29 @@
                         <th>Bill No</th>
                         <th>Date &amp; Time</th>
                         <th>Patient</th>
-                        <th>Cheque No</th>
-                        <th>Cheque Date</th>
-                        <th>Bank</th>
-                        <th class="text-end">Cheque Value</th>
+                        <th class="text-end">Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
                         <tr>
                             <td>
-                                <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
-                                <h:commandLink rendered="#{row.payment.bill.deptId ne null}"
-                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}"
-                                               styleClass="btn btn-link" title="View Bill Details">
-                                    <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" />
-                                    <i class="fa fa-search" aria-hidden="true"></i>
-                                </h:commandLink>
+                                <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.bill.deptId eq null}" />
                             </td>
+
+
                             <td>
                                 <h:outputText value="#{row.payment.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </td>
+
+
                             <td>
-                                <h:outputText value="#{row.payment.bill.patient.person.nameWithTitle}" />
-                            </td>
-                            <td>
-                                <h:outputText value="#{row.payment.chequeRefNo}" />
-                            </td>
-                            <td>
-                                <h:outputText value="#{row.payment.chequeDate}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                <h:outputText value="#{row.payment.bill.patient.person.name}">
                                 </h:outputText>
                             </td>
-                            <td>
-                                <h:outputText value="#{row.payment.bank.name}" />
-                            </td>
+
                             <td class="text-end">
                                 <h:outputText value="#{row.payment.paidValue}">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -91,6 +77,7 @@
                 </tbody>
             </table>
         </h:panelGroup>
+
 
     </cc:implementation>
 </html>
