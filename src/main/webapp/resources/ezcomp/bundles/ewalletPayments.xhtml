@@ -31,7 +31,7 @@
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark" colspan="6">
+                        <th class="text-light bg-dark" colspan="5">
                             <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                         <th class="text-end text-light bg-dark">
@@ -42,12 +42,11 @@
                     </tr>
                     <tr>
                         <th>Bill No</th>
-                        <th>Bill Class</th>
-                        <th>Bill Date</th>
+                        <th>Date &amp; Time</th>
+                        <th>Patient</th>
                         <th>eWallet Provider</th>
                         <th>Transaction Ref</th>
-                        <th class="text-end">Fee</th>
-                        <th>Reference Bill</th>
+                        <th class="text-end">eWallet Value</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,12 +62,12 @@
                                 </h:commandLink>
                             </td>
                             <td>
-                                <h:outputText value="#{row.payment.bill.billClassType}" styleClass="text-style-by-type" />
-                            </td>
-                            <td>
                                 <h:outputText value="#{row.payment.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
+                            </td>
+                            <td>
+                                <h:outputText value="#{row.payment.bill.patient.person.nameWithTitle}" />
                             </td>
                             <td>
                                 <h:outputText value="#{row.payment.bank.name}" />
@@ -80,9 +79,6 @@
                                 <h:outputText value="#{row.payment.paidValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                            </td>
-                            <td>
-                                <h:outputText value="#{row.payment.bill.backwardReferenceBill.deptId}" />
                             </td>
                         </tr>
                     </ui:repeat>

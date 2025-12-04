@@ -228,14 +228,14 @@
                                 <ez:professionalPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportInward'}"/>
 
                                 <ez:paymentReportCards  id="cardPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCards'}"/>
+
                                 <ez:staffPayments  id="staffPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
                                 <ez:voucherPayments  id="voucherPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
                                 <ez:chequePayments id="chequePaymentPanel" bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
                                 <ez:ewalletPayments  id="ewalletPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
                                 <ez:slipPayments  id="slipPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
-                                
-                                
-                                
+                                <ez:patientDepositReport id="patientDepositUsedPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'paymentReportPatientDeposit'}"/>
+
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
 
                                 <ez:opdServiceCollectionCredit bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollectionCredit'}" />
@@ -245,10 +245,14 @@
                                     id="panelPharmacyCreditBills"
                                     bundle="#{myBundle}"
                                     rendered="#{myBundle.bundleType eq 'pharmacyCreditBills'}"/>
-                                <ez:pharmacyCreditCancel id="pharmacyCreditCancel" bundle="#{myBundle}"
-                                                         rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
-                                <ez:pharmacyCreditRefund id="pharmacyCreditRefund" bundle="#{myBundle}"
-                                                         rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
+                                <ez:pharmacyCreditCancel 
+                                    id="pharmacyCreditCancel"
+                                    bundle="#{myBundle}"
+                                    rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
+                                <ez:pharmacyCreditRefund 
+                                    id="pharmacyCreditRefund" 
+                                    bundle="#{myBundle}"
+                                    rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
 
