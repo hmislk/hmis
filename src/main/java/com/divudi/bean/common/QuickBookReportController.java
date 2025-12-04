@@ -367,7 +367,7 @@ public class QuickBookReportController implements Serializable {
                 continue;
             }
             QuickBookFormat qbf = new QuickBookFormat();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             qbf.setRowType("TRNS");
             qbf.setTrnsType("INVOICE");
             qbf.setDate(sdf.format(fromDate));
@@ -405,7 +405,7 @@ public class QuickBookReportController implements Serializable {
                 qbfs.addAll(createInwardIncomes(fromDate, toDate, pe, null, PaymentMethod.Credit, null));
                 if (grantTot != 0.0) {
                     QuickBookFormat qbf = new QuickBookFormat();
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
                     qbf.setRowType("TRNS");
                     qbf.setTrnsType("INVOICE");
                     qbf.setDate(sdf.format(pe.getDateOfDischarge()));
@@ -450,7 +450,7 @@ public class QuickBookReportController implements Serializable {
                 qbfs.addAll(createInwardIncomes(fromDate, toDate, null, getReportKeyWord().getAdmissionType(), PaymentMethod.Cash, null));
                 if (grantTot != 0.0) {
                     QuickBookFormat qbf = new QuickBookFormat();
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
                     qbf.setRowType("TRNS");
                     qbf.setTrnsType("INVOICE");
                     qbf.setDate(sdf.format(fromDate));
@@ -491,7 +491,7 @@ public class QuickBookReportController implements Serializable {
                     qbfs.addAll(createInwardIncomes(fromDate, toDate, null, atype, PaymentMethod.Cash, null));
                     if (grantTot != 0.0) {
                         QuickBookFormat qbf = new QuickBookFormat();
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
                         qbf.setRowType("TRNS");
                         qbf.setTrnsType("INVOICE");
                         qbf.setDate(sdf.format(fromDate));
@@ -530,6 +530,122 @@ public class QuickBookReportController implements Serializable {
 
     }
 
+    /**
+     * Validates a bill for QuickBooks export
+     * @param bill The bill to validate
+     * @throws RuntimeException if bill is invalid for QB export
+     */
+    private void validateBillForQBExport(Bill bill) {
+        if (bill == null) {
+            throw new RuntimeException("Bill cannot be null");
+        }
+
+        if (bill.getNetTotal() == 0) {
+            throw new RuntimeException("Bill has zero total. Bill ID: " + bill.getId() +
+                ". Please check if this bill was properly processed.");
+        }
+
+        if (bill.getDepartment() == null) {
+            throw new RuntimeException("Bill missing department. Bill ID: " + bill.getId() +
+                ". Please assign a department to this bill before exporting to QuickBooks.");
+        }
+
+        if (bill.getFromInstitution() == null && bill.getPaymentMethod() != PaymentMethod.Cash) {
+            throw new RuntimeException("Bill missing supplier institution. Bill ID: " + bill.getId() +
+                ". Please assign a supplier or mark as Cash payment.");
+        }
+
+        if (bill.getInvoiceNumber() == null || bill.getInvoiceNumber().trim().isEmpty()) {
+            throw new RuntimeException("Bill missing invoice number. Bill ID: " + bill.getId() +
+                ". Please enter an invoice number for this bill.");
+        }
+
+        if (bill.getDeptId() == null || bill.getDeptId().trim().isEmpty()) {
+            throw new RuntimeException("Bill missing GRN/Department ID. Bill ID: " + bill.getId() +
+                ". Please ensure this bill has a proper GRN number.");
+        }
+    }
+
+    /**
+     * Validates that a QB transaction balances (TRNS amount equals sum of SPL amounts)
+     * @param trnsAmount The TRNS line amount (should be negative for purchases)
+     * @param splAmounts List of SPL line amounts (should be positive)
+     * @param billId Bill ID for error reporting
+     * @throws RuntimeException if transaction doesn't balance
+     */
+    private void validateTransactionBalance(double trnsAmount, List<Double> splAmounts, String billId) {
+        double splTotal = splAmounts.stream().mapToDouble(Double::doubleValue).sum();
+        double tolerance = 0.01; // Allow 1 cent tolerance for rounding
+
+        if (Math.abs(Math.abs(trnsAmount) - splTotal) > tolerance) {
+            throw new RuntimeException(String.format(
+                "Transaction out of balance for Bill %s. TRNS amount: %.2f, SPL total: %.2f. " +
+                "Difference: %.2f. Please check expense calculations.",
+                billId, trnsAmount, splTotal, Math.abs(Math.abs(trnsAmount) - splTotal)
+            ));
+        }
+    }
+
+    /**
+     * Validates that expense items have proper mapping to QB accounts
+     * @param expenseItem The expense item to validate
+     * @param billId Bill ID for error reporting
+     */
+    private void validateExpenseMapping(Item expenseItem, String billId) {
+        if (expenseItem == null) {
+            throw new RuntimeException("Expense item is null for Bill " + billId +
+                ". Please check bill expense data integrity.");
+        }
+
+        if (expenseItem.getName() == null || expenseItem.getName().trim().isEmpty()) {
+            throw new RuntimeException("Expense item missing name for Bill " + billId +
+                ". Item ID: " + expenseItem.getId() + ". Please set a proper expense type name.");
+        }
+    }
+
+    /**
+     * Maps expense types to appropriate QuickBooks Chart of Accounts
+     * @param expenseType The type of expense (e.g., "Transport", "Handling", "Maintenance")
+     * @param consideredForCosting Whether this expense should be capitalized to inventory
+     * @param deptName Department name for inventory account
+     * @return Proper QB account string
+     */
+    private String getExpenseQBAccount(String expenseType, boolean consideredForCosting, String deptName) {
+        if (consideredForCosting) {
+            // Expenses considered for costing are capitalized to inventory
+            return "INVENTORIES:" + deptName;
+        }
+
+        // Map expense types to appropriate expense accounts
+        if (expenseType == null) {
+            return "OTHER MATERIAL & SERVICE COST:Other";
+        }
+
+        switch (expenseType.toLowerCase().trim()) {
+            case "transport":
+            case "freight":
+            case "delivery":
+                return "OTHER MATERIAL & SERVICE COST:Transport";
+            case "handling":
+            case "handling fees":
+            case "handling fee":
+                return "OTHER MATERIAL & SERVICE COST:Handling Fees";
+            case "maintenance":
+            case "installation":
+            case "service":
+                return "MAINTANCE COST:Hospital Maintenance:Maintenance - General";
+            case "insurance":
+                return "OTHER MATERIAL & SERVICE COST:Insurance";
+            case "customs":
+            case "duty":
+            case "customs duty":
+                return "OTHER MATERIAL & SERVICE COST:Customs & Duties";
+            default:
+                // For unmapped expense types, use generic account
+                return "OTHER MATERIAL & SERVICE COST:Other";
+        }
+    }
+
     public void createQBFormatPharmacyGRNAndPurchaseBills() {
         List<Bill> bills = new ArrayList<>();
         List<Bill> billsBilled = new ArrayList<>();
@@ -563,9 +679,17 @@ public class QuickBookReportController implements Serializable {
         quickBookFormats = new ArrayList<>();
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -599,7 +723,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -611,6 +745,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -623,9 +771,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -657,7 +813,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -669,6 +835,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -682,9 +862,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -717,7 +905,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -729,6 +927,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -742,9 +954,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -777,7 +997,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -789,6 +1019,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -831,9 +1075,17 @@ public class QuickBookReportController implements Serializable {
         quickBookFormats = new ArrayList<>();
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -863,7 +1115,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -875,6 +1137,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -887,9 +1163,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -919,7 +1203,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -931,6 +1225,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -944,9 +1252,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -976,7 +1292,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -988,6 +1314,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -1001,9 +1341,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1035,7 +1383,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -1047,6 +1405,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -1090,9 +1462,17 @@ public class QuickBookReportController implements Serializable {
         quickBookFormats = new ArrayList<>();
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1126,7 +1506,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -1138,6 +1528,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -1150,9 +1554,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1184,7 +1596,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -1196,6 +1618,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -1209,9 +1645,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1244,7 +1688,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -1256,6 +1710,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -1269,9 +1737,17 @@ public class QuickBookReportController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
         for (Bill b : bills) {
+            // Validate bill before processing
+            try {
+                validateBillForQBExport(b);
+            } catch (RuntimeException e) {
+                System.err.println("Skipping invalid bill: " + e.getMessage());
+                continue; // Skip this bill and process the next one
+            }
+
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             QuickBookFormat qbf = new QuickBookFormat();
 
             qbf.setRowType("SPL");
@@ -1304,7 +1780,17 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+
+                // Validate expense item
+                try {
+                    validateExpenseMapping(bi.getItem(), b.getDeptId());
+                } catch (RuntimeException e) {
+                    System.err.println("Skipping invalid expense: " + e.getMessage());
+                    continue; // Skip this expense and process the next one
+                }
+
+                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -1316,6 +1802,20 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
 
             quickBookFormats.addAll(qbfs);
+
+            // Validate transaction balance before completing
+            try {
+                List<Double> splAmounts = qbfs.stream()
+                    .mapToDouble(format -> format.getAmount())
+                    .boxed()
+                    .collect(java.util.stream.Collectors.toList());
+                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
+            } catch (RuntimeException e) {
+                System.err.println("Transaction balance validation failed: " + e.getMessage());
+                // Log the error but continue processing
+            }
+
             qbf = new QuickBookFormat();
             qbf.setRowType("ENDTRNS");
             quickBookFormats.add(qbf);
@@ -1629,7 +2129,7 @@ public class QuickBookReportController implements Serializable {
             Long proBillCount = countResult != null ? countResult.longValue() : 0L;
             Double proFeeValue = sumResult != null ? sumResult.doubleValue() : 0.0;
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
             Item itemBefore = null;
 
             QuickBookFormat qbf = new QuickBookFormat();
