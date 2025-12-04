@@ -601,22 +601,24 @@ public class QuickBookReportController implements Serializable {
             throw new RuntimeException("Expense item missing name for Bill " + billId +
                 ". Item ID: " + expenseItem.getId() + ". Please set a proper expense type name.");
         }
+
+        if (expenseItem.getPrintName() == null || expenseItem.getPrintName().trim().isEmpty()) {
+            System.err.println("Warning: Expense item missing printName for Bill " + billId +
+                ". Item ID: " + expenseItem.getId() + ". Using default account. Please set printName to match QB account.");
+        }
     }
 
     /**
-     * Maps expense types to appropriate QuickBooks Chart of Accounts
-     * @param expenseType The type of expense (e.g., "Transport", "Handling", "Maintenance")
-     * @param consideredForCosting Whether this expense should be capitalized to inventory
-     * @param deptName Department name for inventory account
-     * @return Proper QB account string
+     * NOTE: This mapping function is no longer used.
+     * Team will configure expense accounts directly in Item.printName to match QB requirements.
+     * Keeping for reference only.
      */
+    /*
     private String getExpenseQBAccount(String expenseType, boolean consideredForCosting, String deptName) {
         if (consideredForCosting) {
-            // Expenses considered for costing are capitalized to inventory
             return "INVENTORIES:" + deptName;
         }
 
-        // Map expense types to appropriate expense accounts
         if (expenseType == null) {
             return "OTHER MATERIAL & SERVICE COST:Other";
         }
@@ -641,10 +643,10 @@ public class QuickBookReportController implements Serializable {
             case "customs duty":
                 return "OTHER MATERIAL & SERVICE COST:Customs & Duties";
             default:
-                // For unmapped expense types, use generic account
                 return "OTHER MATERIAL & SERVICE COST:Other";
         }
     }
+    */
 
     public void createQBFormatPharmacyGRNAndPurchaseBills() {
         List<Bill> bills = new ArrayList<>();
@@ -700,7 +702,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -718,7 +720,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -732,7 +734,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -752,7 +755,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -792,7 +795,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -808,7 +811,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -822,7 +825,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -842,7 +846,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -883,7 +887,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -900,7 +904,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -914,7 +918,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -934,7 +939,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -975,7 +980,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -992,7 +997,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1006,7 +1011,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1026,7 +1032,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1095,7 +1101,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getTotal());
+            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getDeptId());
 //            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
@@ -1110,7 +1116,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld3("");
             qbf.setCustFld4("");
             qbf.setCustFld5("");
-            grantTot += b.getTotal();
+            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1124,7 +1130,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1144,7 +1151,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1183,7 +1190,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getTotal());
+            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getDeptId());
 //            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
@@ -1198,7 +1205,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld3("");
             qbf.setCustFld4("");
             qbf.setCustFld5("");
-            grantTot += b.getTotal();
+            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1212,7 +1219,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1232,7 +1240,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1272,7 +1280,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getTotal());
+            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getDeptId());
 //            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
@@ -1287,7 +1295,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld3("");
             qbf.setCustFld4("");
             qbf.setCustFld5("");
-            grantTot += b.getTotal();
+            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1301,7 +1309,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1321,7 +1330,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1361,7 +1370,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
-            qbf.setAmount(0 - b.getTotal());
+            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getDeptId());
 //            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
@@ -1378,7 +1387,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld3("");
             qbf.setCustFld4("");
             qbf.setCustFld5("");
-            grantTot += b.getTotal();
+            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1392,7 +1401,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1412,7 +1422,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1483,7 +1493,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -1501,7 +1511,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1515,7 +1525,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1535,7 +1546,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1575,7 +1586,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -1591,7 +1602,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1605,7 +1616,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1625,7 +1637,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1666,7 +1678,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -1683,7 +1695,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1697,7 +1709,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1717,7 +1730,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
@@ -1758,7 +1771,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(b.getNetTotal());
-//            qbf.setAmount(0 - b.getTotal());
+//            qbf.setAmount(0 - b.getNetTotal());
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
@@ -1775,7 +1788,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld4("");
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
-//            grantTot += b.getTotal();
+//            grantTot += b.getNetTotal();
             qbfs.add(qbf);
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
@@ -1789,7 +1802,8 @@ public class QuickBookReportController implements Serializable {
                     continue; // Skip this expense and process the next one
                 }
 
-                String expenseAccount = getExpenseQBAccount(bi.getItem().getName(), false, b.getDepartment().getName());
+                // Use the item's printName directly - team will set this to match QB requirements
+                String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -1809,7 +1823,7 @@ public class QuickBookReportController implements Serializable {
                     .mapToDouble(format -> format.getAmount())
                     .boxed()
                     .collect(java.util.stream.Collectors.toList());
-                splAmounts.add(b.getNetTotal()); // Add inventory amount
+                // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 System.err.println("Transaction balance validation failed: " + e.getMessage());
