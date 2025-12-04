@@ -2323,9 +2323,8 @@ public class SearchController implements Serializable {
         }
         return nonCreditPaymentMethods;
     }
-    
-    
-     public List<PaymentMethod> getCreditPaymentMethods() {
+
+    public List<PaymentMethod> getCreditPaymentMethods() {
         if (creditPaymentMethods == null) {
             creditPaymentMethods = PaymentMethod.getCreditPaymentMethods();
         }
@@ -16245,7 +16244,7 @@ public class SearchController implements Serializable {
                 opdServiceCollection = generateOpdServiceCollectionWithoutProfessionalFee(PaymentType.NON_CREDIT);
             }
             bundle.getBundles().add(opdServiceCollection);
-            collectionForTheDay += getSafeTotal(opdServiceCollection);
+            collectionForTheDay += bundleCashierCollectionTotal(opdServiceCollection);
 
             // Generate pharmacy collection and add to the main bundle
             List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
@@ -16273,39 +16272,51 @@ public class SearchController implements Serializable {
             System.out.println("pharmacyCollection.getName() = " + pharmacyCollection.getName());
             System.out.println("pharmacyCollection.getBundleType() = " + pharmacyCollection.getBundleType());
             System.out.println("pharmacyCollection.getTotal() = " + pharmacyCollection.getTotal());
+            System.out.println("pharmacyCollection.getCashierCollectionTotal() = " + pharmacyCollection.getCashierCollectionTotal());
+            System.out.println("pharmacyCollection.getCashierExcludedTotal() = " + pharmacyCollection.getCashierExcludedTotal());
             System.out.println("pharmacyCollection.getReportTemplateRows().size() = " + pharmacyCollection.getReportTemplateRows().size());
             bundle.getBundles().add(pharmacyCollection);
             System.out.println("Added pharmacy collection to main bundle. Total bundles: " + bundle.getBundles().size());
-            collectionForTheDay += getSafeTotal(pharmacyCollection);
+            collectionForTheDay += bundleCashierCollectionTotal(pharmacyCollection);
 
             // Generate collecting centre collection and add to the main bundle
             ReportTemplateRowBundle ccCollection = generateCcCollection();
             bundle.getBundles().add(ccCollection);
-            collectionForTheDay += getSafeTotal(ccCollection);
+            collectionForTheDay += bundleCashierCollectionTotal(ccCollection);
 
             // Generate OPD Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
             bundle.getBundles().add(opdCreditCompanyCollection);
-            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
+            collectionForTheDay += bundleCashierCollectionTotal(opdCreditCompanyCollection);
 
             // Generate Inward Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
             bundle.getBundles().add(inwardCreditCompanyCollection);
-            collectionForTheDay += getSafeTotal(inwardCreditCompanyCollection);
+            collectionForTheDay += bundleCashierCollectionTotal(inwardCreditCompanyCollection);
 
             // Generate Pharmacy Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle pharmacyCreditCompanyCollection = generateCreditCompanyCollectionForPharmacy();
             bundle.getBundles().add(pharmacyCreditCompanyCollection);
-            collectionForTheDay += getSafeTotal(pharmacyCreditCompanyCollection);
+            collectionForTheDay += bundleCashierCollectionTotal(pharmacyCreditCompanyCollection);
 
             // Generate Channelling Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle channellingCreditCompanyCollection = generateCreditCompanyCollectionForChannelling();
             bundle.getBundles().add(channellingCreditCompanyCollection);
-            collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
+            collectionForTheDay += bundleCashierCollectionTotal(channellingCreditCompanyCollection);
 
             ReportTemplateRowBundle patientDepositPayments = generatePatientDepositCollection();
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Bundle Created");
+            System.out.println("  - Name: " + patientDepositPayments.getName());
+            System.out.println("  - BundleType: " + patientDepositPayments.getBundleType());
+            System.out.println("  - Rows: " + (patientDepositPayments.getReportTemplateRows() != null ? patientDepositPayments.getReportTemplateRows().size() : "null"));
+            System.out.println("  - Total: " + patientDepositPayments.getTotal());
             bundle.getBundles().add(patientDepositPayments);
-            collectionForTheDay += getSafeTotal(patientDepositPayments);
+            // Use bundle total directly (not bundleCashierCollectionTotal) as this bundle contains bills, not payments
+            double patientDepositCollectionTotal = patientDepositPayments.getTotal();
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit RECEIPTS = " + patientDepositCollectionTotal);
+            collectionForTheDay += patientDepositCollectionTotal;
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Receipts ADDED to collectionForTheDay");
+            System.out.println("DEBUG generateDailyReturn: Collection for the day after patient deposits = " + collectionForTheDay);
 
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
@@ -16315,6 +16326,7 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(collectionForTheDayBundle);
 
             netCashCollection = collectionForTheDay;
+            System.out.println("DEBUG generateDailyReturn: Initial netCashCollection = " + netCashCollection);
 
             // Deduct various payments from net cash collection
             ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
@@ -16376,12 +16388,21 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(slipPayments);
             netCashCollection -= Math.abs(getSafeTotal(slipPayments));
 
+            // Section 2: Payments made USING patient deposits (display only, not deducted)
+            ReportTemplateRowBundle patientDepositPaymentsUsed = generatePatientDepositPayments();
+            patientDepositPaymentsUsed.calculateTotalByPayments();
+            bundle.getBundles().add(patientDepositPaymentsUsed);
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit PAYMENTS (used for services) = " + getSafeTotal(patientDepositPaymentsUsed));
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Payments NOT deducted from net cash (display only)");
+            // NOTE: Do NOT deduct from netCashCollection - this is display only
+
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
             netCashForTheDayBundle.setName("Net Cash");
             netCashForTheDayBundle.setBundleType("netCash");
             netCashForTheDayBundle.setTotal(netCashCollection);
             bundle.getBundles().add(netCashForTheDayBundle);
+            System.out.println("DEBUG generateDailyReturn: FINAL Net Cash = " + netCashCollection);
 
             ReportTemplateRowBundle opdServiceCollectionCredit;
             opdServiceCollectionCredit = generateCreditOpdServiceCollection();
@@ -16391,14 +16412,12 @@ public class SearchController implements Serializable {
             ReportTemplateRowBundle pharmacyCreditBillList;
             pharmacyCreditBillList = generatePharmacyCreditBillList();
             bundle.getBundles().add(pharmacyCreditBillList);
-            double pharmacyCreditBillListTotal= Math.abs(getSafeTotal(pharmacyCreditBillList)); 
+            double pharmacyCreditBillListTotal = Math.abs(getSafeTotal(pharmacyCreditBillList));
             System.out.println("pharmacyCreditBillListTotal = " + pharmacyCreditBillListTotal);
-            netCollectionPlusCredits += pharmacyCreditBillListTotal; 
-            
+            netCollectionPlusCredits += pharmacyCreditBillListTotal;
+
             //TODO : Add Pharmacy Credit Cancellations
-            
             //TODO: Add Channelling Collections
-            
             List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
@@ -16409,12 +16428,6 @@ public class SearchController implements Serializable {
             pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
             bundle.getBundles().add(pharmacyCreditRefundBundle);
             netCollectionPlusCredits += getSafeTotal(pharmacyCreditRefundBundle);
-            
-            
-            
-            
-
-
 
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundlePlusCredits = new ReportTemplateRowBundle();
@@ -17072,7 +17085,6 @@ public class SearchController implements Serializable {
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
             pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
-
 
             ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund, creditPaymentMethods);
             pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
@@ -18861,37 +18873,50 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generatePatientDepositCollection() {
         ReportTemplateRowBundle depositCollection = new ReportTemplateRowBundle();
+
+        // Query bills for patient deposit receipts
+        List<BillTypeAtomic> depositBillTypes = new ArrayList<>();
+        depositBillTypes.add(BillTypeAtomic.PATIENT_DEPOSIT);
+        depositBillTypes.add(BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
+        depositBillTypes.add(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
+
         String jpql = "select b "
                 + " from Bill b "
-                + " where b.retired=:br "
-                + " and b.createdAt between :fd and :td ";
-        Map m = new HashMap();
+                + " where b.retired = :br "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :btas ";
+
+        Map<String, Object> m = new HashMap<>();
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.PATIENT_DEPOSIT);
-        depositCollection.setDescription("Patient Deposits");
-        if (!btas.isEmpty()) {
-            jpql += " and b.billTypeAtomic in :bts ";
-            m.put("bts", btas);
-        }
+        m.put("btas", depositBillTypes);
 
         if (department != null) {
-            jpql += " and b.department=:dep ";
+            jpql += " and b.department = :dep ";
             m.put("dep", department);
         }
         if (institution != null) {
-            jpql += " and b.department.institution=:ins ";
+            jpql += " and b.department.institution = :ins ";
             m.put("ins", institution);
         }
         if (site != null) {
-            jpql += " and b.department.site=:site ";
+            jpql += " and b.department.site = :site ";
             m.put("site", site);
         }
-        List<Bill> bis = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        billToBundleForPatientDeposits(depositCollection, bis);
-        depositCollection.setName("Patient Deposit Payments");
+
+        System.out.println("DEBUG generatePatientDepositCollection: Querying patient deposit receipts");
+        System.out.println("  - Bill Types: " + depositBillTypes);
+        List<Bill> bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("  - Found bills: " + (bills != null ? bills.size() : 0));
+
+        billToBundleForPatientDeposits(depositCollection, bills);
+        depositCollection.setName("Patient Deposit Receipts");
         depositCollection.setBundleType("patientDepositPayments");
+        depositCollection.setDescription("Patient Deposit Receipts");
+
+        System.out.println("  - Bundle Total: " + depositCollection.getTotal());
+        System.out.println("  - Bundle Rows: " + (depositCollection.getReportTemplateRows() != null ? depositCollection.getReportTemplateRows().size() : 0));
 
         return depositCollection;
     }
@@ -19305,20 +19330,11 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle ap;
         List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
 
+        // Only include credit sale bills (exclude cancellations, returns, and refunds)
         pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE); // Retail Sale
         pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS); // Retail Sale
         pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK); // Retail Sale
-
-        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED); // Retail Sale Cancellations
-        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED); // Retail Sale Cancellations
-
         pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER); // Accept Payments at cashier
-
-        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS); // Return Item Payments
-        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS); // Return Items and Payments
-        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND); // Retail Sale Refund
-
-        pharmacyBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND); // Sale Without Stock Refund
 
         ap = reportTemplateController.generateBillReport(
                 pharmacyBillTypes,
@@ -19367,6 +19383,20 @@ public class SearchController implements Serializable {
                 site);
         ap.setName("Slip Payments");
         ap.setBundleType("paymentReportSlip");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generatePatientDepositPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.PatientDeposit,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Patient Deposit Payments");
+        ap.setBundleType("paymentReportPatientDeposit");
         return ap;
     }
 
@@ -20690,28 +20720,48 @@ public class SearchController implements Serializable {
     }
 
     public double bundleCashierCollectionTotal(ReportTemplateRowBundle targetBundle) {
+        System.out.println("DEBUG bundleCashierCollectionTotal: START - Bundle: " + (targetBundle != null ? targetBundle.toString() : "null"));
+
         if (targetBundle == null) {
+            System.out.println("DEBUG bundleCashierCollectionTotal: Bundle is null, returning 0.0");
             return 0.0;
         }
+
         if (targetBundle.isCashierCollectionTotalComputed()) {
-            return targetBundle.getCashierCollectionTotal();
+            double cachedTotal = targetBundle.getCashierCollectionTotal();
+            System.out.println("DEBUG bundleCashierCollectionTotal: Already computed, returning cached value: " + cachedTotal);
+            return cachedTotal;
         }
+
         ensureCollectionMethodLists();
         double total = 0.0;
+        System.out.println("DEBUG bundleCashierCollectionTotal: Initial total = " + total);
+
         List<ReportTemplateRow> rows = targetBundle.getReportTemplateRows();
+        System.out.println("DEBUG bundleCashierCollectionTotal: Rows count = " + (rows != null ? rows.size() : "null"));
+
         if (rows != null && !rows.isEmpty()) {
+            System.out.println("DEBUG bundleCashierCollectionTotal: Processing rows - count: " + rows.size());
             for (ReportTemplateRow row : rows) {
-                total += calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+                double rowTotal = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+                System.out.println("DEBUG bundleCashierCollectionTotal: Row total = " + rowTotal + ", Running total = " + (total + rowTotal));
+                total += rowTotal;
             }
+            System.out.println("DEBUG bundleCashierCollectionTotal: After processing all rows, total = " + total);
         } else {
+            System.out.println("DEBUG bundleCashierCollectionTotal: No rows, processing bundle directly");
             List<PaymentMethod> included = resolveCollectionMethods(targetBundle, true);
+            System.out.println("DEBUG bundleCashierCollectionTotal: Included payment methods count = " + (included != null ? included.size() : "null"));
             total = calculateCollectionTotal(targetBundle, included);
+            System.out.println("DEBUG bundleCashierCollectionTotal: Bundle total calculated = " + total);
             if (targetBundle.getCashierCollectionPaymentMethods() == null
                     || targetBundle.getCashierCollectionPaymentMethods().isEmpty()) {
                 targetBundle.setCashierCollectionPaymentMethods(new ArrayList<>(included));
             }
         }
+
         targetBundle.setCashierCollectionTotal(total);
+        System.out.println("DEBUG bundleCashierCollectionTotal: FINAL total = " + total + ", set in bundle");
         return total;
     }
 
