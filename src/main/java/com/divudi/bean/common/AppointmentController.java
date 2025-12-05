@@ -631,6 +631,81 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     }
     
+    private void saveCacelBill(Bill originalBill) {
+        System.out.println("Start saveCacelBill");
+        Bill newCancelBill = new Bill();
+        
+        newCancelBill.copy(originalBill);
+        newCancelBill.copyValue(originalBill);
+        newCancelBill.invertValueOfThisBill();
+        
+        newCancelBill.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        newCancelBill.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        newCancelBill.setBillTypeAtomic(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+        newCancelBill.setBillType(BillType.InwardAppointmentBill);
+        newCancelBill.setReferenceBill(originalBill);
+        newCancelBill.setBillDate(new Date());
+        newCancelBill.setBillTime(new Date());
+        newCancelBill.setComments(comment);
+
+        newCancelBill.setCreatedAt(new Date());
+        newCancelBill.setCreater(sessionController.getLoggedUser());
+        
+        if(newCancelBill.getId() == null){
+            System.out.println("Create Cancel Bill");
+            getFacade().create(newCancelBill);
+        }else{
+            System.out.println("Create Cancel Bill");
+            getFacade().edit(newCancelBill);
+        }
+        System.out.println("Finish saveCacelBill");
+        //Update Original Bill
+        
+        System.out.println("Start Update Original Bill");
+        originalBill.setCancelled(true);
+        originalBill.setCancelledBill(newCancelBill);
+        
+        if(originalBill.getId() == null){
+            System.out.println("Create Update Original Bill");
+            getFacade().create(originalBill);
+        }else{
+            System.out.println("Edit Update Original Bill");
+            getFacade().edit(originalBill);
+        }
+        System.out.println("Finish Update Oribinal Bill");
+        
+        System.out.println("Start Create Payment");
+        createPayment(newCancelBill, newCancelBill.getPaymentMethod());
+        System.out.println("Finish Create Payment");
+        
+    }
+    
+    private void cancelAppointment(){
+        if (comment == null) {
+            JsfUtil.addErrorMessage("No patient Selected");
+            return true;
+        }
+    }
+    
+    private void cancelAppointment(Bill CancelBill, Appointment apt, String reason) {
+        System.out.println("Start cancelAppointment");
+        apt.setAppointmentCancel(true);
+        apt.setAppointmentCancelAt(new Date());
+        apt.setAppointmentCancelReason(reason);
+        apt.setAppointmentCancelBy(sessionController.getWebUser());
+        apt.setStatus(AppointmentStatus.CANCEL);
+        apt.setAppointmentCancelBill(CancelBill);
+        if(apt.getId() == null){
+            System.out.println("Create");
+            appointmentFacade.create(apt);
+        }else{
+            System.out.println("Edit");
+            appointmentFacade.edit(apt);
+        }
+        System.out.println("Start cancelAppointment");
+    }
+
+    
     private boolean checkPatientAgeSex() {
 
 //        if (getPatientTabId().toString().equals("tabNewPt")) {
