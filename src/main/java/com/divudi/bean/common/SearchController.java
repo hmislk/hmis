@@ -13105,7 +13105,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -13350,7 +13350,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and bi.bill.department = :dept ");
         }
 
@@ -13387,7 +13387,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -13424,7 +13424,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and p.department = :dept ");
         }
 
@@ -16297,11 +16297,11 @@ public class SearchController implements Serializable {
             // Use getTotal() directly - see comment above for OPD credit company collection
             collectionForTheDay += getSafeTotal(inwardCreditCompanyCollection);
 
-            // Generate Pharmacy Credit Company Payment Collection and add to the main bundle
-            ReportTemplateRowBundle pharmacyCreditCompanyCollection = generateCreditCompanyCollectionForPharmacy();
-            bundle.getBundles().add(pharmacyCreditCompanyCollection);
-            // Use getTotal() directly - see comment above for OPD credit company collection
-            collectionForTheDay += getSafeTotal(pharmacyCreditCompanyCollection);
+            // NOTE: Pharmacy Credit Company Payment Collection is NOT generated separately here
+            // because pharmacy credit company bill types are already included in the OPD credit
+            // company collection above (generateCreditCompanyCollectionForOpd() includes both
+            // OPD and Pharmacy credit company bill types to avoid double-counting).
+            // The separate generateCreditCompanyCollectionForPharmacy() method is deprecated.
 
             // Generate Channelling Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle channellingCreditCompanyCollection = generateCreditCompanyCollectionForChannelling();
