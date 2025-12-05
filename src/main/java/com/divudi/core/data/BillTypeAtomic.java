@@ -305,9 +305,13 @@ public enum BillTypeAtomic {
     OPD_CREDIT_COMPANY_CREDIT_NOTE("OPD Credit Note from Credit Company", BillCategory.BILL, ServiceType.COMPANY_CREDIT, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PatientPaymentRefundBill),
     OPD_CREDIT_COMPANY_DEBIT_NOTE("OPD Debit Note from Credit Company", BillCategory.BILL, ServiceType.COMPANY_CREDIT, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PatientPaymentRefundBill),
     // Pharmacy Payments from Credit Companies
+    @Deprecated // Use OPD_CREDIT_COMPANY_PAYMENT_RECEIVED for new settlements. This enum is kept for historical data only. All new pharmacy credit settlements are created under OPD_CREDIT_COMPANY_PAYMENT_RECEIVED as per unified settlement process (CashRecieveBillController.settleUniversalCreditBills).
     PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED("Pharmacy Payment Received from Credit Company", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.CREDIT_SETTLE_BY_COMPANY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PatientPaymentReceiveBill),
+    @Deprecated // Use OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION for new cancellations. This enum is kept for historical data only.
     PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION("Pharmacy Payment Cancellation from Credit Company", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.CREDIT_SETTLE_BY_COMPANY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PatientPaymentReceiveBill),
+    @Deprecated // Use OPD_CREDIT_COMPANY_CREDIT_NOTE for new credit notes. This enum is kept for historical data only.
     PHARMACY_CREDIT_COMPANY_CREDIT_NOTE("Pharmacy Credit Note from Credit Company", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PatientPaymentRefundBill),
+    @Deprecated // Use OPD_CREDIT_COMPANY_DEBIT_NOTE for new debit notes. This enum is kept for historical data only.
     PHARMACY_CREDIT_COMPANY_DEBIT_NOTE("Pharmacy Debit Note from Credit Company", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PatientPaymentRefundBill),
     // Inpatient Payments from Credit Companies
     INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED("Inpatient Payment Received from Credit Company", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.CREDIT_SETTLE_BY_COMPANY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PatientPaymentReceiveBill),

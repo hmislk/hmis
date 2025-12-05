@@ -13105,7 +13105,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -13350,7 +13350,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and bi.bill.department = :dept ");
         }
 
@@ -13387,7 +13387,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and b.department = :dept ");
         }
 
@@ -13424,7 +13424,7 @@ public class SearchController implements Serializable {
         }
 
         if (department != null) {
-            params.put("dep", department);
+            params.put("dept", department);
             jpql.append(" and p.department = :dept ");
         }
 
@@ -16287,22 +16287,27 @@ public class SearchController implements Serializable {
             // Generate OPD Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
             bundle.getBundles().add(opdCreditCompanyCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(opdCreditCompanyCollection);
+            // Use getTotal() directly instead of bundleCashierCollectionTotal() because credit company settlement
+            // bills are created using ReportTemplateRow(Bill) constructor which doesn't populate payment method values
+            collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
 
             // Generate Inward Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
             bundle.getBundles().add(inwardCreditCompanyCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(inwardCreditCompanyCollection);
+            // Use getTotal() directly - see comment above for OPD credit company collection
+            collectionForTheDay += getSafeTotal(inwardCreditCompanyCollection);
 
-            // Generate Pharmacy Credit Company Payment Collection and add to the main bundle
-            ReportTemplateRowBundle pharmacyCreditCompanyCollection = generateCreditCompanyCollectionForPharmacy();
-            bundle.getBundles().add(pharmacyCreditCompanyCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(pharmacyCreditCompanyCollection);
+            // NOTE: Pharmacy Credit Company Payment Collection is NOT generated separately here
+            // because pharmacy credit company bill types are already included in the OPD credit
+            // company collection above (generateCreditCompanyCollectionForOpd() includes both
+            // OPD and Pharmacy credit company bill types to avoid double-counting).
+            // The separate generateCreditCompanyCollectionForPharmacy() method is deprecated.
 
             // Generate Channelling Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle channellingCreditCompanyCollection = generateCreditCompanyCollectionForChannelling();
             bundle.getBundles().add(channellingCreditCompanyCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(channellingCreditCompanyCollection);
+            // Use getTotal() directly - see comment above for OPD credit company collection
+            collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
 
             ReportTemplateRowBundle patientDepositPayments = generatePatientDepositCollection();
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Bundle Created");
@@ -19054,6 +19059,14 @@ public class SearchController implements Serializable {
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
 
+        // Pharmacy Credit Company Settlement - Deprecated bill types for historical data only
+        // New settlements use OPD_CREDIT_COMPANY_PAYMENT_RECEIVED for all types (OPD, Package, Pharmacy)
+        // These are included to capture historical pharmacy settlements created before unification
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_DEBIT_NOTE);
+
         ap = reportTemplateController.generateBillReport(
                 ccCollection,
                 fromDate,
@@ -19085,6 +19098,18 @@ public class SearchController implements Serializable {
         return ap;
     }
 
+    /**
+     * @deprecated This method is deprecated as of the credit settlement unification.
+     * All credit company collections (OPD, Package, and Pharmacy) are now handled by
+     * {@link #generateCreditCompanyCollectionForOpd()} which includes both current and
+     * historical pharmacy settlement bill types.
+     *
+     * <p>New pharmacy credit settlements are created using BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
+     * as per the unified settlement process in CashRecieveBillController.settleUniversalCreditBills().
+     *
+     * <p>Use {@link #generateCreditCompanyCollectionForOpd()} instead for all credit company collections.
+     */
+    @Deprecated
     public ReportTemplateRowBundle generateCreditCompanyCollectionForPharmacy() {
         ReportTemplateRowBundle ap;
         List<BillTypeAtomic> ccCollection = new ArrayList<>();
