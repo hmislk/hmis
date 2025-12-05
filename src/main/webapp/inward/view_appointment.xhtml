@@ -138,7 +138,7 @@
                                     </p:column>
                                     
                                     <p:column headerText="Room" width="12em;" style="padding: 8px;">
-                                        <h:outputLabel value="N/A" />
+                                        <h:outputLabel value="#{r.roomNo}" />
                                     </p:column>
 
                                     <p:column headerText="Patient" style="padding: 8px;">
@@ -184,7 +184,7 @@
                                                 icon="fa fa-align-justify"
                                                 ajax="false"
                                                 value="Manage"
-                                                action="#{appointmentController.navigateToMangeAppointment(r.id)}"
+                                                action="#{appointmentController.navigateToManageAppointment(r.id)}"
                                                 disabled="#{(r.status eq 'CANCEL')}"
                                                 class="ui-button-warning">
                                             </p:commandButton>
