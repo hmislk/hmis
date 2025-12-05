@@ -11,8 +11,8 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel header="Surgery Survey Report" >
-                        <h:panelGrid columns="12" class="w-100" >
+                    <p:panel>
+                        <h:panelGrid columns="6" class="w-100" >
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="Surgery Type" class="m-3"/>
@@ -20,6 +20,79 @@
                             <p:selectOneMenu class="w-100" value="#">
                                 <f:selectItem itemLabel="Select Type"/>
                             </p:selectOneMenu>
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-hospital mr-2"/>
+                                <p:outputLabel value="Admission Type" for="admint" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="admint"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="20"/>
+                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-hospital mr-2"/>
+                                <p:outputLabel value="Room Category" for="roomCat" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="roomCat"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Categories"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge Date" for="disDate" styleClass="m-3" />
+                            </h:panelGroup>
+
+                             <p:datePicker
+                                id="disDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Added Date" for="servDate" styleClass="m-3" />
+                            </h:panelGroup>
+
+                             <p:datePicker
+                                id="servDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Date" for="invDate" styleClass="m-3" />
+                            </h:panelGroup>
+
+                             <p:datePicker
+                                id="invDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
                             <p:spacer width="20"/>
                         </h:panelGrid>
                         <!-- Action Buttons -->
