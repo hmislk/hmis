@@ -13,6 +13,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.AppointmentType;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -71,13 +72,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     private static final long serialVersionUID = 1L;
 
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private ReservationFacade reservationFacade;
-    
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -98,7 +99,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     StaffService staffBean;
     @EJB
     PaymentFacade paymentFacade;
+    // </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     CashBookEntryController cashBookEntryController;
     @Inject
@@ -109,13 +112,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     SessionController sessionController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
+    // </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="Vaiables">
     private boolean printPreview;
 
     private Patient newPatient;
     private Patient searchedPatient;
-    //private String creditCardRefNo;
-    //  private String chequeRefNo;
     private String patientTabId = "tabNewPt";
     private String ageText = "";
     private Bill currentBill;
@@ -137,7 +140,24 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private Date reservedFromDate;
     private Date reservedToDate;
     private RoomFacilityCharge reservedroom;
-
+    private String comment;
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Navigations">
+    public String navigateToSearchAppointmentsListFromMenu(){
+        makeNull();
+        appointmentstatus = AppointmentStatus.PENDING;
+        return "/inward/view_appointment?faces-redirect=true";
+    }
+    
+    
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    
+    public AppointmentController() {
+    }
+    
     public void makeNull(){
         fromDate = null;
         toDate = null;
@@ -145,15 +165,11 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         patientName = null;
         appointmentstatus = null;
         reservationDTOs = new ArrayList<>();
-    }
-
-    public String navigateToSearchAppointmentsListFromMenu(){
-        makeNull();
-        appointmentstatus = AppointmentStatus.PENDING;
-        return "/inward/view_appointment?faces-redirect=true";
+        comment = null;
     }
     
-    public void updateReservation(){
+    public void updateChangesReservation(){
+        System.out.println("--- Start updateChangesReservation ---");
         if(reservation == null){
             JsfUtil.addErrorMessage("No Reservation Found");
             return ;
@@ -179,44 +195,55 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
         
-        boolean test =  checkReservationForRoom(reservation,reservedroom,reservedFromDate,reservedToDate);
-        System.out.println("test = " + test);
+        savePatient(patient);
+        updateBill();
+        updateAppointment();
+        updateReservation();
+        System.out.println("--- Finish updateChangesReservation ---");
+        JsfUtil.addSuccessMessage("Successfully Updated.");
     }
     
-    public boolean checkReservationForRoom(Reservation res, RoomFacilityCharge room, Date reservedFromDate, Date reservedToDate ) {
-        
-        System.out.println("res = " + res);
-        System.out.println("room = " + room);
-        System.out.println("reservedFromDate = " + reservedFromDate);
-        System.out.println("reservedToDate = " + reservedToDate);
-        
-        String jpql = "SELECT res FROM Reservation res "
-                + " WHERE res.room = :room "
-                + " AND res.reservedFrom BETWEEN :fromDate AND :toDate "
-                + " AND res.id != :resID ";
-
-        HashMap hm = new HashMap();
-        hm.put("room", room);
-        hm.put("fromDate", reservedFromDate);
-        hm.put("toDate", reservedToDate);
-        hm.put("resID", res.getId());
-        
-        System.out.println("jpql = " + jpql);   
-        System.out.println("hm = " + hm);
-        
-        Reservation reservations = reservationFacade.findFirstByJpql(jpql,hm,TemporalType.TIMESTAMP);
-        
-        if(reservations == null){
-            System.out.println("Reservations not Found ");
-            return false;
+    public void updateBill(){
+        System.out.println("Start Update Bill");
+        if(currentBill.getId() == null){
+            System.out.println("Create");
+            billFacade.create(currentBill);
         }else{
-            System.out.println("reservations = " + reservations);
-            System.out.println("Reservations Found ");
-            return true;
+            System.out.println("Edit");
+            billFacade.edit(currentBill);
         }
+        System.out.println("Finish Update Bill");
     }
     
-    public String navigateToMangeAppointment(Long reservationId){
+    private void updateAppointment() {
+        System.out.println("Start Update Appointment");
+        if(currentAppointment.getId() == null){
+            System.out.println("Create");
+            appointmentFacade.create(currentAppointment);
+        }else{
+            System.out.println("Edit");
+            appointmentFacade.edit(currentAppointment);
+        }
+        System.out.println("Finish Update Appointment");
+    }
+
+    private void updateReservation() {
+        System.out.println("Start Update Reservation");
+        reservation.setReservedFrom(reservedFromDate);
+        reservation.setReservedTo(reservedToDate);
+        reservation.setRoom(reservedroom);
+
+        if (reservation.getId() == null) {
+            System.out.println("Create");
+            reservationFacade.create(reservation);
+        } else {
+            System.out.println("Edit");
+            reservationFacade.edit(reservation);
+        }
+        System.out.println("Start Update Reservation");
+    }
+    
+    public String navigateToManageAppointment(Long reservationId){
         if(reservationId == null){
             JsfUtil.addErrorMessage("Error in Reservation");
             return "";
@@ -242,7 +269,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         
         patient = patientFacade.find(currentAppointment.getPatient().getId());
         currentBill = billFacade.find(currentAppointment.getBill().getId());
-        
+        comment = null;
         return "/inward/inward_appointment_edit?faces-redirect=true";
     }
     
@@ -257,6 +284,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                 + " res.reservedTo, "
                 + " COALESCE(res.appointment.appointmentNumber, ''),"
                 + " res.createdAt, "
+                + " COALESCE(res.room.name, ''), "
                 + " res.patient.person.title, "
                 + " COALESCE(res.patient.person.name, ''), "
                 + " res.patient.person.dob, "
@@ -587,32 +615,22 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     private void saveBill(Patient p) {
 
-        //getCurrentBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(),getCurrentAppointment(), BillNumberSuffix.INWSERBillNumberSuffix.INWSER);
-//        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.Appointment));
-        //  getCurrentBill().setBillType(BillType.OpdBill);
         getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+        getCurrentBill().setBillType(BillType.InwardAppointmentBill);
         getCurrentBill().setPatient(p);
-        // getCurrentBill().setAppointment(getCurrentAppointment());
-        //     getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        //    getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        //getBillBean().setPaymentMethodData(getCurrentBill(), getCurrentBill().getPaymentMethod(), getPaymentMethodData());
 
         getCurrentBill().setBillDate(new Date());
         getCurrentBill().setBillTime(new Date());
-        //   getCurrentBill().setPatient(tmpPatient);
-//        temp.setPatientEncounter(patientEncounter);
-        //   temp.setPaymentScheme(getPaymentScheme());
+
         getCurrentBill().setCreatedAt(new Date());
         getCurrentBill().setCreatedAt(new Date());
         getCurrentBill().setCreater(sessionController.getLoggedUser());
         getFacade().create(getCurrentBill());
-        //return getCurrentBill();
 
     }
-
+    
     private boolean checkPatientAgeSex() {
 
 //        if (getPatientTabId().toString().equals("tabNewPt")) {
@@ -705,15 +723,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return reservations;
     }
     
-        
-    public Title[] getTitle() {
-        return Title.values();
-    }
-
-    public Sex[] getSex() {
-        return Sex.values();
-    }
-
     public String prepareNewBill() {
 
         currentBill = null;
@@ -726,6 +735,42 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     public void onTabChange(TabChangeEvent event) {
         setPatientTabId(event.getTab().getId());
 
+    }
+    
+    public void prepereForInwardAppointPatient() {
+        printPreview = false;
+        searchedPatient = null;
+        patient = null;
+        currentBill = null;
+        currentAppointment = null;
+        reservation = null;
+        getCurrentBill();
+        getCurrentAppointment();
+        getReservation();
+    }
+
+    public String navigateToInwardAppointmentFromMenu() {
+        prepereForInwardAppointPatient();
+        setSearchedPatient(getPatient());
+        setPatient(getNewPatient());
+        getCurrentBill().setPatient(getPatient());
+        getCurrentAppointment().setPatient(getPatient());
+        return "/inward/inward_appointment?faces-redirect=true;";
+    }
+    
+    public void cancelAppointment(){
+        
+    }
+    
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
+    public Title[] getTitle() {
+        return Title.values();
+    }
+
+    public Sex[] getSex() {
+        return Sex.values();
     }
 
     public BillFacade getEjbFacade() {
@@ -742,9 +787,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
-    }
-
-    public AppointmentController() {
     }
 
     private BillFacade getFacade() {
@@ -816,7 +858,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
-
     }
 
     public PersonFacade getPersonFacade() {
@@ -841,7 +882,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
-
     }
 
     public BillComponentFacade getBillComponentFacade() {
@@ -880,7 +920,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     public Bill getCurrentBill() {
         if (currentBill == null) {
             currentBill = new BilledBill();
-            currentBill.setBillType(BillType.InwardAppointmentBill);
         }
         return currentBill;
     }
@@ -949,79 +988,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         this.reservation = reservation;
     }
 
-    public void prepereForInwardAppointPatient() {
-        printPreview = false;
-        searchedPatient = null;
-        patient = null;
-        currentBill = null;
-        currentAppointment = null;
-        reservation = null;
-        getCurrentBill();
-        getCurrentAppointment();
-        getReservation();
-    }
-
-    public String navigateToInwardAppointmentFromMenu() {
-        prepereForInwardAppointPatient();
-        setSearchedPatient(getPatient());
-        setPatient(getNewPatient());
-        getCurrentBill().setPatient(getPatient());
-        getCurrentAppointment().setPatient(getPatient());
-        return "/inward/inward_appointment?faces-redirect=true;";
-    }
-
     public ReservationFacade getReservationFacade() {
         return reservationFacade;
     }
 
     public void setReservationFacade(ReservationFacade reservationFacade) {
         this.reservationFacade = reservationFacade;
-    }
-    
-    @Override
-    public Patient getPatient() {
-        if (patient == null) {
-            Person p = new Person();
-            patient = new Patient();
-            patientDetailsEditable = true;
-            patient.setPerson(p);
-        }
-        return patient;
-    }
-
-    @Override
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-    }
-    
-    @Override
-    public void toggalePatientEditable() {
-        patientDetailsEditable = !patientDetailsEditable;
-    }
-    
-    @Override
-    public boolean isPatientDetailsEditable() {
-        return patientDetailsEditable;
-    }
-
-    @Override
-    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
-        this.patientDetailsEditable = patientDetailsEditable;
-    }
-    
-    @Override
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    @Override
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-    
-    @Override
-    public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
     }
 
     public Date getFromDate() {
@@ -1112,6 +1084,63 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         this.reservedroom = reservedroom;
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+    // </editor-fold>
+    
+    
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            Person p = new Person();
+            patient = new Patient();
+            patientDetailsEditable = true;
+            patient.setPerson(p);
+        }
+        return patient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+    
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+    
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+    
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
+    }
+    
+    
     /**
      *
      */
