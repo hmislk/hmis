@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Room Change" class="w-100 my-2">
+
+                        <h:panelGrid columns="6" class="w-100">
+
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date " class="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control" />
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date " class="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true"
+                                          hourFormat="24"
+                                          styleClass="w-100"
+                                          inputStyleClass="w-100 form-control" />
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user mr-2"/>
+
+                                <p:outputLabel value="Patient Name/MRN" for="phmIns" class="m-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                value=""
+                                filter="true">
+                                <f:selectItem itemLabel="All" itemValue="#{null}"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user mr-2"/>
+                                <p:outputLabel value="Visit No" class="m-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu
+                                id="visitNo"
+                                class="w-100"
+                                value=""
+                                filter="true">
+                                <f:selectItem itemLabel="All" itemValue="#{null}"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="From Ward" class="m-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu
+                                id="fromWard"
+                                styleClass="w-100 form-control"
+                                value=""
+                                filter="true">
+                                <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="to-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="To Ward" class="m-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu
+                                id="toWard"
+                                styleClass="w-100 form-control"
+                                value=""
+                                filter="true">
+                                <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <div class="d-flex align-items-center my-3 mt-5 mb-5">
+
+                            <p:commandButton
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process">
+                            </p:commandButton>
+
+                            <p:commandButton class="ui-button-primary mx-1"
+                                             icon="fas fa-print"
+                                             ajax="false"
+                                             value="Print All">
+                                <p:printer target="printPanel" />
+                            </p:commandButton>
+
+                            <p:commandButton
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download">
+                                <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Change_Detail.xlsx"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF">
+                            </p:commandButton>
+
+                        </div>
+
+                        <h:panelGroup id="printPanel">
+
+
+                            <p:panel header="Detail Report" styleClass="m-3">
+                                <div style="overflow-x:auto; width:100%;">
+                                    <p:dataTable
+                                        id="detailWise"
+                                        value=""
+                                        var="detail"
+                                        rowIndexVar="n"
+                                        paginator="true"
+                                        paginatorPosition="bottom"
+                                        rows="10"
+                                        rendered="true"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                        rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                        styleClass="table-sm table-bordered"
+                                        class ="w-100"
+                                        style="min-width:3500px;">
+
+                                        <p:columnGroup type="header">
+                                            <p:row>
+                                                <p:column rowspan="2" headerText="S.No" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="MR.No" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Patient Name" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Age" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Gender" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Visit" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Admission Date" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Admission Time" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Transfer Request No." styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Transfer Request Status" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="From Hospital" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="From Department" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="From Primary Consultant" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="From Consultant" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="From Ward" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="From Bed No" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="From Bed Type" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="To Hospital" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="To Department" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="To Primary Consultant" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="To Consultant" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="To Ward" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="To Bed No" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="To Bed Type" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Transfer Date" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Transfer Time" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Transfer By" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Reason" styleClass="border"/>
+                                            </p:row>
+
+                                        </p:columnGroup>
+
+                                        <p:column>
+                                            <h:outputLabel value="" />
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputLabel value="" />
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputLabel value="" />
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputLabel value="" />
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputLabel value="">
+                                                <f:convertDateTime pattern="M/d/yyyy H:mm" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputLabel value="" />
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputLabel value="" />
+                                        </p:column>
+
+                                        <p:column>
+                                            <h:outputLabel value="" />
+                                        </p:column>
+
+                                        <p:column style="text-align:right">
+                                            <h:outputLabel value="">
+                                                <f:convertNumber type="number"
+                                                                 minFractionDigits="0"
+                                                                 maxFractionDigits="0"
+                                                                 groupingUsed="true" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align:right">
+                                            <h:outputLabel value="">
+                                                <f:convertNumber type="number"
+                                                                 minFractionDigits="0"
+                                                                 maxFractionDigits="0"
+                                                                 groupingUsed="true" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </div>
+                            </p:panel>
+
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
