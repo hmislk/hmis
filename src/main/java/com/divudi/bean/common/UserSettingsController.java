@@ -607,6 +607,87 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("pharmacy_grn_return_request", settings);
     }
 
+    // Pharmacy GRN List For Return Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the specific page
+
+    public boolean isPharmacyGrnListForReturnDistributorVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "distributor");
+    }
+
+    public void setPharmacyGrnListForReturnDistributorVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("distributor", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnPoNoVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "poNo");
+    }
+
+    public void setPharmacyGrnListForReturnPoNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("poNo", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnNoVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnNo");
+    }
+
+    public void setPharmacyGrnListForReturnGrnNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnNo", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnAtVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnAt");
+    }
+
+    public void setPharmacyGrnListForReturnGrnAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnAt", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnByVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnBy");
+    }
+
+    public void setPharmacyGrnListForReturnGrnByVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnBy", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+    
+    public boolean isPharmacyGrnListForReturnPoValueVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "poValue");
+    }
+
+    public void setPharmacyGrnListForReturnPoValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("poValue", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnValueVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnValue");
+    }
+
+    public void setPharmacyGrnListForReturnGrnValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnValue", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public int getPharmacyGrnListForReturnPageSize() {
+        return getPageSize("pharmacy_grn_list_for_return", 10);
+    }
+
+    public void setPharmacyGrnListForReturnPageSize(int pagesize) {
+        savePageSize("pharmacy_grn_list_for_return", pagesize);
+    }
+    
     // Stock Ledger Column Visibility Properties
     // These properties provide JSF-compatible getter/setter pairs for the stock ledger report page
 
