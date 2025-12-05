@@ -23,18 +23,49 @@
                     <p:panel > 
                         <f:facet name="header">
                             <h:outputLabel class="mt-2" value="Inward Appointments"/>
-                            <div class="d-flex" style="float: right;">
+                            <div class="d-flex gap-3" style="float: right;" >
+                                <p:inputText
+                                    id="commentsMenu"
+                                    value="#{appointmentController.comment}"
+                                    placeholder="Reason of the Cancel"
+                                    style="float: right; width: 500px;"
+                                    >
+                                </p:inputText>
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Cancel Appointment" 
+                                    icon="fa fa-cancel"
+                                    style="float: right"
+                                    class="ui-button-danger" 
+                                    action="#{appointmentController.cancelAppointment()}">
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Back" 
+                                    icon="fa fa-cancel"
+                                    style="float: right"
+                                    class="ui-button-warning" 
+                                    action="#{appointmentController.cancelAppointment()}">
+                                </p:commandButton>
+                            </div>
+                            
+                        </f:facet>
+                        
+                        <div class="row">
+                            <div class="d-flex justify-content-end gap-5">
                                 <p:commandButton  
                                     value="Update Appointment" 
-                                    action="#{appointmentController.updateReservation}" 
+                                    action="#{appointmentController.updateChangesReservation()}" 
                                     ajax="false"
                                     icon="fa fa-check"
                                     class="ui-button-success mx-1 ">
                                 </p:commandButton>
                             </div>
-                        </f:facet>
+                        </div>
 
-                        <div class="row">
+                        <div class="row mt-3">
                             <div class="col-6">
                                 <p:panel>
                                     <f:facet name="header" >
