@@ -74,6 +74,8 @@ public class Appointment extends PatientEncounter implements Serializable {
     
     private boolean appointmentCancel;
     private String appointmentCancelReason;
+    @ManyToOne
+    private Bill appointmentCancelBill;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date appointmentCancelAt;
     @ManyToOne
@@ -289,6 +291,14 @@ public class Appointment extends PatientEncounter implements Serializable {
 
     public void setStatus(AppointmentStatus status) {
         this.status = status;
+    }
+
+    public Bill getAppointmentCancelBill() {
+        return appointmentCancelBill;
+    }
+
+    public void setAppointmentCancelBill(Bill appointmentCancelBill) {
+        this.appointmentCancelBill = appointmentCancelBill;
     }
 
 }
