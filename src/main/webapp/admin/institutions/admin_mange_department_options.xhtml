@@ -10,6 +10,42 @@
     <h:body>
         <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
             <ui:define name="admin">
+
+                <style>
+                    .badge-info {
+                        background-color: #17a2b8;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+
+                    .ui-button-sm {
+                        padding: 0.25rem 0.5rem;
+                        font-size: 0.875rem;
+                    }
+
+                    .mt-3 {
+                        margin-top: 1rem !important;
+                    }
+
+                    .d-flex {
+                        display: flex !important;
+                    }
+
+                    .justify-content-between {
+                        justify-content: space-between !important;
+                    }
+
+                    .align-items-center {
+                        align-items: center !important;
+                    }
+
+                    .fw-bold {
+                        font-weight: bold !important;
+                    }
+                </style>
                 <h:form >
                     <p:panel>
                         <p:outputLabel  value="Department" ></p:outputLabel>
@@ -98,40 +134,5 @@
             </ui:define>
         </ui:composition>
 
-        <style>
-            .badge-info {
-                background-color: #17a2b8;
-                color: white;
-                padding: 4px 8px;
-                border-radius: 6px;
-                font-size: 0.8em;
-                font-weight: bold;
-            }
-
-            .ui-button-sm {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.875rem;
-            }
-
-            .mt-3 {
-                margin-top: 1rem !important;
-            }
-
-            .d-flex {
-                display: flex !important;
-            }
-
-            .justify-content-between {
-                justify-content: space-between !important;
-            }
-
-            .align-items-center {
-                align-items: center !important;
-            }
-
-            .fw-bold {
-                font-weight: bold !important;
-            }
-        </style>
     </h:body>
 </html>
