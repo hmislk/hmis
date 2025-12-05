@@ -38,16 +38,17 @@
                                     icon="fa fa-cancel"
                                     style="float: right"
                                     class="ui-button-danger" 
+                                    disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                     action="#{appointmentController.cancelAppointment()}">
                                 </p:commandButton>
                                 
                                 <p:commandButton 
                                     ajax="false"
                                     value="Back" 
-                                    icon="fa fa-cancel"
+                                    icon="fa fa-arrow-left"
                                     style="float: right"
                                     class="ui-button-warning" 
-                                    action="#{appointmentController.cancelAppointment()}">
+                                    action="#{appointmentController.navigateToSearchAppointmentsListFromViewAppointments()}">
                                 </p:commandButton>
                             </div>
                             
@@ -57,6 +58,7 @@
                             <div class="d-flex justify-content-end gap-5">
                                 <p:commandButton  
                                     value="Update Appointment" 
+                                    disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                     action="#{appointmentController.updateChangesReservation()}" 
                                     ajax="false"
                                     icon="fa fa-check"
@@ -89,6 +91,7 @@
                                                 forceSelection="true"  
                                                 id="cmbRspRoom" 
                                                 class="mx-4 my-2"
+                                                disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 value="#{appointmentController.reservedroom}" 
                                                 completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                 var="rf" 
@@ -107,6 +110,7 @@
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                 styleClass="form-control w-100"
                                                 showButtonBar="true"
+                                                disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 timeInput="true"
                                                 showTime="true"
                                                 class="w-50 mx-4 my-2" 
@@ -120,6 +124,7 @@
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                 styleClass="form-control w-100"
                                                 showButtonBar="true"
+                                                disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 timeInput="true"
                                                 showTime="true"
                                                 class="w-50 mx-4 my-2" 
@@ -146,6 +151,7 @@
                                             value="#{appointmentController.currentBill.referredBy}"
                                             completeMethod="#{doctorController.completeDoctor}" 
                                             var="doc" 
+                                            disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                             maxResults="20"
                                             itemLabel="#{doc.person.nameWithTitle}" 
                                             itemValue="#{doc}" 
@@ -158,6 +164,7 @@
                                             class="w-100 my-1"
                                             showTime="true"
                                             showButtonBar="true"
+                                            disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                             timeInput="true"
                                             value="#{appointmentController.currentAppointment.appointmentDate}" 
                                             pattern="#{sessionController.applicationPreference.longDateFormat}"

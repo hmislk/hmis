@@ -165,9 +165,9 @@
                                     </p:column>
 
                                     <p:column headerText="Status" width="8em;" style="padding: 8px;">
-                                        <p:badge 
-                                            value="#{r.status.name}">
-                                        </p:badge>
+                                        <p:badge rendered="#{r.status eq'PENDING'}" severity="warning" value="#{r.status.name}"></p:badge>
+                                        <p:badge rendered="#{r.status eq'COMPLETE'}" severity="success" value="#{r.status.name}"></p:badge>
+                                        <p:badge rendered="#{r.status eq'CANCEL'}" severity="danger" value="#{r.status.name}"></p:badge>
                                     </p:column>
 
                                     <p:column headerText="Actions" width="220px;" style="padding: 8px;" >
@@ -185,7 +185,6 @@
                                                 ajax="false"
                                                 value="Manage"
                                                 action="#{appointmentController.navigateToManageAppointment(r.id)}"
-                                                disabled="#{(r.status eq 'CANCEL')}"
                                                 class="ui-button-warning">
                                             </p:commandButton>
                                         </div>
