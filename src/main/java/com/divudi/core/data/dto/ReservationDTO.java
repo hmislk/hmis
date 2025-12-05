@@ -29,12 +29,13 @@ public class ReservationDTO implements Serializable {
     }
     
     // Usinng searchAppointments() in AppointmentController
-    public ReservationDTO(Long id, Date reservedFrom, Date reservedTo,String appointmentNumber, Date createdAt,Title patientTitle, String patientName,Date patientDob, String patientGender, String patientMobile, AppointmentStatus status) {
+    public ReservationDTO(Long id, Date reservedFrom, Date reservedTo,String appointmentNumber, Date createdAt,String roomNo, Title patientTitle, String patientName,Date patientDob, String patientGender, String patientMobile, AppointmentStatus status) {
         this.id = id;
         this.reservedFrom = reservedFrom;
         this.reservedTo = reservedTo;
         this.appointmentNumber = appointmentNumber;
         this.createdAt = createdAt;
+        this.roomNo = roomNo;
         this.patientTitle = patientTitle;
         this.patientName = patientName;
         this.patientDob = patientDob;
