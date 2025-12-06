@@ -18,36 +18,49 @@
 
                         <common:institution_site_department_filter controller="#{reportsStock}"/>
 
-                        <h:panelGrid columns="8" styleClass="w-100 form-grid my-2" columnClasses="label-icon-column, input-column">
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Department Type" for="cmbDeptType" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="cmbDeptType" value="#{reportsStock.departmentType}" filter="true" filterMatchMode="contains" styleClass="w-100 form-control">
-                                <f:selectItem itemLabel="All Department Types" itemValue="#{null}" />
-                                <f:selectItems value="#{departmentTypeController.departmentTypes}" var="dt" itemLabel="#{dt.label}" itemValue="#{dt}" />
-                            </p:selectOneMenu>
-                            <p:spacer width="10" />
-                            <p:spacer width="10" />
-                        </h:panelGrid>
+                        <h:panelGroup id="panelDeptType" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Department Type Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                            <h:outputLabel value="Department Type" for="cmbDeptType" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu id="cmbDeptType" value="#{reportsStock.departmentType}" filter="true" filterMatchMode="contains" styleClass="w-100">
+                                            <f:selectItem itemLabel="All Department Types" itemValue="#{null}" />
+                                            <f:selectItems value="#{departmentTypeController.departmentTypes}" var="dt" itemLabel="#{dt.label}" itemValue="#{dt}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Action Buttons -->
+                                <h:panelGroup layout="block" styleClass="col-lg-8 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputLabel value="&nbsp;" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:commandButton 
+                                        ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
+                                        actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
 
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning"
-                                             actionListener="#{reportsStock.fillDepartmentStockDtos()}" />
-                            <p:commandButton class="mx-2 ui-button-danger" icon="fas fa-file-pdf" value="PDF" ajax="false">
-                                <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
-                            </p:commandButton>
-                            <p:commandButton icon="fas fa-file-excel" class="ui-button-success" value="Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
-                            </p:commandButton>
-                            <p:commandButton value="Print" icon="fas fa-print" class="mx-2 ui-button-info"
-                                             actionListener="#{reportsStock.prepareForPrint()}"
-                                             oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
-                            <p:commandButton id="print" value="Actual print" style="display: none">
-                                <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
-                                <p:printer target=":frm:tbl" />
-                            </p:commandButton>
-                        </h:panelGrid>
+                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false">
+                                        <p:dataExporter type="pdf" target="tbl" fileName="stock_by_batch" />
+                                    </p:commandButton>
+
+                                    <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="stock_by_batch" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Print" icon="fas fa-print" 
+                                        styleClass="ui-button-info mx-1"
+                                        actionListener="#{reportsStock.prepareForPrint()}"
+                                        oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
+                                    <p:commandButton id="print" value="Actual print" style="display: none;">
+                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
+                                        <p:printer target=":frm:tbl" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
 
@@ -66,7 +79,8 @@
                                 <p:column headerText="Category" style="text-align: left;"
                                           sortBy="#{i.categoryName}"
                                           filterBy="#{i.categoryName}"
-                                          filterMatchMode="contains">
+                                          filterMatchMode="contains"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchCategoryVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Category" />
                                     </f:facet>
@@ -80,23 +94,25 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Item" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemName}" style="width: 100px!important;" />
+                                    <h:outputLabel value="#{i.itemName}"  />
                                 </p:column>
 
                                 <p:column headerText="Type"
                                           sortBy="#{i.departmentType}"
                                           filterBy="#{i.departmentType}"
-                                          filterMatchMode="contains">
+                                          filterMatchMode="contains"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchTypeVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Type" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.departmentType}" style="width: 100px!important;" />
+                                    <h:outputLabel value="#{i.departmentType}"  />
                                 </p:column>
 
                                 <p:column headerText="Code" styleClass="averageNumericColumn"
                                           sortBy="#{i.code}"
                                           filterBy="#{i.code}"
-                                          filterMatchMode="contains">
+                                          filterMatchMode="contains"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchCodeVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code" />
                                     </f:facet>
@@ -106,14 +122,16 @@
                                 <p:column headerText="Generic Name"
                                           sortBy="#{i.genericName}"
                                           filterBy="#{i.genericName}"
-                                          filterMatchMode="contains">
+                                          filterMatchMode="contains"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Generic Name" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.genericName}" />
                                 </p:column>
 
-                                <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}">
+                                <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchExpiryVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Expiry" />
                                     </f:facet>
@@ -125,7 +143,8 @@
                                 <p:column headerText="Batch No"
                                           sortBy="#{i.batchNo}"
                                           filterBy="#{i.batchNo}"
-                                          filterMatchMode="contains">
+                                          filterMatchMode="contains"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchBatchNoVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Batch No" />
                                     </f:facet>
@@ -137,13 +156,17 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Stock" />
                                     </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total" style="font-weight: bold;" />
+                                    </f:facet>
                                     <h:outputLabel value="#{i.stockQty}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Purchase Rate" style="text-align: right;" styleClass="averageNumericColumn"
-                                          sortBy="#{i.purchaseRate}">
+                                          sortBy="#{i.purchaseRate}"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseRateVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate" />
                                     </f:facet>
@@ -153,104 +176,178 @@
                                 </p:column>
 
                                 <p:column headerText="Purchase Value" style="text-align: right;" styleClass="averageNumericColumn"
-                                          sortBy="#{i.purchaseRate * i.stockQty}">
+                                          sortBy="#{i.purchaseRate * i.stockQty}"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.stockPurchaseValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{i.purchaseRate * i.stockQty}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                <p:column headerText="Cost Rate" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.costRate}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Cost Rate" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.costRate}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Cost Rate" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.costRate}"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchCostRateVisible}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Rate" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:column headerText="Cost Value" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.costRate * i.stockQty}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Cost Value" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.costRate * i.stockQty}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Cost Value" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.costRate * i.stockQty}"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchCostValueVisible}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.stockCostValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costRate * i.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:column headerText="Retail Rate" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.retailRate}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Retail Rate" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.retailRate}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Retail Rate" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.retailRate}"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchRetailRateVisible}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Rate" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:column headerText="Retail Value" style="text-align: right;" styleClass="averageNumericColumn"
-                          sortBy="#{i.retailRate * i.stockQty}">
-                    <f:facet name="header">
-                        <h:outputLabel value="Retail Value" />
-                    </f:facet>
-                    <h:outputLabel value="#{i.retailRate * i.stockQty}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </p:column>
+                                <p:column headerText="Retail Value" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.retailRate * i.stockQty}"
+                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchRetailValueVisible}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Value" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.stockSaleValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.retailRate * i.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
 
-                <p:columnGroup type="footer">
-                    <p:row>
-                        <p:column colspan="9">
-                            <f:facet name="footer">
-                                <h:outputLabel value="Total" />
-                            </f:facet>
-                        </p:column>
-                        <p:column style="text-align: right;">
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-        <!-- Blank column for Cost Rate -->
-                        <p:column />
-                        <p:column style="text-align: right;">
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsStock.stockCostValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-        <!-- Blank column for Retail Rate -->
-                        <p:column />
-                        <p:column style="text-align: right;">
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsStock.stockSaleValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-                    <p:row>
-                        <p:column colspan="14">
-                            <f:facet name="footer">
-                                <h:outputLabel value="Printed At " />
-                                <h:outputLabel value="#{sessionController.currentDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                    </p:row>
-                </p:columnGroup>
 
-            </p:dataTable>
-        </h:panelGroup>
-    </p:panel>
-    </h:form>
+                            </p:dataTable>
+                        </h:panelGroup>
+
+                        <!-- Subtle Column Visibility Controls -->
+                        <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                            <p:panel toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Customize Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCategory" value="#{userSettingsController.pharmacyDepartmentStockByBatchCategoryVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCategory" value="Category" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkType" value="#{userSettingsController.pharmacyDepartmentStockByBatchTypeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkType" value="Type" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCode" value="#{userSettingsController.pharmacyDepartmentStockByBatchCodeVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCode" value="Code" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkGenericName" value="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkGenericName" value="Generic Name" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkExpiry" value="#{userSettingsController.pharmacyDepartmentStockByBatchExpiryVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkExpiry" value="Expiry" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkBatchNo" value="#{userSettingsController.pharmacyDepartmentStockByBatchBatchNoVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkBatchNo" value="Batch No" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkPurchaseRate" value="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkPurchaseRate" value="Purchase Rate" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkPurchaseValue" value="#{userSettingsController.pharmacyDepartmentStockByBatchPurchaseValueVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkPurchaseValue" value="Purchase Value" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCostRate" value="#{userSettingsController.pharmacyDepartmentStockByBatchCostRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCostRate" value="Cost Rate" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkCostValue" value="#{userSettingsController.pharmacyDepartmentStockByBatchCostValueVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkCostValue" value="Cost Value" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRetailRate" value="#{userSettingsController.pharmacyDepartmentStockByBatchRetailRateVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRetailRate" value="Retail Rate" styleClass="ms-1" />
+                                    </div>
+
+                                    <div class="d-flex align-items-center me-3 mb-2">
+                                        <h:selectBooleanCheckbox id="chkRetailValue" value="#{userSettingsController.pharmacyDepartmentStockByBatchRetailValueVisible}">
+                                            <f:ajax render="tbl" />
+                                        </h:selectBooleanCheckbox>
+                                        <h:outputLabel for="chkRetailValue" value="Retail Value" styleClass="ms-1" />
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+
+                    </p:panel>
+                </h:form>
 
             </ui:define>
 

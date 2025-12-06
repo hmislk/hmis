@@ -117,7 +117,7 @@ public class StockHistoryController implements Serializable {
         jpql = "select distinct(s.createdAt) from StockHistory s "
                 + " where s.historyType=:ht"
                 + " and s.createdAt between :fd and :td "
-                + " order by s.createdAt desc ";
+                + " order by s.id desc ";
 
 //        List<StockHistory> historys=facade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
 //        for (StockHistory history : historys) {

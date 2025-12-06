@@ -25,6 +25,18 @@ public class BillDetailsDTO implements Serializable {
     private Double total;
     private Long billFinanceDetailsId;
 
+    // Additional fields from completion queries
+    private Double balance;
+    private Double vat;
+    private Double paidAmount;
+    private String paymentMethod;
+    private Long cancelledBillId;
+    private Long refundedBillId;
+    private Boolean retired;
+    private String patientName;
+    private String creditCompanyName;
+    private String deptId;
+
     // Bill Finance Details
     private BillFinanceDetailsDTO billFinanceDetails;
 
@@ -186,5 +198,86 @@ public class BillDetailsDTO implements Serializable {
 
     public void setBillItems(List<BillItemDetailsDTO> billItems) {
         this.billItems = billItems;
+    }
+
+    // Getters and Setters for additional fields
+    public Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+
+    public Double getVat() {
+        return vat;
+    }
+
+    public void setVat(Double vat) {
+        this.vat = vat;
+    }
+
+    public Double getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Long getCancelledBillId() {
+        return cancelledBillId;
+    }
+
+    public void setCancelledBillId(Long cancelledBillId) {
+        this.cancelledBillId = cancelledBillId;
+    }
+
+    public Long getRefundedBillId() {
+        return refundedBillId;
+    }
+
+    public void setRefundedBillId(Long refundedBillId) {
+        this.refundedBillId = refundedBillId;
+    }
+
+    public Boolean getRetired() {
+        return retired;
+    }
+
+    public void setRetired(Boolean retired) {
+        this.retired = retired;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public String getCreditCompanyName() {
+        return creditCompanyName;
+    }
+
+    public void setCreditCompanyName(String creditCompanyName) {
+        this.creditCompanyName = creditCompanyName;
+    }
+
+    public String getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(String deptId) {
+        this.deptId = deptId;
     }
 }

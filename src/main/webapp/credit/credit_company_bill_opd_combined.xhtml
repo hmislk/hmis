@@ -413,7 +413,7 @@
 
                         <p:commandButton
                             value="To Cancel Bill"
-                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
+                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true or cashRecieveBillController.currentBillACancellationBill}"
                             ajax="false"
                             action="credit_company_bill_cancel?faces-redirect=true"
                             icon="pi pi-times"
@@ -432,6 +432,7 @@
 
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Cancelled" rendered="#{cashRecieveBillController.current.cancelled eq true}" ></p:outputLabel>
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Refunded" rendered="#{cashRecieveBillController.current.refunded eq true}" ></p:outputLabel>
+                    <p:outputLabel class="w-100 text-center bg-warning text-dark m-1 p-1" value="This is a Cancellation Bill - Cannot be Cancelled" rendered="#{cashRecieveBillController.currentBillACancellationBill}" ></p:outputLabel>
 
                     <h:panelGroup id="prints" class="align-center">
                         <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>

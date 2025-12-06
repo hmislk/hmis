@@ -403,7 +403,7 @@
                                 <div class="d-grid gap-2">
                                     <p:commandButton   class="w-100"  ajax="false" value="1. Admission and Discharge" action="#{reportController.navigateToAdmissionDischargeReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="2. IP Unsettled Invoices" action="#{reportController.navigateToIpUnsettledInvoices()}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="3. Room Change" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="3. Room Change" action="#{reportController.navigateToRoomChange()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Admission Category Wise Admission"  action="#{reportController.navigateToAdmissionCategoryWiseAdmission()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Service Reports"  action="#{reportController.navigateToIpServiceReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="6. Admission Reports"  action="#{reportController.navigateToAdmissionReport()}" />
@@ -473,7 +473,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="9. Surgery Count(Surgery Wise)" action="#{reportController.navigateToSurgeryWiseCount()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="10. Surgery Count(Doctor Wise)" action="#{reportController.navigateToSurgeryCountDoctorWise()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="11. Surgery Count(Type)" action="#{reportController.navigateToSurgeryCountTypeWise()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="12. Admission Count(Consultant Wise)" action="#{reportController.navigateToManagementAdmissionCountReport()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="12. Admission Count(Consultant Wise)" action="#{reportController.navigateToAdmissionCountConsultationWise()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="13. Admission Count(Payment Type Wise)" action="#{reportController.navigateToAdmissionCountPaymentTypeWise()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="14. Hospital Census" action="#{reportController.navigateToManagementHospitalCensusReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="15. ROOM OCCUPANCY" action="#{reportController.navigateToROOMOCCUPANCY()}"/>

@@ -236,6 +236,49 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             OptionScope.APPLICATION
         ));
 
+        // Cashier Settlement Bill Number Generation Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Generate Separate Bill Numbers for Cashier Settlement - Pharmacy",
+            "Master switch to enable separate bill number generation for cashier settlements. When enabled, cashier settlement bills get new bill numbers instead of copying from the original pharmacy bill",
+            "Line 720 (Controller): Primary control for bill number generation strategy",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Department-specific numbering format: CSB/DEPT/INS/YY/NNNNNN. Each department maintains its own bill number sequence",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixDeptInsYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Institution-first numbering format: CSB/INS/DEPT/YY/NNNNNN. Same sequence as strategy 1 but different format",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixInsDeptYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number",
+            "Institution-wide numbering format: CSB/INS/YY/NNNNNN. Single sequence across all departments within the institution",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixInsYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Custom Prefix",
+            "Custom prefix for cashier settlement bill numbers. Default is 'CS'. This prefix is used when no specific bill suffix is configured",
+            "BillNumberGenerator: Custom prefix configuration for all cashier settlement methods",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER",
+            "Bill type suffix specifically for cashier settlement bills. Default is 'CSB' (Cashier Settlement Bill)",
+            "BillNumberGenerator: Bill suffix configuration for atomic bill type",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -716,8 +759,93 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         getSaleBill().setReferenceBill(getPreBill());
 
-        getSaleBill().setInsId(getPreBill().getInsId());
-        getSaleBill().setDeptId(getPreBill().getDeptId());
+        // Check configuration for separate bill number generation
+        boolean generateSeparateBillNumbers = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Separate Bill Numbers for Cashier Settlement - Pharmacy", false);
+
+        if (generateSeparateBillNumbers) {
+            try {
+                // Handle Department ID generation (following PharmacySaleForCashierController pattern)
+                String deptId;
+                BillTypeAtomic billTypeAtomic = BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+
+                if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                    deptId = billNumberBean.cashierSettlementBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                    deptId = billNumberBean.cashierSettlementBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number", false)) {
+                    deptId = billNumberBean.cashierSettlementBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else {
+                    // Fallback: copy from PreBill
+                    deptId = getPreBill().getDeptId();
+                }
+
+                // Handle Institution ID generation (following PharmacySaleForCashierController pattern)
+                String insId;
+                if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number", false)) {
+                    insId = billNumberBean.cashierSettlementInsIdGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else {
+                    // Check if department strategy is enabled
+                    if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                        configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                        insId = deptId; // Use same number as department to avoid consuming counter twice
+                    } else {
+                        // Fallback: copy from PreBill
+                        insId = getPreBill().getInsId();
+                    }
+                }
+
+                // Validate generated bill numbers
+                if (deptId == null || deptId.trim().isEmpty()) {
+                    System.err.println("WARNING: Failed to generate DeptId for cashier settlement. Using original bill number: " + getPreBill().getDeptId());
+                    deptId = getPreBill().getDeptId();
+                }
+                if (insId == null || insId.trim().isEmpty()) {
+                    System.err.println("WARNING: Failed to generate InsId for cashier settlement. Using original bill number: " + getPreBill().getInsId());
+                    insId = getPreBill().getInsId();
+                }
+
+                getSaleBill().setDeptId(deptId);
+                getSaleBill().setInsId(insId);
+
+                // Comprehensive audit logging
+                System.out.println("CASHIER_SETTLEMENT_BILL_NUMBER_GENERATION: " +
+                    "User=" + (getSessionController().getLoggedUser() != null ? getSessionController().getLoggedUser().getWebUserPerson() : "Unknown") +
+                    ", Department=" + (getSaleBill().getDepartment() != null ? getSaleBill().getDepartment().getName() : "Unknown") +
+                    ", Institution=" + (getSaleBill().getInstitution() != null ? getSaleBill().getInstitution().getName() : "Unknown") +
+                    ", OriginalBillNumber=" + getPreBill().getDeptId() +
+                    ", NewDeptId=" + deptId +
+                    ", NewInsId=" + insId +
+                    ", PaymentMethod=" + getSaleBill().getPaymentMethod() +
+                    ", NetTotal=" + getSaleBill().getNetTotal() +
+                    ", Timestamp=" + new Date());
+            } catch (Exception e) {
+                // Error handling: fallback to original behavior
+                System.err.println("ERROR: Exception occurred during cashier settlement bill number generation. " +
+                    "Falling back to original bill numbers. Error: " + e.getMessage());
+                e.printStackTrace();
+
+                getSaleBill().setInsId(getPreBill().getInsId());
+                getSaleBill().setDeptId(getPreBill().getDeptId());
+
+                JsfUtil.addErrorMessage("Warning: Bill number generation failed. Using original bill numbers.");
+            }
+        } else {
+            // Current behavior: copy from PreBill
+            getSaleBill().setInsId(getPreBill().getInsId());
+            getSaleBill().setDeptId(getPreBill().getDeptId());
+
+            // Log for audit trail
+            System.out.println("CASHIER_SETTLEMENT_BILL_NUMBER_COPY: " +
+                "OriginalBillNumber=" + getPreBill().getDeptId() +
+                ", CopiedDeptId=" + getSaleBill().getDeptId() +
+                ", CopiedInsId=" + getSaleBill().getInsId() +
+                ", Timestamp=" + new Date());
+        }
 
         updateBalanceInBill(preBill, getSaleBill(), preBill.getPaymentMethod(), paymentMethodData);
 
