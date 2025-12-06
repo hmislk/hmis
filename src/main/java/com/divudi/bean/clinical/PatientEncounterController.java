@@ -1554,6 +1554,19 @@ public class PatientEncounterController implements Serializable {
         String pulseRate = e.getPr() != null ? e.getPr() + " bpm" : "";
         String pfr = e.getPfr() != null ? e.getPfr() + "" : "";
         String saturation = e.getSaturation() != null ? e.getSaturation() + "" : "";
+
+        // Medical Certificate placeholders
+        String medicalStartDate = e.getFromTime() != null ? CommonFunctions.formatDate(e.getFromTime(), sessionController.getApplicationPreference().getLongDateFormat()) : "";
+        String medicalEndDays = "";
+        String medicalCertificateDuration = "";
+
+        // Calculate medical certificate duration if fromTime and toTime are available
+        if (e.getFromTime() != null && e.getToTime() != null) {
+            long diffInMillies = e.getToTime().getTime() - e.getFromTime().getTime();
+            long diffInDays = diffInMillies / (24 * 60 * 60 * 1000);
+            medicalEndDays = String.valueOf(diffInDays);
+            medicalCertificateDuration = diffInDays + " days";
+        }
         if (comments == null) {
             comments = "";
         }
@@ -1750,7 +1763,10 @@ public class PatientEncounterController implements Serializable {
                 .replace("{patient_name}", name)
                 .replace("{patient_age}", age)
                 .replace("{patient_phn_number}", phn)
-                .replace("{patient_nic}", nic);
+                .replace("{patient_nic}", nic)
+                .replace("{medical_start_date}", medicalStartDate)
+                .replace("{medical_end_days}", medicalEndDays)
+                .replace("{medical_certificate_duration}", medicalCertificateDuration);
         return output;
 
     }
