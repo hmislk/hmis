@@ -7,59 +7,105 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:head>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+        <title>Document Template Settings</title>
     </h:head>
 
     <h:body>
         <ui:composition template="/emr/settings/index.xhtml">
             <ui:define name="subcontent">
-                <h:form >
+                <h:form>
+                    <p:panel header="Document Template Configuration" styleClass="mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <p:outputLabel for="name" value="Name:" styleClass="form-label fw-bold"/>
+                                    <p:inputText id="name"
+                                                value="#{documentTemplateController.current.name}"
+                                                styleClass="form-control mt-1"
+                                                placeholder="Enter template name"
+                                                title="Enter a descriptive name for this document template"/>
+                                </h:panelGroup>
 
-                    <div class="row">
-                        <div class="col-4">
-                            <p:outputLabel value="Name" class="form-label" ></p:outputLabel>
-                            <p:inputText id="name" value="#{documentTemplateController.current.name}" styleClass="form-control" />
-                            
-                            <p:outputLabel value="User" class="form-label" ></p:outputLabel>
-                            <p:autoComplete value="#{documentTemplateController.current.webUser}" 
-                                            inputStyleClass="w-100"
-                                            class="w-100"
-                                            completeMethod="#{webUserController.completeUser}"
-                                            var="u"
-                                            itemLabel="#{u.name}"
-                                            itemValue="#{u}"
-                                            ></p:autoComplete>
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <p:outputLabel for="user" value="User:" styleClass="form-label fw-bold"/>
+                                    <p:autoComplete id="user"
+                                                    value="#{documentTemplateController.current.webUser}"
+                                                    styleClass="w-100 mt-1"
+                                                    completeMethod="#{webUserController.completeUser}"
+                                                    var="u"
+                                                    itemLabel="#{u.name}"
+                                                    itemValue="#{u}"
+                                                    placeholder="Select user"
+                                                    title="Select the user associated with this template"/>
+                                </h:panelGroup>
 
-                            <p:outputLabel value="Type" class="form-label" ></p:outputLabel>
-                            <h:selectOneMenu id="type" value="#{documentTemplateController.current.type}" styleClass="form-control" >
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{documentTemplateController.documentTemplateTypes}" ></f:selectItems>
-                            </h:selectOneMenu>
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <p:outputLabel for="type" value="Type:" styleClass="form-label fw-bold"/>
+                                    <p:selectOneMenu id="type"
+                                                    value="#{documentTemplateController.current.type}"
+                                                    styleClass="form-select mt-1 w-100"
+                                                    title="Select the document template type">
+                                        <f:selectItem itemLabel="-- Select Type --" itemValue=""/>
+                                        <f:selectItems value="#{documentTemplateController.documentTemplateTypes}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
 
-                            <p:outputLabel value="Default" class="form-label" ></p:outputLabel>
-                            <p:selectBooleanButton id="default"
-                                                   value="#{documentTemplateController.current.defaultTemplate}"
-                                                   onLabel="Default"
-                                                   offLabel="NOT default"
-                                                   styleClass="form-control" />
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <p:outputLabel for="default" value="Default Template:" styleClass="form-label fw-bold"/>
+                                    <p:selectBooleanButton id="default"
+                                                           value="#{documentTemplateController.current.defaultTemplate}"
+                                                           onLabel="Yes"
+                                                           offLabel="No"
+                                                           onIcon="pi pi-check"
+                                                           offIcon="pi pi-times"
+                                                           styleClass="mt-1"
+                                                           title="Set as default template for this type"/>
+                                </h:panelGroup>
 
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <p:outputLabel for="autoGenerate" value="Auto Regenerate:" styleClass="form-label fw-bold"/>
+                                    <p:selectBooleanButton id="autoGenerate"
+                                                           value="#{documentTemplateController.current.autoGenerate}"
+                                                           onLabel="Yes"
+                                                           offLabel="No"
+                                                           onIcon="pi pi-refresh"
+                                                           offIcon="pi pi-times"
+                                                           styleClass="mt-1"
+                                                           title="Enable automatic regeneration of documents"/>
+                                </h:panelGroup>
+                            </div>
 
-                            <p:outputLabel value="Auto Regenerate" class="form-label" ></p:outputLabel>
-                            <p:selectBooleanButton id="auto" 
-                                                   onLabel="Yes"
-                                                   offLabel="NO"
-                                                   value="#{documentTemplateController.current.autoGenerate}" styleClass="form-control" />
+                            <div class="col-md-8">
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <div class="d-flex gap-2 mb-3">
+                                        <p:commandButton value="Save Template"
+                                                        ajax="false"
+                                                        action="#{documentTemplateController.saveUserDocumentTemplate}"
+                                                        icon="pi pi-save"
+                                                        styleClass="ui-button-success"
+                                                        title="Save the document template"/>
+                                        <p:commandButton value="Clear"
+                                                        type="button"
+                                                        icon="pi pi-refresh"
+                                                        styleClass="ui-button-secondary"
+                                                        onclick="PF('textEditorWidget').clear()"
+                                                        title="Clear the editor content"/>
+                                    </div>
+                                </h:panelGroup>
 
-
+                                <h:panelGroup layout="block">
+                                    <p:outputLabel value="Template Content:" styleClass="form-label fw-bold mb-2 d-block"/>
+                                    <p:textEditor id="textEditor"
+                                                  widgetVar="textEditorWidget"
+                                                  secure="false"
+                                                  value="#{documentTemplateController.current.contents}"
+                                                  style="width: 100%; height: 400px;"
+                                                  placeholder="Enter template content here..."
+                                                  title="Enter the document template content using the rich text editor"/>
+                                </h:panelGroup>
+                            </div>
                         </div>
-                        <div class="col-8">
-                            <p:commandButton value="Save" ajax="false" 
-                                             action="#{documentTemplateController.saveUserDocumentTemplate}" ></p:commandButton>
-                            <p:textEditor id="textEditor" 
-                                          secure='false' 
-                                          value="#{documentTemplateController.current.contents}" style="width: 100%; height: 300px;" />
-                        </div>
-                    </div>
+                    </p:panel>
                 </h:form>
 
 

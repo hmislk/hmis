@@ -939,7 +939,7 @@
 
                                                 <!-- Medical Certificate Date Panel -->
                                                 <h:panelGroup id="medicalCertDatePanel" layout="block">
-                                                    <div class="row mt-3" rendered="#{patientEncounterController.selectedTemplateMedicalCertificate}">
+                                                    <h:panelGroup layout="block" styleClass="row mt-3" rendered="#{patientEncounterController.selectedTemplateMedicalCertificate}">
                                                         <div class="col-12">
                                                             <p:panel header="Medical Certificate Dates" styleClass="ui-panel-info">
                                                                 <div class="row">
@@ -948,10 +948,8 @@
                                                                         <p:calendar
                                                                             id="medicalFromDate"
                                                                             value="#{patientEncounterController.medicalCertificateFromDate}"
-                                                                            showOn="button"
-                                                                            pattern="yyyy-MM-dd"
+                                                                            pattern="#{configOptionApplicationController.getShortTextValueByKey('Long Date Format' , 'dd MMMM yyyy' )}"
                                                                             readonlyInput="true"
-                                                                            showButtonBar="true"
                                                                             styleClass="w-100">
                                                                         </p:calendar>
                                                                     </div>
@@ -960,17 +958,15 @@
                                                                         <p:calendar
                                                                             id="medicalToDate"
                                                                             value="#{patientEncounterController.medicalCertificateToDate}"
-                                                                            showOn="button"
-                                                                            pattern="yyyy-MM-dd"
+                                                                            pattern="#{configOptionApplicationController.getShortTextValueByKey('Long Date Format' , 'dd MMMM yyyy' )}"
                                                                             readonlyInput="true"
-                                                                            showButtonBar="true"
                                                                             styleClass="w-100">
                                                                         </p:calendar>
                                                                     </div>
                                                                 </div>
                                                             </p:panel>
                                                         </div>
-                                                    </div>
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
                                             </p:panel>
                                             <p:panelGrid columns="3" class="w-100 m-1" >
