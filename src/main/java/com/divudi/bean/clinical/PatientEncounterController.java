@@ -2507,7 +2507,7 @@ public class PatientEncounterController implements Serializable {
                      "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) " +
                      "ORDER BY e.encounterDate ASC";
 
-        List<Object[]> bpData = ejbFacade.findByJpql(jpql, params);
+        List<Object[]> bpData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
 
         // Create SBP dataset
         LineChartDataSet sbpDataSet = new LineChartDataSet();
