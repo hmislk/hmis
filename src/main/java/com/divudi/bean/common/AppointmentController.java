@@ -201,6 +201,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -859,10 +860,11 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         setPatient(getNewPatient());
         getCurrentBill().setPatient(getPatient());
         getCurrentAppointment().setPatient(getPatient());
-        return "/inward/inward_appointment?faces-redirect=true;";
+        return "/inward/inward_appointment?faces-redirect=true";
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
