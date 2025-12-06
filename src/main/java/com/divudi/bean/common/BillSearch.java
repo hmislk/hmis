@@ -2511,6 +2511,13 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
+        }
 
         if (errorsPresentOnOpdBillCancellation()) {
             return;
@@ -2643,6 +2650,14 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             ccBillCancellingStarted.set(false);
             return;
+        }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            ccBillCancellingStarted.set(false);
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
         }
 
         if (!getWebUserController().hasPrivilege("BillCancel")) {
