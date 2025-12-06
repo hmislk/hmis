@@ -29,6 +29,9 @@ public enum BillTypeAtomic {
     INWARD_PROFESSIONAL_FEE_BILL("Inward Professional Fee Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.InwardProfessional),
     INWARD_ESTIMATED_PROFESSIONAL_FEE_BILL("Inward Estimated Professional Fee Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.InwardProfessionalEstimates),
     INWARD_THEATRE_PROFESSIONAL_FEE_BILL("Inward Theatre Professional Fee Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.InwardProfessional),
+    INWARD_APPOINTMENT_BILL("Inward Appointment Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD, PaymentCategory.NON_CREDIT_SPEND, BillType.InwardAppointmentBill),
+    INWARD_APPOINTMENT_CANCEL_BILL("Inward Appointment Cancel Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.NON_CREDIT_SPEND, BillType.InwardAppointmentBill),
+    
     @Deprecated //Use INWARD_SERVICE_BILL_REFUND
     INWARD_SERVICE_BATCH_BILL_REFUND("Inward Service Bill Refund", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_COLLECTION, BillType.InwardProfessional),
     INWARD_SERVICE_BILL_REFUND("Inward Service Bill Refund", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_COLLECTION, BillType.InwardProfessional),

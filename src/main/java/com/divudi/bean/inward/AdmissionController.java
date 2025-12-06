@@ -42,6 +42,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
@@ -51,6 +52,7 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.Reservation;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -113,6 +115,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
     @EJB
     ClinicalFindingValueFacade clinicalFindingValueFacade;
+    @EJB
+    ReservationFacade reservationFacade;
 
     @Inject
     BhtEditController bhtEditController;
@@ -169,6 +173,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private PaymentMethod paymentMethod;
     private boolean admittingProcessStarted;
     private Reservation latestfoundReservation;
+
+    private Reservation currentReservation;
 
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
@@ -632,7 +638,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         return suggestions;
     }
-    
+
     public List<Admission> completePatientAdmissionFromWaitingRoom(String query) {
         List<Admission> suggestions;
         String sql;
@@ -839,22 +845,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
             return bhtSummeryController.navigateToInpatientProfile();
         } else {
-            if(current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null){
+            if (current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
                 JsfUtil.addErrorMessage("Selected Room no has a department.");
                 return "";
             }
-            
-            if(!current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getId().equals(sessionController.getDepartment().getId())){
+
+            if (!current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getId().equals(sessionController.getDepartment().getId())) {
                 JsfUtil.addErrorMessage("Patient is not in your department. Please transfer to the correct department.");
                 return "";
             }
-            
+
             roomChangeController.setCurrent(current);
             roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
             return "/inward/admit_room?faces-redirect=true";
         }
     }
-    
+
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
         String sql;
@@ -1629,6 +1635,54 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
         }
 
+        if (currentReservation != null) {
+            System.out.println("DEBUG: currentReservation is not null. ID: " + currentReservation.getId());
+
+            System.out.println("DEBUG: Setting encounterReservation on current Admission...");
+            getCurrent().setEncounterReservation(currentReservation);
+            System.out.println("DEBUG: Successfully set encounterReservation");
+
+            System.out.println("DEBUG: Setting reservationEncounter on currentReservation...");
+            currentReservation.setReservationEncounter(getCurrent());
+            System.out.println("DEBUG: Successfully set reservationEncounter");
+
+            System.out.println("DEBUG: Updating reservation in database...");
+            reservationFacade.edit(currentReservation);
+            System.out.println("DEBUG: Reservation updated successfully");
+
+            System.out.println("DEBUG: Looking up appointment with ID: "
+                    + (currentReservation.getAppointment() != null ? currentReservation.getAppointment().getId() : "Appointment is null"));
+
+            Appointment apt = appointmentFacade.find(currentReservation.getAppointment().getId());
+            System.out.println("DEBUG: Appointment lookup result: " + (apt != null ? "Found" : "Not found"));
+
+            if (apt != null) {
+                System.out.println("DEBUG: Marking appointment as complete...");
+
+                apt.setAppointmentComplete(true);
+                System.out.println("DEBUG:   - AppointmentComplete set to true");
+
+                apt.setAppointmentCompleteAt(new Date());
+                System.out.println("DEBUG:   - AppointmentCompleteAt set to: " + apt.getAppointmentCompleteAt());
+
+                apt.setAppointmentCompleteBy(sessionController.getLoggedUser());
+                System.out.println("DEBUG:   - AppointmentCompleteBy set to user: "
+                        + (sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getWebUserPerson().getName() : "null"));
+
+                apt.setStatus(AppointmentStatus.COMPLETE);
+                System.out.println("DEBUG:   - Status set to: " + AppointmentStatus.COMPLETE);
+
+                System.out.println("DEBUG: Updating appointment in database...");
+                appointmentFacade.edit(apt);
+                System.out.println("DEBUG: Appointment updated successfully");
+
+            } else {
+                System.out.println("DEBUG: WARNING - Appointment not found, cannot mark as complete");
+            }
+        } else {
+            System.out.println("DEBUG: currentReservation is null, skipping reservation and appointment updates");
+        }
+
         getFacade().edit(getCurrent());
 
         double appointmentFee = 0;
@@ -1651,6 +1705,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         admittingProcessStarted = false;
+        currentReservation = null;
         printPreview = true;
     }
 
@@ -2273,6 +2328,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setLatestfoundReservation(Reservation latestfoundReservation) {
         this.latestfoundReservation = latestfoundReservation;
+    }
+
+    public Reservation getCurrentReservation() {
+        return currentReservation;
+    }
+
+    public void setCurrentReservation(Reservation currentReservation) {
+        this.currentReservation = currentReservation;
     }
 
     /**
