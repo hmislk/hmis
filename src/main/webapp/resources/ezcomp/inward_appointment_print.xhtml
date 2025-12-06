@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface >  
-         <cc:attribute name="reservation"/>  
+        <cc:attribute name="reservation"/>  
 
     </cc:interface>
 
@@ -16,7 +16,7 @@
     <cc:implementation>
 
         <h:form>
-            
+
             <div class="w-100 m-1">
                 <h:panelGroup id="gpBillPreview" class="w-100 " >
 
@@ -31,9 +31,11 @@
                                 <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.web}"/></h6>
                             </div>
                         </div>
-
+                        
                         <div class="row m-2 ">
                             
+                            <hr/>
+
                             <div class="my-2 text-center" style="font-weight: bold;">
                                 <p:outputLabel value="PATIENT DETAILS" />
                             </div>
@@ -98,13 +100,13 @@
                                                     <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.address}"></h:outputLabel>
                                                 </td>
                                             </tr>
-                                            
+
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                            
-                            <div class="my-2 text-center" style="font-weight: bold;">
+
+                            <div class="my-3 text-center" style="font-weight: bold;">
                                 <p:outputLabel   value="REFERING DOCTOR DETAIL" />
                             </div>
 
@@ -132,7 +134,7 @@
                             </div>
 
                             <h:panelGroup rendered="#{cc.attrs.reservation ne null}">
-                                <div class="my-2 text-center" style="font-weight: bold;">
+                                <div class="my-3 text-center" style="font-weight: bold;">
                                     <p:outputLabel   value="RESERVATION DETAILS" />
                                 </div>
 
@@ -171,12 +173,15 @@
                                                     </h:outputLabel>
                                                 </td>
                                             </tr>
+
+
                                         </tbody>
                                     </table>
                                 </div>
+
                             </h:panelGroup>
 
-                            <div class="my-2 text-center" style="font-weight: bold;">
+                            <div class="my-3 text-center" style="font-weight: bold;">
                                 <p:outputLabel   value="BILL DETAILS" />
                             </div>
 
@@ -202,11 +207,29 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            <h:panelGroup class="my-3" rendered="#{cc.attrs.reservation.appointment.appointmentCancel}"  style="font-size: 14px;">
+                                <hr/>
+                                
+                                <div class="d-flex gap-2">
+                                    <h:outputLabel value="Cancel By "></h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentCancelBy.webUserPerson.nameWithTitle eq null ? 'N/A' : cc.attrs.reservation.appointment.appointmentCancelBy.webUserPerson.nameWithTitle}"></h:outputLabel>
+                                    <h:outputLabel value="Cancel At "></h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentCancelAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="d-flex justify-content-center mt-3" style="font-size: 12px;">
+                                <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
+                            </div>
+
                         </div>
                     </div>
                 </h:panelGroup>    
             </div>
         </h:form>
-        
+
     </cc:implementation>
 </html>
