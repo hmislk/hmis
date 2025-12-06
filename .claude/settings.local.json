@@ -26,10 +26,8 @@
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
       "Bash(gh issue view:*)",
-      "Bash(git apply:*)",
-      "Bash(findstr:*)",
-      "Bash(dir /B \"C:\\Development\\hmis\\src\\main\\resources\\db\\migrations\\v*\")",
-      "Bash(ls -1 \"C:\\Development\\hmis\\src\\main\\resources\\db\\migrations\"\" | grep \"^v \")"
+      "Bash(python3:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": [],
