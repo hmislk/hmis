@@ -370,7 +370,6 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
         System.out.println("setFeeValueForCreditCompany");
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
@@ -410,7 +409,6 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueForeignAndDiscount(boolean foriegn, double discountPercent) {
         System.out.println("setFeeValueForeignAndDiscount");
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {

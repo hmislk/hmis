@@ -2499,12 +2499,10 @@ public class PatientEncounterController implements Serializable {
         ChartData data = new ChartData();
 
         if (current == null) {
-            System.out.println("ERROR: current is null");
             return;
         }
 
         if (current.getPatient() == null) {
-            System.out.println("ERROR: current.getPatient() is null");
             return;
         }
 
@@ -2549,9 +2547,9 @@ public class PatientEncounterController implements Serializable {
         List<String> dateLabels = new ArrayList<>();
 
         SimpleDateFormat format = new SimpleDateFormat(configOptionApplicationController.getShortTextValueByKey("short date format", "dd MM yy"));
-
         // Process query results
-        System.out.println("Processing " + bpData.size() + " blood pressure records:");
+        // Process query results
+        // Process query results
         int recordCount = 0;
         for (Object[] row : bpData) {
             recordCount++;
@@ -2559,7 +2557,6 @@ public class PatientEncounterController implements Serializable {
             Long sbp = (Long) row[1];
             Long dbp = (Long) row[2];
 
-            System.out.println("Record " + recordCount + ": Date=" + encounterDate + ", SBP=" + sbp + ", DBP=" + dbp);
 
             // Add date label
             if (encounterDate != null) {
@@ -2573,7 +2570,6 @@ public class PatientEncounterController implements Serializable {
             dbpValues.add(dbp);
         }
 
-        System.out.println("Processed data - SBP values: " + sbpValues.size() + ", DBP values: " + dbpValues.size() + ", Date labels: " + dateLabels.size());
 
         // Only create chart if we have data
         if (!bpData.isEmpty()) {
@@ -2602,14 +2598,9 @@ public class PatientEncounterController implements Serializable {
             bloodPressureChartModel.setOptions(options);
 
             System.out.println("Chart created successfully!");
-            System.out.println("Chart model: " + bloodPressureChartModel);
-            System.out.println("Chart data: " + (bloodPressureChartModel.getData() != null ? "SET" : "NULL"));
-            System.out.println("Chart options: " + (bloodPressureChartModel.getOptions() != null ? "SET" : "NULL"));
         } else {
-            System.out.println("No blood pressure data found - chart not created");
         }
 
-        System.out.println("=== Blood Pressure Chart Generation Completed ===");
     }
 
     public String getDoubleLineChartString() {
@@ -4050,6 +4041,110 @@ public class PatientEncounterController implements Serializable {
 
     public List<Object[]> getBmiWeightData() {
         return bmiWeightData;
+    }
+
+    // Investigation chart data and methods
+    private List<Object[]> investigationChartData = new ArrayList<>();
+    private String investigationChartName;
+
+    public void generateInvestigationChart() {
+        if (current == null || current.getPatient() == null ||
+            investigationChartName == null || investigationChartName.trim().isEmpty()) {
+            investigationChartData = new ArrayList<>();
+            return;
+        }
+
+        // High-performance DTO query using Object[] approach
+        Map<String, Object> params = new HashMap<>();
+        params.put("pt", current.getPatient());
+        params.put("invName", "%" + investigationChartName.trim().toUpperCase() + "%");
+
+        String jpql = "SELECT priv.doubleValue, priv.strValue, priv.patientReport.approveAt " +
+                     "FROM PatientReportItemValue priv " +
+                     "WHERE priv.patientReport.patientInvestigation.patient = :pt " +
+                     "AND UPPER(priv.investigationItem.name) LIKE :invName " +
+                     "AND priv.patientReport.approveAt IS NOT NULL " +
+                     "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) " +
+                     "ORDER BY priv.patientReport.approveAt ASC";
+
+        try {
+            List<Object[]> rawData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
+            investigationChartData = new ArrayList<>();
+
+            for (Object[] row : rawData) {
+                try {
+                    Double doubleVal = (Double) row[0];
+                    String strVal = (String) row[1];
+                    Date approveDate = (Date) row[2];
+
+                    // Get numeric value with fallback logic
+                    Double finalValue = null;
+                    if (doubleVal != null) {
+                        finalValue = doubleVal;
+                    } else if (strVal != null && !strVal.trim().isEmpty()) {
+                        try {
+                            finalValue = Double.parseDouble(strVal.trim());
+                        } catch (NumberFormatException e) {
+                            continue; // Skip non-numeric string values
+                        }
+                    }
+
+                    // Add to chart data if value and date are available
+                    if (finalValue != null && approveDate != null) {
+                        Object[] chartRecord = {approveDate, finalValue};
+                        investigationChartData.add(chartRecord);
+                    }
+                } catch (Exception e) {
+                    // Skip problematic records
+                    continue;
+                }
+            }
+        } catch (Exception e) {
+            investigationChartData = new ArrayList<>();
+        }
+    }
+
+    public List<Object[]> getInvestigationChartData() {
+        return investigationChartData;
+    }
+
+    // Getter and setter for investigation chart name
+    public String getInvestigationChartName() {
+        return investigationChartName;
+    }
+
+    public void setInvestigationChartName(String investigationChartName) {
+        this.investigationChartName = investigationChartName;
+    }
+
+    // DTO-based autocomplete for investigation names
+    public List<String> completeInvestigationNames(String query) {
+        if (query == null || query.trim().length() < 2) {
+            return new ArrayList<>();
+        }
+
+        if (current == null || current.getPatient() == null) {
+            return new ArrayList<>();
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("pt", current.getPatient());
+        params.put("invName", "%" + query.trim().toUpperCase() + "%");
+
+        String jpql = "SELECT DISTINCT priv.investigationItem.name " +
+                     "FROM PatientReportItemValue priv " +
+                     "WHERE priv.patientReport.patientInvestigation.patient = :pt " +
+                     "AND UPPER(priv.investigationItem.name) LIKE :invName " +
+                     "AND priv.patientReport.approveAt IS NOT NULL " +
+                     "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) " +
+                     "ORDER BY priv.investigationItem.name ASC";
+
+        try {
+            List<String> results = ejbFacade.findStringByJpql(jpql, params, 20); // Limit to 20 results
+            return results != null ? results : new ArrayList<>();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @FacesConverter(forClass = PatientEncounter.class)

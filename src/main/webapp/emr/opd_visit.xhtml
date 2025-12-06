@@ -1492,7 +1492,7 @@
                                                 </h:panelGroup>
                                             </p:panel>
 
-                                            <p:panel id="panelBmiWeightChart" class="w-100">
+                                            <p:panel id="panelBmiWeightChart" class="w-100 mb-3">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-weight"/>
                                                     <h:outputText class="mx-4" value="BMI &amp; Weight Analytics"/>
@@ -1601,6 +1601,114 @@
                                                     <h:outputText
                                                         value="Click 'Generate BMI &amp; Weight Chart' to view the patient's BMI and weight trends over time."
                                                         rendered="#{patientEncounterController.bmiWeightData.size() == 0}"
+                                                        class="text-muted"/>
+                                                </h:panelGroup>
+                                            </p:panel>
+
+                                            <p:panel id="panelInvestigationChart" class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-flask"/>
+                                                    <h:outputText class="mx-4" value="Investigation Results Analytics"/>
+                                                </f:facet>
+
+                                                <!-- Investigation selection and button -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-8">
+                                                        <p:autoComplete
+                                                            id="acInvestigationName"
+                                                            value="#{patientEncounterController.investigationChartName}"
+                                                            completeMethod="#{patientEncounterController.completeInvestigationNames}"
+                                                            placeholder="Type investigation name (e.g., Blood Sugar, Cholesterol)"
+                                                            minQueryLength="2"
+                                                            maxResults="20"
+                                                            styleClass="w-100"
+                                                            inputStyleClass="w-100"
+                                                            dropdown="true"/>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <p:commandButton
+                                                            value="Generate Chart"
+                                                            action="#{patientEncounterController.generateInvestigationChart()}"
+                                                            ajax="true"
+                                                            update="investigationChartContainer"
+                                                            icon="fas fa-chart-line"
+                                                            class="ui-button-warning"
+                                                            disabled="#{patientEncounterController.investigationChartName == null or patientEncounterController.investigationChartName.trim().length() == 0}"/>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Chart display container -->
+                                                <h:panelGroup id="investigationChartContainer" layout="block">
+                                                    <h:panelGroup rendered="#{patientEncounterController.investigationChartData.size() > 0}">
+                                                        <div style="width: 100%; height: 400px;">
+                                                            <canvas id="investigationCanvas" width="400" height="200"></canvas>
+                                                        </div>
+
+                                                        <script type="text/javascript">
+                                                            setTimeout(function() {
+                                                                if (typeof Chart !== 'undefined') {
+                                                                    var ctx = document.getElementById('investigationCanvas');
+                                                                    if (ctx) {
+                                                                        var chart = new Chart(ctx, {
+                                                                            type: 'line',
+                                                                            data: {
+                                                                                labels: [
+                                                                                    <ui:repeat value="#{patientEncounterController.investigationChartData}" var="invRecord" varStatus="status">
+                                                                                        '<h:outputText value="#{invRecord[0]}"><f:convertDateTime pattern="MM/dd" /></h:outputText>'#{!status.last ? ',' : ''}
+                                                                                    </ui:repeat>
+                                                                                ],
+                                                                                datasets: [{
+                                                                                    label: '#{patientEncounterController.investigationChartName}',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.investigationChartData}" var="invRecord" varStatus="status">
+                                                                                            #{invRecord[1]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(153, 102, 255)',
+                                                                                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                                                                    fill: false,
+                                                                                    tension: 0.1
+                                                                                }]
+                                                                            },
+                                                                            options: {
+                                                                                responsive: true,
+                                                                                plugins: {
+                                                                                    title: {
+                                                                                        display: true,
+                                                                                        text: '#{patientEncounterController.investigationChartName} Trends'
+                                                                                    }
+                                                                                },
+                                                                                scales: {
+                                                                                    y: {
+                                                                                        beginAtZero: false,
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: '#{patientEncounterController.investigationChartName}'
+                                                                                        }
+                                                                                    },
+                                                                                    x: {
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Date'
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }, 1000);
+                                                        </script>
+                                                    </h:panelGroup>
+
+                                                    <h:outputText
+                                                        value="Type an investigation name and click 'Generate Chart' to view trends over time."
+                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and (patientEncounterController.investigationChartName == null or patientEncounterController.investigationChartName.trim().length() == 0)}"
+                                                        class="text-muted"/>
+
+                                                    <h:outputText
+                                                        value="No data found for '#{patientEncounterController.investigationChartName}'. This patient may not have any recorded results for this investigation."
+                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.investigationChartName != null and patientEncounterController.investigationChartName.trim().length() > 0}"
                                                         class="text-muted"/>
                                                 </h:panelGroup>
                                             </p:panel>

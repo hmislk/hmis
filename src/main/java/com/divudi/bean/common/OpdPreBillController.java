@@ -1247,7 +1247,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
         System.out.println("addAllBillFees = " + addAllBillFees);
         System.out.println("siteBasedBillFees = " + siteBasedBillFees);
-        System.out.println("departmentBasedBillFees = " + departmentBasedBillFees);
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));

@@ -1049,7 +1049,6 @@ public class PharmacySaleBhtController implements Serializable {
             bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
             
             billFacade.edit(bhtRequestBill);
-            System.out.println("Update BHT Request Bill = " + bhtRequestBill.getDeptId() );
         }
         completed = false;
         userNotificationController.userNotificationRequestComplete();

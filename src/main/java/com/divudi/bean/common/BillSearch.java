@@ -4070,7 +4070,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4089,7 +4088,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4108,7 +4106,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4127,7 +4124,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(selectedBillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found for ID: " + selectedBillId);
             return null;
@@ -4225,7 +4221,6 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewBillByAtomicBillType() {
-        System.out.println("navigateToViewBillByAtomicBillType");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;

@@ -242,7 +242,6 @@ public class EnumController implements Serializable {
         try {
             paymentMethodsForPharmacyBillCancellations.remove(PaymentMethod.MultiplePaymentMethods);
         } catch (Exception e) {
-            System.err.println("e = " + e);
         }
         return paymentMethodsForPharmacyBillCancellations;
     }

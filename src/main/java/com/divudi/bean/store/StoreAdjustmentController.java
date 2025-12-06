@@ -336,7 +336,6 @@ public class StoreAdjustmentController implements Serializable {
 
         getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
         getBillFacade().edit(getDeptAdjustmentPreBill());
-        System.out.println("Pharmaceutical BillItem = " + getBillItem().getPharmaceuticalBillItem());
         return getBillItem().getPharmaceuticalBillItem();
     }
 
