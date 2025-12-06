@@ -1393,7 +1393,7 @@
                                     <!-- Analytics such as FBS Graph, Lipid Profile, BMI Chart, etc. -->
                                     <div class="ui-g">
                                         <div class="ui-g-12">
-                                            <p:panel id="panelBloodPressureChart" class="w-100">
+                                            <p:panel id="panelBloodPressureChart" class="w-100 mb-3">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-heartbeat"/>
                                                     <h:outputText class="mx-4" value="Blood Pressure Analytics"/>
@@ -1405,22 +1405,202 @@
                                                         value="Generate Blood Pressure Chart"
                                                         action="#{patientEncounterController.generateBloodPressureChart()}"
                                                         ajax="true"
-                                                        update=":#{p:resolveFirstComponentWithId('chartContainer',view).clientId}"
+                                                        update="chartContainer"
                                                         icon="fas fa-chart-line"
                                                         class="ui-button-info"/>
                                                 </div>
 
                                                 <!-- Chart display container -->
                                                 <h:panelGroup id="chartContainer" layout="block">
-                                                    <p:chart
-                                                        type="line"
-                                                        model="#{patientEncounterController.bloodPressureChartModel}"
-                                                        style="width:100%; height:400px;"
-                                                        rendered="#{patientEncounterController.bloodPressureChartModel != null}"/>
+                                                    <h:panelGroup rendered="#{patientEncounterController.bloodPressureData.size() > 0}">
+                                                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                                                        <div style="width: 100%; height: 400px;">
+                                                            <canvas id="bpCanvas" width="400" height="200"></canvas>
+                                                        </div>
+
+                                                        <script type="text/javascript">
+                                                            setTimeout(function() {
+                                                                if (typeof Chart !== 'undefined') {
+                                                                    var ctx = document.getElementById('bpCanvas');
+                                                                    if (ctx) {
+                                                                        var chart = new Chart(ctx, {
+                                                                            type: 'line',
+                                                                            data: {
+                                                                                labels: [
+                                                                                    <ui:repeat value="#{patientEncounterController.bloodPressureData}" var="bpRecord" varStatus="status">
+                                                                                        '<h:outputText value="#{bpRecord[0]}"><f:convertDateTime pattern="MM/dd" /></h:outputText>'#{!status.last ? ',' : ''}
+                                                                                    </ui:repeat>
+                                                                                ],
+                                                                                datasets: [{
+                                                                                    label: 'Systolic BP',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bloodPressureData}" var="bpRecord" varStatus="status">
+                                                                                            #{bpRecord[1]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(255, 99, 132)',
+                                                                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                                                                    fill: false
+                                                                                }, {
+                                                                                    label: 'Diastolic BP',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bloodPressureData}" var="bpRecord" varStatus="status">
+                                                                                            #{bpRecord[2]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(54, 162, 235)',
+                                                                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                                                                    fill: false
+                                                                                }]
+                                                                            },
+                                                                            options: {
+                                                                                responsive: true,
+                                                                                plugins: {
+                                                                                    title: {
+                                                                                        display: true,
+                                                                                        text: 'Blood Pressure Trends'
+                                                                                    }
+                                                                                },
+                                                                                scales: {
+                                                                                    y: {
+                                                                                        beginAtZero: false,
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Blood Pressure (mmHg)'
+                                                                                        }
+                                                                                    },
+                                                                                    x: {
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Date'
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }, 1000);
+                                                        </script>
+                                                    </h:panelGroup>
 
                                                     <h:outputText
                                                         value="Click 'Generate Blood Pressure Chart' to view the patient's blood pressure trends over time."
-                                                        rendered="#{patientEncounterController.bloodPressureChartModel == null}"
+                                                        rendered="#{patientEncounterController.bloodPressureData.size() == 0}"
+                                                        class="text-muted"/>
+                                                </h:panelGroup>
+                                            </p:panel>
+
+                                            <p:panel id="panelBmiWeightChart" class="w-100">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-weight"/>
+                                                    <h:outputText class="mx-4" value="BMI &amp; Weight Analytics"/>
+                                                </f:facet>
+
+                                                <!-- Button to generate chart -->
+                                                <div class="mb-3">
+                                                    <p:commandButton
+                                                        value="Generate BMI &amp; Weight Chart"
+                                                        action="#{patientEncounterController.generateBmiWeightChart()}"
+                                                        ajax="true"
+                                                        update="bmiWeightChartContainer"
+                                                        icon="fas fa-chart-line"
+                                                        class="ui-button-success"/>
+                                                </div>
+
+                                                <!-- Chart display container -->
+                                                <h:panelGroup id="bmiWeightChartContainer" layout="block">
+                                                    <h:panelGroup rendered="#{patientEncounterController.bmiWeightData.size() > 0}">
+                                                        <div style="width: 100%; height: 400px;">
+                                                            <canvas id="bmiWeightCanvas" width="400" height="200"></canvas>
+                                                        </div>
+
+                                                        <script type="text/javascript">
+                                                            setTimeout(function() {
+                                                                if (typeof Chart !== 'undefined') {
+                                                                    var ctx = document.getElementById('bmiWeightCanvas');
+                                                                    if (ctx) {
+                                                                        var chart = new Chart(ctx, {
+                                                                            type: 'line',
+                                                                            data: {
+                                                                                labels: [
+                                                                                    <ui:repeat value="#{patientEncounterController.bmiWeightData}" var="bmiRecord" varStatus="status">
+                                                                                        '<h:outputText value="#{bmiRecord[0]}"><f:convertDateTime pattern="MM/dd" /></h:outputText>'#{!status.last ? ',' : ''}
+                                                                                    </ui:repeat>
+                                                                                ],
+                                                                                datasets: [{
+                                                                                    label: 'Weight (kg)',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bmiWeightData}" var="bmiRecord" varStatus="status">
+                                                                                            #{bmiRecord[1]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(75, 192, 192)',
+                                                                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                                                                    fill: false,
+                                                                                    yAxisID: 'y'
+                                                                                }, {
+                                                                                    label: 'BMI (kg/m²)',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bmiWeightData}" var="bmiRecord" varStatus="status">
+                                                                                            #{bmiRecord[2]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(255, 159, 64)',
+                                                                                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                                                                    fill: false,
+                                                                                    yAxisID: 'y1'
+                                                                                }]
+                                                                            },
+                                                                            options: {
+                                                                                responsive: true,
+                                                                                plugins: {
+                                                                                    title: {
+                                                                                        display: true,
+                                                                                        text: 'BMI &amp; Weight Trends'
+                                                                                    }
+                                                                                },
+                                                                                scales: {
+                                                                                    x: {
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Date'
+                                                                                        }
+                                                                                    },
+                                                                                    y: {
+                                                                                        type: 'linear',
+                                                                                        display: true,
+                                                                                        position: 'left',
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Weight (kg)'
+                                                                                        }
+                                                                                    },
+                                                                                    y1: {
+                                                                                        type: 'linear',
+                                                                                        display: true,
+                                                                                        position: 'right',
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'BMI (kg/m²)'
+                                                                                        },
+                                                                                        grid: {
+                                                                                            drawOnChartArea: false
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }, 1000);
+                                                        </script>
+                                                    </h:panelGroup>
+
+                                                    <h:outputText
+                                                        value="Click 'Generate BMI &amp; Weight Chart' to view the patient's BMI and weight trends over time."
+                                                        rendered="#{patientEncounterController.bmiWeightData.size() == 0}"
                                                         class="text-muted"/>
                                                 </h:panelGroup>
                                             </p:panel>

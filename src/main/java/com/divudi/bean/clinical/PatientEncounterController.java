@@ -9,6 +9,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
@@ -147,7 +148,8 @@ public class PatientEncounterController implements Serializable {
     CommonReportItemController commonReportItemController;
     @Inject
     private PatientReportController patientReportController;
-
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -1241,10 +1243,11 @@ public class PatientEncounterController implements Serializable {
     }
 
     /**
-     * Adds favourite medicines to the current encounter using a 3-tier priority lookup:
-     * 1. By Weight Formula (currently under construction - returns unsuccessful)
-     * 2. By Patient Weight Group (retrieves pre-programmed medicine details if available)
-     * 3. By Patient Age Group (fallback when weight data is unavailable)
+     * Adds favourite medicines to the current encounter using a 3-tier priority
+     * lookup: 1. By Weight Formula (currently under construction - returns
+     * unsuccessful) 2. By Patient Weight Group (retrieves pre-programmed
+     * medicine details if available) 3. By Patient Age Group (fallback when
+     * weight data is unavailable)
      *
      * @param patient The patient for whom to add favourite medicines
      */
@@ -1275,14 +1278,13 @@ public class PatientEncounterController implements Serializable {
         // Method 1: By Weight Formula (currently under construction)
         // This method is not yet implemented and should return unsuccessful
         // Skip to Method 2
-
         // Method 2: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteMedicine,
-                patientWeight,
-                null
+                    null,
+                    PrescriptionTemplateType.FavouriteMedicine,
+                    patientWeight,
+                    null
             );
             if (!favouriteMedicines.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
@@ -1292,10 +1294,10 @@ public class PatientEncounterController implements Serializable {
         // Method 3: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if (favouriteMedicines.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteMedicine,
-                null,
-                patientAgeInDays
+                    null,
+                    PrescriptionTemplateType.FavouriteMedicine,
+                    null,
+                    patientAgeInDays
             );
             if (!favouriteMedicines.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
@@ -1396,10 +1398,10 @@ public class PatientEncounterController implements Serializable {
         // Method 1: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
             favouriteDiagnoses = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteDiagnosis,
-                patientWeight,
-                null
+                    null,
+                    PrescriptionTemplateType.FavouriteDiagnosis,
+                    patientWeight,
+                    null
             );
             if (!favouriteDiagnoses.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
@@ -1409,10 +1411,10 @@ public class PatientEncounterController implements Serializable {
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if (favouriteDiagnoses.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             favouriteDiagnoses = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteDiagnosis,
-                null,
-                patientAgeInDays
+                    null,
+                    PrescriptionTemplateType.FavouriteDiagnosis,
+                    null,
+                    patientAgeInDays
             );
             if (!favouriteDiagnoses.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
@@ -2491,23 +2493,39 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void generateBloodPressureChart() {
+        System.out.println("=== Blood Pressure Chart Generation Started ===");
+
         bloodPressureChartModel = new LineChartModel();
         ChartData data = new ChartData();
 
-        if (current == null || current.getPatient() == null) {
+        if (current == null) {
+            System.out.println("ERROR: current is null");
             return;
         }
+
+        if (current.getPatient() == null) {
+            System.out.println("ERROR: current.getPatient() is null");
+            return;
+        }
+
+        System.out.println("Patient: " + current.getPatient().getPerson().getNameWithTitle());
+        System.out.println("Patient ID: " + current.getPatient().getId());
 
         // Direct JPQL query to get blood pressure data
         Map<String, Object> params = new HashMap<>();
         params.put("patient", current.getPatient());
 
-        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e " +
-                     "WHERE e.patient = :patient " +
-                     "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) " +
-                     "ORDER BY e.encounterDate ASC";
+        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e "
+                + "WHERE e.patient = :patient "
+                + "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) "
+                + "ORDER BY e.encounterDate ASC";
+
+        System.out.println("JPQL Query: " + jpql);
+        System.out.println("Query Parameters: " + params);
 
         List<Object[]> bpData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
+
+        System.out.println("Query executed. Number of results: " + (bpData != null ? bpData.size() : "null"));
 
         // Create SBP dataset
         LineChartDataSet sbpDataSet = new LineChartDataSet();
@@ -2530,13 +2548,18 @@ public class PatientEncounterController implements Serializable {
         List<Object> dbpValues = new ArrayList<>();
         List<String> dateLabels = new ArrayList<>();
 
-        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+        SimpleDateFormat format = new SimpleDateFormat(configOptionApplicationController.getShortTextValueByKey("short date format", "dd MM yy"));
 
         // Process query results
+        System.out.println("Processing " + bpData.size() + " blood pressure records:");
+        int recordCount = 0;
         for (Object[] row : bpData) {
+            recordCount++;
             Date encounterDate = (Date) row[0];
             Long sbp = (Long) row[1];
             Long dbp = (Long) row[2];
+
+            System.out.println("Record " + recordCount + ": Date=" + encounterDate + ", SBP=" + sbp + ", DBP=" + dbp);
 
             // Add date label
             if (encounterDate != null) {
@@ -2550,8 +2573,12 @@ public class PatientEncounterController implements Serializable {
             dbpValues.add(dbp);
         }
 
+        System.out.println("Processed data - SBP values: " + sbpValues.size() + ", DBP values: " + dbpValues.size() + ", Date labels: " + dateLabels.size());
+
         // Only create chart if we have data
         if (!bpData.isEmpty()) {
+            System.out.println("Creating chart with data...");
+
             // Set data to datasets
             sbpDataSet.setData(sbpValues);
             dbpDataSet.setData(dbpValues);
@@ -2573,7 +2600,16 @@ public class PatientEncounterController implements Serializable {
             // Set chart data and options
             bloodPressureChartModel.setData(data);
             bloodPressureChartModel.setOptions(options);
+
+            System.out.println("Chart created successfully!");
+            System.out.println("Chart model: " + bloodPressureChartModel);
+            System.out.println("Chart data: " + (bloodPressureChartModel.getData() != null ? "SET" : "NULL"));
+            System.out.println("Chart options: " + (bloodPressureChartModel.getOptions() != null ? "SET" : "NULL"));
+        } else {
+            System.out.println("No blood pressure data found - chart not created");
         }
+
+        System.out.println("=== Blood Pressure Chart Generation Completed ===");
     }
 
     public String getDoubleLineChartString() {
@@ -3975,6 +4011,45 @@ public class PatientEncounterController implements Serializable {
 
     public void setPatientProcedures(List<ClinicalFindingValue> patientProcedures) {
         this.patientProcedures = patientProcedures;
+    }
+
+    public List<Object[]> getBloodPressureData() {
+        if (current == null || current.getPatient() == null) {
+            return new ArrayList<>();
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("patient", current.getPatient());
+
+        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e " +
+                     "WHERE e.patient = :patient " +
+                     "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) " +
+                     "ORDER BY e.encounterDate ASC";
+
+        return ejbFacade.findObjectArrayByJpql(jpql, params, null);
+    }
+
+    // BMI and Weight chart data and methods
+    private List<Object[]> bmiWeightData = new ArrayList<>();
+
+    public void generateBmiWeightChart() {
+        if (current == null || current.getPatient() == null) {
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("patient", current.getPatient());
+
+        String jpql = "SELECT e.encounterDate, e.weight, e.bmi FROM PatientEncounter e " +
+                     "WHERE e.patient = :patient " +
+                     "AND (e.weight IS NOT NULL OR e.bmi IS NOT NULL) " +
+                     "ORDER BY e.encounterDate ASC";
+
+        bmiWeightData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
+    }
+
+    public List<Object[]> getBmiWeightData() {
+        return bmiWeightData;
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
