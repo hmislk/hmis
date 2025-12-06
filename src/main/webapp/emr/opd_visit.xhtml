@@ -888,7 +888,7 @@
                                     </div>
 
                                 </p:tab>
-                                <p:tab title="Referrals">
+                                <p:tab id="tabReferrals" title="Referrals">
                                     <div class="row" >
                                         <div class="col-4 p-1" >
                                             <p:panel class="w-100 m-1">
@@ -1017,12 +1017,13 @@
                                                     </h:panelGroup>
                                                 </h:panelGroup>
                                             </p:panel>
-                                            <p:panelGrid columns="3" class="w-100 m-1" >
+                                            <p:panelGrid columns="1" class="w-100 m-1" >
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generated Documents" ></p:outputLabel>
                                                 </f:facet>
                                                 <p:selectOneListbox 
                                                     id="lstEncounterDocs"
+                                                    class="w-100"
                                                     value="#{patientEncounterController.encounterReferral}"  >
                                                     <f:selectItems 
                                                         value="#{patientEncounterController.encounterDocuments}" 

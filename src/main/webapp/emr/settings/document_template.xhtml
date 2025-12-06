@@ -105,6 +105,80 @@
                                 </h:panelGroup>
                             </div>
                         </div>
+
+                        <!-- Available Placeholders Section -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <p:panel header="Available Placeholders" styleClass="ui-panel-info">
+                                    <p class="mb-3">Use these placeholders in your template. They will be replaced with actual data when documents are generated:</p>
+
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <h6 class="fw-bold text-primary">Patient Information</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><code>{name}</code> - Patient name with title</li>
+                                                <li><code>{patient_name}</code> - Patient name with title</li>
+                                                <li><code>{age}</code> - Patient age</li>
+                                                <li><code>{patient_age}</code> - Patient age</li>
+                                                <li><code>{sex}</code> - Patient gender</li>
+                                                <li><code>{address}</code> - Patient address</li>
+                                                <li><code>{phone}</code> - Patient phone</li>
+                                                <li><code>{patient_phn_number}</code> - Patient PHN</li>
+                                                <li><code>{patient_nic}</code> - Patient NIC</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <h6 class="fw-bold text-primary">Visit Details</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><code>{visit-date}</code> - Visit date</li>
+                                                <li><code>{comments}</code> - Clinical comments</li>
+                                                <li><code>{height}</code> - Height with unit</li>
+                                                <li><code>{weight}</code> - Weight with unit</li>
+                                                <li><code>{bmi}</code> - BMI</li>
+                                                <li><code>{bp}</code> - Blood pressure</li>
+                                                <li><code>{pr}</code> - Pulse rate</li>
+                                                <li><code>{rr}</code> - Respiratory rate</li>
+                                                <li><code>{pfr}</code> - PFR</li>
+                                                <li><code>{sat}</code> - Saturation</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <h6 class="fw-bold text-primary">Clinical Data</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><code>{visit-dx}</code> - Visit diagnosis</li>
+                                                <li><code>{past-dx}</code> - Past diagnosis</li>
+                                                <li><code>{medicines}</code> - All medicines</li>
+                                                <li><code>{indoor}</code> - Indoor medicines</li>
+                                                <li><code>{outdoor}</code> - Outdoor medicines</li>
+                                                <li><code>{routine-medicines}</code> - Routine medicines</li>
+                                                <li><code>{ix}</code> - Investigations (multiline)</li>
+                                                <li><code>{ix-same-line}</code> - Investigations (single line)</li>
+                                                <li><code>{pa}</code> - Plan of action</li>
+                                                <li><code>{allergies}</code> - Patient allergies</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <h6 class="fw-bold text-primary">Special Templates</h6>
+                                            <ul class="list-unstyled small">
+                                                <li class="text-success fw-bold">Medical Certificate:</li>
+                                                <li><code>{medical_start_date}</code> - Start date</li>
+                                                <li><code>{medical_end_days}</code> - Duration in days</li>
+                                                <li><code>{medical_certificate_duration}</code> - Duration text</li>
+                                                <li class="text-warning fw-bold mt-2">Referrals:</li>
+                                                <li><code>{referral_institution}</code> - Referral institution</li>
+                                                <li><code>{referral_doctor}</code> - Referral doctor</li>
+                                                <li><code>{referring_doctor}</code> - Referring doctor (alias)</li>
+                                                <li class="text-info fw-bold mt-2">Other:</li>
+                                                <li><code>{bp-pr-sameLine}</code> - BP and PR on same line</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>
+                        </div>
                     </p:panel>
                 </h:form>
 

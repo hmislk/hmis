@@ -1579,6 +1579,18 @@ public class PatientEncounterController implements Serializable {
         String medicalEndDays = "";
         String medicalCertificateDuration = "";
 
+        // Referral placeholders
+        String referralInstitutionName = "";
+        String referralDoctorName = "";
+
+        if (e.getReferredByInstitution() != null) {
+            referralInstitutionName = e.getReferredByInstitution().getName();
+        }
+
+        if (e.getReferringDoctor() != null) {
+            referralDoctorName = e.getReferringDoctor().getPerson().getNameWithTitle();
+        }
+
         // Use medical certificate dates if available, otherwise fall back to encounter dates
         Date startDate = medicalCertificateFromDate != null ? medicalCertificateFromDate : e.getFromTime();
         Date endDate = medicalCertificateToDate != null ? medicalCertificateToDate : e.getToTime();
@@ -1793,7 +1805,10 @@ public class PatientEncounterController implements Serializable {
                 .replace("{patient_nic}", nic)
                 .replace("{medical_start_date}", medicalStartDate)
                 .replace("{medical_end_days}", medicalEndDays)
-                .replace("{medical_certificate_duration}", medicalCertificateDuration);
+                .replace("{medical_certificate_duration}", medicalCertificateDuration)
+                .replace("{referral_institution}", referralInstitutionName)
+                .replace("{referral_doctor}", referralDoctorName)
+                .replace("{referring_doctor}", referralDoctorName);
         return output;
 
     }
