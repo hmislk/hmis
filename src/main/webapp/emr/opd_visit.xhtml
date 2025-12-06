@@ -1081,6 +1081,15 @@
                                                                 title="Print the current document">
                                                                 <p:printer target="txeLetterPreview"/>
                                                             </p:commandButton>
+                                                            <p:commandButton
+                                                                id="btnDownloadWordDoc"
+                                                                ajax="false"
+                                                                icon="pi pi-download"
+                                                                styleClass="ui-button-success"
+                                                                value="Download Word"
+                                                                title="Download document as Word file">
+                                                                <p:fileDownload value="#{patientEncounterController.downloadAsWordDocument()}" />
+                                                            </p:commandButton>
                                                         </div>
                                                     </div>
                                                 </f:facet>

@@ -86,6 +86,10 @@ import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import java.io.ByteArrayOutputStream;
 
 /**
  *
@@ -703,6 +707,72 @@ public class PatientEncounterController implements Serializable {
         } else {
             clinicalFindingValueFacade.edit(encounterReferral);
             JsfUtil.addSuccessMessage("Removed");
+        }
+    }
+
+    public StreamedContent downloadAsWordDocument() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            JsfUtil.addErrorMessage("No document selected or document content is empty");
+            return null;
+        }
+
+        try {
+            // Create a new Word document
+            XWPFDocument document = new XWPFDocument();
+
+            // Get the HTML content from the text editor
+            String htmlContent = encounterReferral.getLobValue();
+
+            // Convert HTML to plain text (basic conversion)
+            String plainText = htmlContent
+                    .replaceAll("(?i)<br[^>]*>", "\n")
+                    .replaceAll("(?i)<p[^>]*>", "\n")
+                    .replaceAll("(?i)</p>", "\n")
+                    .replaceAll("(?i)<div[^>]*>", "\n")
+                    .replaceAll("(?i)</div>", "\n")
+                    .replaceAll("(?i)<[^>]+>", "")
+                    .replaceAll("&nbsp;", " ")
+                    .replaceAll("&amp;", "&")
+                    .replaceAll("&lt;", "<")
+                    .replaceAll("&gt;", ">")
+                    .trim();
+
+            // Create paragraphs from the text content
+            String[] lines = plainText.split("\n");
+            for (String line : lines) {
+                if (line.trim().length() > 0) {
+                    XWPFParagraph paragraph = document.createParagraph();
+                    XWPFRun run = paragraph.createRun();
+                    run.setText(line.trim());
+                    run.setFontSize(12);
+                    run.setFontFamily("Calibri");
+                }
+            }
+
+            // Convert to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            document.write(outputStream);
+            document.close();
+
+            // Create the file name
+            String fileName = "Document";
+            if (encounterReferral.getStringValue() != null && !encounterReferral.getStringValue().isEmpty()) {
+                fileName = encounterReferral.getStringValue().replaceAll("[^a-zA-Z0-9.-]", "_");
+            }
+            fileName += "_" + new java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date()) + ".docx";
+
+            // Create StreamedContent
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    .stream(() -> inputStream)
+                    .build();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating Word document: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
 
