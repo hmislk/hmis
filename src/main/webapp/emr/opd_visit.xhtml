@@ -803,7 +803,29 @@
 
 
                                         <div class="ui-g-12 ui-md-4">
-                                            <p:panel id="docPrescreption" >
+                                            <!-- Warning panel when no default prescription template -->
+                                            <p:panel id="prescriptionWarning"
+                                                     rendered="#{not patientEncounterController.hasDefaultPrescriptionTemplate()}"
+                                                     styleClass="ui-panel-warning">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-exclamation-triangle"/>
+                                                    <h:outputText class="mx-4" value="Prescription Configuration Required"/>
+                                                </f:facet>
+                                                <div class="p-3">
+                                                    <h:outputText value="#{patientEncounterController.prescriptionWarningMessage}"
+                                                                  styleClass="text-warning"/>
+                                                    <br/><br/>
+                                                    <p:commandButton
+                                                        value="Configure Prescription Template"
+                                                        icon="fas fa-cog"
+                                                        styleClass="ui-button-warning"
+                                                        action="/emr/settings/index"
+                                                        ajax="false"/>
+                                                </div>
+                                            </p:panel>
+
+                                            <!-- Prescription panel (only shows when default template exists) -->
+                                            <p:panel id="docPrescreption" rendered="#{patientEncounterController.hasDefaultPrescriptionTemplate()}" >
                                                 <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
                                                 <f:facet name="header">
                                                     <h:outputText  styleClass="fas fa-prescription-bottle"/>

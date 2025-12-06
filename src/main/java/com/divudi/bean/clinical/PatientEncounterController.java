@@ -2062,8 +2062,9 @@ public class PatientEncounterController implements Serializable {
         } else {
             DocumentTemplate prescTemplate = null;
             for (DocumentTemplate dt : userDocumentTemplates) {
-                if (dt.isDefaultTemplate()) {
+                if (dt.isDefaultTemplate() && dt.getType() == DocumentTemplateType.Prescription) {
                     prescTemplate = dt;
+                    break;
                 }
             }
             if (prescTemplate != null) {
@@ -3567,6 +3568,25 @@ public class PatientEncounterController implements Serializable {
             return false;
         }
         return selectedDocumentTemplate.getType() == DocumentTemplateType.Referral;
+    }
+
+    public boolean hasDefaultPrescriptionTemplate() {
+        if (userDocumentTemplates == null) {
+            return false;
+        }
+        for (DocumentTemplate dt : userDocumentTemplates) {
+            if (dt.isDefaultTemplate() && dt.getType() == DocumentTemplateType.Prescription) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String getPrescriptionWarningMessage() {
+        if (!hasDefaultPrescriptionTemplate()) {
+            return "No default prescription template is configured. Please set up a default prescription template in EMR Settings.";
+        }
+        return null;
     }
 
     public ClinicalFindingValue getEncounterInvestigationResult() {
