@@ -155,11 +155,11 @@
                                     </p:column>
                                     
                                     <p:column headerText="Mobile"  width="10em;" style="padding: 8px;">
-                                        <h:panelGroup rendered="#{!r.patientMobile.blank}">
+                                        <h:panelGroup rendered="#{not empty r.patientMobile.blank}">
                                             <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
                                             <h:outputLabel value="#{r.patientMobile}" />
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{r.patientMobile.blank}">
+                                        <h:panelGroup rendered="#{empty r.patientMobile}">
                                              <h:outputLabel value="N/A" />
                                         </h:panelGroup>
                                     </p:column>
