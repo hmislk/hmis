@@ -2651,6 +2651,13 @@ public class BillSearch implements Serializable {
             ccBillCancellingStarted.set(false);
             return;
         }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
+        }
 
         if (!getWebUserController().hasPrivilege("BillCancel")) {
 
