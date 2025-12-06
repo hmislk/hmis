@@ -2567,7 +2567,7 @@ public class PatientEncounterController implements Serializable {
 
             Title title = new Title();
             title.setDisplay(true);
-            title.setText("Blood Pressure Trends - " + current.getPatient().getPerson().getDisplayName());
+            title.setText("Blood Pressure Trends - " + current.getPatient().getPerson().getNameWithTitle());
             options.setTitle(title);
 
             // Set chart data and options
