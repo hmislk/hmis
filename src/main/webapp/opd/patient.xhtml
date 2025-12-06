@@ -169,12 +169,19 @@
                                 <div id="test" class="col-md-4 d-flex flex-column gap-2">
 
 
-                                    <p:commandButton 
-                                        value="Clinical Dashboard" 
-                                        action="#{patientController.toEmrPatientProfile}" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        value="Clinical Dashboard"
+                                        action="#{patientController.toEmrPatientProfile}"
+                                        ajax="false"
                                         styleClass="mx-2 btn btn-primary"
                                         icon="fa fa-tachometer">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="OPD Visit"
+                                        action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-success"
+                                        icon="fa fa-stethoscope">
                                     </p:commandButton>
                                     <p:commandButton 
                                         value="Lab Reports"
