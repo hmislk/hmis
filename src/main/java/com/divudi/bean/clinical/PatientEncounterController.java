@@ -2494,18 +2494,24 @@ public class PatientEncounterController implements Serializable {
         bloodPressureChartModel = new LineChartModel();
         ChartData data = new ChartData();
 
-        // Get patient encounters for the current patient
-        List<PatientEncounter> encounters = new ArrayList<>(getEncounters());
-        Collections.sort(encounters, (e1, e2) -> {
-            if (e1.getEncounterDate() == null || e2.getEncounterDate() == null) {
-                return 0;
-            }
-            return e1.getEncounterDate().compareTo(e2.getEncounterDate());
-        });
+        if (current == null || current.getPatient() == null) {
+            return;
+        }
+
+        // Direct JPQL query to get blood pressure data
+        Map<String, Object> params = new HashMap<>();
+        params.put("patient", current.getPatient());
+
+        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e " +
+                     "WHERE e.patient = :patient " +
+                     "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) " +
+                     "ORDER BY e.encounterDate ASC";
+
+        List<Object[]> bpData = ejbFacade.findByJpql(jpql, params);
 
         // Create SBP dataset
         LineChartDataSet sbpDataSet = new LineChartDataSet();
-        sbpDataSet.setLabel("Systolic BP");
+        sbpDataSet.setLabel("Systolic BP (mmHg)");
         sbpDataSet.setBorderColor("rgb(255, 99, 132)");
         sbpDataSet.setBackgroundColor("rgba(255, 99, 132, 0.2)");
         sbpDataSet.setFill(false);
@@ -2513,7 +2519,7 @@ public class PatientEncounterController implements Serializable {
 
         // Create DBP dataset
         LineChartDataSet dbpDataSet = new LineChartDataSet();
-        dbpDataSet.setLabel("Diastolic BP");
+        dbpDataSet.setLabel("Diastolic BP (mmHg)");
         dbpDataSet.setBorderColor("rgb(54, 162, 235)");
         dbpDataSet.setBackgroundColor("rgba(54, 162, 235, 0.2)");
         dbpDataSet.setFill(false);
@@ -2526,40 +2532,48 @@ public class PatientEncounterController implements Serializable {
 
         SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 
-        for (PatientEncounter encounter : encounters) {
-            if (encounter.getSbp() != null || encounter.getDbp() != null) {
-                if (encounter.getEncounterDate() != null) {
-                    dateLabels.add(format.format(encounter.getEncounterDate()));
-                } else {
-                    dateLabels.add("N/A");
-                }
+        // Process query results
+        for (Object[] row : bpData) {
+            Date encounterDate = (Date) row[0];
+            Long sbp = (Long) row[1];
+            Long dbp = (Long) row[2];
 
-                sbpValues.add(encounter.getSbp() != null ? encounter.getSbp() : null);
-                dbpValues.add(encounter.getDbp() != null ? encounter.getDbp() : null);
+            // Add date label
+            if (encounterDate != null) {
+                dateLabels.add(format.format(encounterDate));
+            } else {
+                dateLabels.add("N/A");
             }
+
+            // Add BP values (null values will be handled by Chart.js as gaps)
+            sbpValues.add(sbp);
+            dbpValues.add(dbp);
         }
 
-        // Set data to datasets
-        sbpDataSet.setData(sbpValues);
-        dbpDataSet.setData(dbpValues);
+        // Only create chart if we have data
+        if (!bpData.isEmpty()) {
+            // Set data to datasets
+            sbpDataSet.setData(sbpValues);
+            dbpDataSet.setData(dbpValues);
 
-        // Add datasets to chart data
-        data.addChartDataSet(sbpDataSet);
-        data.addChartDataSet(dbpDataSet);
-        data.setLabels(dateLabels);
+            // Add datasets to chart data
+            data.addChartDataSet(sbpDataSet);
+            data.addChartDataSet(dbpDataSet);
+            data.setLabels(dateLabels);
 
-        // Set chart options
-        LineChartOptions options = new LineChartOptions();
-        options.setMaintainAspectRatio(false);
+            // Set chart options
+            LineChartOptions options = new LineChartOptions();
+            options.setMaintainAspectRatio(false);
 
-        Title title = new Title();
-        title.setDisplay(true);
-        title.setText("Blood Pressure Trends");
-        options.setTitle(title);
+            Title title = new Title();
+            title.setDisplay(true);
+            title.setText("Blood Pressure Trends - " + current.getPatient().getPerson().getDisplayName());
+            options.setTitle(title);
 
-        // Set chart data and options
-        bloodPressureChartModel.setData(data);
-        bloodPressureChartModel.setOptions(options);
+            // Set chart data and options
+            bloodPressureChartModel.setData(data);
+            bloodPressureChartModel.setOptions(options);
+        }
     }
 
     public String getDoubleLineChartString() {
