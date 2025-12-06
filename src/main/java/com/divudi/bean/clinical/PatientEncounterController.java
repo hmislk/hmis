@@ -242,6 +242,10 @@ public class PatientEncounterController implements Serializable {
     private Department department;
     private Doctor doctor;
 
+    // Referral properties for document templates
+    private Institution referralInstitution;
+    private Staff referralDoctor;
+
     private String chartNameSeries;
     private String chartDataSeries1;
     private String chartDataSeries2;
@@ -539,6 +543,15 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select a template");
             return;
         }
+
+        // If this is a referral template, save the referral information to the encounter
+        if (selectedDocumentTemplate.getType() == DocumentTemplateType.Referral) {
+            if (current != null) {
+                current.setReferredByInstitution(referralInstitution);
+                current.setReferringDoctor(referralDoctor);
+            }
+        }
+
         String generatedDoc = generateDocumentFromTemplate(selectedDocumentTemplate, current);
         ClinicalFindingValue ref = new ClinicalFindingValue();
         ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -2735,6 +2748,22 @@ public class PatientEncounterController implements Serializable {
         this.doctor = doctor;
     }
 
+    public Institution getReferralInstitution() {
+        return referralInstitution;
+    }
+
+    public void setReferralInstitution(Institution referralInstitution) {
+        this.referralInstitution = referralInstitution;
+    }
+
+    public Staff getReferralDoctor() {
+        return referralDoctor;
+    }
+
+    public void setReferralDoctor(Staff referralDoctor) {
+        this.referralDoctor = referralDoctor;
+    }
+
     public ClinicalEntityFacade getClinicalEntityFacade() {
         return clinicalFindingItemFacade;
     }
@@ -3445,6 +3474,13 @@ public class PatientEncounterController implements Serializable {
             return false;
         }
         return selectedDocumentTemplate.getType() == DocumentTemplateType.MedicalCertificate;
+    }
+
+    public boolean isSelectedTemplateReferral() {
+        if (selectedDocumentTemplate == null || selectedDocumentTemplate.getType() == null) {
+            return false;
+        }
+        return selectedDocumentTemplate.getType() == DocumentTemplateType.Referral;
     }
 
     public ClinicalFindingValue getEncounterInvestigationResult() {

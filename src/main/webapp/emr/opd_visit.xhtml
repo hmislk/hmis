@@ -967,6 +967,54 @@
                                                             </p:panel>
                                                         </div>
                                                     </h:panelGroup>
+
+                                                    <!-- Referral Details Panel -->
+                                                    <h:panelGroup layout="block" styleClass="row mt-3" rendered="#{patientEncounterController.selectedTemplateReferral}">
+                                                        <div class="col-12">
+                                                            <p:panel header="Referral Details" styleClass="ui-panel-info">
+                                                                <div class="row">
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="Referral Institution" class="form-label"></p:outputLabel>
+                                                                        <p:autoComplete
+                                                                            id="referralInstitution"
+                                                                            forceSelection="true"
+                                                                            value="#{patientEncounterController.referralInstitution}"
+                                                                            completeMethod="#{institutionController.completeIns}"
+                                                                            var="ri"
+                                                                            itemLabel="#{ri.name}"
+                                                                            itemValue="#{ri}"
+                                                                            scrollHeight="400"
+                                                                            styleClass="w-100"
+                                                                            inputStyleClass="w-100">
+                                                                            <p:column headerText="Institution Name" style="padding: 2px;">#{ri.name}</p:column>
+                                                                            <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
+                                                                        </p:autoComplete>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="Referral Doctor" class="form-label"></p:outputLabel>
+                                                                        <p:autoComplete
+                                                                            forceSelection="true"
+                                                                            id="referralDoctor"
+                                                                            value="#{patientEncounterController.referralDoctor}"
+                                                                            completeMethod="#{doctorController.completeDoctor}"
+                                                                            var="rd"
+                                                                            itemLabel="#{rd.person.name}"
+                                                                            itemValue="#{rd}"
+                                                                            styleClass="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            scrollHeight="400">
+                                                                            <p:column headerText="Name" style="padding: 2px;">
+                                                                                <h:outputText value="#{rd.person.nameWithTitle}" ></h:outputText>
+                                                                            </p:column>
+                                                                            <p:column headerText="Code" style="padding: 2px;">
+                                                                                <h:outputText value="#{rd.code}" ></h:outputText>
+                                                                            </p:column>
+                                                                        </p:autoComplete>
+                                                                    </div>
+                                                                </div>
+                                                            </p:panel>
+                                                        </div>
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
                                             </p:panel>
                                             <p:panelGrid columns="3" class="w-100 m-1" >
