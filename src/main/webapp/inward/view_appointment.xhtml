@@ -176,7 +176,8 @@
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="Admit"
-                                                disabled="#{r.status eq 'CANCEL'}"
+                                                disabled="#{r.status eq 'CANCEL' or r.status eq 'COMPLETE'}"
+                                                action="#{appointmentController.navigatePatientAdmit(r.id)}"
                                                 class="ui-button-success" >
                                             </p:commandButton>
 
