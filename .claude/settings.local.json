@@ -27,7 +27,9 @@
       "Bash(git checkout:*)",
       "Bash(gh issue view:*)",
       "Bash(python3:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(git fetch:*)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": [],
