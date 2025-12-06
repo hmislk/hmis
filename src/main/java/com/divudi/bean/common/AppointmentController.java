@@ -159,84 +159,47 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         searchAppointments();
         return "/inward/view_appointment?faces-redirect=true";
     }
-    
-    public String navigatePatientAdmit(Long reservationId) {
-    System.out.println("DEBUG: navigatePatientAdmit() called with reservationId: " + reservationId);
-    
-    if (reservationId == null) {
-        System.out.println("DEBUG: Error - reservationId is null");
-        JsfUtil.addErrorMessage("Error in Reservation");
-        return "";
-    }
-    
-    System.out.println("DEBUG: Looking up reservation with ID: " + reservationId);
-    reservation = reservationFacade.find(reservationId);
-    
-    System.out.println("DEBUG: Reservation lookup result: " + (reservation != null ? "Found" : "Not found"));
-    
-    if (reservation == null) {
-        System.out.println("DEBUG: Error - No reservation found for ID: " + reservationId);
-        JsfUtil.addErrorMessage("No Reservation Found");
-        return "";
-    }
-    
-    System.out.println("DEBUG: Checking reservation relationships...");
-    System.out.println("DEBUG:   - Appointment exists: " + (reservation.getAppointment() != null));
-    
-    if (reservation.getAppointment() != null) {
-        System.out.println("DEBUG:   - Bill exists: " + (reservation.getAppointment().getBill() != null));
-        if (reservation.getAppointment().getBill() != null) {
-            System.out.println("DEBUG:   - Bill ID: " + reservation.getAppointment().getBill().getId());
-        }
-    }
-    
-    if (reservation == null || reservation.getAppointment() == null || reservation.getAppointment().getBill() == null) {
-        System.out.println("DEBUG: Error - No reservation or Appointment or Bill found for ID: " + reservationId);
-        System.out.println("DEBUG:   Reservation null: " + (reservation == null));
-        System.out.println("DEBUG:   Appointment null: " + (reservation != null && reservation.getAppointment() == null));
-        System.out.println("DEBUG:   Bill null: " + (reservation != null && reservation.getAppointment() != null && reservation.getAppointment().getBill() == null));
-        JsfUtil.addErrorMessage("No Reservation Found");
-        return "";
-    }
-    
-    System.out.println("DEBUG: Creating new Admission object...");
-    Admission ad = new Admission();
-    System.out.println("DEBUG: New Admission created with ID: " + ad.getId());
-    
-    if (ad.getDateOfAdmission() == null) {
-        System.out.println("DEBUG: Setting admission date to current time");
-        ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
-        System.out.println("DEBUG: Date set to: " + ad.getDateOfAdmission());
-    } else {
-        System.out.println("DEBUG: Admission date already set: " + ad.getDateOfAdmission());
-    }
-    
-    System.out.println("DEBUG: Configuring admissionController...");
-    admissionController.setCurrent(ad);
-    System.out.println("DEBUG:   - Current admission set");
-    admissionController.setPrintPreview(false);
-    System.out.println("DEBUG:   - PrintPreview set to false");
-    admissionController.setAdmittingProcessStarted(false);
-    System.out.println("DEBUG:   - AdmittingProcessStarted set to false");
-    admissionController.setPatientRoom(new PatientRoom());
-    System.out.println("DEBUG:   - New PatientRoom created");
-    admissionController.setAppointmentBill(reservation.getAppointment().getBill());
-    System.out.println("DEBUG:   - AppointmentBill set (ID: " + reservation.getAppointment().getBill().getId() + ")");
-    admissionController.setPatientAllergies(null);
-    System.out.println("DEBUG:   - PatientAllergies set to null");
-    admissionController.setCurrentReservation(reservation);
-    System.out.println("DEBUG:   - CurrentReservation set (ID: " + reservation.getId() + ")");
-    
-    admissionController.setBhtText("");
 
-    System.out.println("DEBUG: Calling listnerForAppoimentSelect...");
-    admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
-    System.out.println("DEBUG: listnerForAppoimentSelect completed");
-    
-    System.out.println("DEBUG: Returning navigation path: /inward/inward_admission?faces-redirect=true");
-    return "/inward/inward_admission?faces-redirect=true";
-}
-    
+    public String navigatePatientAdmit(Long reservationId) {
+
+        if (reservationId == null) {
+            JsfUtil.addErrorMessage("Error in Reservation");
+            return "";
+        }
+
+        reservation = reservationFacade.find(reservationId);
+
+        if (reservation == null) {
+            JsfUtil.addErrorMessage("No Reservation Found");
+            return "";
+        }
+
+        if (reservation == null || reservation.getAppointment() == null || reservation.getAppointment().getBill() == null) {
+            JsfUtil.addErrorMessage("No Reservation Found");
+            return "";
+        }
+
+        Admission ad = new Admission();
+
+        if (ad.getDateOfAdmission() == null) {
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
+        }
+
+        admissionController.setCurrent(ad);
+        admissionController.setPrintPreview(false);
+        admissionController.setAdmittingProcessStarted(false);
+        admissionController.setPatientRoom(new PatientRoom());
+        admissionController.setAppointmentBill(reservation.getAppointment().getBill());
+        admissionController.setPatientAllergies(null);
+        admissionController.setCurrentReservation(reservation);
+
+        admissionController.setBhtText("");
+
+        admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
+
+        return "/inward/inward_admission?faces-redirect=true";
+    }
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
@@ -253,7 +216,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public void updateChangesReservation() {
-        System.out.println("--- Start updateChangesReservation ---");
         if (reservation == null) {
             JsfUtil.addErrorMessage("No Reservation Found");
             return;
@@ -283,128 +245,64 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         updateBill();
         updateAppointment();
         updateReservation();
-        System.out.println("--- Finish updateChangesReservation ---");
         JsfUtil.addSuccessMessage("Successfully Updated.");
     }
 
     public void updateBill() {
-        System.out.println("Start Update Bill");
         if (currentBill.getId() == null) {
-            System.out.println("Create");
             billFacade.create(currentBill);
         } else {
-            System.out.println("Edit");
             billFacade.edit(currentBill);
         }
-        System.out.println("Finish Update Bill");
     }
 
     private void updateAppointment() {
-        System.out.println("Start Update Appointment");
         if (currentAppointment.getId() == null) {
-            System.out.println("Create");
             appointmentFacade.create(currentAppointment);
         } else {
-            System.out.println("Edit");
             appointmentFacade.edit(currentAppointment);
         }
-        System.out.println("Finish Update Appointment");
     }
 
     private void updateReservation() {
-        System.out.println("Start Update Reservation");
         reservation.setReservedFrom(reservedFromDate);
         reservation.setReservedTo(reservedToDate);
         reservation.setRoom(reservedroom);
 
         if (reservation.getId() == null) {
-            System.out.println("Create");
             reservationFacade.create(reservation);
         } else {
-            System.out.println("Edit");
             reservationFacade.edit(reservation);
         }
-        System.out.println("Start Update Reservation");
     }
 
     public String navigateToManageAppointment(Long reservationId) {
-        // Debug: Method entry
-        System.out.println("DEBUG: navigateToManageAppointment called with reservationId: " + reservationId);
-        System.out.println("DEBUG: Method entry timestamp: " + new java.util.Date());
-
         if (reservationId == null) {
-            System.out.println("DEBUG: Error - reservationId is null");
             JsfUtil.addErrorMessage("Error in Reservation");
             return "";
         }
 
-        System.out.println("DEBUG: Looking up reservation with ID: " + reservationId);
         reservation = reservationFacade.find(reservationId);
 
         if (reservation == null) {
-            System.out.println("DEBUG: Error - No reservation found for ID: " + reservationId);
             JsfUtil.addErrorMessage("No Reservation Found");
             return "";
         }
-
-        System.out.println("DEBUG: Reservation found: " + reservation);
-        System.out.println("DEBUG: Reservation details - Room: " + reservation.getRoom()
-                + ", From: " + reservation.getReservedFrom()
-                + ", To: " + reservation.getReservedTo());
 
         reservedroom = reservation.getRoom();
         reservedFromDate = reservation.getReservedFrom();
         reservedToDate = reservation.getReservedTo();
 
-        System.out.println("DEBUG: Setting instance variables - room: " + reservedroom
-                + ", fromDate: " + reservedFromDate
-                + ", toDate: " + reservedToDate);
-
-        // Debug: Check if appointment exists in reservation
-        if (reservation.getAppointment() == null) {
-            System.out.println("DEBUG: Warning - reservation has null appointment");
-        } else {
-            System.out.println("DEBUG: Reservation has appointment ID: " + reservation.getAppointment().getId());
-        }
-
         currentAppointment = appointmentFacade.find(reservation.getAppointment().getId());
 
         if (currentAppointment == null) {
-            System.out.println("DEBUG: Error - No appointment found for ID: "
-                    + (reservation.getAppointment() != null ? reservation.getAppointment().getId() : "null"));
             JsfUtil.addErrorMessage("No Appointment Found");
             return "";
         }
 
-        System.out.println("DEBUG: Appointment found: " + currentAppointment);
-        System.out.println("DEBUG: Appointment details - Patient: " + currentAppointment.getPatient()
-                + ", Bill: " + currentAppointment.getBill());
-
-        // Debug: Check if patient exists in appointment
-        if (currentAppointment.getPatient() == null) {
-            System.out.println("DEBUG: Warning - appointment has null patient");
-        } else {
-            System.out.println("DEBUG: Looking up patient with ID: " + currentAppointment.getPatient().getId());
-        }
-
         patient = patientFacade.find(currentAppointment.getPatient().getId());
-
-        // Debug: Check if bill exists in appointment
-        if (currentAppointment.getBill() == null) {
-            System.out.println("DEBUG: Warning - appointment has null bill");
-        } else {
-            System.out.println("DEBUG: Looking up bill with ID: " + currentAppointment.getBill().getId());
-        }
-
         currentBill = billFacade.find(currentAppointment.getBill().getId());
-
-        System.out.println("DEBUG: Patient found: " + patient);
-        System.out.println("DEBUG: Bill found: " + currentBill);
-
         comment = null;
-
-        System.out.println("DEBUG: All data loaded successfully. Returning to edit page.");
-        System.out.println("DEBUG: Method exit timestamp: " + new java.util.Date());
 
         return "/inward/inward_appointment_edit?faces-redirect=true";
     }
@@ -453,13 +351,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         params.put("today", fromDate);
         params.put("endDate", toDate);
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("hm = " + params);
-
         reservationDTOs = reservationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
-
-        System.out.println("reservationDTOs = " + reservationDTOs);
-        System.out.println("reservationDTOs = " + reservationDTOs.size());
 
     }
 
@@ -767,7 +659,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     private Bill saveCacelBill(Bill originalBill) {
-        System.out.println("Start saveCacelBill");
         Bill newCancelBill = new Bill();
 
         newCancelBill.copy(originalBill);
@@ -787,31 +678,22 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         newCancelBill.setCreater(sessionController.getLoggedUser());
 
         if (newCancelBill.getId() == null) {
-            System.out.println("Create Cancel Bill");
             getFacade().create(newCancelBill);
         } else {
-            System.out.println("Create Cancel Bill");
             getFacade().edit(newCancelBill);
         }
-        System.out.println("Finish saveCacelBill");
+        
         //Update Original Bill
-
-        System.out.println("Start Update Original Bill");
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(newCancelBill);
 
         if (originalBill.getId() == null) {
-            System.out.println("Create Update Original Bill");
             getFacade().create(originalBill);
         } else {
-            System.out.println("Edit Update Original Bill");
             getFacade().edit(originalBill);
         }
-        System.out.println("Finish Update Oribinal Bill");
 
-        System.out.println("Start Create Payment");
         createPayment(newCancelBill, newCancelBill.getPaymentMethod());
-        System.out.println("Finish Create Payment");
 
         return newCancelBill;
     }
@@ -840,7 +722,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     private void cancelAppointment(Bill CancelBill, Appointment apt, String reason) {
-        System.out.println("Start cancelAppointment");
         apt.setAppointmentCancel(true);
         apt.setAppointmentCancelAt(new Date());
         apt.setAppointmentCancelReason(reason);
@@ -848,14 +729,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         apt.setStatus(AppointmentStatus.CANCEL);
         apt.setAppointmentCancelBill(CancelBill);
         if (apt.getId() == null) {
-            System.out.println("Create");
             appointmentFacade.create(apt);
         } else {
-            System.out.println("Edit");
             appointmentFacade.edit(apt);
         }
-        System.out.println("Status = " + apt.getStatus());
-        System.out.println("Finish cancelAppointment");
     }
 
     private boolean checkPatientAgeSex() {
