@@ -575,6 +575,20 @@ public class EnumController implements Serializable {
         rs.add(RequestStatus.EXPIRED);
         return rs;
     }
+    
+    public List<AppointmentType> getAppointmentTypes() {
+        List<AppointmentType> apt = new ArrayList<>();
+        apt.add(AppointmentType.IP_APPOINTMENT);
+        return apt;
+    }
+    
+    public List<AppointmentStatus> getAppointmentStatus() {
+        List<AppointmentStatus> aps = new ArrayList<>();
+        aps.add(AppointmentStatus.PENDING);
+        aps.add(AppointmentStatus.COMPLETE);
+        aps.add(AppointmentStatus.CANCEL);
+        return aps;
+    }
 
     public List<BillTypeAtomic> getBillTypesAtomic(String query) {
         return Arrays.stream(BillTypeAtomic.values())

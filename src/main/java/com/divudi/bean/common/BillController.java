@@ -808,8 +808,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 if (a != null && !a.isEmpty()) {
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
-                        double dueAmount = (balance != null) ? balance.doubleValue() :
-                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                        double dueAmount = (balance != null) ? balance.doubleValue()
+                                : (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
                         System.out.println("Found bill ID: " + bill.getId() + ", deptId: " + bill.getDeptId() + ", due amount: " + dueAmount);
                     }
                 } else {
@@ -965,8 +965,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 if (a != null && !a.isEmpty()) {
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
-                        double dueAmount = (balance != null) ? balance.doubleValue() :
-                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                        double dueAmount = (balance != null) ? balance.doubleValue()
+                                : (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
                         System.out.println("Found bill ID: " + bill.getId() + ", deptId: " + bill.getDeptId() + ", due amount: " + dueAmount);
                     }
                 } else {
@@ -1094,10 +1094,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         sql += " order by b.insId desc  ";
 
         temMap.put("billType", BillType.SurgeryBill);
-        temMap.put("q","%" + qry.toUpperCase() + "%");
+        temMap.put("q", "%" + qry.toUpperCase() + "%");
 
         List<Bill> tmps = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 20);
- 
+
         return tmps;
     }
 
@@ -2061,6 +2061,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
             batchBillCancellationStarted = false;
+            return "";
+        }
+
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigationsOfBatchBill(getBatchBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+        if (investigations != null && !investigations.isEmpty()) {
+            batchBillCancellationStarted = false;
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
             return "";
         }
 
@@ -5160,11 +5167,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
-        if (cd == null ||
-            paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+        if (cd == null
+                || paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
