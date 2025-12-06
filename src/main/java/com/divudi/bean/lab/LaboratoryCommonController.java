@@ -55,10 +55,13 @@ public class LaboratoryCommonController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     // Convert Date to LocalDate
     public static LocalDate convertDateToLocalDate(Date date) {
@@ -209,6 +212,7 @@ public class LaboratoryCommonController implements Serializable {
     
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     // </editor-fold>
 }

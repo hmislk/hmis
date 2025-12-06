@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Appointment Search " class="mx-4"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form d-flex flex-column" >
+                                    <h:panelGroup id="searchKeyword">
+                                        <h:outputLabel value="From Date"/>
+                                        <p:calendar 
+                                            id="fromDate"
+                                            value="#{appointmentController.fromDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            styleClass="dateTimePicker"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
+                                        </p:calendar>
+
+                                        <h:outputLabel value="To Date"/>
+                                        <p:calendar 
+                                            id="toDate"
+                                            value="#{appointmentController.toDate}"
+                                            navigator="false"
+                                            styleClass="dateTimePicker"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100"
+                                            inputStyleClass="form-control">
+                                        </p:calendar>
+
+                                        <hr/>
+
+                                        <p:commandButton
+                                            icon="fas fa-search"
+                                            id="btnSearch"
+                                            ajax="false"
+                                            value="Search"
+                                            class="ui-button-success w-100 mt-2"
+                                            action="#{appointmentController.searchAppointments()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            icon="fa-solid fa-file-excel"
+                                            ajax="false"
+                                            class="ui-button-warning w-100 mt-2"
+                                            value="Download">
+                                            <p:dataExporter fileName="Reservation List" type="xlsx" target="reservation" ></p:dataExporter>
+                                        </p:commandButton>
+
+                                        <hr/>
+
+                                        <p:inputText
+                                            placeholder="Appointment No"
+                                            autocomplete="off"
+                                            class="w-100"
+                                            value="#{appointmentController.appointmentNo}" >
+                                        </p:inputText>
+
+                                        <p:inputText
+                                            placeholder="Patient Name"
+                                            autocomplete="off"
+                                            class="w-100 mt-2"
+                                            value="#{appointmentController.patientName}" >
+                                        </p:inputText>
+
+                                        <p:selectOneMenu
+                                            value="#{appointmentController.appointmentstatus}"
+                                            filter="true"
+                                            placeholder="Appointment Status"
+                                            class="col-12 mt-2"
+                                            autoWidth="false"
+                                            >
+                                            <f:selectItem itemLabel="Any Status" ></f:selectItem>
+                                            <f:selectItems
+                                                value="#{enumController.getAppointmentStatus()}"
+                                                var="rs"
+                                                itemLabel="#{rs.name}"
+                                                itemValue="#{rs}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
+
+                                        <hr/>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+
+                            <div class="col-md-10">
+                                <p:dataTable
+                                    rowIndexVar="i"
+                                    id="reservation"
+                                    value="#{appointmentController.reservationDTOs}"
+                                    var="r"
+                                    style="min-width: 100%;"
+                                    rows ="10"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="10,25,50"
+                                    >
+
+                                    <p:column headerText="#" width="2em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{i+1}" />
+                                    </p:column>
+
+                                    <p:column headerText="Appointment No" width="12em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.appointmentNumber}" />
+                                    </p:column>
+
+                                    <p:column headerText="Reserve From" width="13em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.reservedFrom}" >
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Reserve To" width="13em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.reservedTo}" >
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Room" width="12em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.roomNo}" />
+                                    </p:column>
+
+                                    <p:column headerText="Patient" style="padding: 8px;">
+                                        <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
+                                        <h:outputLabel value="#{r.patientNameWithTitle}" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Age / Gender"  width="15em;" style="padding: 8px;">
+                                        <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
+                                        <h:outputLabel value="#{r.patientAge}" />
+                                        <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
+                                        <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
+                                        <h:outputLabel value="#{r.patientGender}" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Mobile"  width="10em;" style="padding: 8px;">
+                                        <h:panelGroup rendered="#{not empty r.patientMobile.blank}">
+                                            <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                                            <h:outputLabel value="#{r.patientMobile}" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{empty r.patientMobile}">
+                                             <h:outputLabel value="N/A" />
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Status" width="8em;" style="padding: 8px;">
+                                        <p:badge rendered="#{r.status eq'PENDING'}" severity="warning" value="#{r.status.name}"></p:badge>
+                                        <p:badge rendered="#{r.status eq'COMPLETE'}" severity="success" value="#{r.status.name}"></p:badge>
+                                        <p:badge rendered="#{r.status eq'CANCEL'}" severity="danger" value="#{r.status.name}"></p:badge>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" width="220px;" style="padding: 8px;" >
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                icon="fa fa-check-circle"
+                                                ajax="false"
+                                                value="Admit"
+                                                disabled="#{r.status eq 'CANCEL' or r.status eq 'COMPLETE'}"
+                                                action="#{appointmentController.navigatePatientAdmit(r.id)}"
+                                                class="ui-button-success" >
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                icon="fa fa-align-justify"
+                                                ajax="false"
+                                                value="Manage"
+                                                action="#{appointmentController.navigateToManageAppointment(r.id)}"
+                                                class="ui-button-warning">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
