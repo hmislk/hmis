@@ -4045,24 +4045,23 @@ public class PatientEncounterController implements Serializable {
 
     // Investigation chart data and methods
     private List<Object[]> investigationChartData = new ArrayList<>();
-    private String investigationChartName;
+    private InvestigationItem selectedInvestigationItem;
 
     public void generateInvestigationChart() {
-        if (current == null || current.getPatient() == null ||
-            investigationChartName == null || investigationChartName.trim().isEmpty()) {
+        if (current == null || current.getPatient() == null || selectedInvestigationItem == null) {
             investigationChartData = new ArrayList<>();
             return;
         }
 
-        // High-performance DTO query using Object[] approach
+        // High-performance DTO query using selected InvestigationItem
         Map<String, Object> params = new HashMap<>();
-        params.put("pt", current.getPatient());
-        params.put("invName", "%" + investigationChartName.trim().toUpperCase() + "%");
+        params.put("pt", current.getPatient().getId());
+        params.put("invItem", selectedInvestigationItem.getId());
 
         String jpql = "SELECT priv.doubleValue, priv.strValue, priv.patientReport.approveAt " +
                      "FROM PatientReportItemValue priv " +
-                     "WHERE priv.patientReport.patientInvestigation.patient = :pt " +
-                     "AND UPPER(priv.investigationItem.name) LIKE :invName " +
+                     "WHERE priv.patient.id = :pt " +
+                     "AND priv.investigationItem.id = :invItem " +
                      "AND priv.patientReport.approveAt IS NOT NULL " +
                      "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) " +
                      "ORDER BY priv.patientReport.approveAt ASC";
@@ -4108,40 +4107,50 @@ public class PatientEncounterController implements Serializable {
         return investigationChartData;
     }
 
-    // Getter and setter for investigation chart name
-    public String getInvestigationChartName() {
-        return investigationChartName;
+    // Getter and setter for selected investigation item
+    public InvestigationItem getSelectedInvestigationItem() {
+        return selectedInvestigationItem;
     }
 
-    public void setInvestigationChartName(String investigationChartName) {
-        this.investigationChartName = investigationChartName;
+    public void setSelectedInvestigationItem(InvestigationItem selectedInvestigationItem) {
+        this.selectedInvestigationItem = selectedInvestigationItem;
     }
 
-    // DTO-based autocomplete for investigation names
-    public List<String> completeInvestigationNames(String query) {
+    // Autocomplete for all InvestigationItems (not patient-specific)
+    public List<InvestigationItem> completeInvestigationItems(String query) {
         if (query == null || query.trim().length() < 2) {
             return new ArrayList<>();
         }
 
-        if (current == null || current.getPatient() == null) {
-            return new ArrayList<>();
-        }
-
+        // Use the existing fillPatientReportItemValue pattern but get investigation items
+        // Query from the existing graphInvestigationItem property pattern
         Map<String, Object> params = new HashMap<>();
-        params.put("pt", current.getPatient());
-        params.put("invName", "%" + query.trim().toUpperCase() + "%");
+        params.put("query", "%" + query.trim().toUpperCase() + "%");
 
-        String jpql = "SELECT DISTINCT priv.investigationItem.name " +
+        // Use Object[] query and then extract InvestigationItem data
+        String jpql = "SELECT DISTINCT priv.investigationItem " +
                      "FROM PatientReportItemValue priv " +
-                     "WHERE priv.patientReport.patientInvestigation.patient = :pt " +
-                     "AND UPPER(priv.investigationItem.name) LIKE :invName " +
-                     "AND priv.patientReport.approveAt IS NOT NULL " +
-                     "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) " +
-                     "ORDER BY priv.investigationItem.name ASC";
+                     "WHERE priv.investigationItem.retired = false " +
+                     "AND UPPER(priv.investigationItem.name) LIKE :query " +
+                     "AND priv.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value " +
+                     "ORDER BY priv.investigationItem.name";
 
         try {
-            List<String> results = ejbFacade.findStringByJpql(jpql, params, 20); // Limit to 20 results
-            return results != null ? results : new ArrayList<>();
+            List<Object[]> results = ejbFacade.findObjectArrayByJpql(jpql, params, null);
+            List<InvestigationItem> investigationItems = new ArrayList<>();
+
+            if (results != null) {
+                int count = 0;
+                for (Object[] row : results) {
+                    if (row[0] != null && count < 20) {
+                        investigationItems.add((InvestigationItem) row[0]);
+                        count++;
+                    }
+                    if (count >= 20) break;
+                }
+            }
+
+            return investigationItems;
         } catch (Exception e) {
             return new ArrayList<>();
         }

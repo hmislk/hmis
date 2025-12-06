@@ -1615,15 +1615,17 @@
                                                 <div class="row mb-3">
                                                     <div class="col-md-8">
                                                         <p:autoComplete
-                                                            id="acInvestigationName"
-                                                            value="#{patientEncounterController.investigationChartName}"
-                                                            completeMethod="#{patientEncounterController.completeInvestigationNames}"
-                                                            placeholder="Type investigation name (e.g., Blood Sugar, Cholesterol)"
+                                                            id="acInvestigationItem"
+                                                            value="#{patientEncounterController.selectedInvestigationItem}"
+                                                            completeMethod="#{patientEncounterController.completeInvestigationItems}"
+                                                            var="ii"
+                                                            itemLabel="#{ii.name}"
+                                                            itemValue="#{ii}"
+                                                            placeholder="Type investigation name (e.g., ESR, Blood Sugar, Cholesterol)"
                                                             minQueryLength="2"
                                                             maxResults="20"
                                                             styleClass="w-100"
-                                                            inputStyleClass="w-100"
-                                                            dropdown="true"/>
+                                                            inputStyleClass="w-100"/>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <p:commandButton
@@ -1633,7 +1635,7 @@
                                                             update="investigationChartContainer"
                                                             icon="fas fa-chart-line"
                                                             class="ui-button-warning"
-                                                            disabled="#{patientEncounterController.investigationChartName == null or patientEncounterController.investigationChartName.trim().length() == 0}"/>
+                                                            disabled="#{patientEncounterController.selectedInvestigationItem == null}"/>
                                                     </div>
                                                 </div>
 
@@ -1658,7 +1660,7 @@
                                                                                     </ui:repeat>
                                                                                 ],
                                                                                 datasets: [{
-                                                                                    label: '#{patientEncounterController.investigationChartName}',
+                                                                                    label: '#{patientEncounterController.selectedInvestigationItem.name}',
                                                                                     data: [
                                                                                         <ui:repeat value="#{patientEncounterController.investigationChartData}" var="invRecord" varStatus="status">
                                                                                             #{invRecord[1]}#{!status.last ? ',' : ''}
@@ -1675,7 +1677,7 @@
                                                                                 plugins: {
                                                                                     title: {
                                                                                         display: true,
-                                                                                        text: '#{patientEncounterController.investigationChartName} Trends'
+                                                                                        text: '#{patientEncounterController.selectedInvestigationItem.name} Trends'
                                                                                     }
                                                                                 },
                                                                                 scales: {
@@ -1683,7 +1685,7 @@
                                                                                         beginAtZero: false,
                                                                                         title: {
                                                                                             display: true,
-                                                                                            text: '#{patientEncounterController.investigationChartName}'
+                                                                                            text: '#{patientEncounterController.selectedInvestigationItem.name}'
                                                                                         }
                                                                                     },
                                                                                     x: {
@@ -1703,12 +1705,12 @@
 
                                                     <h:outputText
                                                         value="Type an investigation name and click 'Generate Chart' to view trends over time."
-                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and (patientEncounterController.investigationChartName == null or patientEncounterController.investigationChartName.trim().length() == 0)}"
+                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem == null}"
                                                         class="text-muted"/>
 
                                                     <h:outputText
-                                                        value="No data found for '#{patientEncounterController.investigationChartName}'. This patient may not have any recorded results for this investigation."
-                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.investigationChartName != null and patientEncounterController.investigationChartName.trim().length() > 0}"
+                                                        value="No data found for '#{patientEncounterController.selectedInvestigationItem.name}'. This patient may not have any recorded results for this investigation."
+                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem != null}"
                                                         class="text-muted"/>
                                                 </h:panelGroup>
                                             </p:panel>
