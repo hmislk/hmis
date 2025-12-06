@@ -1046,6 +1046,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return opdBillController.navigateToNewOpdBill(current);
     }
 
+    public String navigateToPharmacyRetailSaleFromOpdPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return pharmacySaleController.navigateToPharmacyRetailSale(current, null);
+    }
+
     public String navigateToSaleFromOpticianRepair() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");

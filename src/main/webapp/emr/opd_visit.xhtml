@@ -909,6 +909,7 @@
                                                                 var="dt"
                                                                 itemLabel="#{dt.name}"
                                                                 itemValue="#{dt}"></f:selectItems>
+                                                            <p:ajax update="medicalCertDatePanel" process="somTemplates" />
                                                         </p:selectOneMenu>
                                                     </div>
                                                     <div class="col-2">
@@ -929,12 +930,48 @@
                                                             value="Generate"
                                                             class="ui-button-warning"
                                                             icon="fas fa-arrows-rotate"
-                                                            process="btnGenerateNewDocument somTemplates"
+                                                            process="btnGenerateNewDocument somTemplates medicalCertDatePanel"
                                                             update="lstEncounterDocs gpReferralDoc"
                                                             action="#{patientEncounterController.generateAndAddDocumentFromTemplate}">
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
+
+                                                <!-- Medical Certificate Date Panel -->
+                                                <h:panelGroup id="medicalCertDatePanel" layout="block">
+                                                    <div class="row mt-3" rendered="#{patientEncounterController.selectedTemplateMedicalCertificate}">
+                                                        <div class="col-12">
+                                                            <p:panel header="Medical Certificate Dates" styleClass="ui-panel-info">
+                                                                <div class="row">
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="From Date" class="form-label"></p:outputLabel>
+                                                                        <p:calendar
+                                                                            id="medicalFromDate"
+                                                                            value="#{patientEncounterController.medicalCertificateFromDate}"
+                                                                            showOn="button"
+                                                                            pattern="yyyy-MM-dd"
+                                                                            readonlyInput="true"
+                                                                            showButtonBar="true"
+                                                                            styleClass="w-100">
+                                                                        </p:calendar>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="To Date" class="form-label"></p:outputLabel>
+                                                                        <p:calendar
+                                                                            id="medicalToDate"
+                                                                            value="#{patientEncounterController.medicalCertificateToDate}"
+                                                                            showOn="button"
+                                                                            pattern="yyyy-MM-dd"
+                                                                            readonlyInput="true"
+                                                                            showButtonBar="true"
+                                                                            styleClass="w-100">
+                                                                        </p:calendar>
+                                                                    </div>
+                                                                </div>
+                                                            </p:panel>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
                                             </p:panel>
                                             <p:panelGrid columns="3" class="w-100 m-1" >
                                                 <f:facet name="header" >

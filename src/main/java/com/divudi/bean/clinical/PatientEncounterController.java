@@ -16,6 +16,7 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
@@ -152,6 +153,10 @@ public class PatientEncounterController implements Serializable {
 
     private List<DocumentTemplate> userDocumentTemplates;
     private DocumentTemplate selectedDocumentTemplate;
+
+    // Medical Certificate date fields
+    private Date medicalCertificateFromDate;
+    private Date medicalCertificateToDate;
 
     private ClinicalFindingValue patientAllergy;
     private ClinicalFindingValue patientMedicine;
@@ -1556,16 +1561,24 @@ public class PatientEncounterController implements Serializable {
         String saturation = e.getSaturation() != null ? e.getSaturation() + "" : "";
 
         // Medical Certificate placeholders
-        String medicalStartDate = e.getFromTime() != null ? CommonFunctions.formatDate(e.getFromTime(), sessionController.getApplicationPreference().getLongDateFormat()) : "";
+        String medicalStartDate = "";
         String medicalEndDays = "";
         String medicalCertificateDuration = "";
 
-        // Calculate medical certificate duration if fromTime and toTime are available
-        if (e.getFromTime() != null && e.getToTime() != null) {
-            long diffInMillies = e.getToTime().getTime() - e.getFromTime().getTime();
-            long diffInDays = diffInMillies / (24 * 60 * 60 * 1000);
+        // Use medical certificate dates if available, otherwise fall back to encounter dates
+        Date startDate = medicalCertificateFromDate != null ? medicalCertificateFromDate : e.getFromTime();
+        Date endDate = medicalCertificateToDate != null ? medicalCertificateToDate : e.getToTime();
+
+        if (startDate != null) {
+            medicalStartDate = CommonFunctions.formatDate(startDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
+        // Calculate medical certificate duration if both dates are available
+        if (startDate != null && endDate != null) {
+            long diffInMillies = endDate.getTime() - startDate.getTime();
+            long diffInDays = diffInMillies / (24 * 60 * 60 * 1000) + 1; // Add 1 to include both start and end days
             medicalEndDays = String.valueOf(diffInDays);
-            medicalCertificateDuration = diffInDays + " days";
+            medicalCertificateDuration = diffInDays + " day" + (diffInDays != 1 ? "s" : "");
         }
         if (comments == null) {
             comments = "";
@@ -3405,10 +3418,33 @@ public class PatientEncounterController implements Serializable {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
 
+    public Date getMedicalCertificateFromDate() {
+        return medicalCertificateFromDate;
+    }
+
+    public void setMedicalCertificateFromDate(Date medicalCertificateFromDate) {
+        this.medicalCertificateFromDate = medicalCertificateFromDate;
+    }
+
+    public Date getMedicalCertificateToDate() {
+        return medicalCertificateToDate;
+    }
+
+    public void setMedicalCertificateToDate(Date medicalCertificateToDate) {
+        this.medicalCertificateToDate = medicalCertificateToDate;
+    }
+
     public void refreshUserDocumentTemplates() {
         userDocumentTemplates = null; // Clear cached templates
         userDocumentTemplates = documentTemplateController.fillAllItems(sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Document templates refreshed successfully");
+    }
+
+    public boolean isSelectedTemplateMedicalCertificate() {
+        if (selectedDocumentTemplate == null || selectedDocumentTemplate.getType() == null) {
+            return false;
+        }
+        return selectedDocumentTemplate.getType() == DocumentTemplateType.MedicalCertificate;
     }
 
     public ClinicalFindingValue getEncounterInvestigationResult() {
