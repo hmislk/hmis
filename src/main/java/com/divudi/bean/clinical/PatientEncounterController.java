@@ -91,6 +91,14 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import java.io.ByteArrayOutputStream;
 
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.line.LineChartDataSet;
+import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.optionconfig.title.Title;
+import org.primefaces.model.charts.optionconfig.elements.Elements;
+import org.primefaces.model.charts.optionconfig.elements.ElementsLine;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
@@ -257,6 +265,8 @@ public class PatientEncounterController implements Serializable {
     private String chartName;
     private String values1Name;
     private String values2Name;
+
+    private LineChartModel bloodPressureChartModel;
 
     private String chartString;
 
@@ -2480,6 +2490,78 @@ public class PatientEncounterController implements Serializable {
         return "/chart";
     }
 
+    public void generateBloodPressureChart() {
+        bloodPressureChartModel = new LineChartModel();
+        ChartData data = new ChartData();
+
+        // Get patient encounters for the current patient
+        List<PatientEncounter> encounters = new ArrayList<>(getEncounters());
+        Collections.sort(encounters, (e1, e2) -> {
+            if (e1.getEncounterDate() == null || e2.getEncounterDate() == null) {
+                return 0;
+            }
+            return e1.getEncounterDate().compareTo(e2.getEncounterDate());
+        });
+
+        // Create SBP dataset
+        LineChartDataSet sbpDataSet = new LineChartDataSet();
+        sbpDataSet.setLabel("Systolic BP");
+        sbpDataSet.setBorderColor("rgb(255, 99, 132)");
+        sbpDataSet.setBackgroundColor("rgba(255, 99, 132, 0.2)");
+        sbpDataSet.setFill(false);
+        sbpDataSet.setTension(0.1);
+
+        // Create DBP dataset
+        LineChartDataSet dbpDataSet = new LineChartDataSet();
+        dbpDataSet.setLabel("Diastolic BP");
+        dbpDataSet.setBorderColor("rgb(54, 162, 235)");
+        dbpDataSet.setBackgroundColor("rgba(54, 162, 235, 0.2)");
+        dbpDataSet.setFill(false);
+        dbpDataSet.setTension(0.1);
+
+        // Prepare data lists
+        List<Object> sbpValues = new ArrayList<>();
+        List<Object> dbpValues = new ArrayList<>();
+        List<String> dateLabels = new ArrayList<>();
+
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+
+        for (PatientEncounter encounter : encounters) {
+            if (encounter.getSbp() != null || encounter.getDbp() != null) {
+                if (encounter.getEncounterDate() != null) {
+                    dateLabels.add(format.format(encounter.getEncounterDate()));
+                } else {
+                    dateLabels.add("N/A");
+                }
+
+                sbpValues.add(encounter.getSbp() != null ? encounter.getSbp() : null);
+                dbpValues.add(encounter.getDbp() != null ? encounter.getDbp() : null);
+            }
+        }
+
+        // Set data to datasets
+        sbpDataSet.setData(sbpValues);
+        dbpDataSet.setData(dbpValues);
+
+        // Add datasets to chart data
+        data.addChartDataSet(sbpDataSet);
+        data.addChartDataSet(dbpDataSet);
+        data.setLabels(dateLabels);
+
+        // Set chart options
+        LineChartOptions options = new LineChartOptions();
+        options.setMaintainAspectRatio(false);
+
+        Title title = new Title();
+        title.setDisplay(true);
+        title.setText("Blood Pressure Trends");
+        options.setTitle(title);
+
+        // Set chart data and options
+        bloodPressureChartModel.setData(data);
+        bloodPressureChartModel.setOptions(options);
+    }
+
     public String getDoubleLineChartString() {
         String s = "<br/>"
                 + "		var MONTHS = [N1N1N1N1N1N1N1N1];\n"
@@ -3919,6 +4001,14 @@ public class PatientEncounterController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + PatientEncounterController.class.getName());
             }
         }
+    }
+
+    public LineChartModel getBloodPressureChartModel() {
+        return bloodPressureChartModel;
+    }
+
+    public void setBloodPressureChartModel(LineChartModel bloodPressureChartModel) {
+        this.bloodPressureChartModel = bloodPressureChartModel;
     }
 
 }
