@@ -2655,6 +2655,7 @@ public class BillSearch implements Serializable {
         List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
 
         if (investigations != null && !investigations.isEmpty()) {
+            ccBillCancellingStarted.set(false);
             JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
             return ;
         }
