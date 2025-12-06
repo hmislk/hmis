@@ -7,9 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
-    <cc:interface >
-        <cc:attribute name="controller" type="com.divudi.bean.common.AppointmentController" />  
-
+    <cc:interface >  
+         <cc:attribute name="reservation"/>  
 
     </cc:interface>
 
@@ -24,12 +23,12 @@
                     <div class="container-fluid bill-item" style="width: 210mm;">
                         <div class="row text-center">
                             <div class="col-12">
-                                <h3><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.name}" /></h3>
-                                <h4><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.address}" /></h4>
-                                <h5><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.phone}"/></h5>
-                                <h6><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.fax}"/></h6>
-                                <h6><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.email}"/></h6>
-                                <h6><h:outputLabel value="#{cc.attrs.controller.currentBill.institution.web}"/></h6>
+                                <h3><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.name}" /></h3>
+                                <h4><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.address}" /></h4>
+                                <h5><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.phone}"/></h5>
+                                <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.fax}"/></h6>
+                                <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.email}"/></h6>
+                                <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.web}"/></h6>
                             </div>
                         </div>
 
@@ -47,28 +46,28 @@
                                                 <th class="text-left">Name</th>
                                                 <td class="text-right">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.nameWithTitle}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.nameWithTitle}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Address</th>
                                                 <td class="text-right">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.address}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.address}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Age</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.age}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.age}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Mobile No</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.mobile}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.mobile}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -82,21 +81,21 @@
                                                 <th class="text-left">Sex</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.sex}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.sex}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">NIC / Passport</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.nic}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.nic}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Address</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.address}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.address}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             
@@ -116,14 +115,14 @@
                                             <th class="text-left">Doctor Name</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.controller.currentBill.referredBy.person.nameWithTitle}"></h:outputLabel>
+                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.referredBy.person.nameWithTitle}"></h:outputLabel>
                                             </td>
                                         </tr>
                                         <tr>
                                             <th class="text-left">Appointment Date</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.controller.currentAppointment.appointmentDate}">
+                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentDate}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                 </h:outputLabel>
                                             </td>
@@ -132,7 +131,7 @@
                                 </table>
                             </div>
 
-                            <h:panelGroup rendered="#{cc.attrs.controller.reservation ne null}">
+                            <h:panelGroup rendered="#{cc.attrs.reservation ne null}">
                                 <div class="my-2 text-center" style="font-weight: bold;">
                                     <p:outputLabel   value="RESERVATION DETAILS" />
                                 </div>
@@ -144,21 +143,21 @@
                                                 <th class="text-left">Reservation No</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.appointment.appointmentNumber}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentNumber}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Room No</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.room.name}"></h:outputLabel>
+                                                    <h:outputLabel value="#{cc.attrs.reservation.room.name}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Reserved From Date</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.reservedFrom}">
+                                                    <h:outputLabel value="#{cc.attrs.reservation.reservedFrom}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                     </h:outputLabel>
                                                 </td>
@@ -167,7 +166,7 @@
                                                 <th class="text-left">Reserved To Date</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.controller.reservation.reservedTo}">
+                                                    <h:outputLabel value="#{cc.attrs.reservation.reservedTo}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                     </h:outputLabel>
                                                 </td>
@@ -188,7 +187,7 @@
                                             <th class="text-left">Total</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.controller.currentBill.total}">
+                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.total}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
@@ -197,7 +196,7 @@
                                             <th class="text-left">Payment Method</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.controller.currentBill.paymentMethod}"></h:outputLabel>
+                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.paymentMethod}"></h:outputLabel>
                                             </td>
                                         </tr>
                                     </tbody>
