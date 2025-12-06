@@ -50,6 +50,28 @@
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                             />
                            <p:spacer width="20"/>
+                           <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-doctor mr-2"/>
+                                <p:outputLabel value="By Doctor wise" for="docw" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="docw"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Doctors"/>
+                            </p:selectOneMenu>
+                           <p:spacer width="20"/>
+                           <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-doctor mr-2"/>
+                                <p:outputLabel value="By Specialty" for="specb" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="specb"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Specialty"/>
+                            </p:selectOneMenu>
+                           <p:spacer width="20"/>
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
                                 <p:outputLabel value="Report Type" for="typeR" class="m-3">
@@ -59,8 +81,8 @@
                                 id="typeR"
                                 class="w-100"
                                 filter="false">
-                                <f:selectItem itemLabel="By Doctor wise Income Report"/>
-                                <f:selectItem itemLabel="By Speciality wise Income Report"/>
+                                <f:selectItem itemLabel="By Doctor "/>
+                                <f:selectItem itemLabel="By Specialty"/>
                             </p:selectOneMenu>
                             <p:spacer width="20"/>
                         </h:panelGrid>

@@ -51,7 +51,13 @@
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
                         <tr>
                             <td>
-                                <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.bill.deptId eq null}" />
+                                <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
+                                <h:commandLink rendered="#{row.payment.bill.deptId ne null}"
+                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                               styleClass="btn btn-link" title="View Bill Details">
+                                    <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" />
+                                    <i class="fa fa-search" aria-hidden="true"></i>
+                                </h:commandLink>
                             </td>
 
 
