@@ -2880,6 +2880,20 @@ public class BillService {
         params.put("st", status);
         return patientInvestigationFacade.findByJpql(jpql, params);
     }
+    
+    public List<PatientInvestigation> fetchPatientInvestigations(Bill bill, PatientInvestigationStatus status) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT pbi "
+                + " FROM PatientInvestigation pbi "
+                + " WHERE pbi.billItem.bill=:bl "
+                + " AND pbi.status =:st "
+                + " order by pbi.id";
+        params.put("bl", bill);
+        params.put("st", status);
+        List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
+        return ptix;
+    }
 
     public List<BillItem> checkCreditBillPaymentReciveFromCreditCompany(Bill bill) {
         List<BillItem> billItems = new ArrayList<>();

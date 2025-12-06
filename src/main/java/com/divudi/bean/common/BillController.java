@@ -2065,9 +2065,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         List<PatientInvestigation> investigations = billService.fetchPatientInvestigationsOfBatchBill(getBatchBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
-
-        System.out.println("investigations = " + investigations.size());
-        
         if (investigations != null && !investigations.isEmpty()) {
             batchBillCancellationStarted = false;
             JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");

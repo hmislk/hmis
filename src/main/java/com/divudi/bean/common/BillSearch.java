@@ -2511,6 +2511,13 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
+        }
 
         if (errorsPresentOnOpdBillCancellation()) {
             return;
