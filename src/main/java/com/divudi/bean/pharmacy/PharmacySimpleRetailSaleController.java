@@ -422,7 +422,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         jpql.append(") ORDER BY i.itemName, i.dateOfExpire");
 
         System.out.println("sql.toString() = " + jpql.toString());
-        System.out.println("parameters = " + parameters);
         List<Stock> ss = getStockFacade().findByJpql(jpql.toString(), parameters, 20);
         return ss;
     }
@@ -459,7 +458,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         List<StockLight> sls = (List<StockLight>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP, 20);
         long queryEndTime = System.currentTimeMillis();
         System.out.println("INFO:   Query execution took: " + (queryEndTime - queryStartTime) + " ms");
-        System.out.println("INFO:   Result size: " + sls.size());
 
 
         return sls;
@@ -2354,6 +2352,40 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 //        }
 //
         //PAYMENTSCHEME DISCOUNT
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        //MEMBERSHIPSCHEME DISCOUNT
+//        if (membershipScheme != null && discountAllowed) {
+//            PaymentMethod tpm = getPaymentMethod();
+//            if (tpm == null) {
+//                tpm = PaymentMethod.Cash;
+//            }
+//            PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
+//            if (priceMatrix == null) {
+//                return 0;
+//            } else {
+//                bi.setPriceMatrix(priceMatrix);
+//                return (retailRate * priceMatrix.getDiscountPercent()) / 100;
+//            }
+//        }
+//
+        //PAYMENTSCHEME DISCOUNT
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        //MEMBERSHIPSCHEME DISCOUNT
+//        if (membershipScheme != null && discountAllowed) {
+//            PaymentMethod tpm = getPaymentMethod();
+//            if (tpm == null) {
+//                tpm = PaymentMethod.Cash;
+//            }
+//            PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
+//            if (priceMatrix == null) {
+//                return 0;
+//            } else {
+//                bi.setPriceMatrix(priceMatrix);
+//                return (retailRate * priceMatrix.getDiscountPercent()) / 100;
+//            }
+//        }
+//
+        //PAYMENTSCHEME DISCOUNT
         System.out.println("discountAllowed = " + discountAllowed);
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
@@ -2372,8 +2404,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 //        }
 //
         //PAYMENTSCHEME DISCOUNT
-
-        System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (getPaymentScheme() != null && discountAllowed) {
             System.out.println("getPaymentMethod() = " + getPaymentMethod());
             System.out.println("getPaymentScheme() = " + getPaymentScheme());
@@ -2388,7 +2418,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("1 dr = " + dr);
             return dr;
 
         }
@@ -2706,7 +2735,6 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
     private void selectPaymentSchemeAsPerPatientMembership() {
         System.out.println("selectPaymentSchemeAsPerPatientMembership");
-        System.out.println("patient = " + patient);
         if (patient == null) {
             return;
         }

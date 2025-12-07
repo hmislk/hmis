@@ -4432,22 +4432,15 @@ public class SearchController implements Serializable {
         System.out.println("DEBUG: Final JPQL Query = " + jpql);
         System.out.println("DEBUG: Query parameters:");
         for (Object key : params.keySet()) {
-            System.out.println("  " + key + " = " + params.get(key));
         }
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
 
-        System.out.println("DEBUG: Query returned " + (bills != null ? bills.size() : 0) + " bills");
         if (bills != null && bills.size() > 0) {
-            System.out.println("DEBUG: First few bill details:");
             for (int i = 0; i < Math.min(5, bills.size()); i++) {
                 Bill b = bills.get(i);
-                System.out.println("  Bill ID: " + b.getId() + ", DeptId: " + b.getDeptId() + ", Atomic: " + b.getBillTypeAtomic()
-                        + ", Dept: " + (b.getDepartment() != null ? b.getDepartment().getId() + "-" + b.getDepartment().getName() : "NULL")
-                        + ", CreatedAt: " + b.getCreatedAt());
             }
         } else {
-            System.out.println("DEBUG: No bills found. Let's check if any PHARMACY_STOCK_ADJUSTMENT_BILL bills exist in this department...");
         }
 
     }
@@ -4488,7 +4481,6 @@ public class SearchController implements Serializable {
             params.put("billTypeAtomics", adjustmentAtomics);
 
             System.out.println("DEBUG: Using PharmacyAdjustment branch");
-            System.out.println("DEBUG: Adjustment atomics included: " + adjustmentAtomics);
         } else {
             jpql = "select b from Bill b where b.retired=false and "
                     + " (type(b)=:class1 or type(b)=:class2) "
@@ -4577,17 +4569,13 @@ public class SearchController implements Serializable {
         System.out.println("DEBUG: maxResult = " + maxResult);
         System.out.println("DEBUG: Query parameters:");
         for (Object key : params.keySet()) {
-            System.out.println("  " + key + " = " + params.get(key));
         }
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
 
-        System.out.println("DEBUG: Query returned " + (bills != null ? bills.size() : 0) + " bills");
         if (bills != null && bills.size() > 0) {
-            System.out.println("DEBUG: First few bill IDs returned:");
             for (int i = 0; i < Math.min(5, bills.size()); i++) {
                 Bill b = bills.get(i);
-                System.out.println("  Bill ID: " + b.getId() + ", DeptId: " + b.getDeptId() + ", Atomic: " + b.getBillTypeAtomic() + ", Dept: " + (b.getDepartment() != null ? b.getDepartment().getId() : "NULL"));
             }
         }
 
@@ -4597,13 +4585,11 @@ public class SearchController implements Serializable {
             for (Bill b : bills) {
                 if (b.getId() != null && b.getId().equals(1952864L)) {
                     foundTargetBill = true;
-                    System.out.println("DEBUG: *** TARGET BILL 1952864 FOUND IN RESULTS! ***");
                     break;
                 }
             }
         }
         if (!foundTargetBill) {
-            System.out.println("DEBUG: *** TARGET BILL 1952864 NOT FOUND IN RESULTS ***");
         }
 
     }
@@ -8937,7 +8923,6 @@ public class SearchController implements Serializable {
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
-                System.out.println("Invalid net total search value: " + netTotalString);
             }
         }
 
@@ -8950,7 +8935,6 @@ public class SearchController implements Serializable {
         params.put("dept", getSessionController().getLoggedUser().getDepartment());
 
         System.out.println("DTO jpql = " + jpql);
-        System.out.println("DTO params = " + params);
 
         return (List<PharmacyPreBillSearchDTO>) getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
     }
@@ -8986,7 +8970,6 @@ public class SearchController implements Serializable {
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
-                System.out.println("Invalid net total search value: " + netTotalString);
             }
         }
 
@@ -8998,7 +8981,6 @@ public class SearchController implements Serializable {
         params.put("ins", getSessionController().getInstitution());
         params.put("dept", getSessionController().getLoggedUser().getDepartment());
         System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         outBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         return outBills;
     }
@@ -9029,7 +9011,6 @@ public class SearchController implements Serializable {
                     params.put("netTotal", netTotalValue);
                 } catch (NumberFormatException e) {
                     JsfUtil.addErrorMessage("Invalid number format for Net Total");
-                    System.out.println("Invalid net total search value: " + netTotalString);
                 }
             }
 
@@ -9042,7 +9023,6 @@ public class SearchController implements Serializable {
             params.put("ins", getSessionController().getInstitution());
             params.put("dept", getSessionController().getLoggedUser().getDepartment());
             System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
 
         } else {
@@ -9069,7 +9049,6 @@ public class SearchController implements Serializable {
                     params.put("netTotal", netTotalValue);
                 } catch (NumberFormatException e) {
                     JsfUtil.addErrorMessage("Invalid number format for Net Total");
-                    System.out.println("Invalid net total search value: " + netTotalString);
                 }
             }
 
@@ -9083,7 +9062,6 @@ public class SearchController implements Serializable {
             params.put("ins", getSessionController().getInstitution());
             params.put("dept", getSessionController().getLoggedUser().getDepartment());
             System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
 
         }
@@ -16398,6 +16376,7 @@ public class SearchController implements Serializable {
             patientDepositPaymentsUsed.calculateTotalByPayments();
             bundle.getBundles().add(patientDepositPaymentsUsed);
             System.out.println("DEBUG generateDailyReturn: Patient Deposit PAYMENTS (used for services) = " + getSafeTotal(patientDepositPaymentsUsed));
+            // NOTE: Do NOT deduct from netCashCollection - this is display only
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Payments NOT deducted from net cash (display only)");
             // NOTE: Do NOT deduct from netCashCollection - this is display only
 
@@ -16418,7 +16397,6 @@ public class SearchController implements Serializable {
             pharmacyCreditBillList = generatePharmacyCreditBillList();
             bundle.getBundles().add(pharmacyCreditBillList);
             double pharmacyCreditBillListTotal = Math.abs(getSafeTotal(pharmacyCreditBillList));
-            System.out.println("pharmacyCreditBillListTotal = " + pharmacyCreditBillListTotal);
             netCollectionPlusCredits += pharmacyCreditBillListTotal;
 
             //TODO : Add Pharmacy Credit Cancellations
@@ -18946,7 +18924,6 @@ public class SearchController implements Serializable {
         depositCollection.setDescription("Patient Deposit Receipts");
 
         System.out.println("  - Bundle Total: " + depositCollection.getTotal());
-        System.out.println("  - Bundle Rows: " + (depositCollection.getReportTemplateRows() != null ? depositCollection.getReportTemplateRows().size() : 0));
 
         return depositCollection;
     }
@@ -18986,7 +18963,6 @@ public class SearchController implements Serializable {
         for (ReportTemplateRow row : pb.getReportTemplateRows()) {
             System.out.println("row = " + row);
             pharmacyCollectionTotal += row.getTotal();
-            System.out.println("row.getTotal() = " + row.getTotal());
         }
         pb.setTotal(pharmacyCollectionTotal);
         return pb;
@@ -20773,13 +20749,11 @@ public class SearchController implements Serializable {
         System.out.println("DEBUG bundleCashierCollectionTotal: START - Bundle: " + (targetBundle != null ? targetBundle.toString() : "null"));
 
         if (targetBundle == null) {
-            System.out.println("DEBUG bundleCashierCollectionTotal: Bundle is null, returning 0.0");
             return 0.0;
         }
 
         if (targetBundle.isCashierCollectionTotalComputed()) {
             double cachedTotal = targetBundle.getCashierCollectionTotal();
-            System.out.println("DEBUG bundleCashierCollectionTotal: Already computed, returning cached value: " + cachedTotal);
             return cachedTotal;
         }
 
@@ -20794,16 +20768,13 @@ public class SearchController implements Serializable {
             System.out.println("DEBUG bundleCashierCollectionTotal: Processing rows - count: " + rows.size());
             for (ReportTemplateRow row : rows) {
                 double rowTotal = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
-                System.out.println("DEBUG bundleCashierCollectionTotal: Row total = " + rowTotal + ", Running total = " + (total + rowTotal));
                 total += rowTotal;
             }
-            System.out.println("DEBUG bundleCashierCollectionTotal: After processing all rows, total = " + total);
         } else {
             System.out.println("DEBUG bundleCashierCollectionTotal: No rows, processing bundle directly");
             List<PaymentMethod> included = resolveCollectionMethods(targetBundle, true);
             System.out.println("DEBUG bundleCashierCollectionTotal: Included payment methods count = " + (included != null ? included.size() : "null"));
             total = calculateCollectionTotal(targetBundle, included);
-            System.out.println("DEBUG bundleCashierCollectionTotal: Bundle total calculated = " + total);
             if (targetBundle.getCashierCollectionPaymentMethods() == null
                     || targetBundle.getCashierCollectionPaymentMethods().isEmpty()) {
                 targetBundle.setCashierCollectionPaymentMethods(new ArrayList<>(included));
@@ -20811,7 +20782,6 @@ public class SearchController implements Serializable {
         }
 
         targetBundle.setCashierCollectionTotal(total);
-        System.out.println("DEBUG bundleCashierCollectionTotal: FINAL total = " + total + ", set in bundle");
         return total;
     }
 

@@ -89,7 +89,6 @@ public class StockService {
     // ChatGPT contributed - 2025-06
     public StockValueRow calculateStockValues(Institution institution, Institution site, Department department) {
         System.out.println("calculateStockValues");
-        System.out.println("department = " + department);
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         jpql.append("select sum(s.stock * s.itemBatch.purcahseRate), "

@@ -19,6 +19,5 @@ public class BillNumberMethodTest {
         billNumber.setOpdAndInpatientServiceBatchBills(true);
         boolean batchResult = billNumber.isOpdAndInpatientServiceBatchBills();
         
-        System.out.println("Methods exist and work: " + serviceResult + ", " + batchResult);
     }
 }

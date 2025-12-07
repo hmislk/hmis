@@ -9,6 +9,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
@@ -16,6 +17,7 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
@@ -51,8 +53,11 @@ import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
+import com.divudi.core.data.InvestigationItemType;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.InvestigationItemFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,6 +89,18 @@ import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import java.io.ByteArrayOutputStream;
+
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.line.LineChartDataSet;
+import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.optionconfig.title.Title;
+import org.primefaces.model.charts.optionconfig.elements.Elements;
+import org.primefaces.model.charts.optionconfig.elements.ElementsLine;
 
 /**
  *
@@ -115,6 +132,8 @@ public class PatientEncounterController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
+    @EJB
+    InvestigationItemFacade investigationItemFacade;
 
     /**
      * Controllers
@@ -133,7 +152,8 @@ public class PatientEncounterController implements Serializable {
     CommonReportItemController commonReportItemController;
     @Inject
     private PatientReportController patientReportController;
-
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -152,6 +172,10 @@ public class PatientEncounterController implements Serializable {
 
     private List<DocumentTemplate> userDocumentTemplates;
     private DocumentTemplate selectedDocumentTemplate;
+
+    // Medical Certificate date fields
+    private Date medicalCertificateFromDate;
+    private Date medicalCertificateToDate;
 
     private ClinicalFindingValue patientAllergy;
     private ClinicalFindingValue patientMedicine;
@@ -237,12 +261,18 @@ public class PatientEncounterController implements Serializable {
     private Department department;
     private Doctor doctor;
 
+    // Referral properties for document templates
+    private Institution referralInstitution;
+    private Staff referralDoctor;
+
     private String chartNameSeries;
     private String chartDataSeries1;
     private String chartDataSeries2;
     private String chartName;
     private String values1Name;
     private String values2Name;
+
+    private LineChartModel bloodPressureChartModel;
 
     private String chartString;
 
@@ -534,6 +564,15 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select a template");
             return;
         }
+
+        // If this is a referral template, save the referral information to the encounter
+        if (selectedDocumentTemplate.getType() == DocumentTemplateType.Referral) {
+            if (current != null) {
+                current.setReferredByInstitution(referralInstitution);
+                current.setReferringDoctor(referralDoctor);
+            }
+        }
+
         String generatedDoc = generateDocumentFromTemplate(selectedDocumentTemplate, current);
         ClinicalFindingValue ref = new ClinicalFindingValue();
         ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -684,6 +723,72 @@ public class PatientEncounterController implements Serializable {
         } else {
             clinicalFindingValueFacade.edit(encounterReferral);
             JsfUtil.addSuccessMessage("Removed");
+        }
+    }
+
+    public StreamedContent downloadAsWordDocument() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            JsfUtil.addErrorMessage("No document selected or document content is empty");
+            return null;
+        }
+
+        try {
+            // Create a new Word document
+            XWPFDocument document = new XWPFDocument();
+
+            // Get the HTML content from the text editor
+            String htmlContent = encounterReferral.getLobValue();
+
+            // Convert HTML to plain text (basic conversion)
+            String plainText = htmlContent
+                    .replaceAll("(?i)<br[^>]*>", "\n")
+                    .replaceAll("(?i)<p[^>]*>", "\n")
+                    .replaceAll("(?i)</p>", "\n")
+                    .replaceAll("(?i)<div[^>]*>", "\n")
+                    .replaceAll("(?i)</div>", "\n")
+                    .replaceAll("(?i)<[^>]+>", "")
+                    .replaceAll("&nbsp;", " ")
+                    .replaceAll("&amp;", "&")
+                    .replaceAll("&lt;", "<")
+                    .replaceAll("&gt;", ">")
+                    .trim();
+
+            // Create paragraphs from the text content
+            String[] lines = plainText.split("\n");
+            for (String line : lines) {
+                if (line.trim().length() > 0) {
+                    XWPFParagraph paragraph = document.createParagraph();
+                    XWPFRun run = paragraph.createRun();
+                    run.setText(line.trim());
+                    run.setFontSize(12);
+                    run.setFontFamily("Calibri");
+                }
+            }
+
+            // Convert to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            document.write(outputStream);
+            document.close();
+
+            // Create the file name
+            String fileName = "Document";
+            if (encounterReferral.getStringValue() != null && !encounterReferral.getStringValue().isEmpty()) {
+                fileName = encounterReferral.getStringValue().replaceAll("[^a-zA-Z0-9.-]", "_");
+            }
+            fileName += "_" + new java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date()) + ".docx";
+
+            // Create StreamedContent
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    .stream(() -> inputStream)
+                    .build();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating Word document: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -1142,10 +1247,11 @@ public class PatientEncounterController implements Serializable {
     }
 
     /**
-     * Adds favourite medicines to the current encounter using a 3-tier priority lookup:
-     * 1. By Weight Formula (currently under construction - returns unsuccessful)
-     * 2. By Patient Weight Group (retrieves pre-programmed medicine details if available)
-     * 3. By Patient Age Group (fallback when weight data is unavailable)
+     * Adds favourite medicines to the current encounter using a 3-tier priority
+     * lookup: 1. By Weight Formula (currently under construction - returns
+     * unsuccessful) 2. By Patient Weight Group (retrieves pre-programmed
+     * medicine details if available) 3. By Patient Age Group (fallback when
+     * weight data is unavailable)
      *
      * @param patient The patient for whom to add favourite medicines
      */
@@ -1176,14 +1282,13 @@ public class PatientEncounterController implements Serializable {
         // Method 1: By Weight Formula (currently under construction)
         // This method is not yet implemented and should return unsuccessful
         // Skip to Method 2
-
         // Method 2: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteMedicine,
-                patientWeight,
-                null
+                    null,
+                    PrescriptionTemplateType.FavouriteMedicine,
+                    patientWeight,
+                    null
             );
             if (!favouriteMedicines.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
@@ -1193,10 +1298,10 @@ public class PatientEncounterController implements Serializable {
         // Method 3: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if (favouriteMedicines.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteMedicine,
-                null,
-                patientAgeInDays
+                    null,
+                    PrescriptionTemplateType.FavouriteMedicine,
+                    null,
+                    patientAgeInDays
             );
             if (!favouriteMedicines.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
@@ -1297,10 +1402,10 @@ public class PatientEncounterController implements Serializable {
         // Method 1: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
             favouriteDiagnoses = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteDiagnosis,
-                patientWeight,
-                null
+                    null,
+                    PrescriptionTemplateType.FavouriteDiagnosis,
+                    patientWeight,
+                    null
             );
             if (!favouriteDiagnoses.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
@@ -1310,10 +1415,10 @@ public class PatientEncounterController implements Serializable {
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if (favouriteDiagnoses.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             favouriteDiagnoses = favouriteController.listFavouriteItems(
-                null,
-                PrescriptionTemplateType.FavouriteDiagnosis,
-                null,
-                patientAgeInDays
+                    null,
+                    PrescriptionTemplateType.FavouriteDiagnosis,
+                    null,
+                    patientAgeInDays
             );
             if (!favouriteDiagnoses.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
@@ -1554,6 +1659,39 @@ public class PatientEncounterController implements Serializable {
         String pulseRate = e.getPr() != null ? e.getPr() + " bpm" : "";
         String pfr = e.getPfr() != null ? e.getPfr() + "" : "";
         String saturation = e.getSaturation() != null ? e.getSaturation() + "" : "";
+
+        // Medical Certificate placeholders
+        String medicalStartDate = "";
+        String medicalEndDays = "";
+        String medicalCertificateDuration = "";
+
+        // Referral placeholders
+        String referralInstitutionName = "";
+        String referralDoctorName = "";
+
+        if (e.getReferredByInstitution() != null) {
+            referralInstitutionName = e.getReferredByInstitution().getName();
+        }
+
+        if (e.getReferringDoctor() != null) {
+            referralDoctorName = e.getReferringDoctor().getPerson().getNameWithTitle();
+        }
+
+        // Use medical certificate dates if available, otherwise fall back to encounter dates
+        Date startDate = medicalCertificateFromDate != null ? medicalCertificateFromDate : e.getFromTime();
+        Date endDate = medicalCertificateToDate != null ? medicalCertificateToDate : e.getToTime();
+
+        if (startDate != null) {
+            medicalStartDate = CommonFunctions.formatDate(startDate, sessionController.getApplicationPreference().getLongDateFormat());
+        }
+
+        // Calculate medical certificate duration if both dates are available
+        if (startDate != null && endDate != null) {
+            long diffInMillies = endDate.getTime() - startDate.getTime();
+            long diffInDays = diffInMillies / (24 * 60 * 60 * 1000) + 1; // Add 1 to include both start and end days
+            medicalEndDays = String.valueOf(diffInDays);
+            medicalCertificateDuration = diffInDays + " day" + (diffInDays != 1 ? "s" : "");
+        }
         if (comments == null) {
             comments = "";
         }
@@ -1750,7 +1888,13 @@ public class PatientEncounterController implements Serializable {
                 .replace("{patient_name}", name)
                 .replace("{patient_age}", age)
                 .replace("{patient_phn_number}", phn)
-                .replace("{patient_nic}", nic);
+                .replace("{patient_nic}", nic)
+                .replace("{medical_start_date}", medicalStartDate)
+                .replace("{medical_end_days}", medicalEndDays)
+                .replace("{medical_certificate_duration}", medicalCertificateDuration)
+                .replace("{referral_institution}", referralInstitutionName)
+                .replace("{referral_doctor}", referralDoctorName)
+                .replace("{referring_doctor}", referralDoctorName);
         return output;
 
     }
@@ -1934,8 +2078,9 @@ public class PatientEncounterController implements Serializable {
         } else {
             DocumentTemplate prescTemplate = null;
             for (DocumentTemplate dt : userDocumentTemplates) {
-                if (dt.isDefaultTemplate()) {
+                if (dt.isDefaultTemplate() && dt.getType() == DocumentTemplateType.Prescription) {
                     prescTemplate = dt;
+                    break;
                 }
             }
             if (prescTemplate != null) {
@@ -2351,6 +2496,115 @@ public class PatientEncounterController implements Serializable {
         return "/chart";
     }
 
+    public void generateBloodPressureChart() {
+        System.out.println("=== Blood Pressure Chart Generation Started ===");
+
+        bloodPressureChartModel = new LineChartModel();
+        ChartData data = new ChartData();
+
+        if (current == null) {
+            return;
+        }
+
+        if (current.getPatient() == null) {
+            return;
+        }
+
+        System.out.println("Patient: " + current.getPatient().getPerson().getNameWithTitle());
+        System.out.println("Patient ID: " + current.getPatient().getId());
+
+        // Direct JPQL query to get blood pressure data
+        Map<String, Object> params = new HashMap<>();
+        params.put("patient", current.getPatient());
+
+        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e "
+                + "WHERE e.patient = :patient "
+                + "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) "
+                + "ORDER BY e.encounterDate ASC";
+
+        System.out.println("JPQL Query: " + jpql);
+        System.out.println("Query Parameters: " + params);
+
+        List<Object[]> bpData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
+
+        System.out.println("Query executed. Number of results: " + (bpData != null ? bpData.size() : "null"));
+
+        // Create SBP dataset
+        LineChartDataSet sbpDataSet = new LineChartDataSet();
+        sbpDataSet.setLabel("Systolic BP (mmHg)");
+        sbpDataSet.setBorderColor("rgb(255, 99, 132)");
+        sbpDataSet.setBackgroundColor("rgba(255, 99, 132, 0.2)");
+        sbpDataSet.setFill(false);
+        sbpDataSet.setTension(0.1);
+
+        // Create DBP dataset
+        LineChartDataSet dbpDataSet = new LineChartDataSet();
+        dbpDataSet.setLabel("Diastolic BP (mmHg)");
+        dbpDataSet.setBorderColor("rgb(54, 162, 235)");
+        dbpDataSet.setBackgroundColor("rgba(54, 162, 235, 0.2)");
+        dbpDataSet.setFill(false);
+        dbpDataSet.setTension(0.1);
+
+        // Prepare data lists
+        List<Object> sbpValues = new ArrayList<>();
+        List<Object> dbpValues = new ArrayList<>();
+        List<String> dateLabels = new ArrayList<>();
+
+        SimpleDateFormat format = new SimpleDateFormat(configOptionApplicationController.getShortTextValueByKey("short date format", "dd MM yy"));
+        // Process query results
+        // Process query results
+        // Process query results
+        int recordCount = 0;
+        for (Object[] row : bpData) {
+            recordCount++;
+            Date encounterDate = (Date) row[0];
+            Long sbp = (Long) row[1];
+            Long dbp = (Long) row[2];
+
+            // Add date label
+            if (encounterDate != null) {
+                dateLabels.add(format.format(encounterDate));
+            } else {
+                dateLabels.add("N/A");
+            }
+
+            // Add BP values (null values will be handled by Chart.js as gaps)
+            sbpValues.add(sbp);
+            dbpValues.add(dbp);
+        }
+
+        // Only create chart if we have data
+        if (!bpData.isEmpty()) {
+            System.out.println("Creating chart with data...");
+
+            // Set data to datasets
+            sbpDataSet.setData(sbpValues);
+            dbpDataSet.setData(dbpValues);
+
+            // Add datasets to chart data
+            data.addChartDataSet(sbpDataSet);
+            data.addChartDataSet(dbpDataSet);
+            data.setLabels(dateLabels);
+
+            // Set chart options
+            LineChartOptions options = new LineChartOptions();
+            options.setMaintainAspectRatio(false);
+
+            Title title = new Title();
+            title.setDisplay(true);
+            title.setText("Blood Pressure Trends - " + current.getPatient().getPerson().getNameWithTitle());
+            options.setTitle(title);
+
+            // Set chart data and options
+            bloodPressureChartModel.setData(data);
+            bloodPressureChartModel.setOptions(options);
+
+            System.out.println("Chart created successfully!");
+        } else {
+        }
+
+    }
+
     public String getDoubleLineChartString() {
         String s = "<br/>"
                 + "		var MONTHS = [N1N1N1N1N1N1N1N1];\n"
@@ -2704,6 +2958,22 @@ public class PatientEncounterController implements Serializable {
 
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
+    }
+
+    public Institution getReferralInstitution() {
+        return referralInstitution;
+    }
+
+    public void setReferralInstitution(Institution referralInstitution) {
+        this.referralInstitution = referralInstitution;
+    }
+
+    public Staff getReferralDoctor() {
+        return referralDoctor;
+    }
+
+    public void setReferralDoctor(Staff referralDoctor) {
+        this.referralDoctor = referralDoctor;
     }
 
     public ClinicalEntityFacade getClinicalEntityFacade() {
@@ -3389,10 +3659,59 @@ public class PatientEncounterController implements Serializable {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
 
+    public Date getMedicalCertificateFromDate() {
+        return medicalCertificateFromDate;
+    }
+
+    public void setMedicalCertificateFromDate(Date medicalCertificateFromDate) {
+        this.medicalCertificateFromDate = medicalCertificateFromDate;
+    }
+
+    public Date getMedicalCertificateToDate() {
+        return medicalCertificateToDate;
+    }
+
+    public void setMedicalCertificateToDate(Date medicalCertificateToDate) {
+        this.medicalCertificateToDate = medicalCertificateToDate;
+    }
+
     public void refreshUserDocumentTemplates() {
         userDocumentTemplates = null; // Clear cached templates
         userDocumentTemplates = documentTemplateController.fillAllItems(sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Document templates refreshed successfully");
+    }
+
+    public boolean isSelectedTemplateMedicalCertificate() {
+        if (selectedDocumentTemplate == null || selectedDocumentTemplate.getType() == null) {
+            return false;
+        }
+        return selectedDocumentTemplate.getType() == DocumentTemplateType.MedicalCertificate;
+    }
+
+    public boolean isSelectedTemplateReferral() {
+        if (selectedDocumentTemplate == null || selectedDocumentTemplate.getType() == null) {
+            return false;
+        }
+        return selectedDocumentTemplate.getType() == DocumentTemplateType.Referral;
+    }
+
+    public boolean hasDefaultPrescriptionTemplate() {
+        if (userDocumentTemplates == null) {
+            return false;
+        }
+        for (DocumentTemplate dt : userDocumentTemplates) {
+            if (dt.isDefaultTemplate() && dt.getType() == DocumentTemplateType.Prescription) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String getPrescriptionWarningMessage() {
+        if (!hasDefaultPrescriptionTemplate()) {
+            return "No default prescription template is configured. Please set up a default prescription template in EMR Settings.";
+        }
+        return null;
     }
 
     public ClinicalFindingValue getEncounterInvestigationResult() {
@@ -3687,6 +4006,154 @@ public class PatientEncounterController implements Serializable {
         this.patientProcedures = patientProcedures;
     }
 
+    public List<Object[]> getBloodPressureData() {
+        if (current == null || current.getPatient() == null) {
+            return new ArrayList<>();
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("patient", current.getPatient());
+
+        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e "
+                + "WHERE e.patient = :patient "
+                + "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) "
+                + "ORDER BY e.encounterDate ASC";
+
+        return ejbFacade.findObjectArrayByJpql(jpql, params, null);
+    }
+
+    // BMI and Weight chart data and methods
+    private List<Object[]> bmiWeightData = new ArrayList<>();
+
+    public void generateBmiWeightChart() {
+        if (current == null || current.getPatient() == null) {
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("patient", current.getPatient());
+
+        String jpql = "SELECT e.encounterDate, e.weight, e.bmi FROM PatientEncounter e "
+                + "WHERE e.patient = :patient "
+                + "AND (e.weight IS NOT NULL OR e.bmi IS NOT NULL) "
+                + "ORDER BY e.encounterDate ASC";
+
+        bmiWeightData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
+    }
+
+    public List<Object[]> getBmiWeightData() {
+        return bmiWeightData;
+    }
+
+    // Investigation chart data and methods
+    private List<Object[]> investigationChartData = new ArrayList<>();
+    private InvestigationItem selectedInvestigationItem;
+
+    public void generateInvestigationChart() {
+        if (current == null || current.getPatient() == null || selectedInvestigationItem == null) {
+            investigationChartData = new ArrayList<>();
+            return;
+        }
+
+        // High-performance DTO query using selected InvestigationItem
+        Map<String, Object> params = new HashMap<>();
+        params.put("pt", current.getPatient().getId());
+        params.put("invItem", selectedInvestigationItem.getId());
+
+        String jpql = "SELECT priv.doubleValue, priv.strValue, priv.patientReport.approveAt "
+                + "FROM PatientReportItemValue priv "
+                + "WHERE priv.patient.id = :pt "
+                + "AND priv.investigationItem.id = :invItem "
+                + "AND priv.patientReport.approveAt IS NOT NULL "
+                + "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) "
+                + "ORDER BY priv.patientReport.approveAt ASC";
+
+        try {
+            List<Object[]> rawData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
+            investigationChartData = new ArrayList<>();
+
+            for (Object[] row : rawData) {
+                try {
+                    Double doubleVal = (Double) row[0];
+                    String strVal = (String) row[1];
+                    Date approveDate = (Date) row[2];
+
+                    // Get numeric value with fallback logic
+                    Double finalValue = null;
+                    if (doubleVal != null) {
+                        finalValue = doubleVal;
+                    } else if (strVal != null && !strVal.trim().isEmpty()) {
+                        try {
+                            finalValue = Double.parseDouble(strVal.trim());
+                        } catch (NumberFormatException e) {
+                            continue; // Skip non-numeric string values
+                        }
+                    }
+
+                    // Add to chart data if value and date are available
+                    if (finalValue != null && approveDate != null) {
+                        Object[] chartRecord = {approveDate, finalValue};
+                        investigationChartData.add(chartRecord);
+                    }
+                } catch (Exception e) {
+                    // Skip problematic records
+                    continue;
+                }
+            }
+        } catch (Exception e) {
+            investigationChartData = new ArrayList<>();
+        }
+    }
+
+    public List<Object[]> getInvestigationChartData() {
+        return investigationChartData;
+    }
+
+    // Getter and setter for selected investigation item
+    public InvestigationItem getSelectedInvestigationItem() {
+        return selectedInvestigationItem;
+    }
+
+    public void setSelectedInvestigationItem(InvestigationItem selectedInvestigationItem) {
+        this.selectedInvestigationItem = selectedInvestigationItem;
+    }
+
+    // Autocomplete for all InvestigationItems (not patient-specific)
+    public List<InvestigationItem> completeInvestigationItems(String query) {
+        if (query == null || query.trim().length() < 2) {
+            return new ArrayList<>();
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("query", "%" + query.trim().toUpperCase() + "%");
+
+        // Select only Value, Calculation for ixitvts
+        List<InvestigationItemType> ixitvts = new ArrayList<>();
+        ixitvts.add(InvestigationItemType.Value);
+        ixitvts.add(InvestigationItemType.Calculation);
+        params.put("ixitvts", ixitvts);
+
+        String jpql = "SELECT i "
+                + "FROM InvestigationItem i "
+                + "WHERE i.retired = false "
+                + "AND UPPER(i.name) LIKE :query "
+                + "AND i.ixItemType IN :ixitvts "
+                + "AND i.item IS NOT NULL "
+                + "ORDER BY i.name";
+
+        try {
+            List<InvestigationItem> results = investigationItemFacade.findByJpql(jpql, params);
+
+            if (results != null && results.size() > 20) {
+                return results.subList(0, 20);
+            }
+
+            return results != null ? results : new ArrayList<>();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
     @FacesConverter(forClass = PatientEncounter.class)
     public static class PatientEncounterConverter implements Converter {
 
@@ -3725,6 +4192,14 @@ public class PatientEncounterController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + PatientEncounterController.class.getName());
             }
         }
+    }
+
+    public LineChartModel getBloodPressureChartModel() {
+        return bloodPressureChartModel;
+    }
+
+    public void setBloodPressureChartModel(LineChartModel bloodPressureChartModel) {
+        this.bloodPressureChartModel = bloodPressureChartModel;
     }
 
 }

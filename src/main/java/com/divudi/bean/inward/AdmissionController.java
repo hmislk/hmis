@@ -303,7 +303,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public boolean onRoomFacilityChargeSelected() {
         List<Reservation> foundReservations = appointmentController.checkAppointmentsForRoom(patientRoom.getRoomFacilityCharge());
-        System.out.println("foundReservations = " + foundReservations.size());
         if (foundReservations == null || foundReservations.isEmpty()) {
             latestfoundReservation = new Reservation();
             return false;
@@ -482,7 +481,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hash.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         //     hash.put("pm", PaymentMethod.Credit);
         List<Bill> lst = getBillFacade().findByJpql(sql, hash);
-        System.out.println("lst = " + lst);
         return lst;
     }
 
@@ -657,7 +655,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("department", sessionController.getDepartment());
         suggestions = getFacade().findByJpql(sql, hm, 20);
-        System.out.println("suggestions = " + suggestions);
         return suggestions;
     }
 
@@ -939,7 +936,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //        return suggestions;
 //    }
     public List<Admission> completePatientDishcargedNotFinalized(String query) {
-        System.out.println("completePatientDishcargedNotFinalized");
         List<Admission> suggestions;
         String sql;
         HashMap h = new HashMap();
@@ -957,7 +953,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             suggestions = getFacade().findByJpql(sql, h, 20);
             System.out.println("sql = " + sql);
             System.out.println("h = " + h);
-            System.out.println("suggestions = " + suggestions);
         }
         return suggestions;
     }
@@ -1502,7 +1497,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void listnerForAppoimentSelect(Bill ap) {
-        System.out.println("ap = " + ap);
         if (ap == null) {
             return;
         }
@@ -1654,7 +1648,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + (currentReservation.getAppointment() != null ? currentReservation.getAppointment().getId() : "Appointment is null"));
 
             Appointment apt = appointmentFacade.find(currentReservation.getAppointment().getId());
-            System.out.println("DEBUG: Appointment lookup result: " + (apt != null ? "Found" : "Not found"));
 
             if (apt != null) {
                 System.out.println("DEBUG: Marking appointment as complete...");
@@ -1674,13 +1667,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
                 System.out.println("DEBUG: Updating appointment in database...");
                 appointmentFacade.edit(apt);
-                System.out.println("DEBUG: Appointment updated successfully");
 
             } else {
-                System.out.println("DEBUG: WARNING - Appointment not found, cannot mark as complete");
             }
         } else {
-            System.out.println("DEBUG: currentReservation is null, skipping reservation and appointment updates");
         }
 
         getFacade().edit(getCurrent());

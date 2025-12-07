@@ -4386,7 +4386,6 @@ public class BillBeanController implements Serializable {
                 labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
             }
         } catch (Exception e) {
-            System.out.println("Error = " + e);
         }
 
     }
