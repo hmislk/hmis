@@ -309,9 +309,9 @@
                                                                          class="ui-button-info"
                                                                          value="Add Favourites"
                                                                          id="btnAddFavDx"
-                                                                         action="#{patientEncounterController.addFavouriteDiagnosis(patientController.current)}"
-                                                                         process="btnAddFavDx"
-                                                                         update="gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         action="#{patientEncounterController.addFavouriteDiagnosis}"
+                                                                         process="acDx txtDx btnAddFavDx"
+                                                                         update="acDx txtDx gpDx tblRxx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          icon="fas fa-star">
                                                         </p:commandButton>
                                                     </div>

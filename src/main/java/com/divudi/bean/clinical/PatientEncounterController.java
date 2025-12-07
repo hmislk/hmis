@@ -1373,24 +1373,48 @@ public class PatientEncounterController implements Serializable {
     }
 
     /**
-     * Adds favourite diagnosis to the current encounter based on patient's age
+     * Adds the selected diagnosis and its associated favourite medicines to the current encounter
      */
-    public void addFavouriteDiagnosis(Patient patient) {
-        if (patient == null) {
-            JsfUtil.addErrorMessage("Patient not found");
+    public void addFavouriteDiagnosis() {
+        // First add the selected diagnosis (like addDx does)
+        if (diagnosis == null) {
+            JsfUtil.addErrorMessage("Please select a diagnosis");
             return;
         }
-
         if (current == null) {
-            JsfUtil.addErrorMessage("Current encounter not found");
+            JsfUtil.addErrorMessage("Please select a visit");
             return;
         }
 
-        if (encounterDiagnoses == null) {
-            encounterDiagnoses = new ArrayList<>();
+        // Add the diagnosis
+        ClinicalFindingValue dx = new ClinicalFindingValue();
+        dx.setItemValue(diagnosis);
+        dx.setClinicalFindingValueType(ClinicalFindingValueType.VisitDiagnosis);
+        dx.setEncounter(current);
+        dx.setPerson(current.getPatient().getPerson());
+        dx.setStringValue(diagnosis.getName());
+        dx.setLobValue(diagnosisComments);
+        clinicalFindingValueFacade.create(dx);
+        encounterFindingValues.add(dx);
+
+        // Clear the diagnosis selection
+        Item selectedDiagnosis = diagnosis; // Keep reference for medicine lookup
+        diagnosis = null;
+        diagnosisComments = "";
+        encounterDiagnoses = fillEncounterDiagnoses(current);
+
+        // Now find and add medicines for this diagnosis based on age group
+        Patient patient = current.getPatient();
+        if (patient == null) {
+            JsfUtil.addSuccessMessage("Diagnosis added");
+            return;
         }
 
-        List<PrescriptionTemplate> favouriteDiagnoses = new ArrayList<>();
+        if (encounterMedicines == null) {
+            encounterMedicines = new ArrayList<>();
+        }
+
+        List<PrescriptionTemplate> favouriteMedicines = new ArrayList<>();
         String lookupMethod = "";
 
         // Get patient weight from current encounter
@@ -1401,74 +1425,72 @@ public class PatientEncounterController implements Serializable {
 
         // Method 1: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
-            favouriteDiagnoses = favouriteController.listFavouriteItems(
-                    null,
-                    PrescriptionTemplateType.FavouriteDiagnosis,
+            favouriteMedicines = favouriteController.listFavouriteItems(
+                    selectedDiagnosis,
+                    PrescriptionTemplateType.FavouriteMedicine,
                     patientWeight,
                     null
             );
-            if (!favouriteDiagnoses.isEmpty()) {
+            if (!favouriteMedicines.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
             }
         }
 
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
-        if (favouriteDiagnoses.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
-            favouriteDiagnoses = favouriteController.listFavouriteItems(
-                    null,
-                    PrescriptionTemplateType.FavouriteDiagnosis,
+        if (favouriteMedicines.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
+            favouriteMedicines = favouriteController.listFavouriteItems(
+                    selectedDiagnosis,
+                    PrescriptionTemplateType.FavouriteMedicine,
                     null,
                     patientAgeInDays
             );
-            if (!favouriteDiagnoses.isEmpty()) {
+            if (!favouriteMedicines.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
             }
         }
 
-        // Check if any favourites were found
-        if (favouriteDiagnoses == null || favouriteDiagnoses.isEmpty()) {
-            String message = "No favourite diagnoses found";
-            if (patientWeight != null && patientWeight > 0) {
-                message += " for weight " + patientWeight + " kg";
-            } else if (patientAgeInDays != null && patientAgeInDays > 0) {
-                message += " for age " + (patientAgeInDays / 365) + " years";
+        // Add medicines if found
+        int medicineCount = 0;
+        if (favouriteMedicines != null && !favouriteMedicines.isEmpty()) {
+            for (PrescriptionTemplate template : favouriteMedicines) {
+                if (template == null || template.getItem() == null) {
+                    continue;
+                }
+
+                // Create EncounterMedicine
+                EncounterMedicine em = new EncounterMedicine();
+                em.setEncounter(current);
+
+                Prescription pres = new Prescription();
+                pres.setItem(template.getItem());
+                pres.setDose(template.getDose());
+                pres.setDoseUnit(template.getDoseUnit());
+                pres.setFrequencyUnit(template.getFrequencyUnit());
+                pres.setDuration(template.getDuration());
+                pres.setDurationUnit(template.getDurationUnit());
+                pres.setIndoor(template.isIndoor());
+
+                em.setPrescription(pres);
+
+                // Persist the prescription and encounter medicine
+                if (pres.getId() == null) {
+                    prescriptionFacade.create(pres);
+                }
+                if (em.getId() == null) {
+                    encounterMedicineFacade.create(em);
+                }
+
+                encounterMedicines.add(em);
+                medicineCount++;
             }
-            JsfUtil.addWarningMessage(message);
-            return;
-        }
-
-        // Add favourite diagnoses to encounter
-        int addedCount = 0;
-        for (PrescriptionTemplate template : favouriteDiagnoses) {
-            if (template == null || template.getItem() == null) {
-                continue;
-            }
-
-            // Create ClinicalFindingValue for diagnosis
-            ClinicalFindingValue cfv = new ClinicalFindingValue();
-            cfv.setEncounter(current);
-            cfv.setPatient(patient);
-            cfv.setPerson(patient.getPerson());
-            cfv.setClinicalFindingValueType(ClinicalFindingValueType.PatientDiagnosis);
-            cfv.setItemValue(template.getItem());
-            cfv.setLobValue("Added from favourite diagnosis template");
-
-            // Persist clinical finding value
-            if (cfv.getId() == null) {
-                clinicalFindingValueFacade.create(cfv);
-            } else {
-                clinicalFindingValueFacade.edit(cfv);
-            }
-
-            getEncounterFindingValues().add(cfv);
-            encounterDiagnoses.add(cfv);
-            addedCount++;
         }
 
         // Show success message
-        if (addedCount > 0) {
-            JsfUtil.addSuccessMessage(addedCount + " favourite diagnosis(es) added from " + lookupMethod);
+        String message = "Diagnosis added";
+        if (medicineCount > 0) {
+            message += " with " + medicineCount + " medicine(s) from " + lookupMethod;
         }
+        JsfUtil.addSuccessMessage(message);
     }
 
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
