@@ -75,7 +75,13 @@
                     <f:facet name="header">
                         <h:outputText value="Bill No" />
                     </f:facet>
-                    <h:outputText value="#{row.bill.deptId}" />
+                    <h:outputText value="#{row.bill.deptId}" rendered="#{row.bill.deptId ne null}" />
+                    <h:commandLink rendered="#{row.bill.deptId ne null}"
+                                   action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                   styleClass="btn btn-link" title="View Bill Details">
+                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                    </h:commandLink>
                 </p:column>
 
                 <p:column rendered="false">
