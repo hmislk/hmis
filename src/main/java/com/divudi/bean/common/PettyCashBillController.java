@@ -340,7 +340,6 @@ public class PettyCashBillController implements Serializable {
         }
 
         if (maximumRefundedAmount > 0.0) {
-            System.out.println("current = " + current);
             if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
                 currentReturnBill = createPettyCashReturnBill();
                 paymentService.createPayment(currentReturnBill, paymentMethodData);

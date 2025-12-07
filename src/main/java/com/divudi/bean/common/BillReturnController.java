@@ -138,7 +138,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
         returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
-        System.out.println("Method = " + paymentMethod);
         return "/collecting_centre/bill_return?faces-redirect=true";
     }
 
@@ -470,7 +469,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error = " + e);
             }
 
             if (originalBillFeesOfSelectedBillItem != null) {
@@ -711,7 +709,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error = " + e);
             }
 
             if (originalBillFeesOfSelectedBillItem != null) {
@@ -750,6 +747,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         returningCCTotal = -Math.abs(returningCCTotal);
         returningStaffTotal = -Math.abs(returningStaffTotal);
         returningDiscount = -Math.abs(returningDiscount);
+// Print the adjusted values
 
 // Print the adjusted values
         System.out.println("Adjusted returningTotal: " + returningTotal);
@@ -767,11 +765,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.setCollctingCentreFee(returningCCTotal);
         newlyReturnedBill.setProfessionalFee(returningStaffTotal);
         newlyReturnedBill.setDiscount(returningDiscount);
+// Print the values before setting
 
 // Print the values before setting
         System.out.println("Setting TotalHospitalFee: " + returningHospitalTotal);
         System.out.println("Setting TotalCenterFee: " + returningCCTotal);
-        System.out.println("Setting TotalStaffFee: " + returningStaffTotal);
 
 // Assign the values
         newlyReturnedBill.setTotalHospitalFee(returningHospitalTotal);

@@ -112,7 +112,6 @@ public class QuickBookReportController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        System.out.println("report = " + report);
         switch (report) {
             case "1":
                 createQBFormatOpdDayIncome();
@@ -150,7 +149,6 @@ public class QuickBookReportController implements Serializable {
         items = fetchBilledItem(BillType.OpdBill, fromDate, toDate, true);
         for (Item i : items) {
             System.out.println("i.getName() = " + i.getName());
-            System.out.println("i.getId() = " + i.getId());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -163,7 +161,6 @@ public class QuickBookReportController implements Serializable {
         List<Item> is = fetchBilledItem(BillType.InwardBill, fromDate, toDate, false);
         for (Item i : is) {
             System.out.println("i.getName() = " + i.getName());
-            System.out.println("i.getId() = " + i.getId());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -197,7 +194,6 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("tmp.size() = " + tmp.size());
 
         return tmp;
 
@@ -227,7 +223,6 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("tmp.size() = " + tmp.size());
 
         return tmp;
 
@@ -255,7 +250,6 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("tmp.size() = " + tmp.size());
 
         return tmp;
 
@@ -359,14 +353,11 @@ public class QuickBookReportController implements Serializable {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
             if (i != null) {
-                System.out.println("****i.getName() = " + i.getName());
             } else {
-                System.out.println("****i = " + i);
             }
             qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
             qbfs.addAll(fetchOPdDocPaymentTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
             if (qbfs.size() == 0) {
-                System.out.println("qbfs.size() = " + qbfs.size());
                 continue;
             }
             QuickBookFormat qbf = new QuickBookFormat();
@@ -402,7 +393,6 @@ public class QuickBookReportController implements Serializable {
         }
         if (reportKeyWord.getPaymentMethod() == PaymentMethod.Credit) {
             for (PatientEncounter pe : fetchPatientEncounters(fromDate, toDate, PaymentMethod.Credit, null, getReportKeyWord().getAdmissionType(), null)) {
-                System.out.println("pe.getBhtNo() = " + pe.getBhtNo());
                 grantTot = 0.0;
                 List<QuickBookFormat> qbfs = new ArrayList<>();
                 qbfs.addAll(createInwardIncomes(fromDate, toDate, pe, null, PaymentMethod.Credit, null));
@@ -488,7 +478,6 @@ public class QuickBookReportController implements Serializable {
 
             } else {
                 for (AdmissionType atype : getAdmissionTypeController().getItems()) {
-                    System.out.println("atype.getName() = " + atype.getName());
                     grantTot = 0.0;
                     List<QuickBookFormat> qbfs = new ArrayList<>();
                     qbfs.addAll(createInwardIncomes(fromDate, toDate, null, atype, PaymentMethod.Cash, null));
@@ -529,7 +518,6 @@ public class QuickBookReportController implements Serializable {
             }
         }
 
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
 
     }
 
@@ -606,8 +594,6 @@ public class QuickBookReportController implements Serializable {
         }
 
         if (expenseItem.getPrintName() == null || expenseItem.getPrintName().trim().isEmpty()) {
-            System.err.println("Warning: Expense item missing printName for Bill " + billId +
-                ". Item ID: " + expenseItem.getId() + ". Using default account. Please set printName to match QB account.");
         }
     }
 
@@ -663,7 +649,6 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
         for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            System.out.println("d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -717,9 +702,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -775,9 +758,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -835,9 +816,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -895,9 +874,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
@@ -916,7 +893,6 @@ public class QuickBookReportController implements Serializable {
         }
 
         System.out.println("bills.size() = " + bills.size());
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
     }
 
     /**
@@ -936,7 +912,6 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
         for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            System.out.println("d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -989,10 +964,8 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
             qbfs.add(qbf);
 
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             // First try individual expense items
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("Processing individual expense: " + bi.getItem().getName());
                 String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
@@ -1001,11 +974,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found for bill " + b.getDeptId() + ", checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Transport", "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1013,7 +984,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation Charges", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1038,7 +1008,6 @@ public class QuickBookReportController implements Serializable {
         // The other sections (cancelled, return, return cancelled) would follow the same pattern
 
         System.out.println("bills.size() = " + bills.size());
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
     }
 
     public void createQBFormatStoreGRNAndPurchaseBills() {
@@ -1053,7 +1022,6 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
         for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.StorePurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            System.out.println("d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -1078,7 +1046,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -1111,15 +1078,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -1132,11 +1096,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1144,7 +1106,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1153,11 +1114,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1165,7 +1124,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1189,8 +1147,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -1209,7 +1167,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -1242,15 +1199,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -1263,11 +1217,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1275,7 +1227,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1284,11 +1235,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1296,7 +1245,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1320,8 +1268,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -1341,7 +1289,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -1374,15 +1321,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -1395,11 +1339,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1407,7 +1349,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1416,11 +1357,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1428,7 +1367,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1452,8 +1390,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -1473,7 +1411,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -1508,15 +1445,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -1529,11 +1463,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1541,7 +1473,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1550,11 +1481,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1562,7 +1491,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1586,8 +1514,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -1596,7 +1524,6 @@ public class QuickBookReportController implements Serializable {
         }
 
         System.out.println("bills.size() = " + bills.size());
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
 
     }
 
@@ -1612,7 +1539,6 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
         for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            System.out.println("d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -1637,7 +1563,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -1674,15 +1599,12 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -1695,11 +1617,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1707,7 +1627,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1716,11 +1635,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1728,7 +1645,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1752,8 +1668,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -1772,7 +1688,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -1807,15 +1722,12 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -1828,11 +1740,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1840,7 +1750,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1849,11 +1758,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1861,7 +1768,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1885,8 +1791,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -1906,7 +1812,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -1942,15 +1847,12 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -1963,11 +1865,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1975,7 +1875,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -1984,11 +1883,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -1996,7 +1893,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -2020,8 +1916,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -2041,7 +1937,6 @@ public class QuickBookReportController implements Serializable {
             try {
                 validateBillForQBExport(b);
             } catch (RuntimeException e) {
-                System.err.println("Skipping invalid bill: " + e.getMessage());
                 continue; // Skip this bill and process the next one
             }
 
@@ -2077,15 +1972,12 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getNetTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
-                System.err.println("expensess");
 
                 // Validate expense item
                 try {
                     validateExpenseMapping(bi.getItem(), b.getDeptId());
                 } catch (RuntimeException e) {
-                    System.err.println("Skipping invalid expense: " + e.getMessage());
                     continue; // Skip this expense and process the next one
                 }
 
@@ -2098,11 +1990,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", (0 - b.getExpensesTotalConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -2110,7 +2000,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", (0 - b.getExpensesTotalNotConsideredForCosting()), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -2119,11 +2008,9 @@ public class QuickBookReportController implements Serializable {
 
             // Fallback: If no individual expense items found, check bill expense totals
             if (b.getBillExpenses().isEmpty()) {
-                System.err.println("No individual expense items found, checking bill expense totals");
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    System.err.println("Adding expense considered for costing: " + b.getExpensesTotalConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "INVENTORIES:" + b.getDepartment().getName(), "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
@@ -2131,7 +2018,6 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    System.err.println("Adding expense NOT considered for costing: " + b.getExpensesTotalNotConsideredForCosting());
                     qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation & Service", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
@@ -2155,8 +2041,8 @@ public class QuickBookReportController implements Serializable {
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
-                System.err.println("Transaction balance validation failed: " + e.getMessage());
                 // Log the error but continue processing
+                
             }
 
             qbf = new QuickBookFormat();
@@ -2165,7 +2051,6 @@ public class QuickBookReportController implements Serializable {
         }
 
         System.out.println("bills.size() = " + bills.size());
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
     }
 
     public void createQBFormatPharmacyCredit() {
@@ -2236,7 +2121,6 @@ public class QuickBookReportController implements Serializable {
         System.out.println("params = " + params);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("lobjs.size = " + lobjs.size());
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         Item itemBefore = null;
@@ -2462,7 +2346,6 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pms", paymentMethods);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lobjs.size = " + (lobjs != null ? lobjs.size() : 0));
 
         if (lobjs != null && !lobjs.isEmpty()) {
             Object[] resultRow = lobjs.get(0);
@@ -2570,7 +2453,6 @@ public class QuickBookReportController implements Serializable {
 
                 qbf.setAmount(0 - value);
                 if (department != null) {
-                    System.out.println("department.getPrintingName()) " + department.getName());
                     qbf.setQbClass(department.getName());
                     qbf.setInvItem(department.getName());
                     qbf.setMemo(department.getName());
@@ -2584,7 +2466,6 @@ public class QuickBookReportController implements Serializable {
                 qbfs.add(qbf);
             }
         }
-        System.out.println("qbfs.size() = " + qbfs.size());
         return qbfs;
 
     }
@@ -2602,7 +2483,6 @@ public class QuickBookReportController implements Serializable {
             String3Value2 newRow = new String3Value2();
             newRow.setString1(admissionType.getName() + " " + paymentMethod + " : ");
             newRow.setSummery(true);
-            System.out.println("admissionType.getName()  paymentMethod = " + admissionType.getName() + " " + paymentMethod);
 
             if (paymentMethod != PaymentMethod.Credit) {
                 QuickBookFormat qbf = new QuickBookFormat();
@@ -2687,7 +2567,6 @@ public class QuickBookReportController implements Serializable {
         qbfs.addAll(fetchInwardTimedService(fd, td, pe, admissionType, paymentMethod, cc));
         qbfs.addAll(fetchInwardDoctorPayment(fd, td, pe, admissionType, paymentMethod, cc));
         qbfs.addAll(fetchInwardOtherService(fd, td, pe, admissionType, paymentMethod, cc));
-        System.out.println("qbfs.size(All) = " + qbfs.size());
         return qbfs;
     }
 
@@ -2757,7 +2636,6 @@ public class QuickBookReportController implements Serializable {
             BillClassType bclass = (BillClassType) lobj[4];
             System.out.println("iName = " + i.getName());
             System.out.println("i.getClass() = " + i.getClass());
-            System.out.println("bclass = " + bclass);
             String s = "";
             if (i.getInwardChargeType() == InwardChargeType.VAT) {
                 s = "VAT Control Account:Output";
@@ -2780,7 +2658,6 @@ public class QuickBookReportController implements Serializable {
                 }
             }
             if (itemBefore == null) {
-                System.err.println("if");
 
                 if (paymentMethod == PaymentMethod.Credit) {
                     if (pe != null) {
@@ -2812,9 +2689,7 @@ public class QuickBookReportController implements Serializable {
                 grantTot += sum;
                 itemBefore = i;
             } else {
-                System.err.println("Else");
                 if (itemBefore == i) {
-                    System.err.println("Item Equal");
                     long l = 0l;
                     try {
                         l = Long.parseLong(qbf.getCustFld5());
@@ -2835,7 +2710,6 @@ public class QuickBookReportController implements Serializable {
                     grantTot += sum;
                 } else {
                     System.out.println("i.getName() = " + i.getName());
-                    System.out.println("itemBefore.getName() = " + itemBefore.getName());
                     itemBefore = i;
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
@@ -2875,7 +2749,6 @@ public class QuickBookReportController implements Serializable {
         if (qbf.getAmount() != 0.0) {
             qbfs.add(qbf);
         }
-        System.out.println("qbfs.size(service) = " + qbfs.size());
         return qbfs;
 
     }
@@ -2922,7 +2795,6 @@ public class QuickBookReportController implements Serializable {
 
         List<QuickBookFormat> qbfs = new ArrayList<>();
         if (obj != null) {
-            System.out.println("obj.length = " + obj.length);
             QuickBookFormat qbf;
             SimpleDateFormat sdf = new SimpleDateFormat("MMM yyyy");
             String name = "";
@@ -3037,9 +2909,7 @@ public class QuickBookReportController implements Serializable {
             }
 
         } else {
-            System.err.println("No Room data");
         }
-        System.out.println("qbfs.size(room) = " + qbfs.size());
         return qbfs;
 
     }
@@ -3107,7 +2977,6 @@ public class QuickBookReportController implements Serializable {
             double value = (double) o[1];
             Speciality s = (Speciality) o[2];
             System.out.println("s.getNmane() = " + s.getName());
-            System.out.println("s.getCreater().getWebUserPerson().getName() = " + s.getCreater().getWebUserPerson().getName());
             QuickBookFormat qbf;
             if (paymentMethod == PaymentMethod.Credit) {
                 if (pe != null) {
@@ -3127,7 +2996,6 @@ public class QuickBookReportController implements Serializable {
 
             }
         }
-        System.out.println("qbfs.size(Docpay) = " + qbfs.size());
 
         return qbfs;
 
@@ -3214,7 +3082,6 @@ public class QuickBookReportController implements Serializable {
             grantTot += value;
             qbfs.add(qbf);
         }
-        System.out.println("qbfs.size(Time Service) = " + qbfs.size());
         return qbfs;
     }
 
@@ -3326,7 +3193,6 @@ public class QuickBookReportController implements Serializable {
         if (qbf.getAmount() != 0.0) {
             qbfs.add(qbf);
         }
-        System.out.println("qbfs.size(Other Service) = " + qbfs.size());
         return qbfs;
     }
 
@@ -3400,7 +3266,6 @@ public class QuickBookReportController implements Serializable {
             qbfs.add(qbf);
 
         }
-        System.out.println("qbfs.size() = " + qbfs.size());
         return qbfs;
 
     }
@@ -3593,7 +3458,6 @@ public class QuickBookReportController implements Serializable {
         System.out.println("temMap = " + temMap);
 
         creditCompanies = getInstitutionFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("creditCompanies.size() = " + creditCompanies.size());
         return creditCompanies;
     }
 
@@ -3678,7 +3542,6 @@ public class QuickBookReportController implements Serializable {
 
         pes = getPatientEncounterFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("pes.size() = " + pes.size());
 
         return pes;
     }

@@ -2173,7 +2173,6 @@ public class BillNumberGenerator {
         
         billNumber = fetchLastRequestNumberForYear(dep.getInstitution(), dep, requestType);
         
-        System.out.println("billNumber = " + billNumber);
         
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();

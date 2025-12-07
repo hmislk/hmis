@@ -1046,6 +1046,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return opdBillController.navigateToNewOpdBill(current);
     }
 
+    public String navigateToPharmacyRetailSaleFromOpdPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return pharmacySaleController.navigateToPharmacyRetailSale(current, null);
+    }
+
     public String navigateToSaleFromOpticianRepair() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -2066,7 +2074,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             admissionController.fillCurrentPatientAllergies(current);//TODO
 
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-            System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                     controller.setPatient(controller.getPatient());
@@ -2106,7 +2113,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.fillCurrentPatientAllergies(current); //TODO
 
         boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-        System.out.println("Select Patient - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                 controller.setPatient(controller.getPatient());

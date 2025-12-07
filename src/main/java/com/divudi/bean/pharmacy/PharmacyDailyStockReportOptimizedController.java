@@ -66,12 +66,10 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         System.out.println("Department Name: " + (department != null ? department.getName() : "null"));
 
         if (department == null) {
-            System.out.println("ERROR: Department is null");
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         if (fromDate == null) {
-            System.out.println("ERROR: fromDate is null");
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
@@ -79,6 +77,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
+        // Calculate Opening Stock Value at Retail Rate using optimized method
 
         // Calculate Opening Stock Value at Retail Rate using optimized method
         System.out.println(">>> Calculating OPENING stock for date: " + fromDate);
@@ -111,6 +110,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillTypeDto(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
+        // Calculate Closing Stock Value at Retail Rate using optimized method
 
         // Calculate Closing Stock Value at Retail Rate using optimized method
         System.out.println(">>> Calculating CLOSING stock for date: " + toDate);
@@ -119,7 +119,6 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         dailyStockBalanceReport.setClosingStockValue(closingStockValueAtRetailRate);
 
         System.out.println("=== processDailyStockBalanceReportOptimized END ===");
-        System.out.println("==========================================");
     }
 
     /**
@@ -133,7 +132,6 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
     private double calculateStockValueAtRetailRateOptimized(Date date, Department dept) {
         System.out.println("--- calculateStockValueAtRetailRateOptimized (Controller) ---");
         System.out.println("Date param: " + date);
-        System.out.println("Department param: " + dept);
 
         try {
             Long departmentId = (dept != null) ? dept.getId() : null;
@@ -143,11 +141,9 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             double result = stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, departmentId);
 
             System.out.println("Facade returned: " + result);
-            System.out.println("--- End calculateStockValueAtRetailRateOptimized (Controller) ---");
             return result;
         } catch (Exception e) {
             System.err.println("!!! EXCEPTION in Controller calculateStockValueAtRetailRateOptimized !!!");
-            System.err.println("Exception: " + e.getMessage());
             e.printStackTrace();
             JsfUtil.addErrorMessage(e, "Error calculating stock value at retail rate for date: " + date);
             return 0.0;

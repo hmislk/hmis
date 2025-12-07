@@ -4404,7 +4404,6 @@ public class PharmacyBillSearch implements Serializable {
 
     public String navigateToViewPharmacyIssueBill() {
         System.out.println("navigateToViewPharmacyIssueBill");
-        System.out.println("bill = " + bill);
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected.");
             return null;

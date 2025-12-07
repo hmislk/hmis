@@ -5068,7 +5068,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("currentBills = " + currentBills);
     }
 
     public void fillHandovers() {
@@ -5093,7 +5092,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("currentBills = " + currentBills);
     }
 
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {

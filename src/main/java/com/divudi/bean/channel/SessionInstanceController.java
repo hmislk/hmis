@@ -122,7 +122,6 @@ public class SessionInstanceController implements Serializable {
 
         sessionInstances = ejbFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
 
-        System.out.println("sessionInstances = " + sessionInstances);
         return sessionInstances;
     }
 
