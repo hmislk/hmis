@@ -2,6 +2,7 @@ package com.divudi.core.entity.inward;
 
 import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -30,7 +31,7 @@ public class Reservation implements Serializable {
     @ManyToOne
     private Patient patient;
     @ManyToOne
-    private RoomFacilityCharge Room;
+    private RoomFacilityCharge room;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reservedFrom;
@@ -50,6 +51,9 @@ public class Reservation implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    
+    @ManyToOne
+    private PatientEncounter reservationEncounter;
 
     public Long getId() {
         return id;
@@ -76,11 +80,11 @@ public class Reservation implements Serializable {
     }
 
     public RoomFacilityCharge getRoom() {
-        return Room;
+        return room;
     }
 
-    public void setRoom(RoomFacilityCharge Room) {
-        this.Room = Room;
+    public void setRoom(RoomFacilityCharge room) {
+        this.room = room;
     }
 
     public Date getReservedFrom() {
@@ -145,6 +149,14 @@ public class Reservation implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public PatientEncounter getReservationEncounter() {
+        return reservationEncounter;
+    }
+
+    public void setReservationEncounter(PatientEncounter reservationEncounter) {
+        this.reservationEncounter = reservationEncounter;
     }
 
 }
