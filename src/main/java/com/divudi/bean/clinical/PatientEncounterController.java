@@ -53,9 +53,11 @@ import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
+import com.divudi.core.data.InvestigationItemType;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.InvestigationItemFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -130,6 +132,8 @@ public class PatientEncounterController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
+    @EJB
+    InvestigationItemFacade investigationItemFacade;
 
     /**
      * Controllers
@@ -2557,7 +2561,6 @@ public class PatientEncounterController implements Serializable {
             Long sbp = (Long) row[1];
             Long dbp = (Long) row[2];
 
-
             // Add date label
             if (encounterDate != null) {
                 dateLabels.add(format.format(encounterDate));
@@ -2569,7 +2572,6 @@ public class PatientEncounterController implements Serializable {
             sbpValues.add(sbp);
             dbpValues.add(dbp);
         }
-
 
         // Only create chart if we have data
         if (!bpData.isEmpty()) {
@@ -4012,10 +4014,10 @@ public class PatientEncounterController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("patient", current.getPatient());
 
-        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e " +
-                     "WHERE e.patient = :patient " +
-                     "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) " +
-                     "ORDER BY e.encounterDate ASC";
+        String jpql = "SELECT e.encounterDate, e.sbp, e.dbp FROM PatientEncounter e "
+                + "WHERE e.patient = :patient "
+                + "AND (e.sbp IS NOT NULL OR e.dbp IS NOT NULL) "
+                + "ORDER BY e.encounterDate ASC";
 
         return ejbFacade.findObjectArrayByJpql(jpql, params, null);
     }
@@ -4031,10 +4033,10 @@ public class PatientEncounterController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("patient", current.getPatient());
 
-        String jpql = "SELECT e.encounterDate, e.weight, e.bmi FROM PatientEncounter e " +
-                     "WHERE e.patient = :patient " +
-                     "AND (e.weight IS NOT NULL OR e.bmi IS NOT NULL) " +
-                     "ORDER BY e.encounterDate ASC";
+        String jpql = "SELECT e.encounterDate, e.weight, e.bmi FROM PatientEncounter e "
+                + "WHERE e.patient = :patient "
+                + "AND (e.weight IS NOT NULL OR e.bmi IS NOT NULL) "
+                + "ORDER BY e.encounterDate ASC";
 
         bmiWeightData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
     }
@@ -4058,13 +4060,13 @@ public class PatientEncounterController implements Serializable {
         params.put("pt", current.getPatient().getId());
         params.put("invItem", selectedInvestigationItem.getId());
 
-        String jpql = "SELECT priv.doubleValue, priv.strValue, priv.patientReport.approveAt " +
-                     "FROM PatientReportItemValue priv " +
-                     "WHERE priv.patient.id = :pt " +
-                     "AND priv.investigationItem.id = :invItem " +
-                     "AND priv.patientReport.approveAt IS NOT NULL " +
-                     "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) " +
-                     "ORDER BY priv.patientReport.approveAt ASC";
+        String jpql = "SELECT priv.doubleValue, priv.strValue, priv.patientReport.approveAt "
+                + "FROM PatientReportItemValue priv "
+                + "WHERE priv.patient.id = :pt "
+                + "AND priv.investigationItem.id = :invItem "
+                + "AND priv.patientReport.approveAt IS NOT NULL "
+                + "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) "
+                + "ORDER BY priv.patientReport.approveAt ASC";
 
         try {
             List<Object[]> rawData = ejbFacade.findObjectArrayByJpql(jpql, params, null);
@@ -4122,35 +4124,31 @@ public class PatientEncounterController implements Serializable {
             return new ArrayList<>();
         }
 
-        // Use the existing fillPatientReportItemValue pattern but get investigation items
-        // Query from the existing graphInvestigationItem property pattern
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.trim().toUpperCase() + "%");
 
-        // Use Object[] query and then extract InvestigationItem data
-        String jpql = "SELECT DISTINCT priv.investigationItem " +
-                     "FROM PatientReportItemValue priv " +
-                     "WHERE priv.investigationItem.retired = false " +
-                     "AND UPPER(priv.investigationItem.name) LIKE :query " +
-                     "AND priv.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value " +
-                     "ORDER BY priv.investigationItem.name";
+        // Select only Value, Calculation for ixitvts
+        List<InvestigationItemType> ixitvts = new ArrayList<>();
+        ixitvts.add(InvestigationItemType.Value);
+        ixitvts.add(InvestigationItemType.Calculation);
+        params.put("ixitvts", ixitvts);
+
+        String jpql = "SELECT i "
+                + "FROM InvestigationItem i "
+                + "WHERE i.retired = false "
+                + "AND UPPER(i.name) LIKE :query "
+                + "AND i.ixItemType IN :ixitvts "
+                + "AND i.item IS NOT NULL "
+                + "ORDER BY i.name";
 
         try {
-            List<Object[]> results = ejbFacade.findObjectArrayByJpql(jpql, params, null);
-            List<InvestigationItem> investigationItems = new ArrayList<>();
+            List<InvestigationItem> results = investigationItemFacade.findByJpql(jpql, params);
 
-            if (results != null) {
-                int count = 0;
-                for (Object[] row : results) {
-                    if (row[0] != null && count < 20) {
-                        investigationItems.add((InvestigationItem) row[0]);
-                        count++;
-                    }
-                    if (count >= 20) break;
-                }
+            if (results != null && results.size() > 20) {
+                return results.subList(0, 20);
             }
 
-            return investigationItems;
+            return results != null ? results : new ArrayList<>();
         } catch (Exception e) {
             return new ArrayList<>();
         }

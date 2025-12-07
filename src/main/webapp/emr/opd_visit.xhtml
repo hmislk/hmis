@@ -1389,35 +1389,39 @@
                                     </div>
 
                                 </p:tab>
-                                <p:tab title="Health Analytics">
-                                    <!-- Analytics such as FBS Graph, Lipid Profile, BMI Chart, etc. -->
-                                    <div class="ui-g">
-                                        <div class="ui-g-12">
-                                            <p:panel id="panelBloodPressureChart" class="w-100 mb-3">
-                                                <f:facet name="header">
-                                                    <h:outputText styleClass="fas fa-heartbeat"/>
-                                                    <h:outputText class="mx-4" value="Blood Pressure Analytics"/>
-                                                </f:facet>
+                                <p:tab id="tabHealthAnalytics" title="Health Analytics">
+                                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-                                                <!-- Button to generate chart -->
-                                                <div class="mb-3">
-                                                    <p:commandButton
-                                                        value="Generate Blood Pressure Chart"
-                                                        action="#{patientEncounterController.generateBloodPressureChart()}"
-                                                        ajax="true"
-                                                        update="chartContainer"
-                                                        icon="fas fa-chart-line"
-                                                        class="ui-button-info"/>
-                                                </div>
-
-                                                <!-- Chart display container -->
-                                                <h:panelGroup id="chartContainer" layout="block">
-                                                    <h:panelGroup rendered="#{patientEncounterController.bloodPressureData.size() > 0}">
-                                                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-                                                        <div style="width: 100%; height: 400px;">
-                                                            <canvas id="bpCanvas" width="400" height="200"></canvas>
+                                    <!-- Analytics Dashboard with improved layout utilizing horizontal space -->
+                                    <div class="container-fluid p-2">
+                                        <!-- Top Row: Blood Pressure and BMI/Weight Charts -->
+                                        <div class="row mb-3">
+                                            <!-- Blood Pressure Chart Panel - Left Half -->
+                                            <div class="col-md-6 mb-3">
+                                                <p:panel id="panelBloodPressureChart" class="h-100">
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                                            <div class="d-flex align-items-center">
+                                                                <h:outputText styleClass="pi pi-heart me-2" style="color: #e74c3c;"/>
+                                                                <h:outputText value="Blood Pressure Analytics"/>
+                                                            </div>
+                                                            <p:commandButton
+                                                                value="Generate"
+                                                                action="#{patientEncounterController.generateBloodPressureChart()}"
+                                                                ajax="true"
+                                                                update="chartContainer"
+                                                                icon="pi pi-chart-line"
+                                                                styleClass="ui-button-info ui-button-sm"
+                                                                title="Generate Blood Pressure Chart"/>
                                                         </div>
+                                                    </f:facet>
+
+                                                    <!-- Chart display container with reduced height -->
+                                                    <h:panelGroup id="chartContainer" layout="block">
+                                                        <h:panelGroup rendered="#{patientEncounterController.bloodPressureData.size() > 0}">
+                                                            <div class="w-100" style="width: 100%; height: 280px;">
+                                                                <canvas id="bpCanvas" class="w-100" style="height:100%;"></canvas>
+                                                            </div>
 
                                                         <script type="text/javascript">
                                                             setTimeout(function() {
@@ -1485,36 +1489,40 @@
                                                         </script>
                                                     </h:panelGroup>
 
-                                                    <h:outputText
-                                                        value="Click 'Generate Blood Pressure Chart' to view the patient's blood pressure trends over time."
-                                                        rendered="#{patientEncounterController.bloodPressureData.size() == 0}"
-                                                        class="text-muted"/>
-                                                </h:panelGroup>
-                                            </p:panel>
+                                                        <h:outputText
+                                                            value="Click 'Generate' to view blood pressure trends over time."
+                                                            rendered="#{patientEncounterController.bloodPressureData.size() == 0}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
 
-                                            <p:panel id="panelBmiWeightChart" class="w-100 mb-3">
-                                                <f:facet name="header">
-                                                    <h:outputText styleClass="fas fa-weight"/>
-                                                    <h:outputText class="mx-4" value="BMI &amp; Weight Analytics"/>
-                                                </f:facet>
-
-                                                <!-- Button to generate chart -->
-                                                <div class="mb-3">
-                                                    <p:commandButton
-                                                        value="Generate BMI &amp; Weight Chart"
-                                                        action="#{patientEncounterController.generateBmiWeightChart()}"
-                                                        ajax="true"
-                                                        update="bmiWeightChartContainer"
-                                                        icon="fas fa-chart-line"
-                                                        class="ui-button-success"/>
-                                                </div>
-
-                                                <!-- Chart display container -->
-                                                <h:panelGroup id="bmiWeightChartContainer" layout="block">
-                                                    <h:panelGroup rendered="#{patientEncounterController.bmiWeightData.size() > 0}">
-                                                        <div style="width: 100%; height: 400px;">
-                                                            <canvas id="bmiWeightCanvas" width="400" height="200"></canvas>
+                                            <!-- BMI/Weight Chart Panel - Right Half -->
+                                            <div class="col-md-6 mb-3">
+                                                <p:panel id="panelBmiWeightChart" class="h-100">
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                                            <div class="d-flex align-items-center">
+                                                                <h:outputText styleClass="pi pi-chart-line me-2" style="color: #27ae60;"/>
+                                                                <h:outputText value="BMI &amp; Weight Analytics"/>
+                                                            </div>
+                                                            <p:commandButton
+                                                                value="Generate"
+                                                                action="#{patientEncounterController.generateBmiWeightChart()}"
+                                                                ajax="true"
+                                                                update="bmiWeightChartContainer"
+                                                                icon="pi pi-chart-line"
+                                                                styleClass="ui-button-success ui-button-sm"
+                                                                title="Generate BMI &amp; Weight Chart"/>
                                                         </div>
+                                                    </f:facet>
+
+                                                    <!-- Chart display container with reduced height -->
+                                                    <h:panelGroup id="bmiWeightChartContainer" layout="block">
+                                                        <h:panelGroup rendered="#{patientEncounterController.bmiWeightData.size() > 0}">
+                                                            <div class="w-100" style="width: 100%; height: 280px;">
+                                                                <canvas id="bmiWeightCanvas" class="w-100" style="height:100%;"></canvas>
+                                                            </div>
 
                                                         <script type="text/javascript">
                                                             setTimeout(function() {
@@ -1598,53 +1606,68 @@
                                                         </script>
                                                     </h:panelGroup>
 
-                                                    <h:outputText
-                                                        value="Click 'Generate BMI &amp; Weight Chart' to view the patient's BMI and weight trends over time."
-                                                        rendered="#{patientEncounterController.bmiWeightData.size() == 0}"
-                                                        class="text-muted"/>
-                                                </h:panelGroup>
-                                            </p:panel>
+                                                        <h:outputText
+                                                            value="Click 'Generate' to view BMI and weight trends over time."
+                                                            rendered="#{patientEncounterController.bmiWeightData.size() == 0}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                        </div>
 
-                                            <p:panel id="panelInvestigationChart" class="w-100">
-                                                <f:facet name="header">
-                                                    <h:outputText styleClass="fas fa-flask"/>
-                                                    <h:outputText class="mx-4" value="Investigation Results Analytics"/>
-                                                </f:facet>
-
-                                                <!-- Investigation selection and button -->
-                                                <div class="row mb-3">
-                                                    <div class="col-md-8">
-                                                        <p:autoComplete
-                                                            id="acInvestigationItem"
-                                                            value="#{patientEncounterController.selectedInvestigationItem}"
-                                                            completeMethod="#{patientEncounterController.completeInvestigationItems}"
-                                                            var="ii"
-                                                            itemLabel="#{ii.name}"
-                                                            itemValue="#{ii}"
-                                                            placeholder="Type investigation name (e.g., ESR, Blood Sugar, Cholesterol)"
-                                                            minQueryLength="2"
-                                                            maxResults="20"
-                                                            styleClass="w-100"
-                                                            inputStyleClass="w-100"/>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <p:commandButton
-                                                            value="Generate Chart"
-                                                            action="#{patientEncounterController.generateInvestigationChart()}"
-                                                            ajax="true"
-                                                            update="investigationChartContainer"
-                                                            icon="fas fa-chart-line"
-                                                            class="ui-button-warning"
-                                                            disabled="#{patientEncounterController.selectedInvestigationItem == null}"/>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Chart display container -->
-                                                <h:panelGroup id="investigationChartContainer" layout="block">
-                                                    <h:panelGroup rendered="#{patientEncounterController.investigationChartData.size() > 0}">
-                                                        <div style="width: 100%; height: 400px;">
-                                                            <canvas id="investigationCanvas" width="400" height="200"></canvas>
+                                        <!-- Bottom Row: Investigation Results Chart - Full Width -->
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <p:panel id="panelInvestigationChart" class="mb-0">
+                                                    <f:facet name="header">
+                                                        <div class="d-flex align-items-center">
+                                                            <h:outputText styleClass="pi pi-chart-bar me-2" style="color: #8e44ad;"/>
+                                                            <h:outputText value="Investigation Results Analytics"/>
                                                         </div>
+                                                    </f:facet>
+
+                                                    <!-- Investigation selection and button in compact layout -->
+                                                    <div class="row align-items-end mb-3">
+                                                        <div class="col-md-9">
+                                                            <p:outputLabel value="Investigation Type:" for="acInvestigationItem" styleClass="form-label mb-1"/>
+                                                            <p:autoComplete
+                                                                id="acInvestigationItem"
+                                                                value="#{patientEncounterController.selectedInvestigationItem}"
+                                                                completeMethod="#{patientEncounterController.completeInvestigationItems}"
+                                                                var="ii"
+                                                                itemLabel="#{ii.name}"
+                                                                itemValue="#{ii}"
+                                                                placeholder="Type investigation name (e.g., ESR, Blood Sugar, Cholesterol)"
+                                                                minQueryLength="2"
+                                                                maxResults="20"
+                                                                styleClass="w-100"
+                                                                inputStyleClass="w-100">
+                                                                <p:column headerText="Value Name">
+                                                                    <h:outputLabel value="#{ii.name}" />
+                                                                </p:column>
+                                                                <p:column headerText="Report">
+                                                                    <h:outputLabel value="#{ii.item.name}" />
+                                                                </p:column>
+                                                            </p:autoComplete>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <p:commandButton
+                                                                value="Generate Chart"
+                                                                action="#{patientEncounterController.generateInvestigationChart()}"
+                                                                ajax="true"
+                                                                update="investigationChartContainer"
+                                                                icon="pi pi-chart-line"
+                                                                styleClass="ui-button-warning w-100"
+                                                                title="Generate Investigation Trends Chart"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Chart display container with optimized height -->
+                                                    <h:panelGroup id="investigationChartContainer" layout="block">
+                                                        <h:panelGroup rendered="#{patientEncounterController.investigationChartData.size() > 0}">
+                                                            <div class="w-100" style="width: 100%; height: 300px;">
+                                                                <canvas id="investigationCanvas" class="w-100" style="height:100%;"></canvas>
+                                                            </div>
 
                                                         <script type="text/javascript">
                                                             setTimeout(function() {
@@ -1703,17 +1726,18 @@
                                                         </script>
                                                     </h:panelGroup>
 
-                                                    <h:outputText
-                                                        value="Type an investigation name and click 'Generate Chart' to view trends over time."
-                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem == null}"
-                                                        class="text-muted"/>
+                                                        <h:outputText
+                                                            value="Type an investigation name and click 'Generate Chart' to view trends over time."
+                                                            rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem == null}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
 
-                                                    <h:outputText
-                                                        value="No data found for '#{patientEncounterController.selectedInvestigationItem.name}'. This patient may not have any recorded results for this investigation."
-                                                        rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem != null}"
-                                                        class="text-muted"/>
-                                                </h:panelGroup>
-                                            </p:panel>
+                                                        <h:outputText
+                                                            value="No data found for '#{patientEncounterController.selectedInvestigationItem.name}'. This patient may not have any recorded results for this investigation."
+                                                            rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem != null}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
                                         </div>
                                     </div>
                                 </p:tab>
