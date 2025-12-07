@@ -52,7 +52,7 @@
 - Align labels and inputs with `p:outputLabel` + PrimeFaces components; include `for` attributes for accessibility.
 - Reuse controller state; avoid duplicating filters or adding new global variables when not required.
 - Heavy operations (report generation, exports) should use `ajax="false"` to allow file downloads.
-- Always include descriptive `title` attributes on interactive elements.
+- Include descriptive `title` attributes on interactive elements.
 
 ---
 
