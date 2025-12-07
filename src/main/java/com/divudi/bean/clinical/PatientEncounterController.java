@@ -1457,9 +1457,10 @@ public class PatientEncounterController implements Serializable {
                     continue;
                 }
 
-                // Create EncounterMedicine
-                EncounterMedicine em = new EncounterMedicine();
-                em.setEncounter(current);
+                // Create ClinicalFindingValue for medicine (following addEncounterMedicine pattern)
+                ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setEncounter(current);
+                cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
 
                 Prescription pres = new Prescription();
                 pres.setItem(template.getItem());
@@ -1470,19 +1471,25 @@ public class PatientEncounterController implements Serializable {
                 pres.setDurationUnit(template.getDurationUnit());
                 pres.setIndoor(template.isIndoor());
 
-                em.setPrescription(pres);
+                cfv.setPrescription(pres);
 
-                // Persist the prescription and encounter medicine
+                // Persist the prescription and clinical finding value
                 if (pres.getId() == null) {
                     prescriptionFacade.create(pres);
+                } else {
+                    prescriptionFacade.edit(pres);
                 }
-                if (em.getId() == null) {
-                    encounterMedicineFacade.create(em);
+                if (cfv.getId() == null) {
+                    clinicalFindingValueFacade.create(cfv);
+                } else {
+                    clinicalFindingValueFacade.edit(cfv);
                 }
 
-                encounterMedicines.add(em);
+                getEncounterFindingValues().add(cfv);
                 medicineCount++;
             }
+            // Refresh the encounter medicines list
+            encounterMedicines = fillEncounterMedicines(current);
         }
 
         // Show success message
