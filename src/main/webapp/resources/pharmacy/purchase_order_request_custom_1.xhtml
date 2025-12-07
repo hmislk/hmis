@@ -20,7 +20,7 @@
         <div style="width: 212mm; height: 275mm; padding-left: 0px">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.creater.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.site.name}"/>
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.name}"/>
             </div>
@@ -38,8 +38,8 @@
                     <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.creater.department.fax}" rendered="#{!empty cc.attrs.bill.creater.department.fax}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.creater.department.email}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.email}" rendered="#{!empty cc.attrs.bill.creater.department.email}"/>
+                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.creater.institution.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.institution.email}" rendered="#{!empty cc.attrs.bill.creater.institution.email}"/>
                 </div>
             </div>
             <div class="headingBill">
