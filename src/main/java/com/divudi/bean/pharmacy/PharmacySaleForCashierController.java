@@ -63,8 +63,9 @@ import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
-import com.divudi.core.entity.pharmacy.UserStock;
-import com.divudi.core.entity.pharmacy.UserStockContainer;
+//Removed for performance optimization
+//import com.divudi.core.entity.pharmacy.UserStock;
+//import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -77,8 +78,9 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.facade.TokenFacade;
-import com.divudi.core.facade.UserStockContainerFacade;
-import com.divudi.core.facade.UserStockFacade;
+//Removed for performance optimization
+//import com.divudi.core.facade.UserStockContainerFacade;
+//import com.divudi.core.facade.UserStockFacade;
 import com.divudi.service.AuditService;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
@@ -122,8 +124,9 @@ import org.primefaces.PrimeFaces;
 @SessionScoped
 public class PharmacySaleForCashierController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
-    @Inject
-    private UserStockController userStockController;
+    //Removed for performance optimization
+//    @Inject
+//    private UserStockController userStockController;
     @Inject
     private PriceMatrixController priceMatrixController;
     @Inject
@@ -176,10 +179,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     private StaffService staffBean;
     @EJB
     private PaymentService paymentService;
-    @EJB
-    private UserStockContainerFacade userStockContainerFacade;
-    @EJB
-    private UserStockFacade userStockFacade;
+    //Removed for performance optimization
+//    @EJB
+//    private UserStockContainerFacade userStockContainerFacade;
+//    @EJB
+//    private UserStockFacade userStockFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
@@ -234,7 +238,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     String cashPaidStr;
     String comment;
     ///////////////////
-    private UserStockContainer userStockContainer;
+    //Removed for performance optimization
+    //private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
     private boolean patientDetailsEditable;
     private Department counter;
@@ -596,7 +601,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         tmp.setQty(0.0);
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
 
-        userStockController.updateUserStock(tmp.getTransUserStock(), 0);
+        //UserStock update removed for performance optimization
     }
 
     //Check when edititng Qty
@@ -617,16 +622,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return true;
         }
 
-        //Check Is There Any Other User using same Stock
-        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
+        //Check Is There Any Other User using same Stock - REMOVED for performance optimization
 
-            setZeroToQty(tmp);
-            onEditCalculation(tmp);
-            JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
-            return true;
-        }
-
-        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
+        //UserStock update removed for performance optimization
 
         onEditCalculation(tmp);
 
@@ -974,7 +972,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public void resetAll() {
         setBillSettlingStarted(false);
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        //UserStock cleanup removed for performance optimization
         clearBill();
         clearBillItem();
 //        searchController.createPreBillsNotPaid();
@@ -982,7 +980,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void prepareForNewPharmacyRetailBill() {
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        //UserStock cleanup removed for performance optimization
         clearBill();
         clearBillItem();
 //        searchController.createPreBillsNotPaid();
@@ -1505,11 +1503,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
 //            return;
 //        }
-        //Checking User Stock Entity
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
-            return addedQty;
-        }
+        //Checking User Stock Entity - REMOVED for performance optimization
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             if (patient != null && getBillItem() != null) {
 
@@ -1539,12 +1533,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        if (getUserStockContainer().getId() == null) {
-            saveUserStockContainer();
-        }
-
-        UserStock us = saveUserStock(billItem);
-        billItem.setTransUserStock(us);
+        //UserStock creation removed for performance optimization
 
         pharmacyService.addBillItemInstructions(billItem);
 
@@ -1666,11 +1655,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
-        if (getUserStockContainer().getId() == null) {
-            saveUserStockContainer();
-        }
-        UserStock us = saveUserStock(billItem);
-        billItem.setTransUserStock(us);
+        //UserStock creation removed for performance optimization
     }
 
     private void addMultipleStock() {
@@ -1680,29 +1665,30 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     }
 
-    private void saveUserStockContainer() {
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-
-        getUserStockContainer().setCreater(getSessionController().getLoggedUser());
-        getUserStockContainer().setCreatedAt(new Date());
-
-        getUserStockContainerFacade().create(getUserStockContainer());
-
-    }
-
-    private UserStock saveUserStock(BillItem tbi) {
-        UserStock us = new UserStock();
-        us.setStock(tbi.getPharmaceuticalBillItem().getStock());
-        us.setUpdationQty(tbi.getQty());
-        us.setCreater(getSessionController().getLoggedUser());
-        us.setCreatedAt(new Date());
-        us.setUserStockContainer(getUserStockContainer());
-        getUserStockFacade().create(us);
-
-        getUserStockContainer().getUserStocks().add(us);
-
-        return us;
-    }
+    //Helper methods removed for performance optimization
+//    private void saveUserStockContainer() {
+//        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+//
+//        getUserStockContainer().setCreater(getSessionController().getLoggedUser());
+//        getUserStockContainer().setCreatedAt(new Date());
+//
+//        getUserStockContainerFacade().create(getUserStockContainer());
+//
+//    }
+//
+//    private UserStock saveUserStock(BillItem tbi) {
+//        UserStock us = new UserStock();
+//        us.setStock(tbi.getPharmaceuticalBillItem().getStock());
+//        us.setUpdationQty(tbi.getQty());
+//        us.setCreater(getSessionController().getLoggedUser());
+//        us.setCreatedAt(new Date());
+//        us.setUserStockContainer(getUserStockContainer());
+//        getUserStockFacade().create(us);
+//
+//        getUserStockContainer().getUserStocks().add(us);
+//
+//        return us;
+//    }
 
     //    public void calculateAllRatesNew() {
 //        ////////System.out.println("calculating all rates");
@@ -2067,7 +2053,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //            getPreBill().getBillItems().add(tbi);
         }
 
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        //UserStock cleanup removed for performance optimization
 
         calculateRatesForAllBillItemsInPreBill();
 
@@ -2132,7 +2118,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         System.out.println("savePreBillItemsFinally: Final PreBill items count: " + getPreBill().getBillItems().size());
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        //UserStock cleanup removed for performance optimization
 
         calculateRatesForAllBillItemsInPreBill();
 
@@ -2357,11 +2343,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
-                    setZeroToQty(bi);
-                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
-                    return null;
-                }
+                //UserStock availability check removed for performance optimization
                 if (bi.getQty() <= 0.0) {
                     JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
                     return null;
@@ -2588,11 +2570,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
-                    setZeroToQty(bi);
-                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
-                    return;
-                }
+                //UserStock availability check removed for performance optimization
                 if (bi.getQty() <= 0.0) {
                     JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
                     return;
@@ -3331,13 +3309,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
-                    setZeroToQty(bi);
-//                    onEditCalculation(bi);
-                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
-                    billSettlingStarted = false;
-                    return;
-                }
+                //UserStock availability check removed for performance optimization
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
                 ////System.out.println("bi.getQty() = " + bi.getQty());
                 if (bi.getQty() <= 0.0) {
@@ -3660,20 +3632,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return;
         }
 
-        //Checking User Stock Entity
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
-            return;
-        }
+        //Checking User Stock Entity - REMOVED for performance optimization
 
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        //User Stock Container Save if New Bill
-        userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
-        billItem.setTransUserStock(us);
+        //User Stock Container Save if New Bill - REMOVED for performance optimization
 
         calculateRatesForAllBillItemsInPreBill();
 
@@ -3684,7 +3649,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void removeBillItem(BillItem b) {
-        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
+        //UserStock removal removed for performance optimization
         getPreBill().getBillItems().remove(b.getSearialNo());
 
         calculateBillItemsAndBillTotalsOfPreBill();
@@ -3699,7 +3664,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         Iterator<BillItem> iterator = selectedBillItems.iterator();
         while (iterator.hasNext()) {
             BillItem billItem = iterator.next();
-            userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
+            //UserStock removal removed for performance optimization
             getPreBill().getBillItems().remove(billItem);
             iterator.remove();
         }
@@ -4095,7 +4060,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         balance = 0;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
-        userStockContainer = null;
+        //userStockContainer = null; //Removed for performance optimization
         fromOpdEncounter = false;
         opdEncounterComments = null;
         patientSearchTab = 0;
@@ -4363,16 +4328,17 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         this.stockHistoryFacade = stockHistoryFacade;
     }
 
-    public UserStockContainer getUserStockContainer() {
-        if (userStockContainer == null) {
-            userStockContainer = new UserStockContainer();
-        }
-        return userStockContainer;
-    }
-
-    public void setUserStockContainer(UserStockContainer userStockContainer) {
-        this.userStockContainer = userStockContainer;
-    }
+    //Removed for performance optimization
+//    public UserStockContainer getUserStockContainer() {
+//        if (userStockContainer == null) {
+//            userStockContainer = new UserStockContainer();
+//        }
+//        return userStockContainer;
+//    }
+//
+//    public void setUserStockContainer(UserStockContainer userStockContainer) {
+//        this.userStockContainer = userStockContainer;
+//    }
 
     public BillBeanController getBillBean() {
         return billBean;
@@ -4430,21 +4396,22 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         this.errorMessage = errorMessage;
     }
 
-    public UserStockContainerFacade getUserStockContainerFacade() {
-        return userStockContainerFacade;
-    }
-
-    public void setUserStockContainerFacade(UserStockContainerFacade userStockContainerFacade) {
-        this.userStockContainerFacade = userStockContainerFacade;
-    }
-
-    public UserStockFacade getUserStockFacade() {
-        return userStockFacade;
-    }
-
-    public void setUserStockFacade(UserStockFacade userStockFacade) {
-        this.userStockFacade = userStockFacade;
-    }
+    //Removed for performance optimization
+//    public UserStockContainerFacade getUserStockContainerFacade() {
+//        return userStockContainerFacade;
+//    }
+//
+//    public void setUserStockContainerFacade(UserStockContainerFacade userStockContainerFacade) {
+//        this.userStockContainerFacade = userStockContainerFacade;
+//    }
+//
+//    public UserStockFacade getUserStockFacade() {
+//        return userStockFacade;
+//    }
+//
+//    public void setUserStockFacade(UserStockFacade userStockFacade) {
+//        this.userStockFacade = userStockFacade;
+//    }
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
