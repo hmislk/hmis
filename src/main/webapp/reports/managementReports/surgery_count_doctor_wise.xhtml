@@ -13,7 +13,7 @@
                 <h:form >
                     <p:panel header="Surgery Count (Doctor Wise)" >
                         <h:panelGrid columns="8" class="w-100" >
-                             <h:panelGroup layout="block" styleClass="form-group">
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;"
                                               styleClass="fa mr-2"/> 
                                 <p:outputLabel value="From Date" for="fromDate" class="m-3"/>
@@ -22,12 +22,12 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
-                                value="#{searchController.fromDate}"
+                                value="#{inwardReportController.fromYearStartDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
-                                          
+
                             <p:spacer width="20"/>
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;"
                                               styleClass="fa mr-2"/> 
@@ -37,11 +37,11 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
-                                value="#{searchController.fromDate}"
+                                value="#{inwardReportController.toYearEndDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
-                             <p:spacer width="20"/>
-                              <h:panelGroup layout="block" styleClass="form-group">
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-stethoscope mr-2"/> 
                                 <p:outputLabel value="Doctor Speciality"  class="m-3"/>
                             </h:panelGroup>
@@ -51,12 +51,12 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
                         <div class="d-flex align-items-center my-3">
-                             <p:commandButton
+                            <p:commandButton
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 value="Process"
-                                action="null">
+                                action="#{inwardReportController.processSurgeryCountDoctorWiseReport()}">
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-primary mx-1"
@@ -76,26 +76,33 @@
                                 action="#">
                             </p:commandButton>
                         </div>
-                        
+
                         <p:separator/>
-                         <p:panel header="Surgery Count Doctor Wise">
-                        <p:chart type="line" style="height:400px;">
-                           
-                        </p:chart>
+                        <p:panel header="Surgery Count Doctor Wise">
+                            <p:chart type="line" style="height:400px;">
+
+                            </p:chart>
                         </p:panel>
 
 
-                        
-                        <p:dataTable value="null" var="c">
-                            <p:column headerText="Performed Doctor Name" style="width: 100px" >
-                                <h:outputText value="" ></h:outputText>
+
+                        <p:dataTable value="#{inwardReportController.billList}" var="c">
+                            <p:column headerText="Performed Doctor Name" width="8em" style="width: 100px" >
+                                <ui:repeat value="#{c.billFees}" var="i">
+
+                                    <h:outputText value="#{i.staff.person.name}" ></h:outputText>
+                                    <br/>
+                                </ui:repeat>
                                 <f:facet name="footer">
                                     <h:outputLabel value="Total"></h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Doctor Speciality" style="width: 100px" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
+                                <ui:repeat value="#{c.billFees}" var="i">
+
+                                    <h:outputText value="#{i.staff.speciality.name}" ></h:outputText>
+                                    <br/>
+                                </ui:repeat>                            </p:column>
                             <p:column headerText="Jan" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
@@ -135,7 +142,7 @@
                             <p:column headerText="Total" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
 
                         </p:dataTable>
 

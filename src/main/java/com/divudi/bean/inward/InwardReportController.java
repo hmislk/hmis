@@ -8,6 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -32,6 +33,7 @@ import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +81,9 @@ public class InwardReportController implements Serializable {
     Institution institution;
     Date fromDate;
     Date toDate;
+    private Date fromYearStartDate;
+    private Date toYearEndDate;
+
     Admission patientEncounter;
     double grossTotals;
     double discounts;
@@ -184,6 +189,28 @@ public class InwardReportController implements Serializable {
     public void fillAdmissionBookOnlyDischargedFinalized() {
         Date startTime = new Date();
         fillAdmissions(true, true);
+
+    }
+
+    private List<Bill> billList;
+
+    public void processSurgeryCountDoctorWiseReport() {
+
+        billList = new ArrayList<>();
+        
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+        jpql.append(" Select b from Bill b ")
+                .append(" Where  b.retired = false ")
+                .append(" And b.billTypeAtomic = :bta ")
+                .append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        params.put("bta", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
+        
+        billList = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
 
     }
 
@@ -747,7 +774,7 @@ public class InwardReportController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
-        
+
         if (getPatientCode() != null && !getPatientCode().trim().equals("")) {
             sql += " and  (((pi.billItem.bill.patientEncounter.patient.code) =:number ) or ((pi.billItem.bill..patientEncounter.patient.phn) =:number )) ";
             temMap.put("number", getPatientCode().trim().toUpperCase());
@@ -1419,6 +1446,52 @@ public class InwardReportController implements Serializable {
 
     public void setPatientCode(String patientCode) {
         this.patientCode = patientCode;
+    }
+
+    public Date getFromYearStartDate() {
+        if (fromYearStartDate == null) {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.MONTH, Calendar.JANUARY);
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+
+            fromYearStartDate = cal.getTime();
+        }
+        return fromYearStartDate;
+    }
+
+    public void setFromYearStartDate(Date fromYearStartDate) {
+        this.fromYearStartDate = fromYearStartDate;
+    }
+
+    public Date getToYearEndDate() {
+        if (toYearEndDate == null) {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.MONTH, Calendar.DECEMBER);
+            cal.set(Calendar.DAY_OF_MONTH, 31);
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+
+            toYearEndDate = cal.getTime();
+        }
+        return toYearEndDate;
+    }
+
+    public void setToYearEndDate(Date toYearEndDate) {
+        this.toYearEndDate = toYearEndDate;
+    }
+
+    public List<Bill> getBillList() {
+        return billList;
+    }
+
+    public void setBillList(List<Bill> billList) {
+        this.billList = billList;
     }
 
     public class IncomeByCategoryRecord {
