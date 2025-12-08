@@ -45,7 +45,7 @@
                                 <h:outputText styleClass="fa fa-stethoscope mr-2"/> 
                                 <p:outputLabel value="Doctor Speciality"  class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{reportController.currentSpeciality}">
+                            <p:selectOneMenu value="#{inwardReportController.currentSpeciality}">
                                 <f:selectItem itemLabel="Select Speciality"/>
                                 <f:selectItems value="#{specialityController.items}" itemLabel="#{s.name}" var="s" itemValue="#{s}"/>
                             </p:selectOneMenu>
@@ -88,21 +88,22 @@
 
                         <p:dataTable value="#{inwardReportController.billList}" var="c">
                             <p:column headerText="Performed Doctor Name" width="8em" style="width: 100px" >
-                                <ui:repeat value="#{c.billFees}" var="i">
 
-                                    <h:outputText value="#{i.staff.person.name}" ></h:outputText>
-                                    <br/>
-                                </ui:repeat>
+                                <h:outputText value="#{c.doctorName}" ></h:outputText>
+
                                 <f:facet name="footer">
                                     <h:outputLabel value="Total"></h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Doctor Speciality" style="width: 100px" >
-                                <ui:repeat value="#{c.billFees}" var="i">
 
-                                    <h:outputText value="#{i.staff.speciality.name}" ></h:outputText>
-                                    <br/>
-                                </ui:repeat>                            </p:column>
+
+                                <h:outputText value="#{c.specialityName}" ></h:outputText>
+
+                            </p:column>
+                            <p:column headerText="Jan" width="8em">
+                                <h:outputText value="#{c.createdAt}" ></h:outputText>
+                            </p:column>
                             <p:column headerText="Jan" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>

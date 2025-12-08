@@ -10,6 +10,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
 
@@ -21,11 +22,13 @@ import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.AdmissionTypeFacade;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -68,6 +71,8 @@ public class InwardReportController implements Serializable {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
+    @EJB
+    BillFeeFacade billFeeFacade;
 
     @Inject
     SessionController sessionController;
@@ -129,6 +134,7 @@ public class InwardReportController implements Serializable {
     boolean developers = false;
     // for disscharge book
     boolean withoutCancelBHT = true;
+    private Speciality currentSpeciality;
 
     private ReportKeyWord reportKeyWord;
 
@@ -192,25 +198,38 @@ public class InwardReportController implements Serializable {
 
     }
 
-    private List<Bill> billList;
+    private List<SurgeryCountDoctorWiseDTO> billList;
+    
 
     public void processSurgeryCountDoctorWiseReport() {
 
         billList = new ArrayList<>();
-        
+
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
-        jpql.append(" Select b from Bill b ")
-                .append(" Where  b.retired = false ")
-                .append(" And b.billTypeAtomic = :bta ")
+        jpql.append(" Select new com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO(")
+                .append(" b.staff, ")
+                .append(" b.staff.person.name, ")
+                .append(" b.staff.speciality.name, ")
+                .append(" b.createdAt")
+                .append(") ")
+                .append(" from BillFee b ")
+                .append(" Where b.retired = false ")
+                .append(" And b.bill.billTypeAtomic = :bta ")
                 .append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
         params.put("bta", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
         params.put("fromDate", fromYearStartDate);
         params.put("toDate", toYearEndDate);
         
-        billList = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (currentSpeciality != null) {
+            jpql.append(" AND b.staff.speciality = :spe ");
+            params.put("spe", currentSpeciality);
+        }
+
+        billList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         
+        double febCount = billList.stream().mapToDouble(SurgeryCountDoctorWiseDTO::getFebruary).count();
 
     }
 
@@ -1486,12 +1505,20 @@ public class InwardReportController implements Serializable {
         this.toYearEndDate = toYearEndDate;
     }
 
-    public List<Bill> getBillList() {
+    public List<SurgeryCountDoctorWiseDTO> getBillList() {
         return billList;
     }
 
-    public void setBillList(List<Bill> billList) {
+    public void setBillList(List<SurgeryCountDoctorWiseDTO> billList) {
         this.billList = billList;
+    }
+
+    public Speciality getCurrentSpeciality() {
+        return currentSpeciality;
+    }
+
+    public void setCurrentSpeciality(Speciality currentSpeciality) {
+        this.currentSpeciality = currentSpeciality;
     }
 
     public class IncomeByCategoryRecord {
