@@ -32,14 +32,16 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Cancel"
-                                    icon="fas fa-ban"
-                                    class="ui-button-danger mx-2"
-                                    action="pharmacy_cancel_bill_return_pre" 
-                                    disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                                </p:commandButton>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Return Item Bill can be Cancelled', true)}">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Cancel"
+                                        icon="fas fa-ban"
+                                        class="ui-button-danger mx-2"
+                                        action="pharmacy_cancel_bill_return_pre?faces-redirect=true" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
                         </f:facet>
 
