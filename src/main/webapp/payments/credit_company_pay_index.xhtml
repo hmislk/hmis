@@ -53,7 +53,16 @@
 
                                         <p:tab title="Outpatient Credit Management">
                                             <div class="d-grid gap-2">
-                                                <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-list" value="OPD Due Search" title="List outstanding OPD dues for credit companies" action="/credit/credit_company_opd_due?faces-redirect=true"/>
+                                                <p:commandButton 
+                                                    styleClass="w-100 ui-button-info ui-button-outlined" 
+                                                    ajax="false" 
+                                                    icon="pi pi-list" 
+                                                    value="OPD Due Search" 
+                                                    title="List outstanding OPD dues for credit companies" 
+                                                    actionListener="#{creditCompanyDueController.makeNull()}"
+                                                    action="/credit/credit_company_opd_due?faces-redirect=true">
+                                                </p:commandButton>
+                                                
                                                 <p:commandButton styleClass="w-100 ui-button-info ui-button-outlined" ajax="false" icon="pi pi-calendar-times" value="OPD Due Age" title="View aged OPD dues" action="/credit/credit_company_opd_due_age?faces-redirect=true"/>
                                                 <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-credit-card" value="Outpatient Credit Collection" title="Settle all types of OPD and pharmacy credit bills in one page" action="/credit/credit_company_bill_opd_combined?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>
 <!--                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-check-square" value="Settle Credit for OPD Batch Bills" title="Settle outstanding OPD batch bills" action="/credit/credit_compnay_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>
