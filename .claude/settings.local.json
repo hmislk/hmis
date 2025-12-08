@@ -27,7 +27,10 @@
       "Bash(git checkout:*)",
       "Bash(gh issue view:*)",
       "Bash(python3:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(timeout 5 mysql -ubuddhika -pBud7NilB -D rh -e \"SELECT ID, NAME FROM ITEM WHERE ID = 22617;\")"
+      "Bash(git fetch:*)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": [],

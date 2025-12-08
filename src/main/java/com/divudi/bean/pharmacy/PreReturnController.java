@@ -372,9 +372,8 @@ public class PreReturnController implements Serializable {
 
 //        getBill().getReturnPreBills().add(getReturnBill());
         getBillFacade().edit(getBill());
-
         // Calculate and record financial details for the pre-return bill
-        System.out.println("=== Calculating financial details for pre-return bill ===");
+
         calculateAndRecordCostingValues(getReturnBill());
 
 //        if (getReturnBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -584,7 +583,6 @@ public class PreReturnController implements Serializable {
         System.out.println("Bill Type: " + (bill != null ? bill.getBillTypeAtomic() : "null"));
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-            System.out.println("Early return - no bill or bill items");
             return;
         }
 
@@ -595,9 +593,7 @@ public class PreReturnController implements Serializable {
             BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
             billFinanceDetails.setBill(bill);
             bill.setBillFinanceDetails(billFinanceDetails);
-            System.out.println("Created new BillFinanceDetails for bill");
         } else {
-            System.out.println("BillFinanceDetails already exists for bill");
         }
 
         // Initialize bill-level totals
@@ -618,7 +614,6 @@ public class PreReturnController implements Serializable {
             System.out.println("BillItem qty: " + (billItem != null ? billItem.getQty() : "null"));
 
             if (billItem == null || billItem.isRetired()) {
-                System.out.println("Skipping retired or null bill item");
                 continue;
             }
 
@@ -627,16 +622,13 @@ public class PreReturnController implements Serializable {
                 BillItemFinanceDetails itemFinanceDetails = new BillItemFinanceDetails();
                 itemFinanceDetails.setBillItem(billItem);
                 billItem.setBillItemFinanceDetails(itemFinanceDetails);
-                System.out.println("Created new BillItemFinanceDetails for item");
             } else {
-                System.out.println("BillItemFinanceDetails already exists for item");
             }
 
             // Get pharmaceutical bill item for rate information
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
             System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
             if (pharmaItem == null) {
-                System.out.println("Skipping - no pharmaceutical bill item");
                 continue;
             }
 
@@ -664,12 +656,9 @@ public class PreReturnController implements Serializable {
                     // Also update the pharmaceutical bill item with this cost rate
                     pharmaItem.setCostRate(costRate.doubleValue());
                     pharmaItem.setPurchaseRate(costRate.doubleValue());
-                    System.out.println("Updated PharmaceuticalBillItem costRate to: " + costRate);
                 } else {
-                    System.out.println("ItemBatch purcahseRate is zero, using purchaseRate as fallback");
                 }
             } else {
-                System.out.println("No itemBatch available, using purchaseRate as costRate fallback");
             }
 
             // Calculate values based on total quantity (including free quantities)
@@ -730,6 +719,7 @@ public class PreReturnController implements Serializable {
             System.out.println("Costs - line: " + lineCost + ", bill: " + bifd.getBillCost() + ", total: " + bifd.getTotalCost());
             System.out.println("Values - cost: " + bifd.getValueAtCostRate() + ", purchase: " + bifd.getValueAtPurchaseRate() +
                              ", retail: " + bifd.getValueAtRetailRate());
+            // Set PharmaceuticalBillItem values (positive valuations)
 
             // Set PharmaceuticalBillItem values (positive valuations)
             System.out.println("Setting PharmaceuticalBillItem values...");
@@ -744,9 +734,7 @@ public class PreReturnController implements Serializable {
 
             // Save PharmaceuticalBillItem to ensure values are persisted
             if (pharmaItem.getId() == null) {
-                System.out.println("PharmaceuticalBillItem is new - will be saved via cascade");
             } else {
-                System.out.println("PharmaceuticalBillItem exists, saving explicitly");
                 pharmaceuticalBillItemFacade.edit(pharmaItem);
             }
 
@@ -758,19 +746,16 @@ public class PreReturnController implements Serializable {
             totalQuantity = totalQuantity.add(qty);
             totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            System.out.println("Aggregated totals - cost: " + totalCostValue + ", purchase: " + totalPurchaseValue +
-                             ", retail: " + totalRetailSaleValue + ", quantity: " + totalQuantity);
 
             // Save bill item finance details using JPA cascade persistence
             if (billItem.getBillItemFinanceDetails().getId() == null) {
-                System.out.println("BillItemFinanceDetails is new (id == null) - will be saved via cascade");
             } else {
-                System.out.println("BillItemFinanceDetails exists, calling billItemFacade.edit()");
                 billItemFacade.edit(billItem);
             }
         }
 
         System.out.println("=== Finished processing all bill items ===");
+        // Set bill-level finance details - enhanced with missing fields
 
         // Set bill-level finance details - enhanced with missing fields
         System.out.println("Setting BillFinanceDetails totals...");
@@ -794,13 +779,10 @@ public class PreReturnController implements Serializable {
 
         // Save bill finance details
         if (bill.getBillFinanceDetails().getId() == null) {
-            System.out.println("BillFinanceDetails is new (id == null) - will be saved via cascade");
         } else {
-            System.out.println("BillFinanceDetails exists, calling billFacade.edit()");
             billFacade.edit(bill);
         }
 
-        System.out.println("=== calculateAndRecordCostingValues COMPLETE (PreReturn) ===");
     }
 
 }

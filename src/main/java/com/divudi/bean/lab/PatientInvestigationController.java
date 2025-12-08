@@ -2261,7 +2261,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void retrievingTheSentSampleToLab() {
-        System.out.println("retrievingTheSentSampleToLab");
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;

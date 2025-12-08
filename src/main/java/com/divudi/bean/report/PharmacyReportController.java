@@ -3861,7 +3861,6 @@ public class PharmacyReportController implements Serializable {
                 sql.append(" order by bi.bill.id ");
 
                 System.out.println("sql = " + sql);
-                System.out.println("parameters = " + parameters);
 
                 billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             }
@@ -4064,12 +4063,10 @@ public class PharmacyReportController implements Serializable {
                 }
             }
 
-            System.out.println("findAcceptedGoodInTransitItems: Found " + receivedItems.size() + " received items");
 
             return receivedItems;
 
         } catch (Exception e) {
-            System.err.println("Error in findAcceptedGoodInTransitItems: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -4271,13 +4268,10 @@ public class PharmacyReportController implements Serializable {
                 }
             }
 
-            System.out.println("findPendingGoodInTransitItems: Found " + allIssueItems.size() +
-                    " issue items, " + pendingItems.size() + " with remaining quantity in transit");
 
             return pendingItems;
 
         } catch (Exception e) {
-            System.err.println("Error in findPendingGoodInTransitItems: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -4737,7 +4731,6 @@ public class PharmacyReportController implements Serializable {
             }
             if (amp != null) {
                 item = amp;
-                System.out.println("item = " + item);
                 jpql += "and s.item=:itm ";
                 m.put("itm", item);
             }
@@ -4884,6 +4877,7 @@ public class PharmacyReportController implements Serializable {
 
         // Order by item name
         jpql.append("ORDER BY i.name");
+        // Debug logging
 
         // Debug logging
         System.out.println("jpql = " + jpql.toString());
@@ -4893,7 +4887,6 @@ public class PharmacyReportController implements Serializable {
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("dtoRows.size() = " + dtoRows.size());
 
         rows = new ArrayList<>();
 
@@ -5099,6 +5092,7 @@ public class PharmacyReportController implements Serializable {
 
         // Order by item name
         jpql.append("ORDER BY i.name");
+        // Debug logging
 
         // Debug logging
         System.out.println("jpql = " + jpql.toString());
@@ -5108,7 +5102,6 @@ public class PharmacyReportController implements Serializable {
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("dtoRows.size() = " + dtoRows.size());
 
         rows = new ArrayList<>();
 
@@ -5184,7 +5177,6 @@ public class PharmacyReportController implements Serializable {
         List<StockHistory> histories = getStockLedgerHistories();
         if (histories == null || histories.isEmpty()) {
 
-            System.out.println("No stock ledger data available for the selected period");
             return;
         }
 
@@ -5946,7 +5938,6 @@ public class PharmacyReportController implements Serializable {
                 System.out.println("totals[0] = " + totals[0]);
                 System.out.println("totals[1] = " + totals[1]);
                 System.out.println("totals[2] = " + totals[2]);
-                System.out.println("Query: " + baseQuery.toString());
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -6003,7 +5994,6 @@ public class PharmacyReportController implements Serializable {
                 System.out.println("preAdd totals[0] = " + preAddTotals[0] + " (positive: " + preAddResult.get("purchaseValue") + ")");
                 System.out.println("preAdd totals[1] = " + preAddTotals[1] + " (positive: " + preAddResult.get("costValue") + ")");
                 System.out.println("preAdd totals[2] = " + preAddTotals[2] + " (positive: " + preAddResult.get("retailValue") + ")");
-                System.out.println("PreAdd Query: " + preAddQuery.toString());
             } else {
                 preAddResult.put("purchaseValue", 0.0);
                 preAddResult.put("costValue", 0.0);
@@ -6064,7 +6054,6 @@ public class PharmacyReportController implements Serializable {
                 System.out.println("totals[0] = " + totals[0]);
                 System.out.println("totals[1] = " + totals[1]);
                 System.out.println("totals[2] = " + totals[2]);
-                System.out.println("Query: " + baseQuery.toString());
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -6136,7 +6125,6 @@ public class PharmacyReportController implements Serializable {
                 System.out.println("negative totals[0] = " + negativeTotals[0] + " (negated: " + negativeResult.get("purchaseValue") + ")");
                 System.out.println("negative totals[1] = " + negativeTotals[1] + " (negated: " + negativeResult.get("costValue") + ")");
                 System.out.println("negative totals[2] = " + negativeTotals[2] + " (negated: " + negativeResult.get("retailValue") + ")");
-                System.out.println("Negative Query: " + negativeQuery.toString());
             } else {
                 negativeResult.put("purchaseValue", 0.0);
                 negativeResult.put("costValue", 0.0);
@@ -6195,7 +6183,6 @@ public class PharmacyReportController implements Serializable {
                 System.out.println("totals[0] = " + totals[0]);
                 System.out.println("totals[1] = " + totals[1]);
                 System.out.println("totals[2] = " + totals[2]);
-                System.out.println("Query: " + baseQuery.toString());
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -7208,7 +7195,6 @@ public class PharmacyReportController implements Serializable {
         System.out.println("amp = " + amp);
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             jpql.append("and sh.itemBatch.item=:itm ");
             params.put("itm", item);
         }
@@ -7220,7 +7206,6 @@ public class PharmacyReportController implements Serializable {
         jpql.append("order by sh.itemBatch.item.name");
 
         System.out.println("jpql.toString() = " + jpql.toString());
-        System.out.println("params = " + params);
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -7239,7 +7224,6 @@ public class PharmacyReportController implements Serializable {
         }
 
         for (Long shid : ids) {
-            System.out.println("shid = " + shid);
             PharmacyRow pr = new PharmacyRow();
             pr.setId(shid);
             pr.setStockHistory(facade.find(shid));
@@ -7352,7 +7336,6 @@ public class PharmacyReportController implements Serializable {
 
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
@@ -7766,7 +7749,6 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
@@ -7861,7 +7843,6 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
@@ -7954,7 +7935,6 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }

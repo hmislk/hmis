@@ -48,7 +48,6 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
     public double calculateStockValueAtRetailRateOptimized(Date date, Long departmentId) {
         System.out.println("=== calculateStockValueAtRetailRateOptimized START ===");
         System.out.println("Input Date: " + date);
-        System.out.println("Input Department ID: " + departmentId);
 
         try {
             // Use native SQL for better performance
@@ -86,9 +85,7 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
 
             if (departmentId != null) {
                 query.setParameter(2, departmentId);
-                System.out.println("Parameter 2 (departmentId): " + departmentId);
             } else {
-                System.out.println("No department filter (departmentId is null)");
             }
 
             System.out.println("Executing query...");
@@ -100,12 +97,10 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
                 if (result instanceof Number) {
                     double value = ((Number) result).doubleValue();
                     System.out.println("Returning value: " + value);
-                    System.out.println("=== calculateStockValueAtRetailRateOptimized END (SUCCESS) ===");
                     return value;
                 }
             }
             System.out.println("Result is null or not a Number, returning 0.0");
-            System.out.println("=== calculateStockValueAtRetailRateOptimized END (NULL RESULT) ===");
             return 0.0;
 
         } catch (Exception e) {
@@ -113,7 +108,6 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             System.err.println("Error calculating stock value at retail rate for date: " + date + " - " + e.getMessage());
             System.err.println("Exception class: " + e.getClass().getName());
             e.printStackTrace();
-            System.err.println("=== calculateStockValueAtRetailRateOptimized END (EXCEPTION) ===");
             return 0.0;
         }
     }
@@ -170,7 +164,6 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
             return 0.0;
 
         } catch (Exception e) {
-            System.err.println("Error calculating stock value (two-step method) for date: " + date + " - " + e.getMessage());
             e.printStackTrace();
             return 0.0;
         }

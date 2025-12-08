@@ -159,7 +159,6 @@ public class NumberGenerator {
         
         String appointmentTypeCode = configOptionApplicationController.getShortTextValueByKey(appointmentType.getDisplayName() + " + Number Generation Suffix", appointmentType.getCode());
         
-        System.out.println("Appointment Type Code = " + appointmentTypeCode);
         // Append AppointmentType code
         result.append(appointmentTypeCode);
         result.append(getNumberDelimiter());
