@@ -119,12 +119,13 @@
                                         class="mx-1 ui-button-success"
                                         />
                                     <p:commandButton
+                                        id="btnFinalize"
                                         value="Finalize"
                                         action="#{transferRequestController.finalizeTranserRequestPreBill()}"
                                         ajax="false"
                                         icon="pi pi-check"
                                         class="mx-1 ui-button-success"
-                                        onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
+                                        onclick="return confirm('Are you sure you want to finalize this transfer request?');"
                                         />
                                 </div>
                             </div>
