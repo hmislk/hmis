@@ -285,7 +285,7 @@
                                                         title="View Bill"
                                                         icon="fas fa-eye"
                                                         styleClass="ui-button-success ui-button-sm"
-                                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBillId)}"
+                                                        action="#{billSearch.navigateToViewPharmacySettledPreBill(bill.referenceBillId)}"
                                                         rendered="#{webUserController.hasPrivilege('PharmacySaleReprint')}">
                                                     </p:commandButton>
                                                     <p:commandButton
