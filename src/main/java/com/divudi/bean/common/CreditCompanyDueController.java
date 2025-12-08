@@ -1348,8 +1348,6 @@ public class CreditCompanyDueController implements Serializable {
                 setIns.add(creditCompany);
             }
 
-            System.out.println("setIns = " + setIns);
-            
             items = new ArrayList<>();
             for (Institution ins : setIns) {
                 List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);
