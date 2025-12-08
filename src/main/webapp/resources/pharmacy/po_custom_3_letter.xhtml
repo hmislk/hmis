@@ -21,7 +21,7 @@
         <div style="width: 212mm; height: 275mm; padding-left: 0px">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.site.name}"/>
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
@@ -39,8 +39,8 @@
                     <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.department.fax}" rendered="#{!empty cc.attrs.bill.department.fax}"/>                                           
                 </div>
                 <div >
-                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.department.email}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{!empty cc.attrs.bill.department.email}"/>                                              
+                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.institution.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}" rendered="#{!empty cc.attrs.bill.institution.email}"/>                                              
                 </div>
             </div>
 
