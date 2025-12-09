@@ -146,7 +146,7 @@
 
                                 </div>
                                 
-                                <div class="mb-3" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system') ? 'block' : 'none'}">
+                                <div class="mb-3" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') ? 'block' : 'none'}">
                                     <h:outputLabel class="form form-label" value="Patient Active Status" ></h:outputLabel><br></br>
                                     <p:selectBooleanButton class="w-100" value="#{patientController.blackListStatus}" onLabel="Blacklist" onIcon="pi pi-times" offLabel="Active" offIcon="pi pi-check"/>
 
