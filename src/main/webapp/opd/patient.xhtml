@@ -71,9 +71,18 @@
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-6">
+
                                                     <h:panelGroup rendered="#{not empty patientController.current.person.nameWithTitle}" layout="block" styleClass="mb-3">
                                                         <strong class="text-muted">Name:</strong><br/>
-                                                        <h:outputText value="#{patientController.current.person.nameWithTitle}" styleClass="h6"/>
+                                                        <p:outputLabel class="ml-4" value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty patientController.current.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{patientController.current.specificStatus}" severity="danger">
+                                                            <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+                                                        </p:badge> 
+
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{patientController.current.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{patientController.current.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                        </p:badge>
                                                     </h:panelGroup>
 
                                                     <h:panelGroup rendered="#{not empty patientController.current.phn}" layout="block" styleClass="mb-3">
@@ -412,7 +421,7 @@
                                         <p:commandButton
                                             value="Blacklist Patient"
                                             ajax="true"
-                                            rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
+                                            rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
                                             styleClass="ui-button-danger"
                                             style="min-width: 180px"
                                             icon="pi pi-ban"
@@ -423,7 +432,7 @@
                                         <p:commandButton
                                             value="Revert Blacklist"
                                             ajax="true"
-                                            rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
+                                            rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
                                             styleClass="ui-button-warning"
                                             style="min-width: 180px"
                                             icon="pi pi-ban"
@@ -505,7 +514,7 @@
 
                                     <p:growl id="msg" showDetail="false" showSummary="true"></p:growl>
                                 </div>
-                            
+
 
                             </div>  
 
