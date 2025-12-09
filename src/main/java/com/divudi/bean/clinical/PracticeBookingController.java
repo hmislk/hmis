@@ -315,13 +315,97 @@ public class PracticeBookingController implements Serializable {
             return "";
         }
         getPharmacySaleController().setPatient(opdVisit.getPatient());
-        getPharmacySaleController().setOpdEncounterComments(opdVisit.getComments());
+
+        // Debug: Check encounter comments
+        String encounterComments = opdVisit.getComments();
+        System.out.println("DEBUG: opdVisit.getComments() = " + (encounterComments != null ? encounterComments : "null"));
+        getPharmacySaleController().setOpdEncounterComments(encounterComments);
+
         getPharmacySaleController().setFromOpdEncounter(true);
         getPharmacySaleController().setBillSettlingStarted(false);
+
+        // Set the encounter doctor as the referring doctor for both bill and preBill
+        Doctor referringDoctor = null;
+        if (opdVisit.getOpdDoctor() != null && opdVisit.getOpdDoctor() instanceof Doctor) {
+            referringDoctor = (Doctor) opdVisit.getOpdDoctor();
+        } else if (opdVisit.getReferringDoctor() != null && opdVisit.getReferringDoctor() instanceof Doctor) {
+            referringDoctor = (Doctor) opdVisit.getReferringDoctor();
+        }
+
+        // Set referring doctor on preBill (which is displayed on the UI)
+        if (referringDoctor != null) {
+            getPharmacySaleController().getPreBill().setReferredBy(referringDoctor);
+        }
+
+        // Set bill relationships after ensuring bill is initialized
+        if (getPharmacySaleController().getBill() != null) {
+            // Link the encounter to the pharmacy bill for proper relationships
+            getPharmacySaleController().getBill().setPatientEncounter(opdVisit);
+
+            // Also set referring doctor on the main bill
+            if (referringDoctor != null) {
+                getPharmacySaleController().getBill().setReferredBy(referringDoctor);
+            }
+        }
+
+        // Transfer prescription text from encounter to pharmacy bill comments
+        // First load the encounter data into the controller
+        System.out.println("DEBUG: About to load encounter data for opdVisit ID: " + opdVisit.getId());
+        getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
+
+        // After loading the list, set the encounterPrescreption from the list if available
+        if (getPatientEncounterController().getEncounterPrescreptions() != null &&
+            !getPatientEncounterController().getEncounterPrescreptions().isEmpty()) {
+            // Use the first/latest prescription from the list
+            ClinicalFindingValue firstPrescription = getPatientEncounterController().getEncounterPrescreptions().get(0);
+            getPatientEncounterController().setEncounterPrescreption(firstPrescription);
+            System.out.println("DEBUG: Set encounterPrescreption from list. ID: " + firstPrescription.getId());
+        } else {
+            System.out.println("DEBUG: No prescriptions found in list");
+        }
+
+        String prescriptionText = getPrescriptionText();
+        System.out.println("DEBUG: Prescription text result: " + (prescriptionText != null && !prescriptionText.trim().isEmpty() ? "Found prescription text" : "No prescription text"));
+
+        if (prescriptionText != null && !prescriptionText.trim().isEmpty()) {
+            getPharmacySaleController().setComment(prescriptionText);
+            System.out.println("DEBUG: Set prescription text as comment");
+        } else {
+            System.out.println("DEBUG: No prescription text to set");
+        }
+
         getPatientEncounterController().fillEncounterMedicines(opdVisit);
         for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
         }
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+    }
+
+    /**
+     * Extracts prescription text from the current encounter.
+     * Uses the same approach as the OPD visit page: encounterPrescreption.lobValue
+     *
+     * @return prescription text with HTML formatting preserved, or null if no prescription found
+     */
+    private String getPrescriptionText() {
+        try {
+            System.out.println("DEBUG: Checking for prescription text...");
+
+            // Access prescription the same way as in opd_visit.xhtml
+            if (getPatientEncounterController().getEncounterPrescreption() != null) {
+                String prescriptionText = getPatientEncounterController().getEncounterPrescreption().getLobValue();
+                System.out.println("DEBUG: Found prescription text: " + (prescriptionText != null ? prescriptionText.substring(0, Math.min(100, prescriptionText.length())) + "..." : "null"));
+                return prescriptionText;
+            } else {
+                System.out.println("DEBUG: encounterPrescreption is null");
+            }
+            return null;
+
+        } catch (Exception e) {
+            // Log error but don't fail the pharmacy bill creation
+            System.err.println("Error extracting prescription text: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public void opdVisitFromServiceSession() {
