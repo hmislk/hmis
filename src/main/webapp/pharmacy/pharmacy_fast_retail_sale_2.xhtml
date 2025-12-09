@@ -675,6 +675,24 @@
                                                                                 class="w-100"/>
                                                                         </div>
                                                                     </div>
+                                                                    
+                                                                    <div class="row">
+                                                                        <div class="col-md-4 p-1">
+
+                                                                            <div class="input-group">
+                                                                                <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacyFastRetailSaleController2.patient.specificStatus}">
+                                                                                    <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                                </p:selectOneMenu>
+
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-8 p-1">
+                                                                            <div class="input-group">
+                                                                                <p:inputText placeholder="Comment for Patient Specific Status" value="#{pharmacyFastRetailSaleController2.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
 
                                                                     <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                     <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -701,9 +719,23 @@
                                                     <h:panelGroup  rendered="#{not pharmacyFastRetailSaleController2.patientDetailsEditable}"  >
                                                         <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                             <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacyFastRetailSaleController2.patient ne null}" >
+                                                                
                                                                 <h:outputLabel value="Name " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleController2.patient.person.nameWithTitle}" />
+
+                                                                <h:panelGroup class="d-flex">
+
+                                                                    <p:outputLabel class="ml-4" value="#{pharmacyFastRetailSaleController2.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleController2.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                                                    <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty pharmacyFastRetailSaleController2.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacyFastRetailSaleController2.patient.specificStatus}" severity="danger">
+                                                                        <p:outputLabel value="#{pharmacyFastRetailSaleController2.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleController2.patient.person.nameWithTitle}" />
+                                                                    </p:badge> 
+
+                                                                    <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleController2.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacyFastRetailSaleController2.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                                    </p:badge>
+
+                                                                </h:panelGroup>
 
                                                                 <h:outputLabel value="Gender " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
@@ -729,11 +761,11 @@
 
                                                                 <h:outputLabel value="Email " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleController2.patient.person.email}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleController2.patient.person.email ? 'N/A' : pharmacyFastRetailSaleController2.patient.person.email}" />
 
                                                                 <h:outputLabel value="National ID No. " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleController2.patient.person.nic}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleController2.patient.person.nic ? 'N/A' : pharmacyFastRetailSaleController2.patient.person.nic}" />
 
                                                                 <h:outputLabel value="Address " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
