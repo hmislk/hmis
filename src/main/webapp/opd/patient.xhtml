@@ -138,13 +138,13 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
 
-                                        <p:outputLabel value="Patient Active Status:" />
-                                        <p:outputLabel value="#{patientController.current.blacklisted eq true ? 'Blacklist Patient' : 'Active Patient'}" style="color: #{patientController.current.blacklisted eq true ? 'black' : 'green'}; font-weight: bold" >
+                                        <p:outputLabel value="Patient Active Status:" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"/>
+                                        <p:outputLabel value="#{patientController.current.blacklisted eq true ? 'Blacklist Patient' : 'Active Patient'}" style="color: #{patientController.current.blacklisted eq true ? 'black' : 'green'}; font-weight: bold" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}">
 
                                         </p:outputLabel>
 
-                                        <p:outputLabel value="Patient Specific Status:" />
-                                        <p:outputLabel value="#{not empty patientController.current.specificStatus ? patientController.current.specificStatus : 'Normal'} Patient" style="color:tomato; font-weight: bold" >
+                                        <p:outputLabel value="Patient Specific Status:" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}"/>
+                                        <p:outputLabel value="#{not empty patientController.current.specificStatus ? patientController.current.specificStatus : 'Normal'} Patient" style="color:tomato; font-weight: bold" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" >
 
                                         </p:outputLabel>
 
@@ -278,7 +278,7 @@
                                     <p:commandButton 
                                         value="Blacklist Patient"
                                         ajax="true"
-                                        rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
+                                        rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
                                         styleClass="mx-2 ui-button-danger"
                                         icon="fa fa-ban"
                                         onclick="PF('blacklistModal').show()">
@@ -288,7 +288,7 @@
                                     <p:commandButton 
                                         value="Revert Blacklist Patient"
                                         ajax="true"
-                                        rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
+                                        rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
                                         styleClass="mx-2 ui-button-danger"
                                         icon="fa fa-ban"
                                         onclick="PF('blacklistModal').show();">
