@@ -5,6 +5,7 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.data.AppointmentType;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -60,9 +61,9 @@ public class BillNumber implements Serializable {
     private boolean opdAndInpatientServiceBatchBills;
     @Enumerated(EnumType.STRING)
     private RequestType requestType;
-
-
-
+    @Enumerated(EnumType.STRING)
+    private AppointmentType appointmentType;
+    
 
     public boolean isRetired() {
         return retired;
@@ -241,6 +242,14 @@ public class BillNumber implements Serializable {
 
     public void setRequestType(RequestType requestType) {
         this.requestType = requestType;
+    }
+
+    public AppointmentType getAppointmentType() {
+        return appointmentType;
+    }
+
+    public void setAppointmentType(AppointmentType appointmentType) {
+        this.appointmentType = appointmentType;
     }
 
 }

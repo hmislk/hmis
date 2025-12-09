@@ -365,6 +365,42 @@ public class WebUserController implements Serializable {
         return hasPri;
     }
 
+    /**
+     * Check if a specific user has a specific privilege in a specific department
+     * Used by admin interfaces to check privileges for other users
+     */
+    public boolean checkPrivilege(WebUser user, String privilegeName, Department department) {
+        if (user == null || privilegeName == null || department == null) {
+            return false;
+        }
+
+        if (grantAllPrivilegesToAllUsersForTesting) {
+            return true;
+        }
+
+        try {
+            Privileges privilege = Privileges.valueOf(privilegeName);
+
+            // Query WebUserPrivilege table to check if this user has this privilege in this department
+            String jpql = "select w from WebUserPrivilege w where w.webUser=:user and w.privilege=:privilege and w.department=:dept and w.retired=:retired";
+            Map<String, Object> params = new HashMap<>();
+            params.put("user", user);
+            params.put("privilege", privilege);
+            params.put("dept", department);
+            params.put("retired", false);
+
+            WebUserPrivilege wup = getWebUserPrevilageFacade().findFirstByJpql(jpql, params);
+            return wup != null;
+
+        } catch (IllegalArgumentException e) {
+            // Invalid privilege name
+            return false;
+        } catch (Exception e) {
+            // Any other error
+            return false;
+        }
+    }
+
     public Speciality getSpeciality() {
         return speciality;
     }
@@ -1087,7 +1123,6 @@ public class WebUserController implements Serializable {
             return "";
         }
         String signatureType = staffImageController.getViewImageType();
-        System.out.println("signatureType = " + signatureType);
         if (signatureType == null || signatureType.isEmpty()) {
             JsfUtil.addErrorMessage("Please select a Type");
             return "";

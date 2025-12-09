@@ -163,7 +163,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
-    // </editor-fold>  
+    @Inject
+    private UserSettingsController userSettingsController;
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
     private WebUser loggedUser = null;
@@ -456,6 +458,8 @@ public class SessionController implements Serializable, HttpSessionListener {
             availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
         }
     }
+    
+    
 
     public void setAvailableDepartmentTypesForPharmacyTransactions(List<DepartmentType> availableDepartmentTypesForPharmacyTransactions) {
         this.availableDepartmentTypesForPharmacyTransactions = availableDepartmentTypesForPharmacyTransactions;
@@ -874,6 +878,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (department != null) {
             institution = department.getInstitution();
         }
+        // Clear cached department types when department changes
+        availableDepartmentTypesForPharmacyTransactions = null;
         this.department = department;
     }
 
@@ -944,7 +950,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String loginActionWithoutDepartment() {
-        System.out.println("DEBUG: loginActionWithoutDepartment() called for user: " + userName + " at " + new Date());
         long totalStartTime = System.currentTimeMillis();
         
         department = null;
@@ -952,13 +957,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         boolean l = checkUsersWithoutDepartment();
         if (l) {
             if (department != null) {
-                System.out.println("DEBUG: Login successful with department pre-selected, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                 return selectDepartment();
             }
-            System.out.println("DEBUG: Login successful, redirecting to department selection, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             return "/index1.xhtml?faces-redirect=true";
         } else {
-            System.out.println("DEBUG: Login failed, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
@@ -1231,6 +1233,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                     // Load recently used departments
                     //recentDepartments = fillRecentDepartmentsForUser(u);
                     userIcons = userIconController.fillUserIcons(u, department);
+
+                    // Load user-specific UI settings (column visibility, preferences, etc.)
+                    // Performance-optimized: loads only current user's settings, cached in session
+                    userSettingsController.loadUserSettings();
+
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -1347,6 +1354,10 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggableDepartments = fillLoggableDepts();
 //            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
             loggableInstitutions = fillLoggableInstitutions();
+
+            // Load user-specific UI settings
+            userSettingsController.loadUserSettings();
+
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -1413,7 +1424,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         
         long queryStartTime = System.currentTimeMillis();
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
-        System.out.println("DEBUG: User lookup query took " + (System.currentTimeMillis() - queryStartTime) + "ms");
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk;
@@ -1469,6 +1479,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     System.out.println("DEBUG: Loading loggable institutions...");
                     long fillInstStartTime = System.currentTimeMillis();
                     loggableInstitutions = fillLoggableInstitutions();
@@ -1506,7 +1517,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (departments.size() == 1) {
                         department = departments.get(0);
                     }
-                    System.out.println("DEBUG: checkUsersWithoutDepartment() completed in " + (System.currentTimeMillis() - startTime) + "ms");
                     return true;
                 }
             }
@@ -1555,6 +1565,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("No person");
             return "";
         }
+
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
 
         System.out.println("DEBUG: Setting department and institution...");
         loggedUser.setDepartment(department);
@@ -1657,7 +1670,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         long navStartTime = System.currentTimeMillis();
         String result = navigateToLoginPageByUsersDefaultLoginPage();
         System.out.println("DEBUG: Navigation took " + (System.currentTimeMillis() - navStartTime) + "ms");
-        System.out.println("DEBUG: selectDepartment() completed in " + (System.currentTimeMillis() - selectDeptStartTime) + "ms");
         return result;
     }
 
@@ -1780,6 +1792,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggedUser.setWebUserPerson(p);
             webUserFacade.edit(loggedUser);
         }
+
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
 
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());

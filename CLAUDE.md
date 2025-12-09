@@ -50,6 +50,9 @@
 ### JSF Development Guidelines
 - **JSF AJAX Updates**: [Critical Guidelines](developer_docs/jsf/ajax-update-guidelines.md)
 - **🚨 AJAX UPDATE RULE**: NEVER use plain HTML elements (div, span, etc.) with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead
+- **🚨 RENDERED ATTRIBUTE RULE**: NEVER use `rendered` attribute on plain HTML elements - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
+- **PrimeFaces DataTable Selection**: [Implementation Guide](developer_docs/jsf/primefaces-datatable-selection.md)
+- **🚨 DATATABLE SELECTION**: Use `selectionMode="multiple"` on dataTable and `selectionBox="true"` on column (NOT `selectionMode` on column)
 
 ### Database Development
 - **MySQL Guide**: [Complete Reference](developer_docs/database/mysql-developer-guide.md)
@@ -92,6 +95,9 @@
 
 ### JSF Development
 16. **🚨 JSF AJAX UPDATES**: Never use plain HTML elements for AJAX updates - [Guide](developer_docs/jsf/ajax-update-guidelines.md)
+17. **🚨 PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"` or `render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"` for multiple components
+18. **🚨 DATATABLE SELECTION**: Use `selectionMode="multiple"` on dataTable element, `selectionBox="true"` on column, and array property (not List) for selection binding - [Guide](developer_docs/jsf/primefaces-datatable-selection.md)
+19. **🚨 JSF RENDERED ATTRIBUTE**: Never use `rendered` attribute on plain HTML elements (div, span, etc.) - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
 
 ---
 This behavior should persist across all Claude Code sessions for this project.

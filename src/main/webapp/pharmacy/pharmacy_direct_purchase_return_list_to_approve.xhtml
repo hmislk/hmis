@@ -289,10 +289,10 @@
                                         class="ui-button-info"
                                         value="View"
                                         title="To View Direct Purchase Return"
-                                        action="#{directPurchaseReturnWorkflowController.navigateToViewDirectPurchaseReturn}"
+                                        action="/pharmacy/pharmacy_reprint_direct_purchase_return?faces-redirect=true"
                                         disabled="#{b.referenceBill eq null}"
                                         style="min-width: 60px;">
-                                        <f:setPropertyActionListener target="#{directPurchaseReturnWorkflowController.currentBill}" value="#{b}"/>
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                     </p:commandButton>
                                     <p:commandButton
                                         id="close"

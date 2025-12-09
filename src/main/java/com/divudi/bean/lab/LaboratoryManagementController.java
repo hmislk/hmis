@@ -7,6 +7,8 @@ import com.divudi.core.data.LoginPage;
 import com.divudi.core.data.reports.CommonReports;
 import com.divudi.core.data.PatientReportLight;
 import com.divudi.core.data.ReportType;
+import com.divudi.core.data.dto.PatientInvestigationDTO;
+import com.divudi.core.data.dto.SampleDTO;
 import com.divudi.core.data.lab.BillBarcode;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -86,7 +88,6 @@ public class LaboratoryManagementController implements Serializable {
     ReportTimerController reportTimerController;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -125,6 +126,11 @@ public class LaboratoryManagementController implements Serializable {
     private Department sampleReceiveFromDepartment;
     private List<PatientInvestigation> tempSelectedItems;
     private List<PatientInvestigation> selectedItems;
+    
+    private List<PatientInvestigationDTO> tempSelectedDTOItems;
+    private List<PatientInvestigationDTO> selectedDTOItems;
+    
+    
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -156,7 +162,7 @@ public class LaboratoryManagementController implements Serializable {
         performingDepartment = null;
         patientInvestigationStatus = null;
     }
-    
+
     public void navigateToWorkSheet() {
         activeIndex = 6;
         listingEntity = ListingEntity.WORK_SHEET;
@@ -200,8 +206,7 @@ public class LaboratoryManagementController implements Serializable {
                 patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
                 return "/lab/generate_barcode_p?faces-redirect=true";
             }
-        }
-        else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
+        } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
             laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_REPORTS);
             navigateToPatientReportsFromSelectedBill(bill);
             return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
@@ -227,8 +232,7 @@ public class LaboratoryManagementController implements Serializable {
                 patientInvestigationController.setListingEntity(ListingEntity.PATIENT_INVESTIGATIONS);
                 return "/lab/generate_barcode_p?faces-redirect=true";
             }
-        }
-        else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
+        } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
             laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_INVESTIGATIONS);
             navigateToInvestigationsFromSelectedBill(bill);
             return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
@@ -337,7 +341,7 @@ public class LaboratoryManagementController implements Serializable {
     public String navigateToLaboratoryAdministration() {
         return "/admin/lims/index?faces-redirect=true";
     }
-    
+
     public String navigateToBackDashBoardFromWorkSheet() {
         items = new ArrayList<>();
         activeIndex = 6;
@@ -346,16 +350,25 @@ public class LaboratoryManagementController implements Serializable {
         tempSelectedItems = new ArrayList<>();
         return "/lab/laboratory_management_dashboard?faces-redirect=true";
     }
-    
+
     public String navigateToPrintWorkSheetFromSelectedBill(Bill bill) {
-        tempSelectedItems = new ArrayList<>();
-        navigateToInvestigationsFromSelectedBill(bill);
+        tempSelectedDTOItems = new ArrayList<>();
+        navigateToDTOInvestigationsFromSelectedBill(bill);
         return "/lab/print_worksheet?faces-redirect=true";
     }
-    
-    public void processWorkSheet(){
-        selectedItems  = new ArrayList<>();
-        selectedItems.addAll(tempSelectedItems);
+
+    public void processWorkSheet() {
+        selectedItems = new ArrayList<>();
+        for(PatientInvestigationDTO dto : tempSelectedDTOItems){
+            PatientInvestigation pi = patientInvestigationFacade.findWithoutCache(dto.getInvestigationId());
+            if(pi == null){
+                JsfUtil.addErrorMessage("Error in PatientInvestigation");
+                return ;
+            }else{
+                selectedItems.add(pi);
+            }
+        }
+        System.out.println("tempSelectedDTOItems = " + tempSelectedDTOItems.size());
     }
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
@@ -376,6 +389,44 @@ public class LaboratoryManagementController implements Serializable {
         items = patientInvestigationFacade.findByJpqlWithoutCache(jpql, params);
     }
     
+    
+    public void navigateToDTOInvestigationsFromSelectedBill(Bill bill) {
+        investigationDTO = new ArrayList<>();
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
+                    + " COALESCE(i.id, 0), "
+                    + " COALESCE(i.billItem.item.name, ''), "
+                    + " COALESCE(i.billItem.bill.deptId, ''), "
+                    + " i.billItem.bill.createdAt, "
+                    + " COALESCE(i.billItem.bill.patient.id, 0 ), "
+                    + " i.billItem.bill.patient.person.title,"
+                    + " COALESCE(i.billItem.bill.patient.person.name, ''), "
+                    + " i.billItem.bill.patient.person.dob, "
+                    + " COALESCE(i.billItem.bill.patient.person.sex, ''), "
+                    + " COALESCE(i.billItem.bill.patient.person.mobile, ''), "
+                    + " COALESCE(i.billItem.bill.ipOpOrCc, ''), "
+                    + " i.status, "
+                    + " i.billItem.bill.cancelled, "
+                    + " i.billItem.refunded, "
+                    + " i.sampleAccepted, "
+                    + " COALESCE(i.billItem.bill.institution.name, ''), "
+                    + " COALESCE(i.billItem.bill.department.name, '') "
+                    + " )"
+                    
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        investigationDTO = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
         items = new ArrayList<>();
         if (patientInvestigation == null || patientInvestigation.getId() == null) {
@@ -383,6 +434,30 @@ public class LaboratoryManagementController implements Serializable {
         }
         PatientInvestigation pi = patientInvestigationFacade.find(patientInvestigation.getId());
         items.add(pi);
+        listingEntity = ListingEntity.REPORT_PRINT;
+
+    }
+    
+    public void navigateToPatientReportsFromSelectedInvestigation(Long patientInvestigationId) {
+        if(patientInvestigationId == null){
+            JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
+            return ;
+        }
+        PatientInvestigation pi = patientInvestigationFacade.findWithoutCache(patientInvestigationId);
+        
+        navigateToPatientReportsFromSelectedInvestigation(pi);
+        listingEntity = ListingEntity.REPORT_PRINT;
+
+    }
+    
+    public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigationDTO dto) {
+        if(dto == null){
+            JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
+            return ;
+        }
+        investigationDTO = new ArrayList<>();
+        investigationDTO.add(dto);
+        
         listingEntity = ListingEntity.REPORT_PRINT;
 
     }
@@ -412,6 +487,7 @@ public class LaboratoryManagementController implements Serializable {
         items.add(patientInvestigation);
     }
 
+    @Deprecated
     public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
         listingEntity = ListingEntity.REPORT_PRINT;
@@ -429,6 +505,43 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
+    
+    public void navigateToPatientReportsPrintDTOFromSelectedBill(Bill bill) {
+        investigationDTO = new ArrayList<>();
+        listingEntity = ListingEntity.REPORT_PRINT;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql ="SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
+                    + " COALESCE(i.id, 0), "
+                    + " COALESCE(i.billItem.item.name, ''), "
+                    + " COALESCE(i.billItem.bill.deptId, ''), "
+                    + " i.billItem.bill.createdAt, "
+                    + " COALESCE(i.billItem.bill.patient.id, 0 ), "
+                    + " i.billItem.bill.patient.person.title,"
+                    + " COALESCE(i.billItem.bill.patient.person.name, ''), "
+                    + " i.billItem.bill.patient.person.dob, "
+                    + " COALESCE(i.billItem.bill.patient.person.sex, ''), "
+                    + " COALESCE(i.billItem.bill.patient.person.mobile, ''), "
+                    + " COALESCE(i.billItem.bill.ipOpOrCc, ''), "
+                    + " i.status, "
+                    + " i.billItem.bill.cancelled, "
+                    + " i.billItem.refunded, "
+                    + " i.sampleAccepted, "
+                    + " COALESCE(i.billItem.bill.institution.name, ''), "
+                    + " COALESCE(i.billItem.bill.department.name, '') "
+                    + " )"
+                    
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired =:ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        investigationDTO = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+    }
 
     @Inject
     LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
@@ -442,8 +555,7 @@ public class LaboratoryManagementController implements Serializable {
                 patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
                 return "/lab/generate_barcode_p?faces-redirect=true";
             }
-        }
-        else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
+        } else if (sessionController.getLoggedUser().getLoginPage() != null && sessionController.getLoggedUser().getLoginPage() == LoginPage.LABORATORY_DOCTER_DASHBOARD) {
             laboratoryDoctorDashboardController.setListingEntity(ListingEntity.PATIENT_REPORTS);
             return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
         } else {
@@ -478,7 +590,6 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         this.bills = null;
@@ -509,7 +620,13 @@ public class LaboratoryManagementController implements Serializable {
         this.sampleSendingDepartment = null;
         this.tempSelectedItems = new ArrayList();
         this.selectedItems = new ArrayList();
+        this.sampleDtos = new ArrayList<>();
+        this.selectedSampleDtos = new ArrayList<>();
+        this.investigationDTO = new ArrayList<>();
+        this.tempSelectedDTOItems = new ArrayList<>();
+        this.selectedDTOItems = new ArrayList<>();
     }
+
     public void searchLabBillsForWorkSheet() {
         searchLabBills();
         listingEntity = ListingEntity.WORK_SHEET;
@@ -661,10 +778,12 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.generateBarcodesForSelectedBill", sessionController.getLoggedUser());
     }
 
+    @Deprecated
     public void searchPatientSamples() {
         reportTimerController.trackReportExecution(() -> {
             listingEntity = ListingEntity.PATIENT_SAMPLES;
             String jpql;
+            patientSamples = new ArrayList();
             Map<String, Object> params = new HashMap<>();
 
             jpql = "SELECT ps FROM PatientSample ps JOIN ps.bill b WHERE ps.retired = :ret";
@@ -728,7 +847,7 @@ public class LaboratoryManagementController implements Serializable {
                 params.put("status", getPatientInvestigationStatus());
             }
 
-            if (sampleId != null) {
+            if (sampleId != null && !sampleId.trim().isEmpty()) {
                 jpql += " AND (ps.sampleId like :smpid or ps.id like :smpId) ";
                 params.put("smpid", "%" + String.valueOf(sampleId) + "%");
                 params.put("smpId", "%" + String.valueOf(sampleId) + "%");
@@ -738,13 +857,135 @@ public class LaboratoryManagementController implements Serializable {
 
             params.put("ret", false);
 
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
+
             patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-            if (patientSamples == null) {
-                patientSamples = new ArrayList();
-            }
+            System.out.println("patientSamples = " + patientSamples);
             selectAll = false;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientSamples", sessionController.getLoggedUser());
+    }
+
+    private List<SampleDTO> sampleDtos;
+    private List<SampleDTO> selectedSampleDtos;
+
+    public void searchPatientSampleDTOs() {
+        reportTimerController.trackReportExecution(() -> {
+            listingEntity = ListingEntity.PATIENT_SAMPLES;
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
+            sampleDtos = new ArrayList<>();
+
+            jpql = "SELECT new com.divudi.core.data.dto.SampleDTO( "
+                    + " COALESCE(ps.id, 0), "
+                    + " COALESCE(ps.tube.name, ''), "
+                    + " COALESCE(ps.bill.deptId, ''), "
+                    + " ps.bill.createdAt, "
+                    + " COALESCE(ps.bill.patient.id, 0 ), "
+                    + " ps.bill.patient.person.title,"
+                    + " COALESCE(ps.bill.patient.person.name, ''), "
+                    + " ps.bill.patient.person.dob, "
+                    + " COALESCE(ps.bill.patient.person.sex, ''), "
+                    + " COALESCE(ps.bill.patient.person.mobile, ''), "
+                    + " COALESCE(ps.bill.ipOpOrCc, ''), "
+                    + " ps.status, "
+                    + " ps.bill.cancelled, "
+                    + " ps.createdAt, "
+                    + " ps.barcodeGenerated, "
+                    + " ps.barcodeGeneratedAt, "
+                    + " ps.sampleCollected, "
+                    + " ps.sampleCollectedAt, "
+                    + " ps.sampleSent, "
+                    + " ps.sampleSentAt, "
+                    + " ps.sampleReceivedAtLab, "
+                    + " ps.sampleReceivedAtLabAt, "
+                    + " ps.cancelled, "
+                    + " ps.cancelledAt, "
+                    + " ps.sampleRejected, "
+                    + " ps.sampleRejectedAt "
+                    + " )";
+
+            jpql += " FROM PatientSample ps JOIN ps.bill b WHERE ps.retired = :ret";
+            jpql += " AND b.createdAt BETWEEN :fd AND :td";
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+
+            if (billNo != null && !billNo.trim().isEmpty()) {
+                jpql += " AND b.deptId LIKE :billNo";
+                params.put("billNo", "%" + getBillNo().trim() + "%");
+            }
+
+            if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+                jpql += " AND b.patientEncounter is not null AND COALESCE(b.patientEncounter.bhtNo, '') LIKE :bht";
+                params.put("bht", "%" + getBhtNo().trim() + "%");
+            }
+
+            if (orderedInstitution != null) {
+                jpql += " AND b.institution = :orderedInstitution";
+                params.put("orderedInstitution", getOrderedInstitution());
+            }
+
+            if (orderedDepartment != null) {
+                jpql += " AND b.department = :orderedDepartment";
+                params.put("orderedDepartment", getOrderedDepartment());
+            }
+
+            if (performingInstitution != null) {
+                jpql += " AND ps.institution = :performingInstitution";
+                params.put("performingInstitution", getPerformingInstitution());
+            }
+
+            if (performingDepartment != null) {
+                jpql += " AND ps.department = :performingDepartment";
+                params.put("performingDepartment", getPerformingDepartment());
+            }
+
+            if (collectionCenter != null) {
+                jpql += " AND b.collectingCentre is not null AND (COALESCE(b.collectingCentre, '') = :collectionCenter OR COALESCE(b.fromInstitution, '') = :collectionCenter)";
+                params.put("collectionCenter", getCollectionCenter());
+            }
+
+            if (route != null) {
+                jpql += " AND b.collectingCentre is not null AND (COALESCE(b.collectingCentre.route, '') = :route OR COALESCE(b.fromInstitution.route, '') = :route)";
+                params.put("route", getRoute());
+            }
+
+            if (patientName != null && !patientName.trim().isEmpty()) {
+                jpql += " AND COALESCE(b.patient.person.name, '') LIKE :patientName";
+                params.put("patientName", "%" + getPatientName().trim() + "%");
+            }
+
+            if (type != null && !type.trim().isEmpty()) {
+                jpql += " AND b.ipOpOrCc = :type";
+                params.put("type", getType().trim());
+            }
+
+            if (patientInvestigationStatus != null) {
+                jpql += " AND ps.status = :status";
+                params.put("status", getPatientInvestigationStatus());
+            }
+
+            if (sampleId != null && !sampleId.trim().isEmpty()) {
+                jpql += " AND (ps.sampleId like :smpid or ps.id like :smpId) ";
+                params.put("smpid", "%" + String.valueOf(sampleId) + "%");
+                params.put("smpId", "%" + String.valueOf(sampleId) + "%");
+            }
+
+            jpql += " ORDER BY ps.id DESC";
+
+            params.put("ret", false);
+
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
+
+            sampleDtos = (List<SampleDTO>) patientSampleFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+            selectAll = false;
+
+            System.out.println("sampleDtos = " + sampleDtos);
+
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientSampleDTOs", sessionController.getLoggedUser());
     }
 
     public void fetchSamples(List<PatientInvestigationStatus> availableStatus) {
@@ -796,6 +1037,7 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.fetchSamples", sessionController.getLoggedUser());
     }
 
+    @Deprecated
     public void nonCollectedSampleList() {
         reportTimerController.trackReportExecution(() -> {
             selectedPatientSamples = new ArrayList();
@@ -824,6 +1066,63 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.nonCollectedSampleList", sessionController.getLoggedUser());
     }
 
+    public void nonCollectedSampleDTOList() {
+        reportTimerController.trackReportExecution(() -> {
+            sampleDtos = new ArrayList();
+
+            String jpql = "SELECT new com.divudi.core.data.dto.SampleDTO( "
+                    + " COALESCE(ps.id, 0), "
+                    + " COALESCE(ps.tube.name, ''), "
+                    + " COALESCE(ps.bill.deptId, ''), "
+                    + " ps.bill.createdAt, "
+                    + " COALESCE(ps.bill.patient.id, 0 ), "
+                    + " ps.bill.patient.person.title,"
+                    + " COALESCE(ps.bill.patient.person.name, ''), "
+                    + " ps.bill.patient.person.dob, "
+                    + " COALESCE(ps.bill.patient.person.sex, ''), "
+                    + " COALESCE(ps.bill.patient.person.mobile, ''), "
+                    + " COALESCE(ps.bill.ipOpOrCc, ''), "
+                    + " ps.status, "
+                    + " ps.bill.cancelled, "
+                    + " ps.createdAt, "
+                    + " ps.barcodeGenerated, "
+                    + " ps.barcodeGeneratedAt, "
+                    + " ps.sampleCollected, "
+                    + " ps.sampleCollectedAt, "
+                    + " ps.sampleSent, "
+                    + " ps.sampleSentAt, "
+                    + " ps.sampleReceivedAtLab, "
+                    + " ps.sampleReceivedAtLabAt, "
+                    + " ps.cancelled, "
+                    + " ps.cancelledAt, "
+                    + " ps.sampleRejected, "
+                    + " ps.sampleRejectedAt "
+                    + " )"
+                    + " FROM PatientSample ps "
+                    + " WHERE ps.retired = :ret "
+                    + " AND ps.bill.createdAt BETWEEN :fd AND :td "
+                    + " AND ps.department = :department "
+                    + " AND ps.status = :status "
+                    + " ORDER BY ps.id DESC";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+            params.put("department", sessionController.getDepartment());
+            params.put("ret", false);
+            params.put("status", PatientInvestigationStatus.SAMPLE_GENERATED);
+
+            sampleDtos = (List<SampleDTO>) patientSampleFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+            if (sampleDtos == null) {
+                sampleDtos = new ArrayList<>();
+            }
+
+            selectAll = false;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.nonCollectedSampleDTOList", sessionController.getLoggedUser());
+    }
+
+    @Deprecated
     public void pendingSendSampleList() {
         reportTimerController.trackReportExecution(() -> {
             selectedPatientSamples = new ArrayList<>();
@@ -859,6 +1158,70 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.pendingSendSampleList", sessionController.getLoggedUser());
     }
 
+    public void pendingSendDTOSampleList() {
+        reportTimerController.trackReportExecution(() -> {
+            sampleDtos = new ArrayList<>();
+
+            String jpql = "SELECT new com.divudi.core.data.dto.SampleDTO( "
+                    + " COALESCE(ps.id, 0), "
+                    + " COALESCE(ps.tube.name, ''), "
+                    + " COALESCE(ps.bill.deptId, ''), "
+                    + " ps.bill.createdAt, "
+                    + " COALESCE(ps.bill.patient.id, 0 ), "
+                    + " ps.bill.patient.person.title,"
+                    + " COALESCE(ps.bill.patient.person.name, ''), "
+                    + " ps.bill.patient.person.dob, "
+                    + " COALESCE(ps.bill.patient.person.sex, ''), "
+                    + " COALESCE(ps.bill.patient.person.mobile, ''), "
+                    + " COALESCE(ps.bill.ipOpOrCc, ''), "
+                    + " ps.status, "
+                    + " ps.bill.cancelled, "
+                    + " ps.createdAt, "
+                    + " ps.barcodeGenerated, "
+                    + " ps.barcodeGeneratedAt, "
+                    + " ps.sampleCollected, "
+                    + " ps.sampleCollectedAt, "
+                    + " ps.sampleSent, "
+                    + " ps.sampleSentAt, "
+                    + " ps.sampleReceivedAtLab, "
+                    + " ps.sampleReceivedAtLabAt, "
+                    + " ps.cancelled, "
+                    + " ps.cancelledAt, "
+                    + " ps.sampleRejected, "
+                    + " ps.sampleRejectedAt "
+                    + " )"
+                    + "FROM PatientSample ps "
+                    + "WHERE ps.retired = :ret "
+                    + "AND ps.bill.createdAt BETWEEN :fd AND :td "
+                    + "AND ps.department = :department "
+                    + "AND ps.status = :status "
+                    + "AND ps.createdAt >= :fromDate "
+                    + "ORDER BY ps.id DESC";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+            params.put("department", sessionController.getDepartment());
+            params.put("ret", false);
+            params.put("status", PatientInvestigationStatus.SAMPLE_COLLECTED);
+
+            int hours = configOptionApplicationController.getIntegerValueByKey(
+                    "Limit pending sample listings to last hours", 24);
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.HOUR_OF_DAY, -hours);
+            params.put("fromDate", cal.getTime());
+
+            sampleDtos = (List<SampleDTO>) patientSampleFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+            if (sampleDtos == null) {
+                sampleDtos = new ArrayList<>();
+            }
+
+            selectAll = false;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.pendingSendDTOSampleList", sessionController.getLoggedUser());
+    }
+
+    @Deprecated
     public void nonReceivedSampleList() {
         reportTimerController.trackReportExecution(() -> {
             if (sampleReceiveFromDepartment == null) {
@@ -902,7 +1265,80 @@ public class LaboratoryManagementController implements Serializable {
             sampleReceiveFromDepartment = null;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.nonReceivedSampleList", sessionController.getLoggedUser());
     }
+    
+    public void nonReceivedDTOSampleList() {
+        reportTimerController.trackReportExecution(() -> {
+            if (sampleReceiveFromDepartment == null) {
+                JsfUtil.addErrorMessage("Please Select Sample from Department.");
+                patientSamples = new ArrayList<>();
+                return;
+            }
 
+            selectedPatientSamples = new ArrayList<>();
+
+            String jpql = "SELECT new com.divudi.core.data.dto.SampleDTO( "
+                    + " COALESCE(ps.id, 0), "
+                    + " COALESCE(ps.tube.name, ''), "
+                    + " COALESCE(ps.bill.deptId, ''), "
+                    + " ps.bill.createdAt, "
+                    + " COALESCE(ps.bill.patient.id, 0 ), "
+                    + " ps.bill.patient.person.title,"
+                    + " COALESCE(ps.bill.patient.person.name, ''), "
+                    + " ps.bill.patient.person.dob, "
+                    + " COALESCE(ps.bill.patient.person.sex, ''), "
+                    + " COALESCE(ps.bill.patient.person.mobile, ''), "
+                    + " COALESCE(ps.bill.ipOpOrCc, ''), "
+                    + " ps.status, "
+                    + " ps.bill.cancelled, "
+                    + " ps.createdAt, "
+                    + " ps.barcodeGenerated, "
+                    + " ps.barcodeGeneratedAt, "
+                    + " ps.sampleCollected, "
+                    + " ps.sampleCollectedAt, "
+                    + " ps.sampleSent, "
+                    + " ps.sampleSentAt, "
+                    + " ps.sampleReceivedAtLab, "
+                    + " ps.sampleReceivedAtLabAt, "
+                    + " ps.cancelled, "
+                    + " ps.cancelledAt, "
+                    + " ps.sampleRejected, "
+                    + " ps.sampleRejectedAt "
+                    + " )"
+                    + "FROM PatientSample ps "
+                    + "WHERE ps.retired = :ret "
+                    + "AND ps.sampleSentToDepartment = :toDepartment "
+                    + "AND ps.bill.createdAt BETWEEN :fd AND :td "
+                    + "AND ps.department = :fromDepartment "
+                    + "AND ps.status = :status "
+                    + "AND ps.createdAt >= :fromDate "
+                    + "ORDER BY ps.id DESC";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+            params.put("toDepartment", sessionController.getDepartment());
+            params.put("fromDepartment", sampleReceiveFromDepartment);
+            params.put("ret", false);
+            params.put("status", PatientInvestigationStatus.SAMPLE_SENT);
+
+            int hours = configOptionApplicationController.getIntegerValueByKey(
+                    "Limit pending sample listings to last hours", 24);
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.HOUR_OF_DAY, -hours);
+            params.put("fromDate", cal.getTime());
+
+            sampleDtos = (List<SampleDTO>) patientSampleFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+            if (sampleDtos == null) {
+                sampleDtos = new ArrayList<>();
+            }
+
+            selectAll = false;
+            sampleReceiveFromDepartment = null;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.nonReceivedSampleList", sessionController.getLoggedUser());
+    }
+
+    @Deprecated
     public void selectAllSamples() {
         reportTimerController.trackReportExecution(() -> {
             if (patientSamples == null) {
@@ -917,6 +1353,21 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.selectAllSamples", sessionController.getLoggedUser());
     }
 
+    public void selectAllDTOSamples() {
+        reportTimerController.trackReportExecution(() -> {
+            if (sampleDtos == null) {
+                JsfUtil.addErrorMessage("No samples selected");
+                return;
+            }
+            selectedSampleDtos = new ArrayList();
+            for (SampleDTO ps : sampleDtos) {
+                selectedSampleDtos.add(ps);
+            }
+            selectAll = true;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.selectAllDTOSamples", sessionController.getLoggedUser());
+    }
+
+    @Deprecated
     public void unSelectAllSamples() {
         reportTimerController.trackReportExecution(() -> {
             selectedPatientSamples = new ArrayList();
@@ -924,6 +1375,14 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.unSelectAllSamples", sessionController.getLoggedUser());
     }
 
+    public void unSelectAllDTOSamples() {
+        reportTimerController.trackReportExecution(() -> {
+            selectedSampleDtos = new ArrayList();
+            selectAll = false;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.unSelectAllDTOSamples", sessionController.getLoggedUser());
+    }
+
+    @Deprecated
     public void collectSamples() {
         reportTimerController.trackReportExecution(() -> {
             if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
@@ -994,6 +1453,84 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.collectSamples", sessionController.getLoggedUser());
     }
 
+    public void collectDTOSamples() {
+        reportTimerController.trackReportExecution(() -> {
+            if (selectedSampleDtos == null || selectedSampleDtos.isEmpty()) {
+                JsfUtil.addErrorMessage("No samples selected");
+                return;
+            }
+
+            List<PatientSample> canCollectSamples = new ArrayList<>();
+
+            for (SampleDTO dto : selectedSampleDtos) {
+                if (dto.getBillCanceled()) {
+                    JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                    return;
+                }
+                if (dto.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+                    JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click Collect again");
+                    return;
+                }
+                if (dto.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+                    PatientSample sample = patientSampleFacade.findWithoutCache(dto.getSampleId());
+
+                    if (sample == null) {
+                        JsfUtil.addErrorMessage("Error in Sample");
+                        return;
+                    }
+                    canCollectSamples.add(sample);
+                }
+            }
+
+            if (canCollectSamples.isEmpty()) {
+                JsfUtil.addErrorMessage("There are no suitable samples to send from the selected samples.");
+                return;
+            }
+
+            listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+            Map<Long, PatientInvestigation> collectedPtixs = new HashMap<>();
+            Map<Long, Bill> collectedBills = new HashMap<>();
+
+            // Update sample collection details and gather associated patient investigations
+            for (PatientSample ps : canCollectSamples) {
+                ps.setDepartment(sessionController.getDepartment());
+                ps.setSampleCollected(true);
+                ps.setSampleCollectedAt(new Date());
+                ps.setSampleCollectedDepartment(sessionController.getDepartment());
+                ps.setSampleCollectedInstitution(sessionController.getInstitution());
+                ps.setSampleCollecter(sessionController.getLoggedUser());
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+                patientSampleFacade.edit(ps);
+
+                // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsBySample(ps)) {
+                    collectedPtixs.putIfAbsent(pi.getId(), pi);
+                }
+            }
+
+            // Update patient investigations and collect associated bills
+            for (PatientInvestigation tptix : collectedPtixs.values()) {
+                tptix.setSampleCollected(true);
+                tptix.setSampleCollectedAt(new Date());
+                tptix.setSampleCollectedBy(sessionController.getLoggedUser());
+                tptix.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+                patientInvestigationFacade.edit(tptix);
+                collectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+            }
+
+            // Update bills status
+            for (Bill tb : collectedBills.values()) {
+                tb.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
+                billFacade.edit(tb);
+            }
+            reloadSampleDTOList();
+            selectedSampleDtos = new ArrayList<>();
+            JsfUtil.addSuccessMessage("Selected Samples Collected");
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.collectDTOSamples", sessionController.getLoggedUser());
+    }
+
+    @Deprecated
     public void sendSamplesToLab() {
         reportTimerController.trackReportExecution(() -> {
             if (sampleTransportedToLabByStaff == null) {
@@ -1075,6 +1612,97 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.sendSamplesToLab", sessionController.getLoggedUser());
     }
 
+    public void sendDTOSamplesToLab() {
+        reportTimerController.trackReportExecution(() -> {
+            if (sampleTransportedToLabByStaff == null) {
+                JsfUtil.addErrorMessage("The transport worker is not included.");
+                return;
+            }
+            if (sampleSendingDepartment == null) {
+                JsfUtil.addErrorMessage("The sending Department is Empty.");
+                return;
+            }
+
+            if (selectedSampleDtos == null || selectedSampleDtos.isEmpty()) {
+                JsfUtil.addErrorMessage("No samples selected");
+                return;
+            }
+
+            List<PatientSample> canSentSamples = new ArrayList<>();
+
+            for (SampleDTO dto : selectedSampleDtos) {
+                if (dto.getBillCanceled()) {
+                    JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                    return;
+                }
+                if (dto.getStatus() != PatientInvestigationStatus.SAMPLE_COLLECTED) {
+                    JsfUtil.addErrorMessage("There are samples which are yet to collect. Please select them and click the sent to lab button again");
+                    return;
+                }
+                if (dto.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+                    PatientSample sample = patientSampleFacade.findWithoutCache(dto.getSampleId());
+
+                    if (sample == null) {
+                        JsfUtil.addErrorMessage("Error in Sample");
+                        return;
+                    }
+                    canSentSamples.add(sample);
+                }
+            }
+
+            if (canSentSamples.isEmpty()) {
+                JsfUtil.addErrorMessage("There are no suitable samples to send from the selected samples.");
+                return;
+            }
+
+
+            listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+            Map<Long, PatientInvestigation> samplePtixs = new HashMap<>();
+            Map<Long, Bill> sampleBills = new HashMap<>();
+
+            // Process each selected patient sample
+            for (PatientSample ps : canSentSamples) {
+                ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
+                ps.setSampleSent(true);
+                ps.setDepartment(sessionController.getDepartment());
+                ps.setSampleSentBy(sessionController.getLoggedUser());
+                ps.setSampleSentAt(new Date());
+                ps.setSampleSentToInstitution(sampleSendingDepartment.getInstitution());
+                ps.setSampleSentToDepartment(sampleSendingDepartment);
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+                patientSampleFacade.edit(ps);
+
+                // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsBySample(ps)) {
+                    samplePtixs.putIfAbsent(pi.getId(), pi);
+                }
+            }
+
+            // Update PatientInvestigations and store associated Bills by unique ID to avoid duplicates
+            for (PatientInvestigation tptix : samplePtixs.values()) {
+                tptix.setSampleSent(true);
+                tptix.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
+                tptix.setSampleSentAt(new Date());
+                tptix.setSampleSentBy(sessionController.getLoggedUser());
+                tptix.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+                patientInvestigationFacade.edit(tptix);
+                sampleBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+            }
+
+            // Update Bills
+            for (Bill tb : sampleBills.values()) {
+                tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+                billFacade.edit(tb);
+            }
+            sampleTransportedToLabByStaff = null;
+            reloadSampleDTOList();
+            selectedSampleDtos = new ArrayList<>();
+            JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.sendDTOSamplesToLab", sessionController.getLoggedUser());
+    }
+
+    @Deprecated
     public void receiveSamplesAtLab() {
         reportTimerController.trackReportExecution(() -> {
             if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
@@ -1144,6 +1772,83 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.receiveSamplesAtLab", sessionController.getLoggedUser());
     }
 
+    public void receiveDTOSamplesAtLab() {
+        reportTimerController.trackReportExecution(() -> {
+            if (selectedSampleDtos == null || selectedSampleDtos.isEmpty()) {
+                JsfUtil.addErrorMessage("No samples selected");
+                return;
+            }
+
+            List<PatientSample> canReciveSamples = new ArrayList<>();
+
+            for (SampleDTO dto : selectedSampleDtos) {
+                if (dto.getBillCanceled()) {
+                    JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                    return;
+                }
+                if (dto.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
+                    PatientSample sample = patientSampleFacade.findWithoutCache(dto.getSampleId());
+
+                    if (sample == null) {
+                        JsfUtil.addErrorMessage("Error in Sample");
+                        return;
+                    }
+                    canReciveSamples.add(sample);
+                }
+            }
+
+            if (canReciveSamples.isEmpty()) {
+                JsfUtil.addErrorMessage("There are no suitable samples to send from the selected samples.");
+                return;
+            }
+
+
+            listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+            Map<Long, PatientInvestigation> receivedPtixs = new HashMap<>();
+            Map<Long, Bill> receivedBills = new HashMap<>();
+
+            // Update sample details and collect associated patient investigations
+            for (PatientSample ps : canReciveSamples) {
+                ps.setSampleReceivedAtLab(true);
+                ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
+                ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
+                ps.setSampleReceivedAtLabInstitution(sessionController.getInstitution());
+                ps.setSampleReceivedAtLabAt(new Date());
+                ps.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+                patientSampleFacade.edit(ps);
+
+                // Retrieve and store PatientInvestigations by unique ID to avoid duplicates
+                for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsBySample(ps)) {
+                    receivedPtixs.putIfAbsent(pi.getId(), pi);
+                }
+            }
+
+            // Update patient investigations and collect associated bills
+            for (PatientInvestigation tptix : receivedPtixs.values()) {
+                tptix.setSampleAccepted(true);
+                tptix.setSampleAcceptedAt(new Date());
+                tptix.setSampleAcceptedBy(sessionController.getLoggedUser());
+                tptix.setReceived(true);
+                tptix.setReceivedAt(new Date());
+                tptix.setReceiveDepartment(sessionController.getDepartment());
+                tptix.setReceiveInstitution(sessionController.getInstitution());
+                tptix.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+                patientInvestigationFacade.edit(tptix);
+                receivedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+            }
+
+            // Update bills status
+            for (Bill tb : receivedBills.values()) {
+                tb.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+                billFacade.edit(tb);
+            }
+            reloadSampleDTOList();
+            selectedSampleDtos = new ArrayList<>();
+            JsfUtil.addSuccessMessage("Selected Samples Are Received at Lab");
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.receiveDTOSamplesAtLab", sessionController.getLoggedUser());
+    }
+
     public void rejectSamples() {
         reportTimerController.trackReportExecution(() -> {
             if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
@@ -1191,6 +1896,7 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.rejectSamples", sessionController.getLoggedUser());
     }
 
+    @Deprecated
     public void navigateToSamplesFromSelectedBill(Bill bill) {
         reportTimerController.trackReportExecution(() -> {
             patientSamples = new ArrayList<>();
@@ -1216,6 +1922,59 @@ public class LaboratoryManagementController implements Serializable {
 
     }
 
+    public void navigateToDTOSamplesFromSelectedBill(Bill bill) {
+        reportTimerController.trackReportExecution(() -> {
+            sampleDtos = new ArrayList<>();
+            listingEntity = ListingEntity.PATIENT_SAMPLES;
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
+
+            jpql = "SELECT new com.divudi.core.data.dto.SampleDTO( "
+                    + " COALESCE(ps.id, 0), "
+                    + " COALESCE(ps.tube.name, ''), "
+                    + " COALESCE(ps.bill.deptId, ''), "
+                    + " ps.bill.createdAt, "
+                    + " COALESCE(ps.bill.patient.id, 0 ), "
+                    + " ps.bill.patient.person.title,"
+                    + " COALESCE(ps.bill.patient.person.name, ''), "
+                    + " ps.bill.patient.person.dob, "
+                    + " COALESCE(ps.bill.patient.person.sex, ''), "
+                    + " COALESCE(ps.bill.patient.person.mobile, ''), "
+                    + " COALESCE(ps.bill.ipOpOrCc, ''), "
+                    + " ps.status, "
+                    + " ps.bill.cancelled, "
+                    + " ps.createdAt, "
+                    + " ps.barcodeGenerated, "
+                    + " ps.barcodeGeneratedAt, "
+                    + " ps.sampleCollected, "
+                    + " ps.sampleCollectedAt, "
+                    + " ps.sampleSent, "
+                    + " ps.sampleSentAt, "
+                    + " ps.sampleReceivedAtLab, "
+                    + " ps.sampleReceivedAtLabAt, "
+                    + " ps.cancelled, "
+                    + " ps.cancelledAt, "
+                    + " ps.sampleRejected, "
+                    + " ps.sampleRejectedAt "
+                    + " )"
+                    + " FROM PatientSample ps "
+                    + " JOIN ps.bill b "
+                    + " WHERE ps.retired = :ret "
+                    + " and ps.bill =:bill ";
+
+            jpql += " ORDER BY ps.id DESC";
+
+            params.put("ret", false);
+            params.put("bill", bill);
+
+            sampleDtos = (List<SampleDTO>) patientSampleFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+            selectAll = false;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.navigateToDTOSamplesFromSelectedBill", sessionController.getLoggedUser());
+
+    }
+
+    @Deprecated
     public void searchPatientInvestigations() {
         reportTimerController.trackReportExecution(() -> {
             items = new ArrayList();
@@ -1229,6 +1988,25 @@ public class LaboratoryManagementController implements Serializable {
                 }
             } else {
                 searchPatientInvestigationsWithoutSampleId();
+            }
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigations", sessionController.getLoggedUser());
+    }
+    
+    private List<PatientInvestigationDTO> investigationDTO;
+    
+    public void searchDTOPatientInvestigations() {
+        reportTimerController.trackReportExecution(() -> {
+            investigationDTO = new ArrayList();
+
+            if (sampleId != null) {
+                try {
+                    Long id = Long.valueOf(sampleId);
+                    //searchPatientInvestigationsWithSampleId(id);
+                } catch (NumberFormatException e) {
+                    searchPatientInvestigationsDTOWithoutSampleId();
+                }
+            } else {
+                searchPatientInvestigationsDTOWithoutSampleId();
             }
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigations", sessionController.getLoggedUser());
     }
@@ -1325,7 +2103,8 @@ public class LaboratoryManagementController implements Serializable {
             items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsWithSampleId", sessionController.getLoggedUser());
     }
-
+    
+    @Deprecated
     public void searchPatientInvestigationsWithoutSampleId() {
         reportTimerController.trackReportExecution(() -> {
             listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
@@ -1411,6 +2190,115 @@ public class LaboratoryManagementController implements Serializable {
             items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsWithoutSampleId", sessionController.getLoggedUser());
     }
+    
+    public void searchPatientInvestigationsDTOWithoutSampleId() {
+        reportTimerController.trackReportExecution(() -> {
+            listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
+
+            jpql = "SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
+                    + " COALESCE(i.id, 0), "
+                    + " COALESCE(i.billItem.item.name, ''), "
+                    + " COALESCE(i.billItem.bill.deptId, ''), "
+                    + " i.billItem.bill.createdAt, "
+                    + " COALESCE(i.billItem.bill.patient.id, 0 ), "
+                    + " i.billItem.bill.patient.person.title,"
+                    + " COALESCE(i.billItem.bill.patient.person.name, ''), "
+                    + " i.billItem.bill.patient.person.dob, "
+                    + " COALESCE(i.billItem.bill.patient.person.sex, ''), "
+                    + " COALESCE(i.billItem.bill.patient.person.mobile, ''), "
+                    + " COALESCE(i.billItem.bill.ipOpOrCc, ''), "
+                    + " i.status, "
+                    + " i.billItem.bill.cancelled, "
+                    + " i.billItem.refunded, "
+                    + " i.sampleAccepted, "
+                    + " COALESCE(i.billItem.bill.institution.name, ''), "
+                    + " COALESCE(i.billItem.bill.department.name, '') "
+                    + " )"
+                    
+                    + " FROM PatientInvestigation i "
+                    + " WHERE i.retired = :ret "
+                    + " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+
+            if (billNo != null && !billNo.trim().isEmpty()) {
+                jpql += " AND COALESCE(i.billItem.bill.deptId, '') LIKE :billNo";
+                params.put("billNo", "%" + getBillNo().trim() + "%");
+            }
+
+            if (bhtNo != null && !bhtNo.trim().isEmpty()) {
+                jpql += " AND i.billItem.bill.patientEncounter is not null AND COALESCE(i.billItem.bill.patientEncounter.bhtNo, '') LIKE :bht";
+                params.put("bht", "%" + getBhtNo().trim() + "%");
+            }
+
+            if (orderedInstitution != null) {
+                jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+                params.put("orderedInstitution", getOrderedInstitution());
+            }
+
+            if (orderedDepartment != null) {
+                jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+                params.put("orderedDepartment", getOrderedDepartment());
+            }
+
+            if (performingInstitution != null) {
+                jpql += " AND i.performInstitution = :peformingInstitution ";
+                params.put("peformingInstitution", getPerformingInstitution());
+            }
+
+            if (performingDepartment != null) {
+                jpql += " AND i.performDepartment = :peformingDepartment ";
+                params.put("peformingDepartment", getPerformingDepartment());
+            }
+
+            if (collectionCenter != null) {
+                jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+                params.put("collectionCenter", getCollectionCenter());
+            }
+
+            if (route != null) {
+                jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+                params.put("route", getRoute());
+            }
+
+            if (patientName != null && !patientName.trim().isEmpty()) {
+                jpql += " AND COALESCE(i.billItem.bill.patient.person.name, '') LIKE :patientName ";
+                params.put("patientName", "%" + getPatientName().trim() + "%");
+            }
+
+            if (type != null && !type.trim().isEmpty()) {
+                jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
+                params.put("tp", getType().trim());
+            }
+
+            if (referringDoctor != null) {
+                jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+                params.put("referringDoctor", getReferringDoctor());
+            }
+
+            if (investigationName != null && !investigationName.trim().isEmpty()) {
+                jpql += " AND COALESCE(i.billItem.item.name, '') like :investigation ";
+                params.put("investigation", "%" + investigationName.trim() + "%");
+            }
+
+            if (patientInvestigationStatus != null) {
+                jpql += " AND i.status = :patientInvestigationStatus ";
+                params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+            }
+
+            jpql += " ORDER BY i.id DESC";
+
+            params.put("ret", false);
+
+            investigationDTO = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            System.out.println("investigationDTO = " + investigationDTO);
+            
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsDTOWithoutSampleId", sessionController.getLoggedUser());
+    }
 
     public List<Long> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
 
@@ -1425,7 +2313,32 @@ public class LaboratoryManagementController implements Serializable {
         sampleIds = patientSampleComponantFacade.findLongList(jpql, params);
         return sampleIds;
     }
+    
+    public List<Long> getPatientSampleComponentsByInvestigation(Long patientInvestigationId) {
+        PatientInvestigation pi = patientInvestigationFacade.findWithoutCache(patientInvestigationId);
+        List<Long> sampleIds = new ArrayList();
+        if(pi == null){
+            return sampleIds ;
+        }else{
+            sampleIds = getPatientSampleComponentsByInvestigation(pi);
+            return sampleIds ;
+        }
+    }
 
+    
+    public List<PatientReportLight> patientReports( Long patientInvestigationId) {
+        String jpql = "SELECT new com.divudi.core.data.PatientReportLight("
+                + " r.id, r.approved, r.printed, r.reportType, r.qrCodeContentsLink)"
+                + " from PatientReport r "
+                + " where r.patientInvestigation.id=:piId"
+                + " and r.retired = :ret ";
+        Map params = new HashMap();
+        params.put("piId", patientInvestigationId);
+        params.put("ret", false);
+        return patientReportFacade.findLightsByJpql(jpql, params);
+    }
+    
+    @Deprecated
     public List<PatientReportLight> patientReports(PatientInvestigation pi) {
         String jpql = "SELECT new com.divudi.core.data.PatientReportLight("
                 + " r.id, r.approved, r.printed, r.reportType, r.qrCodeContentsLink)"
@@ -1438,6 +2351,7 @@ public class LaboratoryManagementController implements Serializable {
         return patientReportFacade.findLightsByJpql(jpql, params);
     }
 
+    @Deprecated
     public boolean hasPatientReports(PatientInvestigation pi) {
         String jpql = "SELECT r"
                 + " from PatientReport r "
@@ -1445,6 +2359,23 @@ public class LaboratoryManagementController implements Serializable {
                 + " and r.retired = :ret ";
         Map params = new HashMap();
         params.put("pi", pi);
+        params.put("ret", false);
+        PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params);
+
+        if (pr == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    public boolean hasPatientReports(Long patientInvestigationId) {
+        String jpql = "SELECT r"
+                + " from PatientReport r "
+                + " where r.patientInvestigation.id=:piId"
+                + " and r.retired = :ret ";
+        Map params = new HashMap();
+        params.put("piId", patientInvestigationId);
         params.put("ret", false);
         PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params);
 
@@ -1491,6 +2422,7 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.removePatientReport", sessionController.getLoggedUser());
     }
 
+    @Deprecated
     public void searchPatientReports() {
         reportTimerController.trackReportExecution(() -> {
             if (filteringStatus == null) {
@@ -1504,7 +2436,25 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReports", sessionController.getLoggedUser());
 
     }
+    
+    public void searchPatientReportsDTO() {
+        reportTimerController.trackReportExecution(() -> {
+            if (filteringStatus == null) {
+                searchDTOPatientInvestigations();
+            } else if (filteringStatus.equalsIgnoreCase("Processing")) {
+                searchProcessingPatientReportsDTO();
+            } else {
+                searchPendingAndApprovedPatientReportsDTO();
+            }
+            System.out.println("-------------------------------------------------------------- ");
+            System.out.println("investigationDTO = " + investigationDTO);
+            System.out.println("investigationDTO = " + investigationDTO.size());
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportsDTO", sessionController.getLoggedUser());
 
+    }
+    
+    @Deprecated
     public void searchProcessingPatientReports() {
         reportTimerController.trackReportExecution(() -> {
             searchPatientInvestigations();
@@ -1520,6 +2470,24 @@ public class LaboratoryManagementController implements Serializable {
             listingEntity = ListingEntity.PATIENT_REPORTS;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReports", sessionController.getLoggedUser());
     }
+    
+    
+    public void searchProcessingPatientReportsDTO() {
+        reportTimerController.trackReportExecution(() -> {
+            searchDTOPatientInvestigations();
+
+            List<PatientInvestigationDTO> processingList = new ArrayList<>();
+
+            for (PatientInvestigationDTO piDto : investigationDTO) {
+                if (!hasPatientReports(piDto.getInvestigationId())) {
+                    processingList.add(piDto);
+                }
+            }
+            setInvestigationDTO(processingList);
+            System.out.println("investigationDTO = " + investigationDTO);
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReportsDTO", sessionController.getLoggedUser());
+    }
 
     public void searchPatientReportPrint() {
         reportTimerController.trackReportExecution(() -> {
@@ -1533,7 +2501,22 @@ public class LaboratoryManagementController implements Serializable {
             listingEntity = ListingEntity.REPORT_PRINT;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportPrint", sessionController.getLoggedUser());
     }
+    
+    public void searchPatientReportPrintDTO() {
+        
+        reportTimerController.trackReportExecution(() -> {
+            if (filteringStatus == null) {
+                searchDTOPatientInvestigations();
+            } else if (filteringStatus.equalsIgnoreCase("Processing")) {
+                searchProcessingPatientReportsDTO();
+            } else {
+                searchPendingAndApprovedPatientReportsDTO();
+            }
+            listingEntity = ListingEntity.REPORT_PRINT;
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportPrintDTO", sessionController.getLoggedUser());
+    }
 
+    @Deprecated
     public void searchPendingAndApprovedPatientReports() {
         reportTimerController.trackReportExecution(() -> {
             listingEntity = ListingEntity.PATIENT_REPORTS;
@@ -1630,6 +2613,125 @@ public class LaboratoryManagementController implements Serializable {
 
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReports", sessionController.getLoggedUser());
     }
+    
+    public void searchPendingAndApprovedPatientReportsDTO() {
+        reportTimerController.trackReportExecution(() -> {
+            listingEntity = ListingEntity.PATIENT_REPORTS;
+            List<PatientInvestigationDTO> patientReports = new ArrayList<>();
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
+
+            jpql = "SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
+                    + " COALESCE(r.patientInvestigation.id, 0), "
+                    + " COALESCE(r.patientInvestigation.billItem.item.name, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.deptId, ''), "
+                    + " r.patientInvestigation.billItem.bill.createdAt, "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.id, 0 ), "
+                    + " r.patientInvestigation.billItem.bill.patient.person.title,"
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.name, ''), "
+                    + " r.patientInvestigation.billItem.bill.patient.person.dob, "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.sex, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.patient.person.mobile, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.ipOpOrCc, ''), "
+                    + " r.patientInvestigation.status, "
+                    + " r.patientInvestigation.billItem.bill.cancelled, "
+                    + " r.patientInvestigation.billItem.refunded, "
+                    + " r.patientInvestigation.sampleAccepted, "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.institution.name, ''), "
+                    + " COALESCE(r.patientInvestigation.billItem.bill.department.name, '') "
+                    + " )"
+                    
+                    + " FROM PatientReport r "
+                    + " WHERE r.retired = :ret "
+                    + " AND r.patientInvestigation.billItem.bill.createdAt BETWEEN :fd AND :td ";
+
+            params.put("fd", getFromDate());
+            params.put("td", getToDate());
+
+            if (orderedInstitution != null) {
+                jpql += " AND r.patientInvestigation.billItem.bill.institution = :orderedInstitution ";
+                params.put("orderedInstitution", getOrderedInstitution());
+            }
+
+            if (orderedDepartment != null) {
+                jpql += " AND r.patientInvestigation.billItem.bill.department = :orderedDepartment ";
+                params.put("orderedDepartment", getOrderedDepartment());
+            }
+
+            if (performingInstitution != null) {
+                jpql += " AND r.approveInstitution = :performingInstitution ";
+                params.put("performingInstitution", getPerformingInstitution());
+            }
+
+            if (performingDepartment != null) {
+                jpql += " AND r.approveDepartment = :performingDepartment ";
+                params.put("performingDepartment", getPerformingDepartment());
+            }
+
+            if (collectionCenter != null) {
+                jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre = :collectionCenter OR r.patientInvestigation.billItem.bill.fromInstitution = :collectionCenter) ";
+                params.put("collectionCenter", getCollectionCenter());
+            }
+
+            if (route != null) {
+                jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre.route = :route OR r.patientInvestigation.billItem.bill.fromInstitution.route = :route) ";
+                params.put("route", getRoute());
+            }
+
+            if (patientName != null && !patientName.trim().isEmpty()) {
+                jpql += " AND r.patientInvestigation.billItem.bill.patient.person.name LIKE :patientName ";
+                params.put("patientName", "%" + getPatientName().trim() + "%");
+            }
+
+            if (type != null && !type.trim().isEmpty()) {
+                jpql += " AND r.patientInvestigation.billItem.bill.ipOpOrCc = :tp ";
+                params.put("tp", getType().trim());
+            }
+
+            if (referringDoctor != null) {
+                jpql += " AND r.patientInvestigation.billItem.bill.referringDoctor = :referringDoctor ";
+                params.put("referringDoctor", getReferringDoctor());
+            }
+
+            if (investigationName != null && !investigationName.trim().isEmpty()) {
+                jpql += " AND r.patientInvestigation.billItem.item.name like :investigation ";
+                params.put("investigation", "%" + investigationName.trim() + "%");
+            }
+
+            if (patientInvestigationStatus != null) {
+                jpql += " AND r.status = :patientReportStatus ";
+                params.put("patientReportStatus", patientInvestigationStatus);
+            }
+
+            if ("Pending".equals(filteringStatus)) {
+                jpql += " AND r.approved = :approved ";
+                params.put("approved", false);
+            }
+
+            if ("Approved".equals(filteringStatus)) {
+                jpql += " AND r.approved = :approved ";
+                params.put("approved", true);
+            }
+
+            jpql += " group by r, r.patientInvestigation ";
+            jpql += " ORDER BY r.id DESC";
+            params.put("ret", false);
+
+            patientReports = (List<PatientInvestigationDTO>) patientReportFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+            investigationDTO = new ArrayList();
+
+            for (PatientInvestigationDTO prDTO : patientReports) {
+                if (!investigationDTO.contains(prDTO)) {
+                    investigationDTO.add(prDTO);
+                }
+            }
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            System.out.println("investigationDTO = " + investigationDTO);
+
+        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReportsDTO", sessionController.getLoggedUser());
+    }
 
     public Department getDefaultSampleSendingDepartment() {
         if (configOptionApplicationController.getBooleanValueByKey("Set the default sample department as the parent department (Super Department) of the current department.", false)) {
@@ -1642,8 +2744,22 @@ public class LaboratoryManagementController implements Serializable {
         return sampleSendingDepartment;
     }
 
+    public void reloadSampleDTOList() {
+        for (int i = 0; i < sampleDtos.size(); i++) {
+            SampleDTO dto = sampleDtos.get(i);
+            if (selectedSampleDtos.contains(dto)) {
+                SampleDTO updatedDto = laboratoryCommonController.refreshPatientSampleDTO(dto.getSampleId());
+
+                // Replace the original DTO with the updated one
+                sampleDtos.set(i, updatedDto);
+            }
+        }
+    }
+
+    @Inject
+    LaboratoryCommonController laboratoryCommonController;
+
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -1914,6 +3030,7 @@ public class LaboratoryManagementController implements Serializable {
     public void setSampleSendingDepartment(Department sampleSendingDepartment) {
         this.sampleSendingDepartment = sampleSendingDepartment;
     }
+
     public Department getSampleReceiveFromDepartment() {
         return sampleReceiveFromDepartment;
     }
@@ -1939,5 +3056,44 @@ public class LaboratoryManagementController implements Serializable {
     }
 
 // </editor-fold>
-    
+    public List<SampleDTO> getSampleDtos() {
+        return sampleDtos;
+    }
+
+    public void setSampleDtos(List<SampleDTO> sampleDtos) {
+        this.sampleDtos = sampleDtos;
+    }
+
+    public List<SampleDTO> getSelectedSampleDtos() {
+        return selectedSampleDtos;
+    }
+
+    public void setSelectedSampleDtos(List<SampleDTO> selectedSampleDtos) {
+        this.selectedSampleDtos = selectedSampleDtos;
+    }
+
+    public List<PatientInvestigationDTO> getInvestigationDTO() {
+        return investigationDTO;
+    }
+
+    public void setInvestigationDTO(List<PatientInvestigationDTO> investigationDTO) {
+        this.investigationDTO = investigationDTO;
+    }
+
+    public List<PatientInvestigationDTO> getTempSelectedDTOItems() {
+        return tempSelectedDTOItems;
+    }
+
+    public void setTempSelectedDTOItems(List<PatientInvestigationDTO> tempSelectedDTOItems) {
+        this.tempSelectedDTOItems = tempSelectedDTOItems;
+    }
+
+    public List<PatientInvestigationDTO> getSelectedDTOItems() {
+        return selectedDTOItems;
+    }
+
+    public void setSelectedDTOItems(List<PatientInvestigationDTO> selectedDTOItems) {
+        this.selectedDTOItems = selectedDTOItems;
+    }
+
 }

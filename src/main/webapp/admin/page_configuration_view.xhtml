@@ -50,29 +50,47 @@
                                 var="config"
                                 emptyMessage="No configuration options found for this page"
                                 styleClass="table table-striped"
-                                paginator="false">
+                                paginator="true"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25,50"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} configurations">
 
-                                <p:column headerText="Configuration Key" style="width: 30%">
-                                    <h:outputText value="#{config.key}" styleClass="fw-bold"/>
+                                <p:column headerText="Configuration Key" style="width: 35%">
+                                    <!-- Clean display for department-specific configs -->
+                                    <h:outputText value="#{config.key.replace(' for [Department Name]', '')} (per department)"
+                                                  styleClass="fw-bold"
+                                                  rendered="#{config.key.contains('[Department Name]')}"/>
+                                    <!-- Normal display for regular configs -->
+                                    <h:outputText value="#{config.key}"
+                                                  styleClass="fw-bold"
+                                                  rendered="#{!config.key.contains('[Department Name]')}"/>
                                 </p:column>
 
-                                <p:column headerText="Current Value" style="width: 12%; text-align: center;">
+                                <p:column headerText="Current Value" style="width: 15%; text-align: center;">
                                     <h:panelGroup styleClass="badge #{configOptionApplicationController.getBooleanValueByKey(config.key, true) ? 'badge-success' : 'badge-danger'}">
                                         <h:outputText
                                             value="#{configOptionApplicationController.getBooleanValueByKey(config.key, true) ? 'Enabled' : 'Disabled'}"/>
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Scope" style="width: 10%; text-align: center;">
-                                    <h:outputText value="#{config.scope}"/>
+                                <p:column headerText="Scope" style="width: 15%; text-align: center;">
+                                    <!-- Department-Specific scope display -->
+                                    <h:panelGroup styleClass="badge badge-warning px-2 py-1"
+                                                  rendered="#{config.key.contains('[Department Name]')}">
+                                        <i class="fas fa-building me-1"></i>
+                                        <h:outputText value="Department-Specific"/>
+                                    </h:panelGroup>
+                                    <!-- Regular scope display -->
+                                    <h:panelGroup styleClass="badge badge-primary px-2 py-1"
+                                                  rendered="#{!config.key.contains('[Department Name]')}">
+                                        <i class="fas fa-globe me-1"></i>
+                                        <h:outputText value="#{config.scope}"/>
+                                    </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Description" style="width: 28%">
+                                <p:column headerText="Description" style="width: 35%">
                                     <h:outputText value="#{config.description}"/>
-                                </p:column>
-
-                                <p:column headerText="Usage Location" style="width: 15%">
-                                    <h:outputText value="#{config.usageLocation}" styleClass="text-muted small"/>
                                 </p:column>
                             </p:dataTable>
 
@@ -80,9 +98,19 @@
                                 <p:commandButton
                                     value="Manage Application Configuration"
                                     icon="fa fa-cog"
-                                    action="/admin/institutions/admin_mange_application_options?faces-redirect=true"
+                                    action="#{pageAdminController.navigateToPageSpecificConfigManagement()}"
                                     ajax="false"
-                                    styleClass="ui-button-info"/>
+                                    styleClass="ui-button-info me-2"
+                                    title="Manage application-wide configuration options"/>
+
+                                <p:commandButton
+                                    value="Manage Department Configuration"
+                                    icon="fas fa-building"
+                                    action="#{pageAdminController.navigateToDepartmentConfigManagement()}"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    title="Manage department-specific configuration options"
+                                    rendered="#{pageAdminController.hasDepartmentConfigOptions()}"/>
                             </div>
                         </p:panel>
 
@@ -93,18 +121,18 @@
                                 var="priv"
                                 emptyMessage="No privileges found for this page"
                                 styleClass="table table-striped"
-                                paginator="false">
+                                paginator="true"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,25,50"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} privileges">
 
-                                <p:column headerText="Privilege Name" style="width: 25%">
+                                <p:column headerText="Privilege Name" style="width: 30%">
                                     <h:outputText value="#{priv.privilegeName}" styleClass="fw-bold"/>
                                 </p:column>
 
-                                <p:column headerText="Description" style="width: 40%">
+                                <p:column headerText="Description" style="width: 70%">
                                     <h:outputText value="#{priv.description}"/>
-                                </p:column>
-
-                                <p:column headerText="Usage Location" style="width: 35%">
-                                    <h:outputText value="#{priv.usageLocation}" styleClass="text-muted small"/>
                                 </p:column>
                             </p:dataTable>
 
@@ -112,9 +140,10 @@
                                 <p:commandButton
                                     value="Manage User Privileges"
                                     icon="fa fa-users"
-                                    action="/systemAdmin/user_privileges?faces-redirect=true"
+                                    action="#{pageAdminController.navigateToPageSpecificPrivilegeManagement()}"
                                     ajax="false"
-                                    styleClass="ui-button-info"/>
+                                    styleClass="ui-button-info"
+                                    title="Manage user privileges specific to this page"/>
                             </div>
                         </p:panel>
 
@@ -178,6 +207,24 @@
                         padding: 4px 12px;
                         border-radius: 12px;
                         font-size: 0.85em;
+                        font-weight: bold;
+                    }
+
+                    .badge-warning {
+                        background-color: #ffc107;
+                        color: #212529;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+
+                    .badge-primary {
+                        background-color: #007bff;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        font-size: 0.8em;
                         font-weight: bold;
                     }
 

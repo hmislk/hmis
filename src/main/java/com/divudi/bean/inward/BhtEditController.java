@@ -65,16 +65,15 @@ import org.apache.commons.lang3.time.DateFormatUtils;
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
  * Consultant (Health Informatics)
  */
-
 @Named
 @SessionScoped
 public class BhtEditController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
-    
+
     public BhtEditController() {
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="Controller">
     @Inject
     SessionController sessionController;
@@ -89,7 +88,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     @Inject
     com.divudi.bean.common.PatientController patientController;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private AdmissionFacade ejbFacade;
@@ -142,9 +141,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private EncounterCreditCompany currecntEncounterCreditCompany;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Functons">
-    
     public void addPatientAllergy() {
         if (currentPatientAllergy == null || currentPatientAllergy.getItemValue() == null) {
             JsfUtil.addErrorMessage("Please select the allergy drug.");
@@ -273,7 +270,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 //
 //        return false;
 //    }
-    
     public void cancelBht() {
         if (current == null) {
             return;
@@ -427,17 +423,48 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             if (!getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark as Claimable");
                 return;
-
             }
         }
         // Apply patient name capitalization based on configuration settings
         //patientController.applyPatientNameCapitalization(getCurrent().getPatient());
 
-        // Use editAndFlush to ensure changes are immediately committed and cached entities are cleared
-        getPatientFacade().editAndFlush(getCurrent().getPatient());
-        getPersonFacade().editAndFlush(getCurrent().getPatient().getPerson());
-        getPersonFacade().editAndFlush(getCurrent().getGuardian());
-        getEjbFacade().editAndFlush(current);
+        // Save Person FIRST (correct order - was backwards before!)
+        Person person = getCurrent().getPatient().getPerson();
+        if (person != null) {
+            if (person.getId() == null) {
+                getPersonFacade().create(person);
+            } else {
+                getPersonFacade().edit(person);
+            }
+        }
+
+        // Save Patient SECOND
+        Patient patient = getCurrent().getPatient();
+        if (patient != null) {
+            if (patient.getId() == null) {
+                getPatientFacade().create(patient);
+            } else {
+                getPatientFacade().edit(patient);
+            }
+        }
+
+        // Save Guardian
+        Person guardian = getCurrent().getGuardian();
+        if (guardian != null) {
+            if (guardian.getId() == null) {
+                getPersonFacade().create(guardian);
+            } else {
+                getPersonFacade().edit(guardian);
+            }
+        }
+
+        // Save Admission with immediate flush (flushes ALL entities without clear)
+        if (current.getId() == null) {
+            getEjbFacade().createAndFlush(current);  // SINGLE flush for ALL entities
+        } else {
+            getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
+        }
+
         savePatientAllergies();
 
         JsfUtil.addSuccessMessage("Detail Updated");
@@ -488,7 +515,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         fillCurrentPatientAllergies(current.getPatient());
         return "/inward/inward_edit_bht?faces-redirect=true";
     }
-    
+
     public String navigateToSendMailToCompany(EncounterCreditCompany ecc) {
         if (ecc == null) {
             JsfUtil.addErrorMessage("No Admission to edit");
@@ -516,7 +543,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         String bht = ecc.getPatientEncounter().getBhtNo() == null || ecc.getPatientEncounter().getBhtNo().isEmpty() ? "N/A" : ecc.getPatientEncounter().getBhtNo();
 
         String admitionDate = ecc.getPatientEncounter().getDateOfAdmission() == null ? "N/A" : DateFormatUtils.format(ecc.getPatientEncounter().getDateOfAdmission(), "yyyy-MM-dd HH:mm:ss");
-        
+
         String hospitalName = sessionController.getInstitution().getName();
         String wardName = sessionController.getDepartment().getName();
 
@@ -532,30 +559,35 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 .replace("{hospital_name}", hospitalName)
                 .replace("{ward_name}", wardName);
     }
-    
-    public void sendEmailToCompany() {
+
+    public String sendEmailToCompany() {
         if (getCurrentCompany() == null) {
             JsfUtil.addErrorMessage("No Credit Company");
-            return;
+            return "";
         }
         if (getSubject() == null || getSubject().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Email Subject Missing");
-            return;
+            return "";
         }
         if (getEmailBoday() == null || getEmailBoday().trim().equalsIgnoreCase("")) {
-            JsfUtil.addErrorMessage("Massage is Missing");
-            return;
+            JsfUtil.addErrorMessage("Message is Missing");
+            return "";
         }
         if (getCurrecntEncounterCreditCompany().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("BHT is Missing");
-            return;
+            return "";
         }
         
+        if (getCurrentCompany().getContactPerson() == null) {
+        JsfUtil.addErrorMessage("Company Contact Person is Missing");
+        return "";
+    }
+
         if (getCurrentCompany().getContactPerson().getEmail() == null || getCurrentCompany().getContactPerson().getEmail().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Company Email is Missing");
-            return;
+            return "";
         }
-        
+
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
         email.setCreater(sessionController.getLoggedUser());
@@ -570,27 +602,35 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         email.setPending(true);
         emailFacade.create(email);
 
-        try {
-            boolean success = emailManagerEjb.sendEmail(
-                    Collections.singletonList(email.getReceipientEmail()),
-                    email.getMessageBody(),
-                    email.getMessageSubject(),
-                    true
-            );
-            email.setSentSuccessfully(success);
-            email.setPending(!success);
-            if (success) {
-                email.setSentAt(new Date());
-                JsfUtil.addSuccessMessage("Email Sent Successfully");
-            } else {
+        if (email.getSentSuccessfully() == false) {
+            try {
+                boolean success = emailManagerEjb.sendEmail(
+                        Collections.singletonList(email.getReceipientEmail()),
+                        email.getMessageBody(),
+                        email.getMessageSubject(),
+                        true
+                );
+                email.setSentSuccessfully(success);
+                email.setPending(!success);
+                if (success) {
+                    email.setSentAt(new Date());
+                    emailFacade.edit(email);
+                    JsfUtil.addSuccessMessage("Email Sent Successfully");
+                    return "/inward/inward_edit_bht?faces-redirect=true";
+                } else {
+                    JsfUtil.addErrorMessage("Sending Email Failed");
+                    return "";
+                }
+            } catch (Exception ex) {
                 JsfUtil.addErrorMessage("Sending Email Failed");
+                return "";
             }
-            emailFacade.edit(email);
-        } catch (Exception ex) {
-            JsfUtil.addErrorMessage("Sending Email Failed");
+        } else {
+            JsfUtil.addErrorMessage("Email has Already Been Sent");
+            return "";
         }
     }
-    
+
     private void createPatientRoom() {
         HashMap hm = new HashMap();
         String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
@@ -599,9 +639,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
-    
-    // </editor-fold>
 
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public void setSelectedItems(List<Admission> selectedItems) {
         this.selectedItems = selectedItems;
@@ -610,7 +649,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public String getSelectText() {
         return selectText;
     }
-    
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -630,7 +669,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public String getComment() {
         return comment;
     }
@@ -638,7 +677,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
+
     public void setCurrent(Admission current) {
         this.current = current;
 
@@ -788,7 +827,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void setEncounterCreditCompanys(List<EncounterCreditCompany> encounterCreditCompanys) {
         this.encounterCreditCompanys = encounterCreditCompanys;
     }
-    
+
     public List<ClinicalFindingValue> getPatientAllergies() {
         return patientAllergies;
     }
@@ -841,9 +880,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void setCurrecntEncounterCreditCompany(EncounterCreditCompany currecntEncounterCreditCompany) {
         this.currecntEncounterCreditCompany = currecntEncounterCreditCompany;
     }
-    
-    // </editor-fold>
 
+    // </editor-fold>
     @Override
     public Patient getPatient() {
         if (current != null) {
@@ -892,7 +930,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
     }
-    
+
     /**
      *
      */

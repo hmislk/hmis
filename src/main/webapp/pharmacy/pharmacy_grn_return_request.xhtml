@@ -10,289 +10,345 @@
             You are NOT authorized
         </h:panelGroup>
         <h:panelGroup rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}" >
-        <h:form>
-            <p:panel> 
-                <f:facet name="header">
-                    <h:outputLabel value="Select GRN for Return"/>
-                </f:facet>
-                <div class="row">
-                    <div class="col-2">
-                        <h:panelGrid columns="1" class="w-100" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >      
-                            </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >                                                                              
-                            </p:calendar>
-                            <h:outputLabel/>
-                            <h:outputLabel value="Grn No"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                            <h:outputLabel value="Invoice Number"/>
-                            <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.number}" />
-                            <h:outputLabel value="Po Number"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
-                            <h:outputLabel value="Item Name"/>    
-                            <p:autoComplete 
-                                id="item"
-                                value="#{searchController.searchKeyword.item}"
-                                forceSelection="true"
-                                class="w-100"
-                                maxResults="50"
-                                scrollHeight="600"
-                                inputStyleClass="w-100"
-                                completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                <p:column headerText="Item" style="padding: 6px;">
-                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Code" style="padding: 6px;">
-                                    <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                </p:column>
-                            </p:autoComplete>
-                            <h:outputLabel value="Distributor"/>
-                            <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.fromInstitution}" />
-                            <h:outputLabel value="Po Value"/>
-                            <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                            <h:outputLabel value="Grn Value"/>
-                            <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                            <p:commandButton 
-                                class="w-100 ui-button-warning"
-                                icon="fas fa-search"
-                                id="btnSearch"
-                                ajax="false" 
-                                value="Search"
-                                action="#{searchController.createGrnTable}"/>
-
-                        </h:panelGrid>
-                    </div>
-                    <div class="col-10">
-                        <p:dataTable 
-                            id="tblBills"
-                            value="#{searchController.bills}" 
-                            var="p"
-                            class="w-100 va-top"
-                            paginator="true"
-                            rows="10"
-                            rowIndexVar="n"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="5,10,15"
-                            filterBy="#{p}"
-                            widgetVar="billTable"
-                            >
-
-                            <p:column 
-                                headerText="Supplier" 
-                                sortBy="#{p.fromInstitution.name}" 
-                                filterBy="#{p.fromInstitution.name}" 
-                                filterMatchMode="contains">
-                                <h:outputText value="#{p.fromInstitution.name}" />
-                            </p:column>
-
-                            <p:column 
-                                headerText="PO No" 
-                                sortBy="#{p.referenceBill.deptId}" 
-                                filterBy="#{p.referenceBill.deptId}" 
-                                filterMatchMode="contains">
-                                <h:outputText value="#{p.referenceBill.deptId}" />
-                            </p:column>
-
-                            <p:column 
-                                headerText="GRN No" 
-                                sortBy="#{p.deptId}" 
-                                filterBy="#{p.deptId}" 
-                                filterMatchMode="contains">
-                                <h:outputText value="#{p.deptId}" />
-                            </p:column>
-                            
-                              <p:column 
-                                headerText="Invoice No" 
-                                sortBy="#{p.invoiceNumber}" 
-                                filterBy="#{p.invoiceNumber}" 
-                                filterMatchMode="contains">
-                                  <h:outputText value="#{p.invoiceNumber}" />
-                            </p:column>
-
-
-                            <p:column
-                                id="colPoDetails"
-                                headerText="PO Details">
-                                <div class="d-flex flex-column">
-                                    <div class="mb-1">
-                                        <h:outputText styleClass="fw-bold text-primary" value="#{p.referenceBill.createdAt}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                        </h:outputText>
-                                        <br/>
-                                        <i class="fas fa-user text-muted me-1"></i>
-                                        <h:outputText styleClass="text-muted small" value="#{p.referenceBill.creater.webUserPerson.name}" />
-                                    </div>
-                                    <div class="mb-1">
-                                        <i class="fas fa-credit-card text-info me-1"></i>
-                                        <h:outputText styleClass="text-info fw-bold" value="#{p.referenceBill.paymentMethod}" />
-                                    </div>
-                                    <h:panelGroup rendered="#{p.referenceBill.cancelled}">
-                                        <div class="mb-1">
-                                            <h:outputText styleClass="text-danger fw-bold" value="Cancelled at " />
-                                            <h:outputText styleClass="text-danger" value="#{p.referenceBill.cancelledBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                            </h:outputText>
-                                            <br/>
-                                            <i class="fas fa-user text-danger me-1"></i>
-                                            <h:outputText styleClass="text-danger small" value="#{p.referenceBill.cancelledBill.creater.webUserPerson.name}" />
-                                        </div>
-                                    </h:panelGroup>
-                                    <div class="mt-2">
-                                        <p:commandButton
-                                            id="btnViewPo"
-                                            title="View PO"
-                                            ajax="false"
-                                            icon="pi pi-eye"
-                                            styleClass="ui-button-sm ui-button-info"
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(p.referenceBill.id)}" />
-                                    </div>
-                                </div>
-                            </p:column>
-                            
-                            <p:column
-                                headerText="GRN Details"
-                                id="colGrnDetails">
-                                <div class="d-flex flex-column">
-                                    <div class="mb-1">
-                                        <h:outputText styleClass="fw-bold text-primary" value="#{p.createdAt}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                        </h:outputText>
-                                        <br/>
-                                        <i class="fas fa-user text-muted me-1"></i>
-                                        <h:outputText styleClass="text-muted small" value="#{p.creater.webUserPerson.name}" />
-                                    </div>
-                                    <div class="mb-1">
-                                        <i class="fas fa-credit-card text-info me-1"></i>
-                                        <h:outputText styleClass="text-info fw-bold" value="#{p.paymentMethod}" />
-                                    </div>
-                                    <h:panelGroup rendered="#{p.cancelled}">
-                                        <div class="mb-1">
-                                            <h:outputText styleClass="text-danger fw-bold" value="Cancelled at " />
-                                            <h:outputText styleClass="text-danger" value="#{p.cancelledBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                            </h:outputText>
-                                            <br/>
-                                            <i class="fas fa-user text-danger me-1"></i>
-                                            <h:outputText styleClass="text-danger small" value="#{p.cancelledBill.creater.webUserPerson.name}" />
-                                        </div>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{p.refunded}">
-                                        <div class="mb-1">
-                                            <h:outputText styleClass="text-danger fw-bold" value="Refunded at " />
-                                            <h:outputText styleClass="text-danger" value="#{p.refundedBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                            </h:outputText>
-                                            <br/>
-                                            <i class="fas fa-user text-danger me-1"></i>
-                                            <h:outputText styleClass="text-danger small" value="#{p.refundedBill.creater.webUserPerson.name}" />
-                                        </div>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{p.fullReturned}">
-                                        <div class="mb-1">
-                                            <h:outputText styleClass="text-success fw-bold" value="Fully Returned at " />
-                                            <h:outputText styleClass="text-success" value="#{p.fullReturnedAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                            </h:outputText>
-                                            <br/>
-                                            <i class="fas fa-user text-success me-1"></i>
-                                            <h:outputText styleClass="text-success small" value="#{p.fullReturnedBy.webUserPerson.name}" />
-                                        </div>
-                                    </h:panelGroup>
-                                    <div class="mt-2">
-                                        <p:commandButton
-                                            id="btnViewGrn"
-                                            title="View GRN"
-                                            ajax="false"
-                                            icon="pi pi-eye"
-                                            styleClass="ui-button-sm ui-button-success"
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(p.id)}" />
-                                    </div>
-                                </div>
-                            </p:column>
-
-                            <p:column 
-                                headerText="PO Value" 
-                                sortBy="#{p.referenceBill.netTotal}" 
-                                filterBy="#{p.referenceBill.netTotal}" 
-                                filterMatchMode="equals"
-                                styleClass="text-end">
-                                <h:outputText value="#{p.referenceBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column 
-                                headerText="GRN Value" 
-                                sortBy="#{p.netTotal}" 
-                                filterBy="#{p.netTotal}" 
-                                filterMatchMode="equals" 
-                                styleClass="text-end">
-                                <h:outputText value="#{p.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Actions" styleClass="text-center">
+            <h:form>
+                <p:panel> 
+                    <f:facet name="header">
+                        <h:outputLabel value="Select GRN for Return"/>
+                    </f:facet>
+                    <div class="row">
+                        <div class="col-2">
+                            <h:panelGrid columns="1" class="w-100" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >                                                                              
+                                </p:calendar>
+                                <h:outputLabel/>
+                                <h:outputLabel value="Grn No"/>
+                                <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <h:outputLabel value="Invoice Number"/>
+                                <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.number}" />
+                                <h:outputLabel value="Po Number"/>
+                                <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
+                                <h:outputLabel value="Item Name"/>    
+                                <p:autoComplete 
+                                    id="item"
+                                    value="#{searchController.searchKeyword.item}"
+                                    forceSelection="true"
+                                    class="w-100"
+                                    maxResults="50"
+                                    scrollHeight="600"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    <p:column headerText="Item" style="padding: 6px;">
+                                        <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Code" style="padding: 6px;">
+                                        <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>
+                                <h:outputLabel value="Distributor"/>
+                                <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.fromInstitution}" />
+                                <h:outputLabel value="Po Value"/>
+                                <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.total}"/>
+                                <h:outputLabel value="Grn Value"/>
+                                <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                                 <p:commandButton 
-                                    ajax="false"
-                                    icon="pi pi-undo"
-                                    title="Create Return"
-                                    value="Create Return"
-                                    action="#{grnReturnWorkflowController.navigateToCreateGrnReturnFromGrn()}"
-                                    disabled="#{p.cancelled or p.fullReturned}"
-                                    styleClass="ui-button-sm ui-button-warning mx-1">
-                                    <f:setPropertyActionListener target="#{grnReturnWorkflowController.selectedGrn}" value="#{p}" />
-                                </p:commandButton>
-                            </p:column>
+                                    class="w-100 ui-button-warning"
+                                    icon="fas fa-search"
+                                    id="btnSearch"
+                                    ajax="false" 
+                                    value="Search"
+                                    action="#{searchController.createGrnTable}"/>
 
-                            <p:column headerText="Previous Returns" width="15em">
-                                <h:dataTable 
-                                    value="#{p.listOfBill}" 
-                                    var="b" 
-                                    rendered="#{not empty p.listOfBill}" 
-                                    styleClass="table table-sm table-borderless w-100 m-0 p-0">
-                                    <h:column>
-                                        <h:outputText value="#{b.deptId}" />
-                                    </h:column>
-                                    <h:column class="text-center">
-                                        <h:outputText value="#{b.createdAt}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputText>
-                                        <h:panelGroup rendered="#{b.cancelled}">
+                            </h:panelGrid>
+                        </div>
+                        <div class="col-10">
+
+                            <p:dataTable
+                                id="tblBills"
+                                value="#{searchController.bills}"
+                                var="p"
+                                class="w-100 va-top"
+                                paginator="true"
+                                rows="10"
+                                rowIndexVar="n"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                filterBy="#{p}"
+                                widgetVar="billTable"
+                                >
+
+                                <p:column
+                                    headerText="Supplier"
+                                    sortBy="#{p.fromInstitution.name}"
+                                    filterBy="#{p.fromInstitution.name}"
+                                    filterMatchMode="contains"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestSupplierVisible}">
+                                    <h:outputText value="#{p.fromInstitution.name}" />
+                                </p:column>
+
+                                <p:column
+                                    headerText="PO No"
+                                    sortBy="#{p.referenceBill.deptId}"
+                                    filterBy="#{p.referenceBill.deptId}"
+                                    filterMatchMode="contains"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestPoNoVisible}">
+                                    <h:outputText value="#{p.referenceBill.deptId}" />
+                                </p:column>
+
+                                <p:column
+                                    headerText="GRN No"
+                                    sortBy="#{p.deptId}"
+                                    filterBy="#{p.deptId}"
+                                    filterMatchMode="contains"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestGrnNoVisible}">
+                                    <h:outputText value="#{p.deptId}" />
+                                </p:column>
+
+                                <p:column
+                                    headerText="Invoice No"
+                                    sortBy="#{p.invoiceNumber}"
+                                    filterBy="#{p.invoiceNumber}"
+                                    filterMatchMode="contains"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestInvoiceNoVisible}">
+                                    <h:outputText value="#{p.invoiceNumber}" />
+                                </p:column>
+
+
+                                <p:column
+                                    id="colPoDetails"
+                                    headerText="PO Details"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestPoDetailsVisible}">
+                                    <div class="d-flex flex-column">
+                                        <div class="mb-1">
+                                            <h:outputText styleClass="fw-bold text-primary" value="#{p.referenceBill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                            </h:outputText>
                                             <br/>
-                                            <h:outputText styleClass="text-danger" value="Cancelled at " />
-                                            <h:outputText styleClass="text-danger" value="#{b.cancelledBill.createdAt}">
+                                            <i class="fas fa-user text-muted me-1"></i>
+                                            <h:outputText styleClass="text-muted small" value="#{p.referenceBill.creater.webUserPerson.name}" />
+                                        </div>
+                                        <div class="mb-1">
+                                            <i class="fas fa-credit-card text-info me-1"></i>
+                                            <h:outputText styleClass="text-info fw-bold" value="#{p.referenceBill.paymentMethod}" />
+                                        </div>
+                                        <h:panelGroup rendered="#{p.referenceBill.cancelled}">
+                                            <div class="mb-1">
+                                                <h:outputText styleClass="text-danger fw-bold" value="Cancelled at " />
+                                                <h:outputText styleClass="text-danger" value="#{p.referenceBill.cancelledBill.createdAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                </h:outputText>
+                                                <br/>
+                                                <i class="fas fa-user text-danger me-1"></i>
+                                                <h:outputText styleClass="text-danger small" value="#{p.referenceBill.cancelledBill.creater.webUserPerson.name}" />
+                                            </div>
+                                        </h:panelGroup>
+                                        <div class="mt-2">
+                                            <p:commandButton
+                                                id="btnViewPo"
+                                                title="View PO"
+                                                ajax="false"
+                                                icon="pi pi-eye"
+                                                styleClass="ui-button-sm ui-button-info"
+                                                action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(p.referenceBill.id)}" />
+                                        </div>
+                                    </div>
+                                </p:column>
+
+                                <p:column
+                                    headerText="GRN Details"
+                                    id="colGrnDetails"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestGrnDetailsVisible}">
+                                    <div class="d-flex flex-column">
+                                        <div class="mb-1">
+                                            <h:outputText styleClass="fw-bold text-primary" value="#{p.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                            </h:outputText>
+                                            <br/>
+                                            <i class="fas fa-user text-muted me-1"></i>
+                                            <h:outputText styleClass="text-muted small" value="#{p.creater.webUserPerson.name}" />
+                                        </div>
+                                        <div class="mb-1">
+                                            <i class="fas fa-credit-card text-info me-1"></i>
+                                            <h:outputText styleClass="text-info fw-bold" value="#{p.paymentMethod}" />
+                                        </div>
+                                        <h:panelGroup rendered="#{p.cancelled}">
+                                            <div class="mb-1">
+                                                <h:outputText styleClass="text-danger fw-bold" value="Cancelled at " />
+                                                <h:outputText styleClass="text-danger" value="#{p.cancelledBill.createdAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                </h:outputText>
+                                                <br/>
+                                                <i class="fas fa-user text-danger me-1"></i>
+                                                <h:outputText styleClass="text-danger small" value="#{p.cancelledBill.creater.webUserPerson.name}" />
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{p.refunded}">
+                                            <div class="mb-1">
+                                                <h:outputText styleClass="text-danger fw-bold" value="Refunded at " />
+                                                <h:outputText styleClass="text-danger" value="#{p.refundedBill.createdAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                </h:outputText>
+                                                <br/>
+                                                <i class="fas fa-user text-danger me-1"></i>
+                                                <h:outputText styleClass="text-danger small" value="#{p.refundedBill.creater.webUserPerson.name}" />
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{p.fullReturned}">
+                                            <div class="mb-1">
+                                                <h:outputText styleClass="text-success fw-bold" value="Fully Returned at " />
+                                                <h:outputText styleClass="text-success" value="#{p.fullReturnedAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                </h:outputText>
+                                                <br/>
+                                                <i class="fas fa-user text-success me-1"></i>
+                                                <h:outputText styleClass="text-success small" value="#{p.fullReturnedBy.webUserPerson.name}" />
+                                            </div>
+                                        </h:panelGroup>
+                                        <div class="mt-2">
+                                            <p:commandButton
+                                                id="btnViewGrn"
+                                                title="View GRN"
+                                                ajax="false"
+                                                icon="pi pi-eye"
+                                                styleClass="ui-button-sm ui-button-success"
+                                                action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(p.id)}" />
+                                        </div>
+                                    </div>
+                                </p:column>
+
+                                <p:column
+                                    headerText="PO Value"
+                                    sortBy="#{p.referenceBill.netTotal}"
+                                    filterBy="#{p.referenceBill.netTotal}"
+                                    filterMatchMode="equals"
+                                    styleClass="text-end"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestPoValueVisible}">
+                                    <h:outputText value="#{p.referenceBill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column
+                                    headerText="GRN Value"
+                                    sortBy="#{p.netTotal}"
+                                    filterBy="#{p.netTotal}"
+                                    filterMatchMode="equals"
+                                    styleClass="text-end"
+                                    rendered="#{userSettingsController.pharmacyGrnReturnRequestGrnValueVisible}">
+                                    <h:outputText value="#{p.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Actions" styleClass="text-center">
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="pi pi-undo"
+                                        title="Create Return"
+                                        value="Create Return"
+                                        action="#{grnReturnWorkflowController.navigateToCreateGrnReturnFromGrn()}"
+                                        disabled="#{p.cancelled or p.fullReturned}"
+                                        onclick="return confirm('Are you sure you want to create a return for this GRN?')"
+                                        styleClass="ui-button-sm ui-button-warning mx-1">
+                                        <f:setPropertyActionListener target="#{grnReturnWorkflowController.selectedGrn}" value="#{p}" />
+                                    </p:commandButton>
+                                </p:column>
+
+                                <p:column headerText="Previous Returns" width="15em">
+                                    <h:dataTable 
+                                        value="#{p.listOfBill}" 
+                                        var="b" 
+                                        rendered="#{not empty p.listOfBill}" 
+                                        styleClass="table table-sm table-borderless w-100 m-0 p-0">
+                                        <h:column>
+                                            <h:outputText value="#{b.deptId}" />
+                                        </h:column>
+                                        <h:column class="text-center">
+                                            <h:outputText value="#{b.createdAt}">
                                                 <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                             </h:outputText>
-                                        </h:panelGroup>
-                                    </h:column>
-                                    <h:column class="text-end">
-                                        <h:outputText value="#{b.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:column>
+                                            <h:panelGroup rendered="#{b.cancelled}">
+                                                <br/>
+                                                <h:outputText styleClass="text-danger" value="Cancelled at " />
+                                                <h:outputText styleClass="text-danger" value="#{b.cancelledBill.createdAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </h:column>
+                                        <h:column class="text-end">
+                                            <h:outputText value="#{b.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:column>
 
-                                    <h:column class="text-center" >
-                                        <h:commandButton 
-                                            value="View" 
-                                            action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true"
-                                            styleClass="btn btn-sm btn-outline-primary px-2 py-0">
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}" />
-                                        </h:commandButton>
-                                    </h:column>
-                                </h:dataTable>
+                                        <h:column class="text-center" >
+                                            <h:commandButton 
+                                                value="View" 
+                                                action="/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true"
+                                                styleClass="btn btn-sm btn-outline-primary px-2 py-0">
+                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}" />
+                                            </h:commandButton>
+                                        </h:column>
+                                    </h:dataTable>
 
-                            </p:column>
-                        </p:dataTable>
+                                </p:column>
+                            </p:dataTable>
 
+                            <!-- Column Visibility Settings - Subtle placement -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+                                    <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestSupplierVisible}"
+                                                                 itemLabel="Supplier">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoNoVisible}"
+                                                                 itemLabel="PO No">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnNoVisible}"
+                                                                 itemLabel="GRN No">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestInvoiceNoVisible}"
+                                                                 itemLabel="Invoice No">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoDetailsVisible}"
+                                                                 itemLabel="PO Details">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnDetailsVisible}"
+                                                                 itemLabel="GRN Details">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoValueVisible}"
+                                                                 itemLabel="PO Value">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnValueVisible}"
+                                                                 itemLabel="GRN Value">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBills',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                </p:panel>
+                            </div>
+
+                        </div>
                     </div>
-                </div>
 
-            </p:panel>
-        </h:form>
+                </p:panel>
+            </h:form>
         </h:panelGroup>
     </ui:define>  
 

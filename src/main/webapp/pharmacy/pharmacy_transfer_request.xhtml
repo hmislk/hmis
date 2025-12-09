@@ -8,6 +8,11 @@
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="subcontent">
+        <!-- Admin Config Button (Admin Only) -->
+        <div class="d-flex justify-content-start mb-2">
+
+        </div>
+
         <h:form>
             <p:panel rendered="#{!transferRequestController.printPreview}">
                 <h:panelGroup  class="row" rendered="#{transferRequestController.toDepartment eq null or transferRequestController.toDepartment  eq sessionController.loggedUser.department}">
@@ -36,7 +41,7 @@
                                         itemLabel="#{vt.name}" 
                                         itemValue="#{vt}"
                                         >
-                                        <p:ajax process="@this" update="btn"></p:ajax>
+                                        <p:ajax process="@this" update="btn departmentTypesInfo"></p:ajax>
                                     </p:autoComplete>
                                     <h:panelGroup id="btn">
                                         <p:commandButton
@@ -91,6 +96,16 @@
                                         ajax="false"
                                         icon="pi pi-plus"
                                         class="ui-button-warning"/>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Page Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary mx-1">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
                             </div>
                             <div class="col-5" >
@@ -104,11 +119,13 @@
                                         class="mx-1 ui-button-success"
                                         />
                                     <p:commandButton
+                                        id="btnFinalize"
                                         value="Finalize"
                                         action="#{transferRequestController.finalizeTranserRequestPreBill()}"
                                         ajax="false"
                                         icon="pi pi-check"
                                         class="mx-1 ui-button-success"
+                                        onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
                                         />
                                 </div>
                             </div>
@@ -121,6 +138,24 @@
                                     <h:outputLabel styleClass="fas fa-cube" />
                                     <h:outputLabel value="Add Items" class="mx-4" />
                                 </f:facet>
+
+                                <!-- Available Department Types Information Panel -->
+                                <h:panelGroup id="departmentTypesInfo" rendered="#{not empty transferRequestController.availableDepartmentTypesForDisplay}">
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="alert alert-info py-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    <strong>Available Item Types for #{transferRequestController.toDepartment.name}:</strong>
+                                                    <ui:repeat value="#{transferRequestController.availableDepartmentTypesForDisplay}" var="deptType" varStatus="status">
+                                                        <span class="badge bg-primary me-1">#{deptType}</span>
+                                                    </ui:repeat>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
                                 <div class="row">
                                     <div class="col-8">
                                         <p:outputLabel value="Item" for="items"/>
@@ -130,7 +165,7 @@
                                             forceSelection="true"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAmpAmppVmpVmppItemsForLoggedDepartment}"
+                                            completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
                                             itemValue="#{vt}"

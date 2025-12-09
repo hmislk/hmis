@@ -30,6 +30,16 @@ public class PrivilegeInfo implements Serializable {
         this.usageLocation = usageLocation;
     }
 
+    /**
+     * Convenience constructor without usage location for simpler usage.
+     * Usage location can be set later via setter if needed.
+     */
+    public PrivilegeInfo(String privilegeName, String description) {
+        this.privilegeName = privilegeName;
+        this.description = description;
+        this.usageLocation = null; // Optional field
+    }
+
     // Getters and Setters
 
     public String getPrivilegeName() {

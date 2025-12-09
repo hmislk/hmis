@@ -170,17 +170,17 @@
 
                     </f:facet>
 
-                    <div class="row mb-3">
-                        <div class="d-flex justify-content-end">
-                            <p:commandButton
-                                value="Settle"
-                                ajax="false"
-                                action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
-                                class="ui-button-success mx-2"
-                                icon ="fa-solid fa-check">
-                            </p:commandButton>
-                        </div>
-                    </div>
+                    <!--                    <div class="row mb-3">
+                                            <div class="d-flex justify-content-end">
+                                                <p:commandButton
+                                                    value="Settle"
+                                                    ajax="false"
+                                                    action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
+                                                    class="ui-button-success mx-2"
+                                                    icon ="fa-solid fa-check">
+                                                </p:commandButton>
+                                            </div>
+                                        </div>-->
 
                     <div class="row">
 
@@ -196,9 +196,26 @@
                         <div class="col-12 col-md-9">
                             <p:panel class="w-100">
                                 <f:facet name="header">
-                                    <h:outputText
-                                        styleClass="fas fa-list-alt"></h:outputText>
-                                    <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
+
+                                    <div class="d-flex align-item-center justify-content-between">
+
+                                        <div class="d-flex align-items-center">
+                                            <h:outputText
+                                                styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
+
+                                        </div>
+
+                                        <p:commandButton
+                                            value="Settle"
+                                            ajax="false"
+                                            action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
+                                            class="ui-button-success mx-2"
+                                            style="width: 250px"
+                                            icon ="fa-solid fa-check">
+                                        </p:commandButton>
+
+                                    </div>
                                 </f:facet>
                                 <div class="row m-1">
                                     <div class="col-12 col-md-4">
@@ -331,7 +348,7 @@
                                             accesskey="a"
                                             id="btnAdd"
                                             value="Add"
-                                            class="ui-button-success w-100"
+                                            class="ui-button-secondary w-100"
                                             icon="fa-solid fa-plus"
                                             action="#{pharmacySaleBhtController.addBillItem}"
                                             ajax="false"  ></p:commandButton>
@@ -340,7 +357,7 @@
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
                                 <p:focus id="focusItem" for="acStock" ></p:focus>
                             </p:panel>
-
+                            <p:defaultCommand target="btnAdd"> </p:defaultCommand>
                             <p:panel header="Bill Items" id="pBis" class="my-1">
 
                                 <p:dataTable

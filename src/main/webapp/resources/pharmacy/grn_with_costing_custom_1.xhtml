@@ -19,7 +19,7 @@
         <div  style="width: 210mm; ">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.site.name}"/>
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
@@ -37,14 +37,14 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{not empty cc.attrs.bill.department.fax}"/>
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
-                    <h:outputLabel value="Email : " rendered="#{not empty cc.attrs.bill.department.email}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{not empty cc.attrs.bill.department.email}"/>
+                    <h:outputLabel value="Email : " rendered="#{not empty cc.attrs.bill.institution.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}" rendered="#{not empty cc.attrs.bill.institution.email}"/>
                 </div>
             </div>
 
             <div class="headingBill">
                 <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
-                <h:outputLabel value="**Reprint**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
 
             </div>
 

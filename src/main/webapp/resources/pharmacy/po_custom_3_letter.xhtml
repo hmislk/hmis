@@ -21,7 +21,7 @@
         <div style="width: 212mm; height: 275mm; padding-left: 0px">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.site.name}"/>
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
@@ -39,22 +39,22 @@
                     <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{cc.attrs.bill.department.fax}" rendered="#{!empty cc.attrs.bill.department.fax}"/>                                           
                 </div>
                 <div >
-                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.department.email}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{!empty cc.attrs.bill.department.email}"/>                                              
+                    <h:outputLabel value="Email : &nbsp;" rendered="#{!empty cc.attrs.bill.institution.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}" rendered="#{!empty cc.attrs.bill.institution.email}"/>                                              
                 </div>
             </div>
 
             <div class="headingBill">
                 <h:outputLabel value="Purchase Order" style="text-decoration: underline;"/>
                 <br />
-                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Duplicate***" rendered="#{cc.attrs.reprint eq true}" />
                 <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.Cancelled eq true}" style="font-size: 18px;"/>
             </div>
 
 
             <div>
                 <table class="table table-borderless">
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <!-- Left column -->
                         <td>Supplier Name</td>
                         <td>:</td>
@@ -67,7 +67,7 @@
 
                     </tr>
 
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <td>P.O. No</td>
                         <td>:</td>
                         <td><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
@@ -77,7 +77,7 @@
                         <td><h:outputLabel value="#{cc.attrs.bill.department.name}" /></td>
                     </tr>
 
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <td>Consignment</td>
                         <td>:</td>
                         <td><h:outputLabel value="#{cc.attrs.bill.consignment ? 'Yes' : 'No'}" /></td>
@@ -91,7 +91,7 @@
                         </td>
                     </tr>
 
-                    <tr style="line-height: 13px">
+                    <tr style="line-height: 10px">
                         <td>Payment Method</td>
                         <td>:</td>
                         <td><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>

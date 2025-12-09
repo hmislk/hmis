@@ -13,6 +13,7 @@
         <cc:attribute name="bill"/>
         <cc:attribute name="ShowProfit" type="java.lang.Boolean"/>
         <cc:attribute name="ShowRetailValue" type="java.lang.Boolean"/>
+        <cc:attribute name="reprint" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -30,7 +31,6 @@
                     width: 297mm!important;
                     size: A4 landscape!important;
                 }
-
             }
         </style>
 
@@ -62,7 +62,9 @@
                      font-weight: bold!important;
                      font-size: 18px!important;
                      font-weight: bold;">
-                    <h:outputLabel value="PURCHASE BILL"/>
+                    <h:outputLabel value="PURCHASE BILL"/><br/>
+                    <h:outputLabel value="*** Reprint ***" rendered="#{cc.attrs.reprint eq true}" />
+                    <h:outputLabel value="*** Cancelled ***" rendered="#{cc.attrs.cancelled eq true or cc.attrs.bill.cancelled eq true}" />
                 </div>
 
                 <div style="margin-left: 3%; margin-right: 3%; margin-top: 6px;">

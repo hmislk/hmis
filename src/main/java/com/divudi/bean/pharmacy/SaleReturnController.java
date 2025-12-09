@@ -6,11 +6,16 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -40,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -96,8 +102,124 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     StaffService staffBean;
     @EJB
     PaymentService paymentService;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 
     PaymentMethodData paymentMethodData;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_bill_return_retail");
+        metadata.setPageName("Pharmacy Retail Sale Return (Items and Payments)");
+        metadata.setDescription("Accept return items and process refund payments for pharmacy retail sales");
+        metadata.setControllerClass("SaleReturnController");
+
+        // Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is POS Paper",
+            "Uses standard POS paper format for return bill printing",
+            "Line 363 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is Five Five Paper",
+            "Uses standard 5x5 inch paper format for return bill printing",
+            "Line 368 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is POS Header Paper",
+            "Uses POS header paper format for return bill printing",
+            "Line 374 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper",
+            "Uses 5.5 inch custom format 3 for return bill printing",
+            "Line 378 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper",
+            "Uses POS paper custom 1 format for return bill printing",
+            "Line 382 (XHTML): Print format selection for return bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Pre-bill number format: Prefix-DeptCode-InsCode-Year-Number (e.g., PHREFPRE-PH-HOS-2025-001)",
+            "Line 274 (Controller): Return pre-bill department ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Pre-bill number format: Prefix-InsCode-DeptCode-Year-Number (e.g., PHREFPRE-HOS-PH-2025-001)",
+            "Line 277 (Controller): Return pre-bill department ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Year + Yearly Number",
+            "Pre-bill number format: Prefix-InsCode-Year-Number (e.g., PHREFPRE-HOS-2025-001) - institution-wide numbering",
+            "Line 280 (Controller): Return pre-bill department and institution ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Final return bill number format: Prefix-DeptCode-InsCode-Year-Number (e.g., PHREF-PH-HOS-2025-001)",
+            "Line 334 (Controller): Final return bill department ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Final return bill number format: Prefix-InsCode-DeptCode-Year-Number (e.g., PHREF-HOS-PH-2025-001)",
+            "Line 337 (Controller): Final return bill department ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Year + Yearly Number",
+            "Final return bill number format: Prefix-InsCode-Year-Number (e.g., PHREF-HOS-2025-001) - institution-wide numbering",
+            "Line 340 (Controller): Final return bill department and institution ID generation",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page settings",
+            "Config button visibility (added via implementation)"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Ability to change receipt printing paper format settings",
+            "Lines 332, 392 (XHTML): Settings button visibility for paper format configuration"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public String navigateToReturnItemsAndPaymentsForPharmacyRetailSale() {
         if (bill == null) {
@@ -108,6 +230,14 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             JsfUtil.addErrorMessage("Cancelled Bills CAN NOT BE returned");
             return null;
         }
+        // Check if credit has been partially or fully settled
+        if (bill.getPaymentMethod() == PaymentMethod.Credit){
+            if (bill.getPaidAmount() > 0) {
+                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+                return null;
+            }
+        }
+        
         returnBill = null;
         finalReturnBill = null;
         printPreview = false;
@@ -323,13 +453,13 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         // Handle Department ID generation
         String deptId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
             deptId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         } else {
@@ -339,12 +469,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         // Handle Institution ID generation (completely separate)
         String insId;
-        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Year + Yearly Number", false)) {
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
             insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
             insId = deptId;
-        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             insId = deptId;
         } else {
             insId = deptId;
@@ -399,7 +529,9 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     private void saveSaleComponent(Bill finalReturnBill) {
+
         for (BillItem returnBillItem : getReturnBill().getBillItems()) {
+
             BillItem finalReturnBillItem = new BillItem();
             finalReturnBillItem.copy(returnBillItem);
             finalReturnBillItem.setBill(finalReturnBill);
@@ -411,13 +543,16 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             finalReturnPbi.setBillItem(finalReturnBillItem);
             finalReturnBillItem.setPharmaceuticalBillItem(finalReturnPbi);
 
+
             if (finalReturnBillItem.getId() == null) {
                 getBillItemFacade().create(finalReturnBillItem);
             } else {
                 getBillItemFacade().edit(finalReturnBillItem);
             }
         }
+
         getBillFacade().edit(finalReturnBill);
+
     }
 
     public void saveBillFee(BillItem bi) {
@@ -529,7 +664,108 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         return false;
     }
 
+    /**
+     * Validates if the credit bill has been fully or partially settled.
+     * Prevents returns for bills where credit companies have already made payments.
+     *
+     * @return true if credit is settled (validation fails), false if not settled (validation passes)
+     */
+    private boolean isCreditSettled() {
+        if (getBill() == null) {
+            return false; // No bill to validate
+        }
+
+        // Check if this is a credit bill
+        if (getBill().getPaymentMethod() != PaymentMethod.Credit) {
+            return false; // Not a credit bill, allow return
+        }
+
+        // Check if credit has been settled (fully or partially)
+        // Any positive value in these fields indicates settlement has occurred
+        boolean hasSettlement =
+            (getBill().getPaidAmount() > 0.01) ||
+            (getBill().getSettledAmountByPatient() > 0.01) ||
+            (getBill().getSettledAmountBySponsor() > 0.01);
+
+        return hasSettlement;
+    }
+
+    /**
+     * Validates that returns for Credit payment method sales can only use Credit payment method.
+     * This ensures refunds maintain the same payment method as the original sale for proper accounting.
+     *
+     * @return true if validation fails (error condition), false if validation passes
+     */
+    private boolean validateCreditReturnPaymentMethod() {
+        if (getBill() == null || returnPaymentMethod == null) {
+            return false; // No validation needed
+        }
+
+        // Get the original payment bill to check its payment method
+        Bill paymentBill = getOriginalPaymentBill();
+        if (paymentBill == null) {
+            return false; // Cannot determine original payment method
+        }
+
+        // Check if the original bill used Credit payment method
+        if (paymentBill.getPaymentMethod() == PaymentMethod.Credit) {
+            // If original was Credit, return must also be Credit
+            if (returnPaymentMethod != PaymentMethod.Credit) {
+                JsfUtil.addErrorMessage("This sale was paid using Credit payment method. Returns must also use Credit payment method only.");
+                return true; // Validation failed
+            }
+        }
+
+        return false; // Validation passed
+    }
+
+    /**
+     * Gets the original payment bill to check its payment method.
+     * This navigates through the bill references to find the actual billed bill.
+     *
+     * @return The bill that contains the payment information, or null if not found
+     */
+    private Bill getOriginalPaymentBill() {
+        if (getBill() == null) {
+            return null;
+        }
+
+        Bill paymentBill = null;
+        BillTypeAtomic billTypeAtomic = getBill().getBillTypeAtomic();
+
+        if (billTypeAtomic == null) {
+            return null;
+        }
+
+        switch (billTypeAtomic) {
+            case PHARMACY_RETAIL_SALE:
+                paymentBill = getBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE:
+                paymentBill = getBill().getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                paymentBill = getBill().getReferenceBill();
+                break;
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                paymentBill = getBill();
+                break;
+            default:
+                return null;
+        }
+
+        return paymentBill;
+    }
+
     public void settle() {
+        // Check if credit has been partially or fully settled
+        if (bill.getPaymentMethod() == PaymentMethod.Credit){
+            if (bill != null && bill.getPaidAmount() > 0) {
+                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+                return;
+            }
+        }
+
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
@@ -548,9 +784,20 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             }
         }
 
+        // Check if credit bill has been settled (fully or partially)
+        if (isCreditSettled()) {
+            JsfUtil.addErrorMessage("Cannot return this bill. The credit has been fully or partially settled by the credit company.");
+            return;
+        }
+
         if (returnPaymentMethod == null) {
             JsfUtil.addErrorMessage("Please select a payment method to return");
             return;
+        }
+
+        // Validate that Credit payment method sales can only be returned using Credit payment method
+        if (validateCreditReturnPaymentMethod()) {
+            return; // Validation failed, error message already displayed
         }
 //        if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
 //            JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed. Please select another payment method to return");
@@ -574,6 +821,14 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
 
         finalReturnBill = saveSaleFinalReturnBill();
         saveSaleComponent(finalReturnBill);
+        // Check if bill items were properly added to finalReturnBill
+        // Check if bill items were properly added to finalReturnBill
+        // Check if bill items were properly added to finalReturnBill
+
+        // If bill items collection is null, try to reload the bill
+        if (finalReturnBill.getBillItems() == null || finalReturnBill.getBillItems().isEmpty()) {
+            finalReturnBill = billService.reloadBill(finalReturnBill);
+        }
 
         // Calculate and record stock valuation values for the return bill
         calculateAndRecordCostingValues(finalReturnBill);
@@ -1133,6 +1388,20 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     /**
+     * Checks if the original bill used Credit payment method.
+     * This can be used in the UI to restrict payment method selection.
+     *
+     * @return true if original bill was paid using Credit, false otherwise
+     */
+    public boolean isOriginalBillCredit() {
+        Bill paymentBill = getOriginalPaymentBill();
+        if (paymentBill == null) {
+            return false;
+        }
+        return paymentBill.getPaymentMethod() == PaymentMethod.Credit;
+    }
+
+    /**
      * Calculates the remaining amount for multiple payment method total.
      * Required by ControllerWithMultiplePayments interface.
      *
@@ -1277,33 +1546,50 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     /**
-     * Calculates and records stock valuation (costing) values for return bills.
-     * This method iterates through return bill items and calculates stock valuations
-     * at both item and bill level, following the same pattern as direct sales and cashier payments.
+     * Calculates and records comprehensive financial details for return bills.
+     * This method ensures BillFinanceDetails and BillItemFinanceDetails are properly populated
+     * for pharmacy return transactions, maintaining consistency with retail sale processing.
      *
-     * @param bill The return bill to calculate costing values for
+     * Key financial details calculated:
+     * - Stock valuations (cost, purchase, retail, wholesale rates)
+     * - Quantity tracking (including free quantities)
+     * - Bill and line totals (net, gross)
+     * - Individual item financial metrics
+     *
+     * This ensures pharmacy income reports have complete financial data for both
+     * sales and returns, resolving missing cost information in return transactions.
+     *
+     * @param bill The return bill to calculate financial details for
      */
     private void calculateAndRecordCostingValues(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return;
         }
 
+
         // Initialize bill finance details if not present
         if (bill.getBillFinanceDetails() == null) {
             BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
             billFinanceDetails.setBill(bill);
             bill.setBillFinanceDetails(billFinanceDetails);
+        } else {
         }
 
         // Initialize bill-level totals
-        double totalCostValue = 0.0;
-        double totalPurchaseValue = 0.0;
-        double totalRetailSaleValue = 0.0;
-        double totalWholesaleValue = 0.0;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalFreeQuantity = BigDecimal.ZERO;
 
         // Process each bill item
+        int itemIndex = 0;
         for (BillItem billItem : bill.getBillItems()) {
-            if (billItem == null || billItem.getQty() == 0) {
+            itemIndex++;
+
+
+            if (billItem == null || billItem.isRetired()) {
                 continue;
             }
 
@@ -1312,6 +1598,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 BillItemFinanceDetails itemFinanceDetails = new BillItemFinanceDetails();
                 itemFinanceDetails.setBillItem(billItem);
                 billItem.setBillItemFinanceDetails(itemFinanceDetails);
+            } else {
             }
 
             // Get pharmaceutical bill item for rate information
@@ -1320,62 +1607,131 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 continue;
             }
 
-            // Calculate values based on quantity and rates
-            // For returns, quantities are already negative, so we keep the sign for proper accounting
-            double qty = billItem.getQty();
+            // Get quantities - for returns these will be negative
+            BigDecimal qty = BigDecimal.valueOf(billItem.getQty());
+            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty());
+            BigDecimal totalQty = qty.add(freeQty);
 
-            // Calculate item-level stock valuations
-            double costValue = 0.0;
-            double purchaseValue = 0.0;
-            double retailValue = 0.0;
-            double wholesaleValue = 0.0;
+            // Get rates from pharmaceutical bill item
+            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+            BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
 
-            // Calculate based on available rates from PharmaceuticalBillItem
-            if (pharmaItem.getPurchaseRate() != 0) {
-                purchaseValue = qty * pharmaItem.getPurchaseRate();
-                costValue = purchaseValue; // Use purchase rate as cost value
+
+            // Get cost rate from item batch (which is the actual cost for returns)
+            BigDecimal costRate = purchaseRate; // default fallback
+            if (pharmaItem.getItemBatch() != null) {
+                Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
+                if (batchCostRate != null && batchCostRate > 0) {
+                    costRate = BigDecimal.valueOf(batchCostRate);
+
+                    // Also update the pharmaceutical bill item with this cost rate
+                    pharmaItem.setCostRate(costRate.doubleValue());
+                    pharmaItem.setPurchaseRate(costRate.doubleValue());
+                } else {
+                }
+            } else {
             }
 
-            if (pharmaItem.getRetailRate() != 0) {
-                retailValue = qty * pharmaItem.getRetailRate();
-            }
+            // Calculate values based on total quantity (including free quantities)
+            BigDecimal itemRetailValue = retailRate.multiply(totalQty);
+            BigDecimal itemPurchaseValue = purchaseRate.multiply(totalQty);
+            BigDecimal itemCostValue = costRate.multiply(totalQty);
+            BigDecimal itemWholesaleValue = wholesaleRate.multiply(totalQty);
 
-            if (pharmaItem.getWholesaleRate() != 0) {
-                wholesaleValue = qty * pharmaItem.getWholesaleRate();
-            }
+            // Set item-level finance details - enhanced with more comprehensive data
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
 
-            // Set item-level finance details
-            billItem.getBillItemFinanceDetails().setValueAtCostRate(BigDecimal.valueOf(costValue));
-            billItem.getBillItemFinanceDetails().setValueAtPurchaseRate(BigDecimal.valueOf(purchaseValue));
-            billItem.getBillItemFinanceDetails().setValueAtRetailRate(BigDecimal.valueOf(retailValue));
-            billItem.getBillItemFinanceDetails().setValueAtWholesaleRate(BigDecimal.valueOf(wholesaleValue));
+            // RATES (no signs - always positive rates)
+            bifd.setLineNetRate(BigDecimal.valueOf(Math.abs(billItem.getNetRate())));
+            bifd.setLineGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
+            bifd.setGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
+            bifd.setLineCostRate(costRate.abs()); // costRate from itemBatch (no sign)
+            bifd.setCostRate(costRate.abs());
+            bifd.setPurchaseRate(purchaseRate.abs());
+            bifd.setRetailSaleRate(retailRate.abs());
+
+            // BILL-LEVEL RATES (always 0 for now)
+            bifd.setBillCostRate(BigDecimal.ZERO);
+
+            // TOTAL RATES (lineCostRate + billCostRate)
+            bifd.setTotalCostRate(bifd.getLineCostRate()); // since billCostRate = 0
+
+            // TOTALS
+            bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+            bifd.setLineGrossTotal(bifd.getGrossTotal()); // no bill-level discounts
+            bifd.setLineNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
+
+            // COSTS (with signs - negative for returns as cost goes out)
+            BigDecimal lineCost = costRate.multiply(qty.abs()).negate(); // Always negative for returns
+            bifd.setLineCost(lineCost);
+            bifd.setBillCost(BigDecimal.ZERO);
+            bifd.setTotalCost(lineCost); // totalCost = lineCost + billCost
+
+            // QUANTITIES
+            bifd.setQuantity(qty);
+            bifd.setFreeQuantity(freeQty);
+            bifd.setTotalQuantity(totalQty);
+            bifd.setQuantityByUnits(qty.abs()); // no packs, same as quantity but positive
+
+            // VALUES AT RATES (positive - valuation of quantity)
+            BigDecimal absQty = qty.abs(); // absolute quantity for valuation
+            bifd.setValueAtCostRate(costRate.multiply(absQty));
+            bifd.setValueAtPurchaseRate(purchaseRate.multiply(absQty));
+            bifd.setValueAtRetailRate(retailRate.multiply(absQty));
+            bifd.setValueAtWholesaleRate(wholesaleRate.multiply(absQty));
+
+            // Set PharmaceuticalBillItem values (positive valuations)
+            BigDecimal absQtyForPBI = qty.abs(); // absolute quantity for PBI valuations
+            pharmaItem.setCostValue(costRate.multiply(absQtyForPBI).doubleValue());
+            pharmaItem.setPurchaseValue(purchaseRate.multiply(absQtyForPBI).doubleValue());
+            pharmaItem.setRetailValue(retailRate.multiply(absQtyForPBI).doubleValue());
+
+
+            // Save PharmaceuticalBillItem to ensure values are persisted
+            if (pharmaItem.getId() == null) {
+            } else {
+                pharmaceuticalBillItemFacade.edit(pharmaItem);
+            }
 
             // Aggregate values for bill level
-            totalCostValue += costValue;
-            totalPurchaseValue += purchaseValue;
-            totalRetailSaleValue += retailValue;
-            totalWholesaleValue += wholesaleValue;
+            totalCostValue = totalCostValue.add(itemCostValue);
+            totalPurchaseValue = totalPurchaseValue.add(itemPurchaseValue);
+            totalRetailSaleValue = totalRetailSaleValue.add(itemRetailValue);
+            totalWholesaleValue = totalWholesaleValue.add(itemWholesaleValue);
+            totalQuantity = totalQuantity.add(qty);
+            totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            // Save bill item finance details
+
+            // Save bill item finance details using JPA cascade persistence
             if (billItem.getBillItemFinanceDetails().getId() == null) {
-                // Let JPA handle cascade persistence - no need to explicitly save
             } else {
                 billItemFacade.edit(billItem);
             }
         }
 
-        // Set bill-level finance details
-        bill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(totalCostValue));
-        bill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(totalPurchaseValue));
-        bill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(totalRetailSaleValue));
-        bill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(totalWholesaleValue));
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+        bfd.setTotalWholesaleValue(totalWholesaleValue);
+
+        // Set missing quantity totals needed for pharmacy income reports
+        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalFreeQuantity(totalFreeQuantity);
+
+        // Set basic totals from bill for reporting consistency
+        bfd.setNetTotal(BigDecimal.valueOf(bill.getNetTotal()));
+        bfd.setGrossTotal(BigDecimal.valueOf(bill.getTotal()));
+
 
         // Save bill finance details
         if (bill.getBillFinanceDetails().getId() == null) {
-            // Let JPA handle cascade persistence - no need to explicitly save
         } else {
             billFacade.edit(bill);
         }
+
     }
 
 }

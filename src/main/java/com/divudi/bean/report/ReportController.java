@@ -60,6 +60,7 @@ import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -141,6 +142,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private Doctor referingDoctor;
     private Staff toStaff;
     private WebUser webUser;
+
 
     private double investigationResult;
     private double hospitalFeeTotal;
@@ -2810,6 +2812,23 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         reportType = "Summary";
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
+    
+   
+
+    public String navigateToOtRoomWiseSergeryCount(){
+        
+        return "/reports/managementReports/ot_room_wise_surgery_count?faces-redirect=true";
+    }
+    
+    public String navigateToRoomOccupancyReport(){
+        return "/reports/managementReports/room_occupancy_report?faces-redirect=true";
+        
+    }
+
+    public String navigateToSugeryStatus(){
+       return "/reports/managementReports/surgery_status";
+
+    }
 
     public String navigateToReferringDoctorWiseRevenue() {
 
@@ -2825,12 +2844,48 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/managementReports/surgery_count_doctor_wise?faces-redirect=true";
     }
+    
+    public String navigateToSurgeryCountTypeWise(){
+        
+        return "/reports/managementReports/surgery_count_type?faces-redirect=true";
+    }
+    
+    public String navigateToAdmissionCountConsultationWise(){
+       
+        return "/reports/managementReports/admission_count_consultant_wise?faces-redirect=true";
+    }
+    
+    
+    public String navigateToAdmissionCountPaymentTypeWise(){
+        
+        return "/reports/managementReports/admission_count_payment_type_wise?faces-redirect=true"; 
+    }
+    
+    public String navigateToManagementHospitalCensusReport(){
+        
+        return "/reports/managementReports/hospital_census?faces-redirect=true"; 
+    }
+    
+    public String navigateToROOMOCCUPANCY(){
+        
+        return "/reports/managementReports/ROOM_OCCUPANCY?faces-redirect=true";
+    }
 
     public String navigateToOpdWeeklyReport() {
 
         return "/reports/managementReports/opd_weekly?faces-redirect=true";
     }
+    
+    public String navigateToSpecialityDoctorWiseIncome() {
 
+        return "/reports/managementReports/specility_doctor_wise_income_report?faces-redirect=true";
+    }
+    
+    public String navigateToSpecialityWiseDemograhicData(){
+        
+        return "/reports/statisticsReports/speciality_wise_demographic_data?faces-redirect=true";
+    }
+    
     public String navigateToLeaveReport() {
 
         return "/reports/HRReports/leave_report?faces-redirect=true";
@@ -2990,6 +3045,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/HRReports/online_form_status?faces-redirect=true";
     }
+    
+    public String navigateToPatientJourney() {
+
+        return "/reports/stastistic_reports/patient_journey?faces-redirect=true";
+    }
 
     public String navigateToAdmissionDischargeReport() {
 
@@ -3045,6 +3105,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inpatientReports/ip_unsettled_invoices?faces-redirect=true";
     }
+    
+    
+    public String navigateToRoomChange() {
+
+        return "/reports/inpatientReports/room_change?faces-redirect=true";
+    }
 
     public String navigateToconsumption() {
         return "/reports/inventoryReports/consumption?faces-redirect=true";
@@ -3087,6 +3153,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
             case "Sale ":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
+            case "Add to Stock Bills":
+                return "/reports/inventoryReports/add_to_stock_bills?faces-redirect=true";
             case "Closing Stock":
             case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
@@ -3125,6 +3193,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
     }
     
+
     public String navigateToHospitalCensusReport(){
         return "/reports/inpatientReports/hospital_census_report?faces-redirect=true";
     }
@@ -3172,6 +3241,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/financialReports/cash_inward_excess_age?faces-redirect=true";
     }
+    
+//    public String navigateToOutsideBillServiceReport(){
+//    
+//        return "/reports/financialReports/outside_bill_service_report?faces-redirect=true";
+//    }
 
     public String navigateToOutsidePayment() {
 
@@ -3571,6 +3645,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
+    
+    
 
     /**
      * Aggregates test-wise count report data for collecting centres by

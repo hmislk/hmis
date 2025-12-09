@@ -124,14 +124,12 @@ public class InwardReservationController implements Serializable {
         }
 
         selectedReservations = ReservationFacade.findByJpql(jpql, m);
-        System.out.println("selectedReservations = " + selectedReservations);
         generateReservationsEvents(selectedReservations);
     }
 
     public void generateReservationsEvents(List<Reservation> lsi) {
         reservationModel = new DefaultScheduleModel();
         for (Reservation si : lsi) {
-            System.out.println("Name = " + si.getRoom().getName());
 
             // Dates
             Date startDate = si.getReservedFrom();

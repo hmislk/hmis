@@ -132,13 +132,11 @@ public class HistoricalRecordController implements Serializable, ControllerWithR
         }
 
         selected = handleGeneration(historicalRecordType);
-        System.out.println("selected = " + selected);
         return navigateToHistoricalRecordList();
     }
 
     private HistoricalRecord handleGeneration(HistoricalRecordType type) {
         System.out.println("handleGeneration");
-        System.out.println("type = " + type);
         if (type == null) {
             return null;
         }
@@ -177,7 +175,6 @@ public class HistoricalRecordController implements Serializable, ControllerWithR
         HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE);
         System.out.println("rec = " + rec);
         StockValueRow result = stockService.calculateStockValues(institution, site, department);
-        System.out.println("result = " + result);
         if (result != null) {
             rec.setRecordValue(result.getPurchaseValue());
         }

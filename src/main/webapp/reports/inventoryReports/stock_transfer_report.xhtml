@@ -399,17 +399,17 @@
                                                 </td>
                                                 <td style="text-align:right;">
                                                     <h:outputText value="#{group.totalPurchaseValue}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                        
                                                     </h:outputText>
                                                 </td>
                                                 <td style="text-align:right;">
                                                     <h:outputText value="#{group.totalCostValue}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                        
                                                     </h:outputText>
                                                 </td>
                                                 <td style="text-align:right;">
                                                     <h:outputText value="#{group.totalRetailValue}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                        
                                                     </h:outputText>
                                                 </td>
                                             </tr>
@@ -425,17 +425,17 @@
                                                     </td>
                                                     <td style="text-align:right;">
                                                         <h:outputText value="#{child.purchaseValue}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                            
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align:right;">
                                                         <h:outputText value="#{child.costValue}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                            
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align:right;">
                                                         <h:outputText value="#{child.retailValue}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                            
                                                         </h:outputText>
                                                     </td>
                                                 </tr>
@@ -454,17 +454,17 @@
                                             </td>
                                             <td style="text-align:right;">
                                                 <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalPurchaseValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                    
                                                 </h:outputText>
                                             </td>
                                             <td style="text-align:right;">
                                                 <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalCostValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                    
                                                 </h:outputText>
                                             </td>
                                             <td style="text-align:right;">
                                                 <h:outputText value="#{pharmacyController.transferBreakdownTotals.totalRetailValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                    
                                                 </h:outputText>
                                             </td>
                                         </tr>
@@ -513,16 +513,17 @@
                                 <p:column headerText="Purchase Value" style="text-align: right;">
                                     <h:outputText value="#{s.totalPurchaseValue}" 
                                                   style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                        
                                     </h:outputText>
                                 </p:column>
 
                                 <!-- Cost Value Column -->
-                                <p:column headerText="Cost Value" style="text-align: right;"
+                                <p:column 
+                                    id="txtCostValueInSummaryReport"
+                                    headerText="Cost Value" style="text-align: right;"
                                           rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                    <h:outputText value="#{s.totalCostValue}" 
+                                    <h:outputText value="#{s.totalCostValue}"
                                                   style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
-                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
 
@@ -530,15 +531,13 @@
                                 <p:column headerText="Retail Sale Value" style="text-align: right;">
                                     <h:outputText value="#{s.totalRetailSaleValue}" 
                                                   style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
-                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
 
                                 <!-- Good In Transit Amount Column -->
                                 <p:column headerText="Good In Transit Amount" style="text-align: right;">
-                                    <h:outputText value="#{s.goodInTransistAmount}" 
+                                    <h:outputText id="lblGoodsInTransitForSummeryReport" value="#{s.goodInTransistAmount}"
                                                   style="#{s.departmentName eq 'Total' ? 'font-weight:bold;' : ''}">
-                                        <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
 
@@ -589,18 +588,18 @@
                                                                                         </td>
                                                                                         <td style="text-align: right;">
                                                                                             <h:outputText value="#{transferDetail.totalPurchaseValue}">
-                                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                                                
                                                                                             </h:outputText>
                                                                                         </td>
                                                                                         <td style="text-align: right;" 
                                                                                             rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
                                                                                             <h:outputText value="#{transferDetail.totalCostValue}">
-                                                                                                <f:convertNumber pattern="#,##0.00"/>
+
                                                                                             </h:outputText>
                                                                                         </td>
                                                                                         <td style="text-align: right;">
                                                                                             <h:outputText value="#{transferDetail.totalRetailSaleValue}">
-                                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                                                
                                                                                             </h:outputText>
                                                                                         </td>
                                                                                     </tr>
@@ -644,29 +643,29 @@
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalPurchaseValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                    
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;" 
+                                        <p:column style="text-align: right;"
                                                   rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalCostValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                    <f:convertNumber pattern="#,##0.00" type="number" minFractionDigits="2" maxFractionDigits="2"/>
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).totalRetailSaleValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                    
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{pharmacyController.departmentSummaries.stream().filter(sum -> sum.departmentName eq 'Total').findFirst().orElse(null).goodInTransistAmount}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                    
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
@@ -735,37 +734,56 @@
                                     </p:column>
 
                                     <p:column headerText="Purchase Rate" width="5em" style="text-align: right; padding-right: 10px;">
-                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.purchaseRate}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.purchaseRate}">
+                                            
                                         </p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Purchase Value" width="5em" style="text-align: right; padding-right: 10px;">
-                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty * i.billItem.pharmaceuticalBillItem.purchaseRate}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
+                                            
                                         </p:outputLabel>
                                         <f:facet name="footer">
                                             <h:outputText value="#{pharmacyController.departmentTotalsMap.get(deptEntry.key)[0]}" >
-                                                <f:convertNumber pattern="#,##0.00"/>
+                                                
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
 
                                     <p:column headerText="Cost Rate" width="5em" style="text-align: right; padding-right: 10px;"
                                               rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                        <p:outputLabel value="#{i.itemBatch.costRate}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.costRate}">
+                                            
                                         </p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Cost Value" width="5em" style="text-align: right; padding-right: 10px;"
                                               rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                        <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty * i.itemBatch.costRate}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                        <p:outputLabel
+                                            id="lblCostValueInDetailedReport"
+                                            value="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
+                                            
                                         </p:outputLabel>
                                         <f:facet name="footer">
                                             <h:outputText value="#{pharmacyController.departmentTotalsMap.get(deptEntry.key)[1]}" >
-                                                <f:convertNumber pattern="#,##0.00"/>
+                                                
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column headerText="Retail Rate" width="5em" style="text-align: right; padding-right: 10px;">
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.retailSaleRate}">
+                                            
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Retail Value" width="5em" style="text-align: right; padding-right: 10px;">
+                                        <p:outputLabel value="#{i.billItem.billItemFinanceDetails.valueAtRetailRate}">
+                                            
+                                        </p:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyController.departmentTotalsMap.get(deptEntry.key)[2]}" >
+                                                
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
@@ -818,33 +836,33 @@
                                 <p:column id="colBillTableCostValue" headerText="Cost Value" style="text-align: right;">
                                     <h:outputText
                                         value="#{b.bill.billFinanceDetails.totalCostValue}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                        
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.billTableCostTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                            
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
                                 <p:column id="colBillTablePurchaseValue" headerText="Purchase Value" style="text-align: right;">
                                     <h:outputText
                                         value="#{b.bill.billFinanceDetails.totalPurchaseValue}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                        
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.billTablePurchaseTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                            
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
                                 <p:column id="colBillTableRetailValue" headerText="Retail Value" style="text-align: right;">
                                     <h:outputText
                                         value="#{b.bill.billFinanceDetails.totalRetailSaleValue}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                        
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{pharmacyController.billTableRetailTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
+                                            
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
@@ -854,7 +872,7 @@
                                                  or (b.bill.netTotal gt 0 and b.bill.billFinanceDetails.totalCostValue lt 0)
                                                  ? (0 - b.bill.billFinanceDetails.totalCostValue)
                                                  : b.bill.billFinanceDetails.totalCostValue}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                        
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.totalCostValue}"/>
@@ -862,7 +880,7 @@
                                 </p:column>
                                 <p:column headerText="Net Total" style="text-align: right;">
                                     <h:outputText value="#{b.bill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
+                                        
                                     </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacyController.totalPurchase}"/>

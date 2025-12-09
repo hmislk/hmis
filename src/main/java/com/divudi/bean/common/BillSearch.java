@@ -238,6 +238,8 @@ public class BillSearch implements Serializable {
     @Inject
     CashRecieveBillController cashRecieveBillController;
     @Inject
+    CreditCompanyBillSearch creditCompanyBillSearch;
+    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ChannelSearchController channelSearchController;
@@ -2509,6 +2511,13 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
+        }
 
         if (errorsPresentOnOpdBillCancellation()) {
             return;
@@ -2641,6 +2650,14 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             ccBillCancellingStarted.set(false);
             return;
+        }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            ccBillCancellingStarted.set(false);
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
         }
 
         if (!getWebUserController().hasPrivilege("BillCancel")) {
@@ -3852,6 +3869,103 @@ public class BillSearch implements Serializable {
         return "/credit/credit_compnay_bill_opd?faces-redirect=true";
     }
 
+    public String navigateToViewInpatientCreditBatchBillSettle() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+        creditCompanyBillSearch.setBill((BilledBill) bill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/inpatient_credit_company_bill_reprint?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to OPD credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewOpdCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/credit_company_bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to inpatient credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewInpatientCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/inpatient_credit_company_bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to pharmacy credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewPharmacyCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/credit_company_bill_pharmacy_cancel?faces-redirect=true";
+    }
+
     public String navigateToViewOpdProfessionalPaymentBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3971,7 +4085,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -3990,7 +4103,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4009,7 +4121,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4028,7 +4139,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(selectedBillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found for ID: " + selectedBillId);
             return null;
@@ -4126,7 +4236,6 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewBillByAtomicBillType() {
-        System.out.println("navigateToViewBillByAtomicBillType");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
@@ -4154,6 +4263,14 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBatchBill();
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewOpdCreditBatchBillSettle();
+            case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewOpdCreditBatchBillCancellation();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewInpatientCreditBatchBillCancellation();
+            case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewPharmacyCreditBatchBillCancellation();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 
@@ -4424,6 +4541,14 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBatchBill();
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewOpdCreditBatchBillSettle();
+            case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewOpdCreditBatchBillCancellation();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewInpatientCreditBatchBillCancellation();
+            case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewPharmacyCreditBatchBillCancellation();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 
@@ -4689,6 +4814,21 @@ public class BillSearch implements Serializable {
     public String navigateToViewPharmacySettledPreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyBillSearch.setBill(bill);
+        return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
+    }
+    
+    public String navigateToViewPharmacySettledPreBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
         loadBillDetails(bill);

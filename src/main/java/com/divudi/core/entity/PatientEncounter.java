@@ -13,6 +13,7 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.Reservation;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -170,6 +171,10 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     @ManyToOne
     private ClinicalEntity primaryReason;
     private String referringMethod;
+    private boolean roomAdmitted;
+    
+    @ManyToOne
+    private Reservation encounterReservation;
 
     // Transient method for BP
     public String getBp() {
@@ -1088,5 +1093,21 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setReferringMethod(String referringMethod) {
         this.referringMethod = referringMethod;
+    }
+
+    public boolean isRoomAdmitted() {
+        return roomAdmitted;
+    }
+
+    public void setRoomAdmitted(boolean roomAdmitted) {
+        this.roomAdmitted = roomAdmitted;
+    }
+
+    public Reservation getEncounterReservation() {
+        return encounterReservation;
+    }
+
+    public void setEncounterReservation(Reservation encounterReservation) {
+        this.encounterReservation = encounterReservation;
     }
 }

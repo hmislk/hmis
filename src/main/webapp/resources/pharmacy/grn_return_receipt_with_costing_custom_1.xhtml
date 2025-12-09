@@ -19,7 +19,7 @@
         <div style="width: 212mm; padding-left: 0px">
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.department.site.name}"/>
                 <br/>
                 <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
             </div>
@@ -38,20 +38,20 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}" rendered="#{not empty cc.attrs.bill.department.fax}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Email :&nbsp;" rendered="#{not empty cc.attrs.bill.department.email}"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}" rendered="#{not empty cc.attrs.bill.department.email}"/>
+                    <h:outputLabel value="Email :&nbsp;" rendered="#{not empty cc.attrs.bill.institution.email}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}" rendered="#{not empty cc.attrs.bill.institution.email}"/>
                 </div>
             </div>
 
             <div class="headingBill">
                 <h:outputLabel value="GRN Return Note"   />
                 <br/>
-                <h:outputLabel value="***Reprint***" rendered="#{cc.attrs.reprint eq true}" />
+                <h:outputLabel value="***Duplicate***" rendered="#{cc.attrs.reprint eq true}" />
                 <h:outputLabel value="***Cancelled***" rendered="#{cc.attrs.Cancelled eq true}" style="font-size: 18px;"/>
             </div>
 
             <table class="table table-borderless">
-                <tr style="line-height: 15px">
+                <tr style="line-height: 10px">
                     <!-- Left column -->
                     <td>GRN Return No</td>
                     <td>:</td>
@@ -61,7 +61,7 @@
                     <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}" /> </td>
                 </tr>
 
-                <tr style="line-height: 15px">
+                <tr style="line-height: 10px">
                     <td>GRN Return Date</td>
                     <td>:</td>
                     <td>
@@ -79,7 +79,7 @@
                     </td>
                 </tr>
 
-                <tr style="line-height: 15px">
+                <tr style="line-height: 10px">
                     <td>Return By</td>
                     <td>:</td>
                     <td><h:outputLabel value="#{cc.attrs.bill.creater.name}" /></td>
@@ -89,7 +89,7 @@
                     <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.invoiceNumber}"/></td>
                 </tr>
 
-                <tr style="line-height: 15px">
+                <tr style="line-height: 10px">
                     <td>Location</td>
                     <td>:</td>
                     <td><h:outputLabel value="#{cc.attrs.bill.referenceBill.referenceBill.creater.department.name}" /></td>

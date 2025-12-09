@@ -31,7 +31,7 @@
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark" colspan="4">
+                        <th class="text-light bg-dark" colspan="5">
                             Staff Payment Transactions
                         </th>
                         <th class="text-end text-light bg-dark">
@@ -43,34 +43,32 @@
                     <tr>
                         <th>Bil No</th>
                         <th>Bill Type</th>
-                        <th>Card Ref. Number</th>
-                        <th>Bank</th>
+                        <th>Staff</th>
+                        <th>Code</th>
+                        <th>EPF</th>
                         <th class="text-end">Fee</th>
                     </tr>
                 </thead>
                 <tbody>
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
-                        <tr class="#{row.bill ne null ? 'table-primary' : 'table-light'}">
+                        <tr class="#{row.payment.bill ne null ? 'table-primary' : 'table-light'}">
                             <td>
-                                <h:outputText value="#{row.bill.deptId}" />
+                                <h:outputText value="#{row.payment.bill.deptId}" />
                             </td>
                             <td>
-                                <h:outputText value="#{row.bill.billTypeAtomic.label}" />
+                                <h:outputText value="#{row.payment.bill.billTypeAtomic.label}" />
                             </td>
                             <td>
-                                <!-- Assuming ps.payment represents payment details here, adjust if necessary -->
-                                <ui:repeat value="#{row.bill.payments}" var="ps">
-                                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }">
-                                        <h:outputText value="#{ps.creditCardRefNo}" />
-                                    </h:panelGroup>
-                                </ui:repeat>
+                                <h:outputText value="#{row.payment.bill.toStaff.person.name}" />
                             </td>
                             <td>
-                                <!-- Output for bank, assuming the first payment's bank is representative -->
-                                <h:outputText value="#{row.bill.payments[0].bank.name}" rendered="#{not empty row.bill.payments and row.bill.payments[0].bank ne null}" />
+                                <h:outputText value="#{row.payment.bill.toStaff.code}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{row.payment.bill.toStaff.epfNo}" />
                             </td>
                             <td class="text-end">
-                                <h:outputText value="#{row.bill.netTotal}">
+                                <h:outputText value="#{row.payment.paidValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>

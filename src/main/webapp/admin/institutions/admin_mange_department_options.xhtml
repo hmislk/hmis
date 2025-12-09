@@ -10,6 +10,41 @@
     <h:body>
         <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
             <ui:define name="admin">
+                <style>
+                    .badge-info {
+                        background-color: #17a2b8;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+
+                    .ui-button-sm {
+                        padding: 0.25rem 0.5rem;
+                        font-size: 0.875rem;
+                    }
+
+                    .mt-3 {
+                        margin-top: 1rem !important;
+                    }
+
+                    .d-flex {
+                        display: flex !important;
+                    }
+
+                    .justify-content-between {
+                        justify-content: space-between !important;
+                    }
+
+                    .align-items-center {
+                        align-items: center !important;
+                    }
+
+                    .fw-bold {
+                        font-weight: bold !important;
+                    }
+                </style>
                 <h:form >
                     <p:panel>
                         <p:outputLabel  value="Department" ></p:outputLabel>
@@ -31,14 +66,63 @@
                                          class="ui-button-warning mx-2"
                                          action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
 
-                        <p:commandButton value="List Options"
-                                         process="cmbInstitution cmbDepartment"
+                        <p:commandButton value="List Department Options"
+                                         process="cmbDepartment"
                                          icon="fas fa-list"
                                          class="ui-button-success"
-                                         ajax="false"
-                                         action="#{optionControl}"></p:commandButton>
+                                         action="#{configOptionController.listDepartmentOptions}"
+                                         update="departmentOptionsForm:optionsTable"></p:commandButton>
 
 
+                    </p:panel>
+                </h:form>
+
+                <!-- Department Options Data Table -->
+                <h:form id="departmentOptionsForm">
+                    <p:panel header="Department Configuration Options" styleClass="mt-3">
+                        <p:dataTable id="optionsTable"
+                                     value="#{configOptionController.options}"
+                                     var="option"
+                                     emptyMessage="No department options found. Please select a department and click 'List Department Options'."
+                                     styleClass="table table-striped"
+                                     paginator="true"
+                                     rows="20"
+                                     widgetVar="optionsTableWidget">
+
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h:outputText value="Department: #{configOptionController.department.name}"
+                                                  styleClass="fw-bold"
+                                                  rendered="#{configOptionController.department ne null}"/>
+                                    <p:inputText id="globalFilter"
+                                                 placeholder="Search options..."
+                                                 style="width: 300px;"
+                                                 onkeyup="PF('optionsTableWidget').filter()" />
+                                </div>
+                            </f:facet>
+
+                            <p:column headerText="Option Key" filterBy="#{option.optionKey}" style="width: 40%">
+                                <h:outputText value="#{option.optionKey}" styleClass="fw-bold"/>
+                            </p:column>
+
+                            <p:column headerText="Value Type" style="width: 15%">
+                                <h:panelGroup styleClass="badge badge-info px-2 py-1">
+                                    <h:outputText value="#{option.valueType}"/>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Current Value" style="width: 35%">
+                                <h:outputText value="#{option.optionValue}"
+                                              title="#{option.optionValue}"/>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width: 10%">
+                                <p:commandButton icon="fas fa-edit"
+                                                 styleClass="ui-button-info ui-button-sm"
+                                                 title="Edit Option"
+                                                 onclick="alert('Edit functionality can be added here')"/>
+                            </p:column>
+                        </p:dataTable>
                     </p:panel>
                 </h:form>
 
@@ -47,9 +131,8 @@
 
 
             </ui:define>
-
-
         </ui:composition>
+
 
     </h:body>
 </html>

@@ -27,10 +27,10 @@
                                     icon="fa fa-check">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton 
-                                    value="New Bill" 
-                                    ajax="false" 
-                                    action="#{cashRecieveBillController.prepareNewBill()}" 
+                                <p:commandButton
+                                    value="New Bill"
+                                    ajax="false"
+                                    action="#{cashRecieveBillController.prepareNewBill()}"
                                     icon="fa fa-plus"
                                     class="ui-button-warning">
                                 </p:commandButton>
@@ -305,11 +305,11 @@
                             class="ui-button-success m-1">
                         </p:commandButton>
 
-                        <p:commandButton 
-                            value="To Cancel Bill" 
-                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
-                            ajax="false" 
-                            action="credit_company_bill_cancel" 
+                        <p:commandButton
+                            value="To Cancel Bill"
+                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true or cashRecieveBillController.currentBillACancellationBill}"
+                            ajax="false"
+                            action="credit_company_bill_cancel"
                             icon="pi pi-times"
                             styleClass="ui-button-danger m-1">
                             <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
@@ -325,6 +325,7 @@
                     </div>
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Cancelled" rendered="#{cashRecieveBillController.current.cancelled eq true}" ></p:outputLabel>
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Refunded" rendered="#{cashRecieveBillController.current.refunded eq true}" ></p:outputLabel>
+                    <p:outputLabel class="w-100 text-center bg-warning text-dark m-1 p-1" value="This is a Cancellation Bill - Cannot be Cancelled" rendered="#{cashRecieveBillController.currentBillACancellationBill}" ></p:outputLabel>
 
                     <h:panelGroup id="prints" class="align-center">
 

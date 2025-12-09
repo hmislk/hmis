@@ -20,8 +20,9 @@
                                 <p:commandButton
                                     id="btnSettle"
                                     value="Settle"
-                                    action="#{cashRecieveBillController.settleCombinedCreditBills}"
+                                    action="#{cashRecieveBillController.settleUniversalCreditBills}"
                                     ajax="false"
+                                    onclick="return confirm('Are you sure you want to settle this payment?');"
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
                                     class="ui-button-success"
                                     icon="fa fa-check">
@@ -42,21 +43,10 @@
                         <div class="col-md-6">
                             <p:panel>
                                 <f:facet name="header" >
-                                    <div class="d-flex justify-content-between">
-                                        <div class="d-flex align-items-center">
-                                            <h:outputText styleClass="fa fa-money-bill-wave" />
-                                            <h:outputText value="Select Bill Type &amp; Bill" class="mx-4"></h:outputText>
-                                        </div>
-
-                                        <p:commandButton
-                                            id="btnAddIx"
-                                            value="Add"
-                                            action="#{cashRecieveBillController.addToBillCombined()}"
-                                            ajax="false"
-                                            icon="fa fa-plus"
-                                            class="ui-button-success gap-2"/>
+                                    <div class="d-flex align-items-center">
+                                        <h:outputText styleClass="fa fa-money-bill-wave" />
+                                        <h:outputText value="Select Bill Type &amp; Bill" class="mx-4"></h:outputText>
                                     </div>
-
                                 </f:facet>
 
                                 <div class="row my-2 d-flex align-items-center">
@@ -110,13 +100,15 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
+                                            
+                                              
 
                                             <!-- Due Amount Column -->
                                             <p:column>
                                                 <f:facet name="header">
                                                     <h:outputLabel value="Due Amount"/>
                                                 </f:facet>
-                                                <h:outputLabel value="#{ix.balance != null ? ix.balance : (ix.netTotal+ix.vat - ix.paidAmount)}" style="color: red;">
+                                                <h:outputLabel value="#{ix.balance}" style="color: red;">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
@@ -131,36 +123,132 @@
                                                 </h:outputLabel>
                                             </p:column>
 
+                                            <!-- Refund Amount Column -->
+                                            <p:column>
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Refund Amount"/>
+                                                </f:facet>
+                                                <h:outputLabel value="#{ix.refundAmount}" style="color: #ff8c00;">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+
                                             <!-- Full Amount Column -->
                                             <p:column>
                                                 <f:facet name="header">
-                                                    <h:outputLabel value="Full Amount"/>
+                                                    <h:outputLabel value="Billed Amount"/>
                                                 </f:facet>
                                                 <h:outputLabel value="#{ix.netTotal+ix.vat}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
 
-                                            <f:ajax execute="@this" event="itemSelect" render="val" listener="#{cashRecieveBillController.selectBillListener()}"/>
+                                            <f:ajax execute="@this" event="itemSelect" render="val messages" listener="#{cashRecieveBillController.selectBillListener()}"/>
                                         </p:autoComplete>
                                     </div>
                                 </div>
 
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Value" />
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:inputText
-                                            autocomplete="off"
-                                            class="w-100"
-                                            id="val"
-                                            onfocus="this.select();"
-                                            value="#{cashRecieveBillController.currentBillItem.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
-                                    </div>
-                                </div>
+                                <!-- Selected Bill Details Panel -->
+                                <h:panelGroup id="val">
+                                    <p:panel header="Selected Bill Details" rendered="#{cashRecieveBillController.currentBillItem.referenceBill != null}">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Bill No:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.deptId}"/>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Patient/Company:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.patient != null ? cashRecieveBillController.currentBillItem.referenceBill.patient.person.name : 'Pharmacy Sale'}"/>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Credit Company:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.creditCompany != null ? cashRecieveBillController.currentBillItem.referenceBill.creditCompany.name : cashRecieveBillController.currentBillItem.referenceBill.toInstitution.name}"/>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Date:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.createdAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Due Amount:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.balance}" style="color: red;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Paid Amount:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.paidAmount}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Refund Amount:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.refundAmount}" style="color: #ff8c00;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Billed Amount:</strong>
+                                                    <h:outputText value="#{cashRecieveBillController.currentBillItem.referenceBill.netTotal+cashRecieveBillController.currentBillItem.referenceBill.vat}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Error Messages -->
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <p:messages id="messages" showDetail="true" closable="true" />
+                                            </div>
+                                        </div>
+
+                                        <!-- Prominent Payment Section -->
+                                        <div class="row mt-3">
+                                            <div class="col-md-12">
+                                                <div class="alert alert-success p-3" style="background-color: #d4edda; border: 2px solid #28a745;">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-6">
+                                                            <h5 class="mb-2" style="color: #155724; font-weight: bold;">
+                                                                <i class="fa fa-money-bill-wave me-2"></i>Amount Paying This Time:
+                                                            </h5>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <p:inputText
+                                                                autocomplete="off"
+                                                                class="form-control form-control-lg"
+                                                                style="font-size: 1.2em; font-weight: bold; text-align: center; border: 2px solid #28a745;"
+                                                                onfocus="this.select();"
+                                                                placeholder="0.00"
+                                                                value="#{cashRecieveBillController.currentBillItem.netValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </p:inputText>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <p:commandButton
+                                                                id="btnAddIx"
+                                                                value="Add to Bill"
+                                                                action="#{cashRecieveBillController.addToBillCombined()}"
+                                                                ajax="false"
+                                                                icon="fa fa-plus"
+                                                                class="ui-button-success btn-lg w-100"
+                                                                style="font-weight: bold;"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+
+                                    <!-- Fallback when no bill is selected -->
+                                    <p:panel header="No Bill Selected" rendered="#{cashRecieveBillController.currentBillItem.referenceBill == null}">
+                                        <p:outputLabel value="Please select a bill from the autocomplete above to view details and set payment amount." />
+                                    </p:panel>
+                                </h:panelGroup>
 
                             </p:panel>
                         </div>
@@ -295,6 +383,13 @@
                                         </h:outputLabel>
                                     </p:column>
 
+                                    <!-- Refund Amount -->
+                                    <p:column headerText="Refund Amount">
+                                        <h:outputLabel value="#{b.referenceBill.refundAmount}" style="color: #ff8c00;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+
                                     <!-- Remove -->
                                     <p:column headerText="Remove">
                                         <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" class="ui-button-danger">
@@ -318,9 +413,9 @@
 
                         <p:commandButton
                             value="To Cancel Bill"
-                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
+                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true or cashRecieveBillController.currentBillACancellationBill}"
                             ajax="false"
-                            action="credit_company_bill_cancel"
+                            action="credit_company_bill_cancel?faces-redirect=true"
                             icon="pi pi-times"
                             styleClass="ui-button-danger m-1">
                             <f:setPropertyActionListener value="#{cashRecieveBillController.current}" target="#{creditCompanyBillSearch.bill}" ></f:setPropertyActionListener>
@@ -337,6 +432,7 @@
 
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Cancelled" rendered="#{cashRecieveBillController.current.cancelled eq true}" ></p:outputLabel>
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Refunded" rendered="#{cashRecieveBillController.current.refunded eq true}" ></p:outputLabel>
+                    <p:outputLabel class="w-100 text-center bg-warning text-dark m-1 p-1" value="This is a Cancellation Bill - Cannot be Cancelled" rendered="#{cashRecieveBillController.currentBillACancellationBill}" ></p:outputLabel>
 
                     <h:panelGroup id="prints" class="align-center">
                         <bi:five_five_paper_coustom_1_credit_payemnt  bill="#{cashRecieveBillController.current}" duplicate="false"/>

@@ -31,12 +31,19 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3" class="my-2">
-                                            <p:commandButton id="btnSearch"
+                            <p:commandButton id="btnSearch"
                                              class="ui-button-warning"
                                              icon="pi pi-search"
                                              ajax="false"
                                              value="Search"
                                              action="#{auditEventController.fillConfigOptionEvents}" />
+                            <p:commandButton id="btnExportExcel"
+                                             class="ui-button-success"
+                                             icon="pi pi-file-excel"
+                                             value="Export to Excel"
+                                             ajax="false">
+                                <p:dataExporter type="xlsx" target="tblChanges" fileName="config_option_changes" />
+                            </p:commandButton>
                         </h:panelGrid>
 
                         <p:dataTable rowIndexVar="i" id="tblChanges"
@@ -59,7 +66,9 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Option Key">
+                            <p:column headerText="Option Key"
+                                      filterBy="#{auditEventController.getOptionKey(ae)}"
+                                      filterMatchMode="contains">
                                 <h:outputText value="#{auditEventController.getOptionKey(ae)}" />
                             </p:column>
 

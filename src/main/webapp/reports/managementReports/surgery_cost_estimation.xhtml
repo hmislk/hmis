@@ -1,166 +1,326 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body>
-        <ui:composition template="/reports/index.xhtml">
-            <ui:define name="subcontent">
+<h:body>
+    <ui:composition template="/reports/index.xhtml">
+        <ui:define name="subcontent">
 
-                <h:form >
-                    <p:panel header="Surgery Cost Estimation Report" >
-                        <h:panelGrid columns="5" >
-                           
-                            <p:outputLabel value="From (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                                          
-                                           <p:spacer width="20"></p:spacer>
-                           
-                            <p:outputLabel value="To (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+            <h:form class="w-100">
+                <p:panel header="Surgery Cost Estimation Report" class="w-100">
+                    <h:panelGrid columns="6" class="w-100" columnClasses="form-label-col,form-field-col,spacer-col,form-label-col,form-field-col,spacer-col">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
+                            </h:panelGroup>
+
+                             <p:datePicker
+                                id="fromDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa mr-2"/> 
+                                <p:outputLabel value="To" for="toDate" class="m-3"/>
+                            </h:panelGroup>
                             
-                            <p:outputLabel value="Institution/Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdInstitution"
-                                value="#{reportController.institution}"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"></f:selectItems>
-                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                             <p:datePicker
+                                id="toDate"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
                             </p:selectOneMenu>
 
-                             <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
-                            <p:outputLabel value="Department">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmSite"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="Admit Doctor">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                value="#{reportController.referingDoctor}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{doctorController.items}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+                            <p:spacer width="20"/>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" for="phmDept" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDept"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
                             </p:selectOneMenu>
-                              <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="Surgeon" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select Surgeon"/>
+                            
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Patient MRN" for="acPatientMRN" class="m-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                id="acPatientMRN"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                placeholder="Type Patient MRN"
+                                >
+                            </p:autoComplete>
+
+                            <p:spacer width="20"/>
+
+                            <!-- Ward -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Admit" for="wdbdSelect" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="wdbdSelect" styleClass="w-100 form-control" filter="true">
+                                <f:selectItem itemLabel="All Doctor"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
+                            
+                            
+                            <!-- Surgens -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Surgen" for="surge" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="surge" styleClass="w-100 form-control" filter="true">
+                                <f:selectItem itemLabel="All Surgens"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
+                            
+                            <!-- Assistant Surgens -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Assistant Surgen" for="asurge" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="asurge" styleClass="w-100 form-control" filter="true">
+                                <f:selectItem itemLabel="All Assistant Surgens"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
+                            
+                             <!-- Surgury Status -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Surgury Status" for="staus" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="staus" styleClass="w-100 form-control" filter="true">
+                                <f:selectItem itemLabel="All Surgury Status"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
+                            
+                            <!-- Surgury Type -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Surgury Type" for="st" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="st" styleClass="w-100 form-control" filter="true">
+                                <f:selectItem itemLabel="All Surgury Type"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
+                                                        
+                            <!-- OT ROOM -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="OT Room" for="roomCategorySelect" class="m-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete id="roomCategorySelect" styleClass="w-100" inputStyleClass="w-100 form-control">
                                 
+                            </p:autoComplete>
+                            
+                            <p:spacer width="20"/>
+                            
+                               <!-- Surgury Name -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Surgury Name" for="surg" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="surg" styleClass="w-100 form-control" filter="true">
+                                <f:selectItem itemLabel="All Surgury Names"/>
                             </p:selectOneMenu>
-                            <p:outputLabel value="Assist Surgeon" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select Assist Surgeon"/>
-                                
-                            </p:selectOneMenu>
-                               <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="Surgery Status" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select Surgery Status"/>
+                           
+                           <p:spacer width="20"/>
+                           
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf46d;" styleClass="fa mr-2"/> 
+                                <p:outputLabel value="Type" for="summeryType" styleClass="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="summeryType" styleClass="w-100">
+                                <f:selectItem itemLabel="Select Report Type " itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Summary By Surgery Time" itemValue="bar"/>
+                                <f:selectItem itemLabel="Summary By Surgery" itemValue="line"/>
+                                <f:selectItem itemLabel="Summary By Surgon" itemValue="line"/>
+                                <f:selectItem itemLabel="Summary By OT Room" itemValue="line"/>
                             </p:selectOneMenu>
                             
-                            <p:outputLabel value="Surgery Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select Surgery Type"/>
-                            </p:selectOneMenu>
-                                <p:spacer width="20"></p:spacer>
-                                 <p:spacer width="20"></p:spacer>
-                                  <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
                             
-                            <p:commandButton ajax="false" value="Process" action="null" class="my-2">
-                            </p:commandButton>
-
                         </h:panelGrid>
+                    <!-- Action Buttons -->
+                    <div class="d-flex align-items-center my-3">
+                        <p:commandButton
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process"
+                                action="#"/>
+                        <p:commandButton class="ui-button-primary mx-1"
+                                         icon="fas fa-print"
+                                         ajax="false"
+                                         value="Print All">
+                            <p:printer target="printPanel"/>
+                        </p:commandButton>
+                        <p:commandButton
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download">
+                            <p:dataExporter type="xlsx"
+                                            target="detailWise"
+                                            fileName="Surgery_Cost_Estimation_Report.xlsx"/>
+                        </p:commandButton>
+                        <p:commandButton
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                action="#"/>
+                    </div>
+                        <p:panel header="Surgery Cost Estimate Chart">
+                        <p:chart  style="height:400px;">
+                           
+                        </p:chart>
+                        </p:panel>
+                    <!-- Summary Table -->
+                    <h:panelGroup id="printPanel">
+                        <p:panel header="Surgery Cost Estimation Report" styleClass="m-3">
+                            <p:dataTable id="detailWise"
+                                         value="#"
+                                         var="var"
+                                         rowIndexVar="n"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                        
+                                <p:column headerText="SL No" style="width: 100px">
+                                    <h:outputText value="#{n + 1}"/>
+                                </p:column>
 
+                                <p:column headerText="MRN">
+                                    <h:outputText value=""/>
+                                </p:column>
 
-                        <p:dataTable value="null" var="c">
-                            
-                            <p:column headerText="SL No" style="width: 100px" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="UHID" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Patient Name" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Admission No" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Propose Surgery" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Admission Date" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Bed No" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Surgon" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Surgery Type" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Service Name" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                           <p:column headerText="Room Charges" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Drug Charges" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            
-                            <p:column headerText="Total Hospital Charge" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            
-                            <p:column headerText="Professional Charge" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
+                                <p:column headerText="Patient Name">
+                                    <h:outputText value=""/>
+                                </p:column>
 
-                        </p:dataTable>
+                                <p:column headerText="Admission No">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Admission Date">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Bed No">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Surgeon">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Surgery Type">
+                                    <h:outputText value=""/>
+                                </p:column>
 
-                    </p:panel>
+                                <p:column headerText="Service Name">
+                                    <h:outputText value=""/>
+                                </p:column>
 
-                </h:form>
+                                <p:column headerText="Room Charges">
+                                    <h:outputText value=""/>
+                                </p:column>
 
-            </ui:define>
-        </ui:composition>
+                                <p:column headerText="Drug Charges">
+                                    <h:outputText value=""/>
+                                </p:column>
 
-    </h:body>
+                                <p:column headerText="Total Hospital Charge">
+                                    <h:outputText value=""/>
+                                </p:column>
+
+                                <p:column headerText="Professional Charge">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Total Amount">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Bill Discount">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Net Amount">
+                                    <h:outputText value=""/>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+
+</h:body>
 </html>

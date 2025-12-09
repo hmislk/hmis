@@ -342,6 +342,12 @@ public class PharmacyReportController implements Serializable {
     private double totalRetailValue;
     private double totalSaleValue;
 
+    // Maps to store remaining quantities and values for Good In Transit report
+    private Map<Long, Double> billItemRemainingQuantities = new HashMap<>();
+    private Map<Long, Double> billItemRemainingRetailValues = new HashMap<>();
+    private Map<Long, Double> billItemRemainingPurchaseValues = new HashMap<>();
+    private Map<Long, Double> billItemRemainingCostValues = new HashMap<>();
+
     //Constructor
     public PharmacyReportController() {
     }
@@ -2010,12 +2016,34 @@ public class PharmacyReportController implements Serializable {
                 .sum();
     }
 
+    public Double getTotalStockCorrectionVariance() {
+        if (stockCorrectionRows == null || stockCorrectionRows.isEmpty()) {
+            return 0.0;
+        }
+        return stockCorrectionRows.stream()
+                .mapToDouble(row -> {
+                    double qty = row.getQuantity() != null ? row.getQuantity().doubleValue() : 0.0;
+                    Double beforeAdj = row.getBeforeAdjustment();
+                    Double afterAdj = row.getAfterAdjustment();
+                    double before = beforeAdj != null ? beforeAdj : 0.0;
+                    double after = afterAdj != null ? afterAdj : 0.0;
+                    return (after - before) * qty;
+                })
+                .sum();
+    }
+
     public void processGrnCash() {
         List<BillTypeAtomic> btas = Arrays.asList(
                 BillTypeAtomic.PHARMACY_GRN,
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
         retrieveBillItems(btas, getNonCreditPaymentMethods());
+        totalCostValue = 0.0;
+        totalCostValue = billItems.stream()
+                .map(BillItem::getBillItemFinanceDetails)
+                .distinct()
+                .mapToDouble(details -> details.getTotalCost().doubleValue())
+                .sum();
     }
 
     public void processGrnCredit() {
@@ -2024,8 +2052,15 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
         retrieveBillItems(btas, getCreditPaymentMethods());
+
+        totalCostValue = 0.0;
+        totalCostValue = billItems.stream()
+                .map(BillItem::getBillItemFinanceDetails)
+                .distinct()
+                .mapToDouble(details -> details.getTotalCost().doubleValue())
+                .sum();
     }
-    
+
     private void retrieveBillItems(List<BillTypeAtomic> billTypeValue) {
         retrieveBillItemsCompleted(billTypeValue, null);
     }
@@ -2428,6 +2463,381 @@ public class PharmacyReportController implements Serializable {
         totalSaleValue = 0.0;
     }
 
+    private void retrieveBillWithoutReference(String billTypeField, Object billTypeValue) {
+        try {
+            netTotal = 0.0;
+            totalCostValue = 0.0;
+            totalPurchaseValue = 0.0;
+            totalRetailValue = 0.0;
+            totalSaleValue = 0.0;
+            // STEP 1: Fetch all parent bills (CostOfGoodSoldBillDTOs) in one query.
+            StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
+                    .append("b, ")
+                    .append("b.createdAt, ")
+                    .append("b.deptId, ")
+                    .append("b.netTotal, ")
+                    .append("b.paymentMethod, ")
+                    .append("b.discount, ")
+                    .append("b.id) ")
+                    .append("FROM Bill b ")
+                    .append("LEFT JOIN b.referenceBill rb ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND ").append(billTypeField).append(" IN :billTypes ")
+                    .append("AND (rb IS NULL OR rb.createdAt > :toDate) ")
+                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> billParams = new HashMap<>();
+            billParams.put("billTypes", billTypeValue);
+            billParams.put("fromDate", fromDate);
+            billParams.put("toDate", toDate);
+
+            addFilter(billJpql, billParams, "b.institution", "ins", institution);
+            addFilter(billJpql, billParams, "b.department.site", "sit", site);
+            addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+
+            // STEP 2: Collect all Bill IDs from the results.
+            List<Long> billIds = cogsBillDtos.stream()
+                    .map(CostOfGoodSoldBillDTO::getBillId)
+                    .collect(Collectors.toList());
+
+            // STEP 3: Fetch all associated BillItems in a single second query.
+            StringBuilder itemJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                    .append("bi.id, ")
+                    .append("bi.bill.id, ")
+                    .append("bi.bill.createdAt, ")
+                    .append("bi.item.name, ")
+                    .append("bi.item.code, ")
+                    .append("bi.bill.deptId, ")
+                    .append("pbi.itemBatch.batchNo, ")
+                    .append("bi.qty, ")
+                    .append("pbi.itemBatch.costRate, ")
+                    .append("pbi.itemBatch.purcahseRate, ")
+                    .append("pbi.retailRate, ")
+                    .append("bi.bill.netTotal) ")
+                    .append("FROM BillItem bi ")
+                    .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND bi.bill.id IN :billIds");
+
+            Map<String, Object> itemParams = new HashMap<>();
+            itemParams.put("billIds", billIds);
+
+            List<BillItemDTO> allBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+
+            // STEP 4: Group the fetched BillItems by their parent Bill's ID.
+            Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
+
+            // STEP 5: Attach the grouped items to their corresponding parent bills.
+            for (CostOfGoodSoldBillDTO billDto : cogsBillDtos) {
+                // 1. Accumulate the grand netTotal directly from the bill
+                netTotal += billDto.getNetTotal();
+
+                // Get the items associated with this specific bill
+                List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
+
+                if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
+
+                    // Populate the map as needed
+                    Map<Long, Object> billItemMap = itemsForThisBill.stream()
+                            .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
+                    billDto.setBillItemsMap(billItemMap);
+
+                    // For the list, simply set it
+                    billDto.setBillItems(itemsForThisBill);
+
+                    // Calculate Cost Value for THIS bill
+                    double billCost = itemsForThisBill.stream()
+                            .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getCostRate() * item.getQty())
+                            .sum();
+
+                    // Calculate Purchase Value for THIS bill
+                    double billPurchase = itemsForThisBill.stream()
+                            .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
+                            .sum();
+
+                    // 2. Accumulate the grand total for Cost
+                    totalCostValue += billCost;
+
+                    // 3. Accumulate the grand total for Purchase
+                    totalPurchaseValue += billPurchase;
+
+                    double billRetail = itemsForThisBill.stream()
+                            .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                            .sum();
+
+                    totalRetailValue += billRetail;
+
+                    // Calculate Sale Value for THIS bill (same as billRetail calculation)
+                    double billSaleValue = itemsForThisBill.stream()
+                            .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                            .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                            .sum();
+
+                    totalSaleValue += billSaleValue;
+                }
+            }
+
+            // STEP 6: Retrieve and subtract bills where referenceBill.createdAt < toDate
+            retrieveNegativeReferenceBills(billTypeField, billTypeValue);
+
+            // STEP 7: Retrieve and add PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills as positive values
+            retrievePreAddToStockBills();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            cogsBillDtos = new ArrayList<>();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+        }
+    }
+
+    private void retrieveNegativeReferenceBills(String billTypeField, Object billTypeValue) {
+        try {
+            // STEP 1: Fetch all bills where referenceBill.createdAt < toDate (these should be subtracted)
+            StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
+                    .append("b, ")
+                    .append("b.createdAt, ")
+                    .append("b.deptId, ")
+                    .append("b.netTotal, ")
+                    .append("b.paymentMethod, ")
+                    .append("b.discount, ")
+                    .append("b.id) ")
+                    .append("FROM Bill b ")
+                    .append("JOIN b.referenceBill rb ")  // INNER JOIN since we need referenceBill
+                    .append("WHERE b.retired = false ")
+                    .append("AND ").append(billTypeField).append(" IN :billTypes ")
+                    .append("AND (rb.createdAt > :fromDate AND rb.createdAt < :toDate) ")  // The key condition - reference bill created between fromDate and toDate
+                    .append("AND b.createdAt < :fromDate ");
+
+            Map<String, Object> billParams = new HashMap<>();
+            billParams.put("billTypes", billTypeValue);
+            billParams.put("fromDate", fromDate);
+            billParams.put("toDate", toDate);
+
+            addFilter(billJpql, billParams, "b.institution", "ins", institution);
+            addFilter(billJpql, billParams, "b.department.site", "sit", site);
+            addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            List<CostOfGoodSoldBillDTO> negativeBills = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+
+            // STEP 2: Collect all Bill IDs from the negative bills for fetching items
+            List<Long> negativeBillIds = negativeBills.stream()
+                    .map(CostOfGoodSoldBillDTO::getBillId)
+                    .collect(Collectors.toList());
+
+            // STEP 3: Fetch all associated BillItems for negative bills
+            if (!negativeBillIds.isEmpty()) {
+                StringBuilder itemJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                        .append("bi.id, ")
+                        .append("bi.bill.id, ")
+                        .append("bi.bill.createdAt, ")
+                        .append("bi.item.name, ")
+                        .append("bi.item.code, ")
+                        .append("bi.bill.deptId, ")
+                        .append("pbi.itemBatch.batchNo, ")
+                        .append("bi.qty, ")
+                        .append("pbi.itemBatch.costRate, ")
+                        .append("pbi.itemBatch.purcahseRate, ")
+                        .append("pbi.retailRate, ")
+                        .append("bi.bill.netTotal) ")
+                        .append("FROM BillItem bi ")
+                        .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                        .append("WHERE bi.retired = false ")
+                        .append("AND bi.bill.id IN :billIds");
+
+                Map<String, Object> itemParams = new HashMap<>();
+                itemParams.put("billIds", negativeBillIds);
+
+                List<BillItemDTO> allNegativeBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+
+                // STEP 4: Group the fetched BillItems by their parent Bill's ID
+                Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allNegativeBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
+
+                // STEP 5: Process negative bills and negate their contributions
+                for (CostOfGoodSoldBillDTO billDto : negativeBills) {
+                    // 1. Subtract the netTotal (negate it)
+                    double originalNetTotal = billDto.getNetTotal();
+                    billDto.setNetTotal(-originalNetTotal);
+                    netTotal += billDto.getNetTotal();  // This will subtract since it's negative
+
+                    // Get the items associated with this specific bill
+                    List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
+
+                    if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
+                        // Populate the map as needed
+                        Map<Long, Object> billItemMap = itemsForThisBill.stream()
+                                .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
+                        billDto.setBillItemsMap(billItemMap);
+
+                        // For the list, simply set it
+                        billDto.setBillItems(itemsForThisBill);
+
+                        // Calculate Cost Value for THIS bill (and subtract it)
+                        double billCost = itemsForThisBill.stream()
+                                .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getCostRate() * item.getQty())
+                                .sum();
+
+                        // Calculate Purchase Value for THIS bill (and subtract it)
+                        double billPurchase = itemsForThisBill.stream()
+                                .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getPurchaseRate() * item.getQty())
+                                .sum();
+
+                        // 2. Subtract the totals (negate them)
+                        totalCostValue -= billCost;
+                        totalPurchaseValue -= billPurchase;
+
+                        double billRetail = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                                .sum();
+
+                        totalRetailValue -= billRetail;
+
+                        // Calculate Sale Value for THIS bill (and subtract it)
+                        double billSaleValue = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> item.getRetailRate() * item.getQty())
+                                .sum();
+
+                        totalSaleValue -= billSaleValue;
+                    }
+                }
+
+                // STEP 6: Add negative bills to the main cogsBillDtos list
+                cogsBillDtos.addAll(negativeBills);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Don't reset the main lists here since this is additive to the main method
+        }
+    }
+
+    private void retrievePreAddToStockBills() {
+        try {
+            // STEP 1: Fetch all PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills (values taken as positive)
+            StringBuilder billJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.CostOfGoodSoldBillDTO(")
+                    .append("b, ")
+                    .append("b.createdAt, ")
+                    .append("b.deptId, ")
+                    .append("ABS(b.netTotal), ")  // Take absolute value to ensure positive
+                    .append("b.paymentMethod, ")
+                    .append("b.discount, ")
+                    .append("b.id) ")
+                    .append("FROM Bill b ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND b.billTypeAtomic = :preAddToStockType ")
+                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> billParams = new HashMap<>();
+            billParams.put("preAddToStockType", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            billParams.put("fromDate", fromDate);
+            billParams.put("toDate", toDate);
+
+            addFilter(billJpql, billParams, "b.institution", "ins", institution);
+            addFilter(billJpql, billParams, "b.department.site", "sit", site);
+            addFilter(billJpql, billParams, "b.department", "dep", department);
+
+            List<CostOfGoodSoldBillDTO> preAddToStockBills = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+
+            // STEP 2: Collect all Bill IDs from the pre-add-to-stock bills for fetching items
+            List<Long> preAddBillIds = preAddToStockBills.stream()
+                    .map(CostOfGoodSoldBillDTO::getBillId)
+                    .collect(Collectors.toList());
+
+            // STEP 3: Fetch all associated BillItems for pre-add-to-stock bills
+            if (!preAddBillIds.isEmpty()) {
+                StringBuilder itemJpql = new StringBuilder("SELECT new com.divudi.core.data.dto.BillItemDTO(")
+                        .append("bi.id, ")
+                        .append("bi.bill.id, ")
+                        .append("bi.bill.createdAt, ")
+                        .append("bi.item.name, ")
+                        .append("bi.item.code, ")
+                        .append("bi.bill.deptId, ")
+                        .append("pbi.itemBatch.batchNo, ")
+                        .append("ABS(bi.qty), ")  // Take absolute value of quantity
+                        .append("pbi.itemBatch.costRate, ")
+                        .append("pbi.itemBatch.purcahseRate, ")
+                        .append("pbi.retailRate, ")
+                        .append("ABS(bi.bill.netTotal)) ")  // Take absolute value of bill netTotal
+                        .append("FROM BillItem bi ")
+                        .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                        .append("WHERE bi.retired = false ")
+                        .append("AND bi.bill.id IN :billIds");
+
+                Map<String, Object> itemParams = new HashMap<>();
+                itemParams.put("billIds", preAddBillIds);
+
+                List<BillItemDTO> allPreAddBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+
+                // STEP 4: Group the fetched BillItems by their parent Bill's ID
+                Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allPreAddBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
+
+                // STEP 5: Process pre-add-to-stock bills and add their positive contributions
+                for (CostOfGoodSoldBillDTO billDto : preAddToStockBills) {
+                    // 1. Add the netTotal (already made positive in the query)
+                    netTotal += billDto.getNetTotal();
+
+                    // Get the items associated with this specific bill
+                    List<BillItemDTO> itemsForThisBill = itemsGroupedByBillId.get(billDto.getBillId());
+
+                    if (itemsForThisBill != null && !itemsForThisBill.isEmpty()) {
+                        // Populate the map as needed
+                        Map<Long, Object> billItemMap = itemsForThisBill.stream()
+                                .collect(Collectors.toMap(BillItemDTO::getId, item -> item, (item1, item2) -> item1));
+                        billDto.setBillItemsMap(billItemMap);
+
+                        // For the list, simply set it
+                        billDto.setBillItems(itemsForThisBill);
+
+                        // Calculate Cost Value for THIS bill (as positive)
+                        double billCost = itemsForThisBill.stream()
+                                .filter(item -> item.getCostRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getCostRate() * item.getQty()))
+                                .sum();
+
+                        // Calculate Purchase Value for THIS bill (as positive)
+                        double billPurchase = itemsForThisBill.stream()
+                                .filter(item -> item.getPurchaseRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getPurchaseRate() * item.getQty()))
+                                .sum();
+
+                        // 2. Add the totals (as positive values)
+                        totalCostValue += billCost;
+                        totalPurchaseValue += billPurchase;
+
+                        double billRetail = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getRetailRate() * item.getQty()))
+                                .sum();
+
+                        totalRetailValue += billRetail;
+
+                        // Calculate Sale Value for THIS bill (as positive)
+                        double billSaleValue = itemsForThisBill.stream()
+                                .filter(item -> item.getRetailRate() != null && item.getQty() != null)
+                                .mapToDouble(item -> Math.abs(item.getRetailRate() * item.getQty()))
+                                .sum();
+
+                        totalSaleValue += billSaleValue;
+                    }
+                }
+
+                // STEP 6: Add pre-add-to-stock bills to the main cogsBillDtos list
+                cogsBillDtos.addAll(preAddToStockBills);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Don't reset the main lists here since this is additive to the main method
+        }
+    }
+
     private void retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
         try {
             netTotal = 0.0;
@@ -2737,7 +3147,13 @@ public class PharmacyReportController implements Serializable {
         List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
         creditTypePaymentMethods.add(PaymentMethod.Credit);
         creditTypePaymentMethods.add(PaymentMethod.Staff);
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), creditTypePaymentMethods);
+
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+
+        retrieveBillItems("b.billTypeAtomic", billTypes, creditTypePaymentMethods);
     }
 
     public void processBhtIssue() {
@@ -2757,6 +3173,13 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
         );
         retrieveBill("b.billTypeAtomic", billTypes, nonCreditPaymentMethods);
+    }
+
+    public void processAddToStockBills() {
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+        );
+        retrieveBillWithoutReference("b.billTypeAtomic", billTypes);
     }
 
     public void processSaleCash() {
@@ -3395,48 +3818,101 @@ public class PharmacyReportController implements Serializable {
 
     public void processGoodInTransistReport() {
         reportTimerController.trackReportExecution(() -> {
-            Map<String, Object> parameters = new HashMap<>();
-            StringBuilder sql = new StringBuilder();
-            sql.append("select bi from BillItem bi"
-                    + " where bi.bill.billType = :bt"
-                    + " and bi.retired = :ret"
-                    + " and bi.bill.billedBill is null "
-                    + " and bi.bill.createdAt between :fd and :td"
-                    + " and bi.bill.toStaff is not null"
-                    + " and bi.bill.fromDepartment is not null");
+            if (reportType != null && reportType.equals("pending")) {
+                // Use BillItem-level logic for pending items (items with remaining quantity in transit)
+                billItems = findPendingGoodInTransitItems();
+            } else if (reportType != null && reportType.equals("accepted")) {
+                // Use BillItem-level logic for accepted items (received items)
+                billItems = findAcceptedGoodInTransitItems();
+            } else {
+                // Use original Bill-level logic for other report types
+                Map<String, Object> parameters = new HashMap<>();
+                StringBuilder sql = new StringBuilder();
+                sql.append("select bi from BillItem bi"
+                        + " where bi.bill.billType = :bt"
+                        + " and bi.retired = :ret"
+                        + " and bi.bill.billedBill is null "
+                        + " and bi.bill.createdAt between :fd and :td"
+                        + " and bi.bill.toStaff is not null"
+                        + " and bi.bill.fromDepartment is not null");
 
-            parameters.put("bt", BillType.PharmacyTransferIssue);
-            parameters.put("ret", false);
-            parameters.put("fd", fromDate);
-            parameters.put("td", toDate);
+                parameters.put("bt", BillType.PharmacyTransferIssue);
+                parameters.put("ret", false);
+                parameters.put("fd", fromDate);
+                parameters.put("td", toDate);
 
-            addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
-            addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
-            addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
-            addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
-            addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
-            addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
-            addFilter(sql, parameters, "bi.item", "item", item);
-            addFilter(sql, parameters, "bi.item.category", "cat", category);
-            addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
+                addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+                addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+                addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+                addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+                addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+                addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+                addFilter(sql, parameters, "bi.item", "item", item);
+                addFilter(sql, parameters, "bi.item.category", "cat", category);
+                addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
 
-            if (reportType != null) {
-                if (reportType.equals("pending")) {
-                    addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
-                } else if (reportType.equals("accepted")) {
-                    addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
-                } else if (reportType.equals("issueCancel")) {
-                    addFilter(sql, "and bi.bill.cancelled = true");
+                if (reportType != null) {
+                    if (reportType.equals("issueCancel")) {
+                        addFilter(sql, "and bi.bill.cancelled = true");
+                    }
+                    // "any" or null - no additional status filtering
                 }
-                // "any" or null - no additional status filtering
+
+                sql.append(" order by bi.bill.id ");
+
+                System.out.println("sql = " + sql);
+
+                billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             }
 
-            sql.append(" order by bi.bill.id ");
+            // Calculate totals for footer
+            totalRetailValue = 0.0;
+            totalPurchaseValue = 0.0;
+            totalCostValue = 0.0;
 
-            System.out.println("sql = " + sql);
-            System.out.println("parameters = " + parameters);
+            if (reportType != null && (reportType.equals("pending") || reportType.equals("accepted"))) {
+                // For pending and accepted items, use values from maps (remaining for pending, received for accepted)
+                for (BillItem billItem : billItems) {
+                    Long itemId = billItem.getId();
 
-            billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+                    Double remainingRetail = billItemRemainingRetailValues.get(itemId);
+                    if (remainingRetail != null) {
+                        totalRetailValue += remainingRetail;
+                    }
+
+                    Double remainingPurchase = billItemRemainingPurchaseValues.get(itemId);
+                    if (remainingPurchase != null) {
+                        totalPurchaseValue += remainingPurchase;
+                    }
+
+                    Double remainingCost = billItemRemainingCostValues.get(itemId);
+                    if (remainingCost != null) {
+                        totalCostValue += remainingCost;
+                    }
+                }
+            } else {
+                // For other report types, use total issued values from BIFD
+                for (BillItem billItem : billItems) {
+                    if (billItem.getBillItemFinanceDetails() != null) {
+                        BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+                        // Retail Value calculation using BIFD
+                        if (bifd.getValueAtRetailRate() != null) {
+                            totalRetailValue += Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                        }
+
+                        // Purchase Value calculation using BIFD
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            totalPurchaseValue += Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                        }
+
+                        // Cost Value calculation using BIFD
+                        if (bifd.getValueAtCostRate() != null) {
+                            totalCostValue += Math.abs(bifd.getValueAtCostRate().doubleValue());
+                        }
+                    }
+                }
+            }
 
             if (billItems.isEmpty()) {
                 pharmacyRows = new ArrayList<>();
@@ -3454,6 +3930,351 @@ public class PharmacyReportController implements Serializable {
                 pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
             }
         }, InventoryReports.GOOD_IN_TRANSIT_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Finds pending Good In Transit items using BillItem-level logic.
+     * Uses a two-query approach:
+     * 1. First query: Get all received quantities grouped by issue item ID
+     * 2. Second query: Get issue items and filter in Java for items with remaining quantity
+     *
+     * This approach correctly handles partially delivered items where (issued_qty - received_qty) > 0
+     */
+    /**
+     * Finds accepted Good In Transit items (received items).
+     * Queries receive BillItems (BillType.PharmacyTransferReceive) to show what was actually received/accepted.
+     *
+     * This method:
+     * 1. Queries receive BillItems with billTypeAtomic = PHARMACY_RECEIVE
+     * 2. Shows received quantities and values (positive, as stock comes in)
+     * 3. Applies filters to both receive bills and referenced issue bills
+     * 4. Stores received values in the same maps used for pending items
+     */
+    private List<BillItem> findAcceptedGoodInTransitItems() {
+        try {
+            // Clear previous calculations
+            billItemRemainingQuantities.clear();
+            billItemRemainingRetailValues.clear();
+            billItemRemainingPurchaseValues.clear();
+            billItemRemainingCostValues.clear();
+
+            // Query receive BillItems
+            StringBuilder receiveSql = new StringBuilder();
+            receiveSql.append("SELECT receiveBi ")
+                    .append("FROM BillItem receiveBi ")
+                    .append("WHERE receiveBi.bill.billTypeAtomic = :receiveType ")
+                    .append("AND receiveBi.bill.retired = false ")
+                    .append("AND receiveBi.retired = false ")
+                    .append("AND receiveBi.bill.cancelled = false ")
+                    .append("AND receiveBi.referanceBillItem IS NOT NULL ")
+                    .append("AND receiveBi.pharmaceuticalBillItem IS NOT NULL ")
+                    .append("AND receiveBi.bill.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> receiveParameters = new HashMap<>();
+            receiveParameters.put("receiveType", BillTypeAtomic.PHARMACY_RECEIVE);
+            receiveParameters.put("fromDate", fromDate);
+            receiveParameters.put("toDate", toDate);
+
+            // Apply filters for receive bills (to/destination side)
+            if (toInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.toInstitution = :tIns ");
+                receiveParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment.site = :tSite ");
+                receiveParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment = :tDept ");
+                receiveParameters.put("tDept", toDepartment);
+            }
+
+            // Apply filters for issue bills through referanceBillItem (from/source side)
+            if (fromInstitution != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.fromInstitution = :fIns ");
+                receiveParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.fromDepartment.site = :fSite ");
+                receiveParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.fromDepartment = :fDept ");
+                receiveParameters.put("fDept", fromDepartment);
+            }
+
+            // Apply item/category filters
+            if (item != null) {
+                receiveSql.append("AND receiveBi.item = :item ");
+                receiveParameters.put("item", item);
+            }
+            if (category != null) {
+                receiveSql.append("AND receiveBi.item.category = :cat ");
+                receiveParameters.put("cat", category);
+            }
+
+            // Apply user filter (from issue bill)
+            if (toStaff != null) {
+                receiveSql.append("AND receiveBi.referanceBillItem.bill.toStaff = :user ");
+                receiveParameters.put("user", toStaff);
+            }
+
+            receiveSql.append("ORDER BY receiveBi.bill.id");
+
+            System.out.println("findAcceptedGoodInTransitItems SQL = " + receiveSql);
+            System.out.println("findAcceptedGoodInTransitItems parameters = " + receiveParameters);
+
+            List<BillItem> receivedItems = billItemFacade.findByJpql(
+                    receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
+
+            // Store received quantities and values in maps
+            for (BillItem receiveItem : receivedItems) {
+                if (receiveItem.getPharmaceuticalBillItem() == null) {
+                    continue;
+                }
+
+                Double receivedQty = receiveItem.getPharmaceuticalBillItem().getQty();
+                if (receivedQty != null) {
+                    // Received quantities are positive (stock comes in)
+                    double receivedQtyAbs = Math.abs(receivedQty);
+                    billItemRemainingQuantities.put(receiveItem.getId(), receivedQtyAbs);
+                }
+
+                // Store received values from BillItemFinanceDetails
+                BillItemFinanceDetails bifd = receiveItem.getBillItemFinanceDetails();
+                if (bifd != null) {
+                    // Store retail value
+                    if (bifd.getValueAtRetailRate() != null) {
+                        double retailValue = Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                        billItemRemainingRetailValues.put(receiveItem.getId(), retailValue);
+                    }
+
+                    // Store purchase value
+                    if (bifd.getValueAtPurchaseRate() != null) {
+                        double purchaseValue = Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                        billItemRemainingPurchaseValues.put(receiveItem.getId(), purchaseValue);
+                    }
+
+                    // Store cost value
+                    if (bifd.getValueAtCostRate() != null) {
+                        double costValue = Math.abs(bifd.getValueAtCostRate().doubleValue());
+                        billItemRemainingCostValues.put(receiveItem.getId(), costValue);
+                    }
+                }
+            }
+
+
+            return receivedItems;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    private List<BillItem> findPendingGoodInTransitItems() {
+        try {
+            // Step 1: Get received quantities per issue item ID
+            Map<Long, Double> receivedQuantitiesMap = new HashMap<>();
+
+            StringBuilder receiveSql = new StringBuilder();
+            receiveSql.append("SELECT receiveBi.referanceBillItem.id, SUM(receiveBi.pharmaceuticalBillItem.qty) ")
+                    .append("FROM BillItem receiveBi ")
+                    .append("WHERE receiveBi.bill.billTypeAtomic = :receiveType ")
+                    .append("AND receiveBi.bill.retired = false ")
+                    .append("AND receiveBi.retired = false ")
+                    .append("AND receiveBi.referanceBillItem IS NOT NULL ")
+                    .append("AND receiveBi.pharmaceuticalBillItem IS NOT NULL ")
+                    .append("AND receiveBi.bill.createdAt <= :toDate ");
+
+            Map<String, Object> receiveParameters = new HashMap<>();
+            receiveParameters.put("receiveType", BillTypeAtomic.PHARMACY_RECEIVE);
+            receiveParameters.put("toDate", toDate);
+
+            // Apply filters for receive bills
+            if (fromInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.fromInstitution = :fIns ");
+                receiveParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment.site = :fSite ");
+                receiveParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.fromDepartment = :fDept ");
+                receiveParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                receiveSql.append("AND receiveBi.bill.toInstitution = :tIns ");
+                receiveParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment.site = :tSite ");
+                receiveParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                receiveSql.append("AND receiveBi.bill.toDepartment = :tDept ");
+                receiveParameters.put("tDept", toDepartment);
+            }
+
+            receiveSql.append("GROUP BY receiveBi.referanceBillItem.id");
+
+            List<Object[]> receiveResults = billItemFacade.findObjectsArrayByJpql(
+                    receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
+
+            // Populate the map with received quantities
+            for (Object[] result : receiveResults) {
+                Long issueItemId = (Long) result[0];
+                Object receivedQtyObj = result[1];
+                Double receivedQty = null;
+
+                if (receivedQtyObj instanceof BigDecimal) {
+                    receivedQty = ((BigDecimal) receivedQtyObj).doubleValue();
+                } else if (receivedQtyObj instanceof Double) {
+                    receivedQty = (Double) receivedQtyObj;
+                } else if (receivedQtyObj instanceof Number) {
+                    receivedQty = ((Number) receivedQtyObj).doubleValue();
+                }
+
+                if (issueItemId != null && receivedQty != null) {
+                    receivedQuantitiesMap.put(issueItemId, receivedQty);
+                }
+            }
+
+            // Step 2: Get issue items
+            StringBuilder issueSql = new StringBuilder();
+            issueSql.append("SELECT issueBi ")
+                    .append("FROM BillItem issueBi ")
+                    .append("WHERE issueBi.retired = false ")
+                    .append("AND issueBi.bill.retired = false ")
+                    .append("AND issueBi.bill.cancelled = false ")
+                    .append("AND issueBi.bill.billType = :bt ")
+                    .append("AND issueBi.bill.billedBill is null ")
+                    .append("AND issueBi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                    .append("AND issueBi.bill.toStaff is not null ")
+                    .append("AND issueBi.bill.fromDepartment is not null ")
+                    .append("AND issueBi.pharmaceuticalBillItem IS NOT NULL ");
+
+            Map<String, Object> issueParameters = new HashMap<>();
+            issueParameters.put("bt", BillType.PharmacyTransferIssue);
+            issueParameters.put("fromDate", fromDate);
+            issueParameters.put("toDate", toDate);
+
+            // Apply filters for issue bills
+            if (fromInstitution != null) {
+                issueSql.append("AND issueBi.bill.fromInstitution = :fIns ");
+                issueParameters.put("fIns", fromInstitution);
+            }
+            if (fromSite != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment.site = :fSite ");
+                issueParameters.put("fSite", fromSite);
+            }
+            if (fromDepartment != null) {
+                issueSql.append("AND issueBi.bill.fromDepartment = :fDept ");
+                issueParameters.put("fDept", fromDepartment);
+            }
+            if (toInstitution != null) {
+                issueSql.append("AND issueBi.bill.toInstitution = :tIns ");
+                issueParameters.put("tIns", toInstitution);
+            }
+            if (toSite != null) {
+                issueSql.append("AND issueBi.bill.toDepartment.site = :tSite ");
+                issueParameters.put("tSite", toSite);
+            }
+            if (toDepartment != null) {
+                issueSql.append("AND issueBi.bill.toDepartment = :tDept ");
+                issueParameters.put("tDept", toDepartment);
+            }
+            if (item != null) {
+                issueSql.append("AND issueBi.item = :item ");
+                issueParameters.put("item", item);
+            }
+            if (category != null) {
+                issueSql.append("AND issueBi.item.category = :cat ");
+                issueParameters.put("cat", category);
+            }
+            if (toStaff != null) {
+                issueSql.append("AND issueBi.bill.toStaff = :user ");
+                issueParameters.put("user", toStaff);
+            }
+
+            issueSql.append("ORDER BY issueBi.bill.id");
+
+            List<BillItem> allIssueItems = billItemFacade.findByJpql(
+                    issueSql.toString(), issueParameters, TemporalType.TIMESTAMP);
+
+            // Step 3: Filter items with remaining quantity in transit and calculate remaining values
+            List<BillItem> pendingItems = new ArrayList<>();
+
+            // Clear previous calculations
+            billItemRemainingQuantities.clear();
+            billItemRemainingRetailValues.clear();
+            billItemRemainingPurchaseValues.clear();
+            billItemRemainingCostValues.clear();
+
+            for (BillItem issueItem : allIssueItems) {
+                if (issueItem.getPharmaceuticalBillItem() == null) {
+                    continue;
+                }
+
+                Double issuedQty = issueItem.getPharmaceuticalBillItem().getQty();
+                if (issuedQty == null) {
+                    continue;
+                }
+
+                // Get received quantity for this issue item (default to 0 if not received)
+                Double receivedQty = receivedQuantitiesMap.getOrDefault(issueItem.getId(), 0.0);
+
+                // Calculate quantity in transit using absolute values
+                // Issue quantities are negative (stock goes out), receive quantities are positive (stock comes in)
+                double issuedQtyAbs = Math.abs(issuedQty);
+                double receivedQtyAbs = Math.abs(receivedQty);
+                double qtyInTransit = issuedQtyAbs - receivedQtyAbs;
+
+                // Only include if quantity in transit is positive (with tolerance for floating point)
+                if (qtyInTransit > 0.001) {
+                    pendingItems.add(issueItem);
+
+                    // Store remaining quantity
+                    billItemRemainingQuantities.put(issueItem.getId(), qtyInTransit);
+
+                    // Calculate remaining values proportionally
+                    // Formula: remainingValue = (remainingQty / issuedQty) * totalIssuedValue
+                    double proportionRemaining = qtyInTransit / issuedQtyAbs;
+
+                    BillItemFinanceDetails bifd = issueItem.getBillItemFinanceDetails();
+                    if (bifd != null) {
+                        // Calculate remaining retail value
+                        if (bifd.getValueAtRetailRate() != null) {
+                            double totalRetailValue = Math.abs(bifd.getValueAtRetailRate().doubleValue());
+                            double remainingRetailValue = totalRetailValue * proportionRemaining;
+                            billItemRemainingRetailValues.put(issueItem.getId(), remainingRetailValue);
+                        }
+
+                        // Calculate remaining purchase value
+                        if (bifd.getValueAtPurchaseRate() != null) {
+                            double totalPurchaseValue = Math.abs(bifd.getValueAtPurchaseRate().doubleValue());
+                            double remainingPurchaseValue = totalPurchaseValue * proportionRemaining;
+                            billItemRemainingPurchaseValues.put(issueItem.getId(), remainingPurchaseValue);
+                        }
+
+                        // Calculate remaining cost value
+                        if (bifd.getValueAtCostRate() != null) {
+                            double totalCostValue = Math.abs(bifd.getValueAtCostRate().doubleValue());
+                            double remainingCostValue = totalCostValue * proportionRemaining;
+                            billItemRemainingCostValues.put(issueItem.getId(), remainingCostValue);
+                        }
+                    }
+                }
+            }
+
+
+            return pendingItems;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     private List<ItemBatch> getItemBatchesByItems(List<Item> items) {
@@ -3775,6 +4596,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
             } else if ("grnDoc".equals(documentType)) {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -3817,7 +4639,7 @@ public class PharmacyReportController implements Serializable {
                 billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             } else if ("rateAdjustmentDoc".equals(documentType)) {
-                
+
 //                Rate adjustments should NOT be listed 
 //                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
 //                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
@@ -3833,6 +4655,7 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
 
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
@@ -3908,7 +4731,6 @@ public class PharmacyReportController implements Serializable {
             }
             if (amp != null) {
                 item = amp;
-                System.out.println("item = " + item);
                 jpql += "and s.item=:itm ";
                 m.put("itm", item);
             }
@@ -3916,7 +4738,7 @@ public class PharmacyReportController implements Serializable {
 //                jpql += " and s.department IS NOT NULL ";
 //            }
 
-            jpql += " order by s.createdAt ";
+            jpql += " order by s.id ";
             stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }, InventoryReports.STOCK_LEDGER_REPORT, sessionController.getLoggedUser());
     }
@@ -4055,6 +4877,7 @@ public class PharmacyReportController implements Serializable {
 
         // Order by item name
         jpql.append("ORDER BY i.name");
+        // Debug logging
 
         // Debug logging
         System.out.println("jpql = " + jpql.toString());
@@ -4064,7 +4887,6 @@ public class PharmacyReportController implements Serializable {
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("dtoRows.size() = " + dtoRows.size());
 
         rows = new ArrayList<>();
 
@@ -4270,6 +5092,7 @@ public class PharmacyReportController implements Serializable {
 
         // Order by item name
         jpql.append("ORDER BY i.name");
+        // Debug logging
 
         // Debug logging
         System.out.println("jpql = " + jpql.toString());
@@ -4279,7 +5102,6 @@ public class PharmacyReportController implements Serializable {
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("dtoRows.size() = " + dtoRows.size());
 
         rows = new ArrayList<>();
 
@@ -4355,7 +5177,6 @@ public class PharmacyReportController implements Serializable {
         List<StockHistory> histories = getStockLedgerHistories();
         if (histories == null || histories.isEmpty()) {
 
-            System.out.println("No stock ledger data available for the selected period");
             return;
         }
 
@@ -5117,7 +5938,6 @@ public class PharmacyReportController implements Serializable {
                 System.out.println("totals[0] = " + totals[0]);
                 System.out.println("totals[1] = " + totals[1]);
                 System.out.println("totals[2] = " + totals[2]);
-                System.out.println("Query: " + baseQuery.toString());
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -5134,7 +5954,68 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private Map<String, Double> retrievePreAddToStockBillsForValues() {
+        try {
+            // Query for PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills (values taken as absolute/positive)
+            Map<String, Object> preAddParams = new HashMap<>();
+            StringBuilder preAddQuery = new StringBuilder();
+            preAddQuery.append("SELECT ")
+                    .append("ABS(SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate)), ")  // Absolute value for purchase
+                    .append("ABS(SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate)), ")     // Absolute value for cost
+                    .append("ABS(SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate)) ") // Absolute value for retail
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic = :preAddToStockType ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            preAddParams.put("ret", false);
+            preAddParams.put("preAddToStockType", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            preAddParams.put("fd", fromDate);
+            preAddParams.put("td", toDate);
+
+            addFilter(preAddQuery, preAddParams, "bi.bill.institution", "ins", institution);
+            addFilter(preAddQuery, preAddParams, "bi.bill.department.site", "sit", site);
+            addFilter(preAddQuery, preAddParams, "bi.bill.department", "dep", department);
+            addFilter(preAddQuery, preAddParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+
+            preAddQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> preAddResults = facade.findRawResultsByJpql(preAddQuery.toString(), preAddParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> preAddResult = new HashMap<>();
+
+            if (preAddResults != null && !preAddResults.isEmpty()) {
+                Object[] preAddTotals = preAddResults.get(0);
+                // Return positive values (already made absolute in the query)
+                preAddResult.put("purchaseValue", preAddTotals[0] != null ? ((Number) preAddTotals[0]).doubleValue() : 0.0);
+                preAddResult.put("costValue", preAddTotals[1] != null ? ((Number) preAddTotals[1]).doubleValue() : 0.0);
+                preAddResult.put("retailValue", preAddTotals[2] != null ? ((Number) preAddTotals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrievePreAddToStockBillsForValues ===");
+                System.out.println("Bill Type: PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK");
+                System.out.println("preAdd totals[0] = " + preAddTotals[0] + " (positive: " + preAddResult.get("purchaseValue") + ")");
+                System.out.println("preAdd totals[1] = " + preAddTotals[1] + " (positive: " + preAddResult.get("costValue") + ")");
+                System.out.println("preAdd totals[2] = " + preAddTotals[2] + " (positive: " + preAddResult.get("retailValue") + ")");
+            } else {
+                preAddResult.put("purchaseValue", 0.0);
+                preAddResult.put("costValue", 0.0);
+                preAddResult.put("retailValue", 0.0);
+            }
+            return preAddResult;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
     public Map<String, Double> retrievePurchaseAndCostValues(List<BillTypeAtomic> billTypeValue) {
+        return retrievePurchaseAndCostValuesWithComplete(billTypeValue, null);
+    }
+
+    public Map<String, Double> retrievePurchaseAndCostValuesWithoutReference(List<BillTypeAtomic> billTypeValue) {
         try {
             Map<String, Object> commonParams = new HashMap<>();
             StringBuilder baseQuery = new StringBuilder();
@@ -5143,8 +6024,10 @@ public class PharmacyReportController implements Serializable {
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
+                    .append("LEFT JOIN bi.bill.referenceBill rb ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND (rb IS NULL OR rb.createdAt > :td) ")
                     .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
 
             commonParams.put("ret", false);
@@ -5166,12 +6049,140 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
                 result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrievePurchaseAndCostValuesWithoutReference ===");
+                System.out.println("Bill Types: " + billTypeValue);
+                System.out.println("totals[0] = " + totals[0]);
+                System.out.println("totals[1] = " + totals[1]);
+                System.out.println("totals[2] = " + totals[2]);
+            } else {
+                result.put("purchaseValue", 0.0);
+                result.put("costValue", 0.0);
+                result.put("retailValue", 0.0);
+            }
+
+            // Add negative reference bills (where referenceBill.createdAt < toDate)
+            Map<String, Double> negativeValues = retrieveNegativeReferenceBillsForValues(billTypeValue);
+            result.put("purchaseValue", result.get("purchaseValue") + negativeValues.get("purchaseValue"));
+            result.put("costValue", result.get("costValue") + negativeValues.get("costValue"));
+            result.put("retailValue", result.get("retailValue") + negativeValues.get("retailValue"));
+
+            // Add PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK bills as positive values
+            Map<String, Double> preAddValues = retrievePreAddToStockBillsForValues();
+            result.put("purchaseValue", result.get("purchaseValue") + preAddValues.get("purchaseValue"));
+            result.put("costValue", result.get("costValue") + preAddValues.get("costValue"));
+            result.put("retailValue", result.get("retailValue") + preAddValues.get("retailValue"));
+
+            return result;
+
+        } catch (Exception e) {
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
+    private Map<String, Double> retrieveNegativeReferenceBillsForValues(List<BillTypeAtomic> billTypeValue) {
+        try {
+            // Query for bills where referenceBill.createdAt < toDate (these should be subtracted)
+            Map<String, Object> negativeParams = new HashMap<>();
+            StringBuilder negativeQuery = new StringBuilder();
+            negativeQuery.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("JOIN bi.bill.referenceBill rb ")  // INNER JOIN since we need referenceBill
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND (rb.createdAt > :fd AND rb.createdAt < :td) ")  // The key condition - reference bill created between fromDate and toDate
+                    .append("AND bi.bill.createdAt < :fd ");
+
+            negativeParams.put("ret", false);
+            negativeParams.put("billTypes", billTypeValue);
+            negativeParams.put("fd", fromDate);
+            negativeParams.put("td", toDate);
+
+            addFilter(negativeQuery, negativeParams, "bi.bill.institution", "ins", institution);
+            addFilter(negativeQuery, negativeParams, "bi.bill.department.site", "sit", site);
+            addFilter(negativeQuery, negativeParams, "bi.bill.department", "dep", department);
+            addFilter(negativeQuery, negativeParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+
+            negativeQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> negativeResults = facade.findRawResultsByJpql(negativeQuery.toString(), negativeParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> negativeResult = new HashMap<>();
+
+            if (negativeResults != null && !negativeResults.isEmpty()) {
+                Object[] negativeTotals = negativeResults.get(0);
+                // Return negative values to be subtracted from the main totals
+                negativeResult.put("purchaseValue", negativeTotals[0] != null ? -((Number) negativeTotals[0]).doubleValue() : 0.0);
+                negativeResult.put("costValue", negativeTotals[1] != null ? -((Number) negativeTotals[1]).doubleValue() : 0.0);
+                negativeResult.put("retailValue", negativeTotals[2] != null ? -((Number) negativeTotals[2]).doubleValue() : 0.0);
+                System.out.println("=== DEBUG retrieveNegativeReferenceBillsForValues ===");
+                System.out.println("Bill Types: " + billTypeValue);
+                System.out.println("negative totals[0] = " + negativeTotals[0] + " (negated: " + negativeResult.get("purchaseValue") + ")");
+                System.out.println("negative totals[1] = " + negativeTotals[1] + " (negated: " + negativeResult.get("costValue") + ")");
+                System.out.println("negative totals[2] = " + negativeTotals[2] + " (negated: " + negativeResult.get("retailValue") + ")");
+            } else {
+                negativeResult.put("purchaseValue", 0.0);
+                negativeResult.put("costValue", 0.0);
+                negativeResult.put("retailValue", 0.0);
+            }
+            return negativeResult;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, Double> errorResult = new HashMap<>();
+            errorResult.put("purchaseValue", 0.0);
+            errorResult.put("costValue", 0.0);
+            errorResult.put("retailValue", 0.0);
+            return errorResult;
+        }
+    }
+
+    public Map<String, Double> retrievePurchaseAndCostValuesWithComplete(List<BillTypeAtomic> billTypeValue, Boolean includeOnlyCompleted) {
+        try {
+            Map<String, Object> commonParams = new HashMap<>();
+            StringBuilder baseQuery = new StringBuilder();
+            baseQuery.append("SELECT ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("FROM BillItem bi ")
+                    .append("WHERE bi.retired = :ret ")
+                    .append("AND bi.bill.billTypeAtomic IN :billTypes ")
+                    .append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+
+            commonParams.put("ret", false);
+            commonParams.put("billTypes", billTypeValue);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            if (includeOnlyCompleted != null) {
+                addFilter(baseQuery, commonParams, "bi.bill.completed", "completed", includeOnlyCompleted);
+            }
+
+            addFilter(baseQuery, commonParams, "bi.bill.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "bi.bill.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "bi.bill.department", "dep", department);
+            addFilter(baseQuery, commonParams, "bi.pharmaceuticalBillItem.itemBatch.item", "itm", item);
+            baseQuery.append(" ORDER BY bi.bill.createdAt");
+            List<Object[]> results = facade.findRawResultsByJpql(baseQuery.toString(), commonParams, TemporalType.TIMESTAMP);
+
+            Map<String, Double> result = new HashMap<>();
+
+            if (results != null && !results.isEmpty()) {
+                Object[] totals = results.get(0);
+                result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
+                result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
+                result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
                 System.out.println("=== DEBUG retrievePurchaseAndCostValues (List<BillTypeAtomic>, List<PaymentMethod>) ===");
                 System.out.println("Bill Types: " + billTypeValue);
                 System.out.println("totals[0] = " + totals[0]);
                 System.out.println("totals[1] = " + totals[1]);
                 System.out.println("totals[2] = " + totals[2]);
-                System.out.println("Query: " + baseQuery.toString());
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -5206,6 +6217,7 @@ public class PharmacyReportController implements Serializable {
             calculateSaleCreditValue();
             calculateBhtIssueValue();
             calculateSaleWithoutCreditPaymentMethod();
+            calculateAddToStockBills();
 
             Map<String, Double> calculatedClosingStockByCogsRowValues = calculateClosingStockValueByCalculatedRows();
             calculateClosingStockRow();
@@ -5282,7 +6294,7 @@ public class PharmacyReportController implements Serializable {
             btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
             btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
             btas.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
-            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValues(btas);
+            Map<String, Double> stockConsumptions = retrievePurchaseAndCostValuesWithComplete(btas, true);
             cogsRows.put("Stock Consumption", stockConsumptions);
 
         } catch (Exception e) {
@@ -5480,6 +6492,7 @@ public class PharmacyReportController implements Serializable {
         try {
             List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
             creditTypePaymentMethods.add(PaymentMethod.Credit);
+            creditTypePaymentMethods.add(PaymentMethod.Staff);
 
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.PHARMACY_RETAIL_SALE,
@@ -5525,6 +6538,20 @@ public class PharmacyReportController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating sale without credit payment method value");
+        }
+    }
+
+    private void calculateAddToStockBills() {
+        try {
+            List<BillTypeAtomic> billTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+            );
+
+            Map<String, Double> addToStockBillsValues = retrievePurchaseAndCostValuesWithoutReference(billTypes);
+            cogsRows.put("Add to Stock Bills", addToStockBillsValues);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating add to stock bills value");
         }
     }
 
@@ -6168,7 +7195,6 @@ public class PharmacyReportController implements Serializable {
         System.out.println("amp = " + amp);
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             jpql.append("and sh.itemBatch.item=:itm ");
             params.put("itm", item);
         }
@@ -6180,7 +7206,6 @@ public class PharmacyReportController implements Serializable {
         jpql.append("order by sh.itemBatch.item.name");
 
         System.out.println("jpql.toString() = " + jpql.toString());
-        System.out.println("params = " + params);
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -6199,7 +7224,6 @@ public class PharmacyReportController implements Serializable {
         }
 
         for (Long shid : ids) {
-            System.out.println("shid = " + shid);
             PharmacyRow pr = new PharmacyRow();
             pr.setId(shid);
             pr.setStockHistory(facade.find(shid));
@@ -6312,7 +7336,6 @@ public class PharmacyReportController implements Serializable {
 
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
@@ -6726,7 +7749,6 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
@@ -6821,7 +7843,6 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
@@ -6914,7 +7935,6 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
@@ -7831,5 +8851,37 @@ public class PharmacyReportController implements Serializable {
 
     public void setCogsBillDtos(List<CostOfGoodSoldBillDTO> cogsBillDtos) {
         this.cogsBillDtos = cogsBillDtos;
+    }
+
+    public Map<Long, Double> getBillItemRemainingQuantities() {
+        return billItemRemainingQuantities;
+    }
+
+    public void setBillItemRemainingQuantities(Map<Long, Double> billItemRemainingQuantities) {
+        this.billItemRemainingQuantities = billItemRemainingQuantities;
+    }
+
+    public Map<Long, Double> getBillItemRemainingRetailValues() {
+        return billItemRemainingRetailValues;
+    }
+
+    public void setBillItemRemainingRetailValues(Map<Long, Double> billItemRemainingRetailValues) {
+        this.billItemRemainingRetailValues = billItemRemainingRetailValues;
+    }
+
+    public Map<Long, Double> getBillItemRemainingPurchaseValues() {
+        return billItemRemainingPurchaseValues;
+    }
+
+    public void setBillItemRemainingPurchaseValues(Map<Long, Double> billItemRemainingPurchaseValues) {
+        this.billItemRemainingPurchaseValues = billItemRemainingPurchaseValues;
+    }
+
+    public Map<Long, Double> getBillItemRemainingCostValues() {
+        return billItemRemainingCostValues;
+    }
+
+    public void setBillItemRemainingCostValues(Map<Long, Double> billItemRemainingCostValues) {
+        this.billItemRemainingCostValues = billItemRemainingCostValues;
     }
 }

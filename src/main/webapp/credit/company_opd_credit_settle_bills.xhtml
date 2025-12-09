@@ -149,47 +149,10 @@
 
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                filter="true"
-                                style="width: 400px;"
-                                filterMatchMode="contains"
-                                id="billTypeAtomic"
-                                value="#{searchController.billTypeAtomic}" >
-                                <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems
-                                    var="billTypeAtomic"
-                                    itemLabel="#{billTypeAtomic.label}"
-                                    itemValue="#{billTypeAtomic}"
-                                    value="#{enumController.billTypesAtomic}" ></f:selectItems>
-                            </p:selectOneMenu>
-
                             <p:spacer ></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billType}" >
-                                <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems
-                                    var="billType"
-                                    itemLabel="#{billType.label}"
-                                    itemValue="#{billType}"
-                                    value="#{enumController.billTypes}" ></f:selectItems>
-                            </p:selectOneMenu>
                             <p:spacer ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Class Type" for="billClass" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu id="billClass" class="w-100  "  value="#{searchController.billClassType}" >
-                                <f:selectItem itemLabel="All Class Types" ></f:selectItem>
-                                <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
-                            </p:selectOneMenu>
+
 
                         </h:panelGrid>
 
@@ -233,34 +196,35 @@
                                     headerText="Bill No"
                                     sortBy="#{bill.deptId}"
                                     filterBy="#{bill.deptId}"
-                                    filterMatchMode="contains" >
+                                    filterMatchMode="contains"
+                                    rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsBillNoVisible}">
                                     <h:outputLabel value="#{bill.deptId}"/>
                                 </p:column>
 <!--                                <p:column headerText="Bill Class" >
                                     <h:outputLabel value="#{bill.billClass}"/>
                                 </p:column>-->
-                                <p:column headerText="Bill Type" >
+                                <p:column headerText="Bill Type" rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsBillTypeVisible}">
                                     <h:outputLabel value="#{bill.billTypeAtomic.label}"/>
                                 </p:column>
-                                <p:column headerText="Payment Method" >
+                                <p:column headerText="Payment Method" rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsPaymentMethodVisible}">
                                     <h:outputLabel value="#{bill.paymentMethod}"/>
                                 </p:column>
-                                <p:column headerText="Date/Time">
+                                <p:column headerText="Date/Time" rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsDateTimeVisible}">
                                     <p:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="User">
+                                <p:column headerText="User" rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsUserVisible}">
                                     <h:outputText value="#{bill.creater.name}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Status" exportable="false">
+                                <p:column headerText="Status" exportable="false" rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsStatusVisible}">
                                     <h:panelGroup>
                                         <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{bill.retired}" />
                                         <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />
                                         <p:badge value="Returned" styleClass="ui-badge-warning" rendered="#{bill.refunded}" />
                                     </h:panelGroup>
                                 </p:column>
-                                <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                <p:column headerText="Net Value" styleClass="averageNumericColumn" rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsNetValueVisible}">
                                     <h:outputLabel value="#{bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -271,40 +235,65 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Action" exportable="false" styleClass="alignTop">
+                                <p:column headerText="Action" exportable="false" styleClass="alignTop" rendered="#{userSettingsController.creditCompanyOpdCreditSettleBillsActionVisible}">
                                     <p:commandButton
                                         value="View"
                                         icon="fa fa-eye"
                                         class="m-1 ui-button-info"
                                         style="width: 100px;"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.id)}"
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
-
-                                    <p:commandButton
-                                        value="Manage"
-                                        icon="fa fa-tools"
-                                        class="m-1 ui-button-warning"
-                                        style="width: 100px;"
-                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}"
-                                        ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
-                                    </p:commandButton>
-
                                     <p:commandButton
                                         value="Admin"
                                         icon="fa fa-shield-alt"
                                         class="m-1 ui-button-danger"
                                         style="width: 100px;"
-                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}"
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillTypeByBillId(bill.id)}"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
                                 </p:column>
 
                             </p:dataTable>
+
+                            <!-- Subtle Column Visibility Controls -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+                                    <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsBillNoVisible}" itemLabel="Bill No">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsBillTypeVisible}" itemLabel="Bill Type">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsPaymentMethodVisible}" itemLabel="Payment Method">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsDateTimeVisible}" itemLabel="Date/Time">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsUserVisible}" itemLabel="User">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsStatusVisible}" itemLabel="Status">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsNetValueVisible}" itemLabel="Net Value">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.creditCompanyOpdCreditSettleBillsActionVisible}" itemLabel="Action">
+                                            <p:ajax update="tblBills" />
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                </p:panel>
+                            </div>
 
                         </div>
 

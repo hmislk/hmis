@@ -92,7 +92,6 @@ public class TransferIssueDirectController implements Serializable {
     private Department toDepartment;
 
     public TransferIssueDirectController() {
-        System.out.println("TransferIssueDirectController CONSTRUCTOR called");
     }
 
     /**
@@ -411,7 +410,6 @@ public class TransferIssueDirectController implements Serializable {
         }
         System.out.println("getIssuedBill() = " + getIssuedBill());
         getIssuedBill().setToDepartment(getToDepartment());
-        System.out.println("getIssuedBill().getToDepartment() = " + getIssuedBill().getToDepartment());
         getIssuedBill().setToInstitution(getToDepartment().getInstitution());
         getIssuedBill().setFromInstitution(sessionController.getInstitution());
         getIssuedBill().setFromDepartment(sessionController.getDepartment());

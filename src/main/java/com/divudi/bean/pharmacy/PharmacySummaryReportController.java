@@ -289,6 +289,13 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        );
+        reportViewType = ReportViewType.BY_BILL;
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
 
@@ -346,6 +353,12 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void processDailyStockBalanceReport() {
+        System.out.println(">>> OLD REPORT processDailyStockBalanceReport START <<<");
+        System.out.println("OLD REPORT - From Date: " + fromDate);
+        System.out.println("OLD REPORT - Department: " + department);
+        System.out.println("OLD REPORT - Department ID: " + (department != null ? department.getId() : "null"));
+        System.out.println("OLD REPORT - Department Name: " + (department != null ? department.getName() : "null"));
+
 //        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
@@ -355,7 +368,7 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        
+
 //        Report can be generated for today as well
 //        Date today = new Date();
 //        if (!fromDate.before(today)) {
@@ -366,8 +379,10 @@ public class PharmacySummaryReportController implements Serializable {
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
+        // Calculate Opening Stock Value at Retail Rate
 
         // Calculate Opening Stock Value at Retail Rate
+        System.out.println("OLD REPORT - Calculating opening stock...");
         double openingStockValueAtRetailRate = calculateStockValueAtRetailRate(fromDate, department);
         dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
@@ -1611,7 +1626,6 @@ public class PharmacySummaryReportController implements Serializable {
 
         for (Bill b : bills) {
             if (b == null) {
-                System.out.println("Skipping null bill");
                 skippedBills++;
                 continue;
             }
@@ -1623,7 +1637,6 @@ public class PharmacySummaryReportController implements Serializable {
                     .map(Bill::getBillTypeAtomic)
                     .orElse(null);
             if (bta == null || bta.getBillCategory() == null) {
-                System.out.println("  Skipping - No BillTypeAtomic or BillCategory");
                 skippedBills++;
                 continue;
             }
@@ -1631,7 +1644,6 @@ public class PharmacySummaryReportController implements Serializable {
             System.out.println("  Bill Type: " + bta + ", Category: " + bc);
 
             if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
-                System.out.println("  No bill items found for this bill");
                 skippedBills++;
                 continue;
             }
@@ -1645,7 +1657,6 @@ public class PharmacySummaryReportController implements Serializable {
             for (BillItem bi : b.getBillItems()) {
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 if (pbi == null) {
-                    System.out.println("    Skipping item - No PharmaceuticalBillItem");
                     skippedItems++;
                     continue;
                 }
@@ -1710,13 +1721,13 @@ public class PharmacySummaryReportController implements Serializable {
                     double lineTotal = (grossValue > 0) ? factor * grossValue : factor * rate * qty;
                     bifd.setLineGrossTotal(BigDecimal.valueOf(lineTotal));
                 }
+                // Debug output for Purchase Orders
 
                 // Debug output for Purchase Orders
                 System.out.println("      BIFD values set:");
                 System.out.println("      lineGrossRate: " + bifd.getLineGrossRate());
                 System.out.println("      quantity: " + bifd.getQuantity());
                 System.out.println("      freeQuantity: " + bifd.getFreeQuantity());
-                System.out.println("      lineGrossTotal: " + bifd.getLineGrossTotal());
 
                 // Totals
                 saleValue += itemValue;
@@ -1726,7 +1737,6 @@ public class PharmacySummaryReportController implements Serializable {
                 processedItems++;
             }
 
-            System.out.println("  Completed bill with totals - Sale: " + saleValue + ", Purchase: " + purchaseValue + ", Cost: " + costValue);
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();
             if (bfd == null) {
@@ -1766,7 +1776,6 @@ public class PharmacySummaryReportController implements Serializable {
         System.out.println("Bills processed: " + processedBills);
         System.out.println("Bills skipped: " + skippedBills);
         System.out.println("Items processed: " + processedItems);
-        System.out.println("Items skipped: " + skippedItems);
     }
 
     public void addFinancialDetailsForPharmacyGRNsFromBillItemData() {
@@ -1790,7 +1799,6 @@ public class PharmacySummaryReportController implements Serializable {
 
         for (Bill b : bills) {
             if (b == null) {
-                System.out.println("Skipping null bill");
                 skippedBills++;
                 continue;
             }
@@ -1802,7 +1810,6 @@ public class PharmacySummaryReportController implements Serializable {
                     .map(Bill::getBillTypeAtomic)
                     .orElse(null);
             if (bta == null || bta.getBillCategory() == null) {
-                System.out.println("  Skipping - No BillTypeAtomic or BillCategory");
                 skippedBills++;
                 continue;
             }
@@ -1810,7 +1817,6 @@ public class PharmacySummaryReportController implements Serializable {
             System.out.println("  Bill Type: " + bta + ", Category: " + bc);
 
             if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
-                System.out.println("  No bill items found for this bill");
                 skippedBills++;
                 continue;
             }
@@ -1824,12 +1830,10 @@ public class PharmacySummaryReportController implements Serializable {
             for (BillItem bi : b.getBillItems()) {
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 if (pbi == null) {
-                    System.out.println("    Skipping item - No PharmaceuticalBillItem");
                     skippedItems++;
                     continue;
                 }
                 if (pbi.getItemBatch() == null) {
-                    System.out.println("    Skipping item " + bi.getItem().getName() + " - No ItemBatch");
                     skippedItems++;
                     continue;
                 }
@@ -1947,6 +1951,7 @@ public class PharmacySummaryReportController implements Serializable {
                 if (bifd.getTotalCost() == null) {
                     bifd.setTotalCost(BigDecimal.valueOf(Math.abs(itemCostValue)));
                 }
+                // Debug output for GRNs
 
                 // Debug output for GRNs
                 System.out.println("      Calculated values:");
@@ -1963,7 +1968,6 @@ public class PharmacySummaryReportController implements Serializable {
                 System.out.println("        lineDiscountRate: " + bifd.getLineDiscountRate());
                 System.out.println("        retailSaleRate: " + bifd.getRetailSaleRate());
                 System.out.println("        lineNetTotal: " + bifd.getLineNetTotal());
-                System.out.println("        totalCost: " + bifd.getTotalCost());
 
                 // Totals - for GRNs, all totals are positive (inventory values)
                 saleValue += Math.abs(itemSaleValue);
@@ -1973,7 +1977,6 @@ public class PharmacySummaryReportController implements Serializable {
                 processedItems++;
             }
 
-            System.out.println("  Completed bill with totals - Sale: " + saleValue + ", Purchase: " + purchaseValue + ", Cost: " + costValue);
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();
             if (bfd == null) {
@@ -2013,7 +2016,6 @@ public class PharmacySummaryReportController implements Serializable {
         System.out.println("Bills processed: " + processedBills);
         System.out.println("Bills skipped: " + skippedBills);
         System.out.println("Items processed: " + processedItems);
-        System.out.println("Items skipped: " + skippedItems);
     }
 
     public void calPharmacyIncomeAndCostReportByBill() {

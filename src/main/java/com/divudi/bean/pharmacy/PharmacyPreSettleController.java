@@ -74,11 +74,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 /**
  *
@@ -108,6 +114,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     FinancialTransactionController financialTransactionController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 ////////////////////////
     @EJB
     DiscountSchemeValidationService discountSchemeValidationService;
@@ -171,6 +179,116 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     double total;
     Double editingQty;
     private Token token;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_bill_pre_settle");
+        metadata.setPageName("Pharmacy Bill Accept Payment (Pre-Settle)");
+        metadata.setDescription("Accept payment for pharmacy retail bills created in sale for cashier mode");
+        metadata.setControllerClass("PharmacyPreSettleController");
+
+        // Configuration Options from XHTML
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable token system in sale for cashier",
+            "Enables token number display and token system functionality for pharmacy retail sales",
+            "Lines 240, 246, 353, 354 (XHTML): Token panel visibility and navigation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy accept payment for sale for cashier bill with Items is PosPaper",
+            "Uses POS paper format with items for pharmacy retail sale bills",
+            "Line 365 (XHTML): Bill preview format selection",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3",
+            "Uses FiveFiveCustom3 format for pharmacy retail sale bills",
+            "Line 371 (XHTML): Bill preview format selection",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper",
+            "Uses POS header paper format for pharmacy retail sale bills",
+            "Line 377 (XHTML): Bill preview format selection",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options from Controller
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy billing can be done after shift start",
+            "Allows pharmacy billing operations to be performed after the shift has started",
+            "Lines 1507, 1596, 1987 (Controller): Shift timing validation",
+            OptionScope.APPLICATION
+        ));
+
+        // Cashier Settlement Bill Number Generation Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Generate Separate Bill Numbers for Cashier Settlement - Pharmacy",
+            "Master switch to enable separate bill number generation for cashier settlements. When enabled, cashier settlement bills get new bill numbers instead of copying from the original pharmacy bill",
+            "Line 720 (Controller): Primary control for bill number generation strategy",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Department-specific numbering format: CSB/DEPT/INS/YY/NNNNNN. Each department maintains its own bill number sequence",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixDeptInsYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Institution-first numbering format: CSB/INS/DEPT/YY/NNNNNN. Same sequence as strategy 1 but different format",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixInsDeptYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number",
+            "Institution-wide numbering format: CSB/INS/YY/NNNNNN. Single sequence across all departments within the institution",
+            "BillNumberGenerator: cashierSettlementBillNumberGeneratorWithPrefixInsYear()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cashier Settlement Bill Number Custom Prefix",
+            "Custom prefix for cashier settlement bill numbers. Default is 'CS'. This prefix is used when no specific bill suffix is configured",
+            "BillNumberGenerator: Custom prefix configuration for all cashier settlement methods",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER",
+            "Bill type suffix specifically for cashier settlement bills. Default is 'CSB' (Cashier Settlement Bill)",
+            "BillNumberGenerator: Bill suffix configuration for atomic bill type",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page settings",
+            "Lines 22-32 (XHTML): Config button visibility"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public double calculatRemainForMultiplePaymentTotal() {
 
@@ -641,8 +759,93 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         getSaleBill().setReferenceBill(getPreBill());
 
-        getSaleBill().setInsId(getPreBill().getInsId());
-        getSaleBill().setDeptId(getPreBill().getDeptId());
+        // Check configuration for separate bill number generation
+        boolean generateSeparateBillNumbers = configOptionApplicationController.getBooleanValueByKey(
+            "Generate Separate Bill Numbers for Cashier Settlement - Pharmacy", false);
+
+        if (generateSeparateBillNumbers) {
+            try {
+                // Handle Department ID generation (following PharmacySaleForCashierController pattern)
+                String deptId;
+                BillTypeAtomic billTypeAtomic = BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+
+                if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+                    deptId = billNumberBean.cashierSettlementBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                    deptId = billNumberBean.cashierSettlementBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number", false)) {
+                    deptId = billNumberBean.cashierSettlementBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else {
+                    // Fallback: copy from PreBill
+                    deptId = getPreBill().getDeptId();
+                }
+
+                // Handle Institution ID generation (following PharmacySaleForCashierController pattern)
+                String insId;
+                if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Year + Yearly Number", false)) {
+                    insId = billNumberBean.cashierSettlementInsIdGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                            getSaleBill().getDepartment(), billTypeAtomic);
+                } else {
+                    // Check if department strategy is enabled
+                    if (configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||
+                        configOptionApplicationController.getBooleanValueByKey("Cashier Settlement Bill Number Strategy - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+                        insId = deptId; // Use same number as department to avoid consuming counter twice
+                    } else {
+                        // Fallback: copy from PreBill
+                        insId = getPreBill().getInsId();
+                    }
+                }
+
+                // Validate generated bill numbers
+                if (deptId == null || deptId.trim().isEmpty()) {
+                    System.err.println("WARNING: Failed to generate DeptId for cashier settlement. Using original bill number: " + getPreBill().getDeptId());
+                    deptId = getPreBill().getDeptId();
+                }
+                if (insId == null || insId.trim().isEmpty()) {
+                    System.err.println("WARNING: Failed to generate InsId for cashier settlement. Using original bill number: " + getPreBill().getInsId());
+                    insId = getPreBill().getInsId();
+                }
+
+                getSaleBill().setDeptId(deptId);
+                getSaleBill().setInsId(insId);
+
+                // Comprehensive audit logging
+                System.out.println("CASHIER_SETTLEMENT_BILL_NUMBER_GENERATION: " +
+                    "User=" + (getSessionController().getLoggedUser() != null ? getSessionController().getLoggedUser().getWebUserPerson() : "Unknown") +
+                    ", Department=" + (getSaleBill().getDepartment() != null ? getSaleBill().getDepartment().getName() : "Unknown") +
+                    ", Institution=" + (getSaleBill().getInstitution() != null ? getSaleBill().getInstitution().getName() : "Unknown") +
+                    ", OriginalBillNumber=" + getPreBill().getDeptId() +
+                    ", NewDeptId=" + deptId +
+                    ", NewInsId=" + insId +
+                    ", PaymentMethod=" + getSaleBill().getPaymentMethod() +
+                    ", NetTotal=" + getSaleBill().getNetTotal() +
+                    ", Timestamp=" + new Date());
+            } catch (Exception e) {
+                // Error handling: fallback to original behavior
+                System.err.println("ERROR: Exception occurred during cashier settlement bill number generation. " +
+                    "Falling back to original bill numbers. Error: " + e.getMessage());
+                e.printStackTrace();
+
+                getSaleBill().setInsId(getPreBill().getInsId());
+                getSaleBill().setDeptId(getPreBill().getDeptId());
+
+                JsfUtil.addErrorMessage("Warning: Bill number generation failed. Using original bill numbers.");
+            }
+        } else {
+            // Current behavior: copy from PreBill
+            getSaleBill().setInsId(getPreBill().getInsId());
+            getSaleBill().setDeptId(getPreBill().getDeptId());
+
+            // Log for audit trail
+            System.out.println("CASHIER_SETTLEMENT_BILL_NUMBER_COPY: " +
+                "OriginalBillNumber=" + getPreBill().getDeptId() +
+                ", CopiedDeptId=" + getSaleBill().getDeptId() +
+                ", CopiedInsId=" + getSaleBill().getInsId() +
+                ", Timestamp=" + new Date());
+        }
 
         updateBalanceInBill(preBill, getSaleBill(), preBill.getPaymentMethod(), paymentMethodData);
 
@@ -728,7 +931,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
-        getBillFacade().editAndCommit(getPreBill());
     }
 
     /**
@@ -782,7 +984,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             //   getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             getSaleBill().getBillItems().add(newBil);
         }
-        getBillFacade().editAndCommit(getSaleBill());
 
     }
 
@@ -1572,6 +1773,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems();
 
+        // Consolidated edit: Save both SaleBill and PreBill in single transaction
+        getBillFacade().editAndCommit(getSaleBill());
         getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
@@ -1658,6 +1861,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         drawerController.updateDrawerForIns(payments);
         saveSaleBillItems();
 
+        // Consolidated edit: Save both SaleBill and PreBill in single transaction
+        getBillFacade().editAndCommit(getSaleBill());
         getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
@@ -2541,10 +2746,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             // Calculate stock valuations for this item based on pharmaceutical bill item rates
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
             if (pharmaItem != null) {
-                // Calculate value at cost rate
-                if (pharmaItem.getPurchaseRate() > 0) {
-                    java.math.BigDecimal costRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
-                    java.math.BigDecimal valueAtCostRate = quantity.multiply(costRate);
+                // Calculate value at cost rate - use actual cost rate from ItemBatch
+                Double costRateValue = null;
+                if (pharmaItem.getItemBatch() != null) {
+                    costRateValue = pharmaItem.getItemBatch().getCostRate();
+                }
+                if (costRateValue == null || costRateValue <= 0) {
+                    costRateValue = pharmaItem.getPurchaseRate(); // fallback
+                }
+                if (costRateValue > 0) {
+                    java.math.BigDecimal costRate = java.math.BigDecimal.valueOf(costRateValue);
+                    java.math.BigDecimal valueAtCostRate = quantity.multiply(costRate).negate();
                     itemFinanceDetails.setValueAtCostRate(valueAtCostRate);
                     totalCostValue = totalCostValue.add(valueAtCostRate);
                 }
@@ -2552,7 +2764,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 // Calculate value at purchase rate (same as cost rate for now)
                 if (pharmaItem.getPurchaseRate() > 0) {
                     java.math.BigDecimal purchaseRate = java.math.BigDecimal.valueOf(pharmaItem.getPurchaseRate());
-                    java.math.BigDecimal valueAtPurchaseRate = quantity.multiply(purchaseRate);
+                    java.math.BigDecimal valueAtPurchaseRate = quantity.multiply(purchaseRate).negate();
                     itemFinanceDetails.setValueAtPurchaseRate(valueAtPurchaseRate);
                     totalPurchaseValue = totalPurchaseValue.add(valueAtPurchaseRate);
                 }
@@ -2560,7 +2772,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 // Calculate value at retail rate (based on retail rate)
                 if (pharmaItem.getRetailRate() > 0) {
                     java.math.BigDecimal retailRate = java.math.BigDecimal.valueOf(pharmaItem.getRetailRate());
-                    java.math.BigDecimal valueAtRetailRate = quantity.multiply(retailRate);
+                    java.math.BigDecimal valueAtRetailRate = quantity.multiply(retailRate).negate();
                     itemFinanceDetails.setValueAtRetailRate(valueAtRetailRate);
                     totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetailRate);
                 }
@@ -2572,7 +2784,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
                 if (wholesaleRate > 0) {
                     java.math.BigDecimal wholsaleRateBd = java.math.BigDecimal.valueOf(wholesaleRate);
-                    java.math.BigDecimal valueAtWholesaleRate = quantity.multiply(wholsaleRateBd);
+                    java.math.BigDecimal valueAtWholesaleRate = quantity.multiply(wholsaleRateBd).negate();
                     itemFinanceDetails.setValueAtWholesaleRate(valueAtWholesaleRate);
                     totalWholesaleValue = totalWholesaleValue.add(valueAtWholesaleRate);
                 }
