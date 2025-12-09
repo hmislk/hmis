@@ -688,6 +688,79 @@ public class UserSettingsController implements Serializable {
         savePageSize("pharmacy_grn_list_for_return", pagesize);
     }
     
+    // Pharmacy GRN List For Return Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the specific page
+    
+    public boolean isPharmacyReturnWithouttressingItemVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "item");
+    }
+    
+    public void setPharmacyReturnWithouttressingItemVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("item", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingQtyVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "qty");
+    }
+    
+    public void setPharmacyReturnWithouttressingQtyVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("qty", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingReturnRateVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "returnRate");
+    }
+    
+    public void setPharmacyReturnWithouttressingReturnRateVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("returnRate", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingReturnValueVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "returnValue");
+    }
+    
+    public void setPharmacyReturnWithouttressingReturnValueVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("returnValue", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingRetailRateVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "retailRate");
+    }
+    
+    public void setPharmacyReturnWithouttressingRetailRateVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("retailRate", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingRetailValueVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "retailValue");
+    }
+    
+    public void setPharmacyReturnWithouttressingRetailValueVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("retailValue", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingExpiryVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "expiry");
+    }
+    
+    public void setPharmacyReturnWithouttressingExpiryVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("expiry", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
     // Stock Ledger Column Visibility Properties
     // These properties provide JSF-compatible getter/setter pairs for the stock ledger report page
 
